@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Menu for Automated Employee Announcements -->
+    <menuitem id="menu_automated_employee_announce_main"
+              name="Employee Announcements"
+              parent="hr.menu_hr_root"
+              sequence="50"/>
+
+    <!-- Automated Mail Rules Menu -->
+    <menuitem id="menu_automated_mail_rule"
+              name="Mail Rules"
+              parent="menu_automated_employee_announce_main"
+              action="action_automated_mail_rule"
+              sequence="10"/>
+
+    <!-- Upcoming Birthdays Menu -->
+    <menuitem id="menu_employees_upcoming_birthdays"
+              name="Upcoming Birthdays"
+              parent="menu_automated_employee_announce_main"
+              action="action_employees_upcoming_birthdays"
+              sequence="20"/>
+
+    <!-- Upcoming Anniversaries Menu -->
+    <menuitem id="menu_employees_upcoming_anniversaries"
+              name="Upcoming Anniversaries"
+              parent="menu_automated_employee_announce_main"
+              action="action_employees_upcoming_anniversaries"
+              sequence="30"/>
+</odoo>

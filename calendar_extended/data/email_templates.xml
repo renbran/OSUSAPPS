@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Meeting Approval Notification Template -->
+    <record id="email_template_meeting_approval" model="mail.template">
+        <field name="name">Meeting Approval Request</field>
+        <field name="model_id" ref="model_calendar_internal_meeting"/>
+        <field name="subject">Meeting Approval Required: ${object.name}</field>
+        <field name="email_from">${(object.organizer_id.email or user.email)|safe}</field>
+        <field name="email_to">${object.approver_id.email or ''}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Hello ${object.approver_id.name},</p>
+                <p>A new meeting requires your approval:</p>
+                
+                <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; background-color: #f9f9f9;">
+                    <h3 style="margin: 0 0 10px 0; color: #333;">${object.name}</h3>
+                    <p><strong>Organizer:</strong> ${object.organizer_id.name}</p>
+                    <p><strong>Date:</strong> ${object.start_datetime.strftime('%Y-%m-%d %H:%M') if object.start_datetime else 'Not set'}</p>
+                    <p><strong>Duration:</strong> ${object.duration} hours</p>
+                    <p><strong>Location:</strong> ${object.location or 'Not specified'}</p>
+                    <p><strong>Attendees:</strong> ${', '.join(object.attendee_ids.mapped('name')) if object.attendee_ids else 'None'}</p>
+                    % if object.description:
+                    <p><strong>Description:</strong></p>
+                    <div style="margin-left: 20px;">${object.description}</div>
+                    % endif
+                </div>
+                
+                <p>Please review and approve this meeting request.</p>
+                
+                <div style="margin: 20px 0;">
+                    <a href="/web#id=${object.id}&amp;view_type=form&amp;model=calendar.internal.meeting" 
+                       style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                        Review Meeting
+                    </a>
+                </div>
+                
+                <p>Best regards,<br/>
+                ${object.organizer_id.name}</p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+    
+    <!-- Meeting Approved Notification Template -->
+    <record id="email_template_meeting_approved" model="mail.template">
+        <field name="name">Meeting Approved</field>
+        <field name="model_id" ref="model_calendar_internal_meeting"/>
+        <field name="subject">Meeting Approved: ${object.name}</field>
+        <field name="email_from">${(object.approver_id.email or user.email)|safe}</field>
+        <field name="email_to">${object.organizer_id.email or ''}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Hello ${object.organizer_id.name},</p>
+                <p>Your meeting has been approved:</p>
+                
+                <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; background-color: #e8f5e8;">
+                    <h3 style="margin: 0 0 10px 0; color: #155724;">${object.name}</h3>
+                    <p><strong>Date:</strong> ${object.start_datetime.strftime('%Y-%m-%d %H:%M') if object.start_datetime else 'Not set'}</p>
+                    <p><strong>Duration:</strong> ${object.duration} hours</p>
+                    <p><strong>Approved by:</strong> ${object.approver_id.name}</p>
+                    % if object.approval_notes:
+                    <p><strong>Approval Notes:</strong> ${object.approval_notes}</p>
+                    % endif
+                </div>
+                
+                <p>You can now confirm and send invitations to attendees.</p>
+                
+                <div style="margin: 20px 0;">
+                    <a href="/web#id=${object.id}&amp;view_type=form&amp;model=calendar.internal.meeting" 
+                       style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                        View Meeting
+                    </a>
+                </div>
+                
+                <p>Best regards,<br/>
+                ${object.approver_id.name}</p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+    
+    <!-- Meeting Invitation Template -->
+    <record id="email_template_meeting_invitation" model="mail.template">
+        <field name="name">Meeting Invitation</field>
+        <field name="model_id" ref="model_calendar_internal_meeting"/>
+        <field name="subject">Meeting Invitation: ${object.name}</field>
+        <field name="email_from">${(object.organizer_id.email or user.email)|safe}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Hello,</p>
+                <p>You are invited to attend the following meeting:</p>
+                
+                <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; background-color: #f0f8ff;">
+                    <h3 style="margin: 0 0 10px 0; color: #0066cc;">${object.name}</h3>
+                    <p><strong>Organizer:</strong> ${object.organizer_id.name}</p>
+                    <p><strong>Date:</strong> ${object.start_datetime.strftime('%Y-%m-%d %H:%M') if object.start_datetime else 'Not set'}</p>
+                    <p><strong>Duration:</strong> ${object.duration} hours</p>
+                    <p><strong>Location:</strong> ${object.location or 'To be determined'}</p>
+                    % if object.agenda:
+                    <p><strong>Agenda:</strong></p>
+                    <div style="margin-left: 20px;">${object.agenda}</div>
+                    % endif
+                    % if object.description:
+                    <p><strong>Description:</strong></p>
+                    <div style="margin-left: 20px;">${object.description}</div>
+                    % endif
+                </div>
+                
+                <p>Please confirm your attendance:</p>
+                
+                <div style="margin: 20px 0;">
+                    <a href="/calendar/meeting/${object.id}/accept" 
+                       style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+                        Accept
+                    </a>
+                    <a href="/calendar/meeting/${object.id}/decline" 
+                       style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                        Decline
+                    </a>
+                </div>
+                
+                <p>Best regards,<br/>
+                ${object.organizer_id.name}</p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+    
+    <!-- Meeting Reminder Template -->
+    <record id="email_template_meeting_reminder" model="mail.template">
+        <field name="name">Meeting Reminder</field>
+        <field name="model_id" ref="model_calendar_internal_meeting"/>
+        <field name="subject">Reminder: ${object.name} - ${object.start_datetime.strftime('%Y-%m-%d %H:%M') if object.start_datetime else 'Soon'}</field>
+        <field name="email_from">${(object.organizer_id.email or user.email)|safe}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Hello,</p>
+                <p>This is a reminder for the upcoming meeting:</p>
+                
+                <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; background-color: #fff3cd;">
+                    <h3 style="margin: 0 0 10px 0; color: #856404;">${object.name}</h3>
+                    <p><strong>Date:</strong> ${object.start_datetime.strftime('%Y-%m-%d %H:%M') if object.start_datetime else 'Not set'}</p>
+                    <p><strong>Duration:</strong> ${object.duration} hours</p>
+                    <p><strong>Location:</strong> ${object.location or 'To be determined'}</p>
+                    <p><strong>Organizer:</strong> ${object.organizer_id.name}</p>
+                </div>
+                
+                <p>Please make sure to attend on time.</p>
+                
+                <div style="margin: 20px 0;">
+                    <a href="/web#id=${object.id}&amp;view_type=form&amp;model=calendar.internal.meeting" 
+                       style="background-color: #ffc107; color: #212529; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                        View Meeting Details
+                    </a>
+                </div>
+                
+                <p>Best regards,<br/>
+                ${object.organizer_id.name}</p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+</odoo>

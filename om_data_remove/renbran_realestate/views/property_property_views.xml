@@ -1,0 +1,52 @@
+<odoo>
+    <data>
+        <!-- Action for Property -->
+        <record id="action_property_property" model="ir.actions.act_window">
+            <field name="name">Properties</field>
+            <field name="res_model">property.property</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Tree View for Property -->
+        <record id="view_property_property_tree" model="ir.ui.view">
+            <field name="name">property.property.tree</field>
+            <field name="model">property.property</field>
+            <field name="arch" type="xml">
+                <tree string="Properties">
+                    <field name="name"/>
+                    <field name="property_price"/>
+                    <field name="sale_rent"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View for Property -->
+        <record id="view_property_property_form" model="ir.ui.view">
+            <field name="name">property.property.form</field>
+            <field name="model">property.property</field>
+            <field name="arch" type="xml">
+                <form string="Property Details">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="property_price"/>
+                            <field name="sale_rent"/>
+                            <field name="state"/>
+                            <field name="currency_id"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="address"/>
+                            <field name="description"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Menu item for Property -->
+        <menuitem id="menu_property_root" name="Properties" sequence="5"/>
+        <menuitem id="menu_property_property" name="Manage Properties" parent="menu_property_root" action="action_property_property" sequence="10"/>
+    </data>
+</odoo>

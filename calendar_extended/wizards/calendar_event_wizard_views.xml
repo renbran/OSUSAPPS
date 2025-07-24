@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Calendar Event Wizard Views -->
+    <record id="view_calendar_event_wizard_form" model="ir.ui.view">
+        <field name="name">calendar.event.wizard.form</field>
+        <field name="model">calendar.event.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Calendar Event">
+                <sheet>
+                    <group>
+                        <group string="Event Details">
+                            <field name="name" required="1"/>
+                            <field name="start_datetime"/>
+                            <field name="end_datetime"/>
+                            <field name="event_type_id"/>
+                            <field name="location"/>
+                        </group>
+                        <group string="Options">
+                            <field name="is_all_day"/>
+                            <field name="privacy"/>
+                            <field name="show_as"/>
+                            <field name="recurrency"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Description">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                    
+                    <group string="Attendees">
+                        <field name="partner_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+                
+                <footer>
+                    <button name="action_create_event" type="object" 
+                            string="Create Event" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Calendar Event Wizard Action -->
+    <record id="action_calendar_event_wizard" model="ir.actions.act_window">
+        <field name="name">Create Calendar Event</field>
+        <field name="res_model">calendar.event.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_calendar_event_wizard_form"/>
+    </record>
+
+</odoo>

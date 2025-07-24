@@ -1,0 +1,228 @@
+.elite_dashboard_container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #0f172a;
+    color: #f8fafc;
+    font-family: 'Roboto', sans-serif;
+    padding: 20px;
+}
+
+.elite_dashboard_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.elite_dashboard_header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0;
+}
+
+.elite_dashboard_controls {
+    display: flex;
+    gap: 12px;
+}
+
+.elite_dashboard_summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.elite_dashboard_card {
+    background-color: #1e293b;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.elite_dashboard_card_title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.elite_dashboard_card_value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 8px;
+}
+
+.elite_dashboard_card_change {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.elite_dashboard_card_change.positive {
+    color: #4ade80;
+}
+
+.elite_dashboard_card_change.negative {
+    color: #f87171;
+}
+
+.elite_dashboard_card_subtitle {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.elite_dashboard_charts {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.elite_dashboard_chart {
+    background-color: #1e293b;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 400px;
+}
+
+.elite_dashboard_chart_title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 16px;
+}
+
+.elite_dashboard_leaderboard {
+    background-color: #1e293b;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.elite_dashboard_leaderboard_table {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.elite_dashboard_leaderboard_header {
+    display: grid;
+    grid-template-columns: 40px 2fr 2fr 2fr;
+    padding: 0 16px 12px;
+    border-bottom: 1px solid #334155;
+    font-size: 14px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.elite_dashboard_leaderboard_row {
+    display: grid;
+    grid-template-columns: 40px 2fr 2fr 2fr;
+    padding: 16px;
+    border-radius: 6px;
+    background-color: #293548;
+    align-items: center;
+}
+
+.elite_dashboard_leaderboard_rank {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.elite_dashboard_leaderboard_agent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.elite_dashboard_leaderboard_avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #3b82f6;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.elite_dashboard_leaderboard_name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.elite_dashboard_leaderboard_deals {
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.elite_dashboard_leaderboard_amount {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.elite_dashboard_leaderboard_pending {
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.elite_dashboard_rank_change {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+.elite_dashboard_rank_change.positive {
+    background-color: rgba(74, 222, 128, 0.2);
+    color: #4ade80;
+}
+
+.elite_dashboard_rank_change.negative {
+    background-color: rgba(248, 113, 113, 0.2);
+    color: #f87171;
+}
+
+.elite_dashboard_footer {
+    margin-top: auto;
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+    padding-top: 16px;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 1400px) {
+    .elite_dashboard_summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .elite_dashboard_charts {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .elite_dashboard_summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .elite_dashboard_header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+}

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Default Event Types -->
+    <record id="event_type_meeting" model="calendar.event.type">
+        <field name="name">Meeting</field>
+        <field name="duration_hours">1</field>
+        <field name="requires_approval">True</field>
+        <field name="reminder_minutes">15</field>
+        <field name="description">Standard business meeting</field>
+        <field name="color">3</field>
+    </record>
+    
+    <record id="event_type_training" model="calendar.event.type">
+        <field name="name">Training</field>
+        <field name="duration_hours">2</field>
+        <field name="requires_approval">True</field>
+        <field name="reminder_minutes">30</field>
+        <field name="description">Training and development session</field>
+        <field name="color">5</field>
+    </record>
+    
+    <record id="event_type_workshop" model="calendar.event.type">
+        <field name="name">Workshop</field>
+        <field name="duration_hours">4</field>
+        <field name="requires_approval">True</field>
+        <field name="reminder_minutes">60</field>
+        <field name="description">Interactive workshop session</field>
+        <field name="color">7</field>
+    </record>
+    
+    <record id="event_type_presentation" model="calendar.event.type">
+        <field name="name">Presentation</field>
+        <field name="duration_hours">1</field>
+        <field name="requires_approval">False</field>
+        <field name="reminder_minutes">15</field>
+        <field name="description">Presentation or demo session</field>
+        <field name="color">9</field>
+    </record>
+    
+    <!-- Default Resources -->
+    <record id="resource_conference_room_a" model="calendar.resource">
+        <field name="name">Conference Room A</field>
+        <field name="resource_type">room</field>
+        <field name="capacity">12</field>
+        <field name="is_available">True</field>
+        <field name="description">Main conference room with projector and whiteboard</field>
+    </record>
+    
+    <record id="resource_conference_room_b" model="calendar.resource">
+        <field name="name">Conference Room B</field>
+        <field name="resource_type">room</field>
+        <field name="capacity">8</field>
+        <field name="is_available">True</field>
+        <field name="description">Small meeting room for team discussions</field>
+    </record>
+    
+    <record id="resource_training_room" model="calendar.resource">
+        <field name="name">Training Room</field>
+        <field name="resource_type">room</field>
+        <field name="capacity">20</field>
+        <field name="is_available">True</field>
+        <field name="description">Large training room with multimedia setup</field>
+    </record>
+    
+    <record id="resource_projector_portable" model="calendar.resource">
+        <field name="name">Portable Projector</field>
+        <field name="resource_type">equipment</field>
+        <field name="is_available">True</field>
+        <field name="description">Portable projector for presentations</field>
+    </record>
+    
+    <!-- Default Templates -->
+    <record id="template_team_meeting" model="calendar.template">
+        <field name="name">Team Meeting</field>
+        <field name="event_type_id" ref="event_type_meeting"/>
+        <field name="default_duration">1.0</field>
+        <field name="description">Weekly team meeting template</field>
+        <field name="agenda">1. Review previous week
+2. Current projects update
+3. Next week planning
+4. Questions and discussion</field>
+    </record>
+    
+    <record id="template_training_session" model="calendar.template">
+        <field name="name">Training Session</field>
+        <field name="event_type_id" ref="event_type_training"/>
+        <field name="default_duration">2.0</field>
+        <field name="description">Standard training session template</field>
+        <field name="agenda">1. Introduction and objectives
+2. Main content delivery
+3. Hands-on practice
+4. Q&amp;A and feedback</field>
+    </record>
+
+</odoo>

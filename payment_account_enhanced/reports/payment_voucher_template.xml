@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- QWeb template for payment voucher (Odoo 17, CSS classes only) -->
+        <template id="report_payment_voucher">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="ref_list" t-value="(o.ref or '').split(',')"/>
+                    <div class="o_payment_voucher_container">
+                        <div class="o_payment_voucher_header">
+                            <div class="o_payment_voucher_header_left">
+                                <div class="o_payment_voucher_ref">
+                                    <strong>RECEIPT VOUCHER</strong>
+                                </div>
+                                <div class="o_payment_voucher_company">
+                                    OSUS REAL ESTATE BROKERAGE LLC
+                                </div>
+                            </div>
+                            <div class="o_payment_voucher_header_right">
+                                <img src="https://osusproperties.com/wp-content/uploads/2025/02/OSUS-logotype-2.png" class="o_payment_voucher_logo"/>
+                            </div>
+                        </div>
+                        <div class="o_payment_voucher_details">
+                            <table class="o_payment_voucher_table">
+                                <tr><th>Issued To</th><td t-field="o.partner_id.name"/></tr>
+                                <tr><th>Voucher Number</th><td t-field="o.name"/></tr>
+                                <tr><th>Date</th><td t-field="o.date" t-options='{"widget":"date","format":"dd MMMM yyyy"}'/></tr>
+                                <tr><th>Address</th>
+                                    <td>
+                                        <t t-if="o.partner_id.street"><span t-field="o.partner_id.street"/></t>
+                                        <t t-if="o.partner_id.street2"><br/><span t-field="o.partner_id.street2"/></t>
+                                        <t t-if="o.partner_id.city"><br/><span t-field="o.partner_id.city"/></t>
+                                    </td>
+                                </tr>
+                                <tr><th>Phone</th><td><t t-if="o.partner_id.phone"><span t-field="o.partner_id.phone"/></t></td></tr>
+                                <tr><th>Bank Details</th>
+                                    <td>
+                                        <t t-if="o.partner_bank_id">
+                                            <span t-field="o.partner_bank_id.acc_number"/>
+                                            <t t-if="o.partner_bank_id.bank_id"> (<span t-field="o.partner_bank_id.bank_id.name"/>)</t>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr><th>Payment Method</th><td t-field="o.journal_id.name"/></tr>
+                                <tr t-if="o.ref">
+                                    <th>Reference</th>
+                                    <td>
+                                        <ul>
+                                            <li t-foreach="ref_list" t-as="ref_line" t-esc="ref_line.strip()"/>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="o_payment_voucher_amount">
+                            <span t-field="o.amount" t-options='{"widget":"monetary","display_currency":o.currency_id}'/>
+                            <div style="font-size:11pt; margin-top:2mm;">
+                                <span t-esc="o.currency_id.amount_to_text(o.amount)"/> only
+                            </div>
+                        </div>
+                        <div class="o_payment_voucher_signatures">
+                            <div class="o_payment_voucher_signature_box">
+                                <div class="o_payment_voucher_signature_label">INITIATED BY</div>
+                                <div><span t-field="o.create_uid.name"/></div>
+                                <div class="o_payment_voucher_signature_date"><span t-field="o.create_date" t-options='{"widget":"datetime","format":"dd/MM/yyyy HH:mm"}'/></div>
+                            </div>
+                            <div class="o_payment_voucher_signature_box">
+                                <div class="o_payment_voucher_signature_label">APPROVED BY</div>
+                                <t t-if="o.state=='posted'">
+                                    <div><span t-field="o.write_uid.name"/></div>
+                                    <div class="o_payment_voucher_signature_date"><span t-field="o.write_date" t-options='{"widget":"datetime","format":"dd/MM/yyyy HH:mm"}'/></div>
+                                </t>
+                                <t t-else=""><div class="o_payment_voucher_pending">Pending Approval</div></t>
+                            </div>
+                            <div class="o_payment_voucher_signature_box o_payment_voucher_signature_manual">
+                                <div class="o_payment_voucher_signature_label">RECEIVED BY</div>
+                                <div class="o_payment_voucher_signature_line"></div>
+                                <div class="o_payment_voucher_signature_sublabel">SIGNATURE</div>
+                                <div class="o_payment_voucher_signature_line"></div>
+                                <div class="o_payment_voucher_signature_sublabel">FULL NAME</div>
+                                <div class="o_payment_voucher_signature_row">
+                                    <div>
+                                        <div class="o_payment_voucher_signature_line"></div>
+                                        <div class="o_payment_voucher_signature_sublabel">DATE</div>
+                                    </div>
+                                    <div>
+                                        <div class="o_payment_voucher_signature_line"></div>
+                                        <div class="o_payment_voucher_signature_sublabel">MOBILE NUMBER</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="o_payment_voucher_footer">
+                            <div>
+                                Thank you for your business • For payment confirmation, please contact: 056 390 5772
+                            </div>
+                            <div class="o_payment_voucher_footer_note">
+                                This is a computer-generated document. No physical signature or stamp required for system verification.
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

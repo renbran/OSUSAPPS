@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Main Menu -->
+        <menuitem 
+            id="menu_custom_sales_root"
+            name="Custom Sales Pro"
+            sequence="5"
+            web_icon="custom_sales,static/description/icon.png"/>
+        
+        <!-- Dashboard Menu -->
+        <menuitem 
+            id="menu_custom_sales_dashboard"
+            name="Dashboard"
+            parent="menu_custom_sales_root"
+            sequence="1"
+            action="action_custom_sales_dashboard"/>
+        
+        <!-- Sales Orders Menu -->
+        <menuitem 
+            id="menu_custom_sales_orders"
+            name="Sales Orders"
+            parent="menu_custom_sales_root"
+            sequence="10"/>
+            
+        <menuitem 
+            id="menu_custom_sales_orders_all"
+            name="All Orders"
+            parent="menu_custom_sales_orders"
+            sequence="1"
+            action="action_custom_sales_order"/>
+            
+        <menuitem 
+            id="menu_custom_sales_orders_my"
+            name="My Orders"
+            parent="menu_custom_sales_orders"
+            sequence="2"
+            action="action_custom_sales_order_my"/>
+            
+        <menuitem 
+            id="menu_custom_sales_orders_team"
+            name="Team Orders"
+            parent="menu_custom_sales_orders"
+            sequence="3"
+            action="action_custom_sales_order_team"/>
+        
+        <!-- Analytics Menu -->
+        <menuitem 
+            id="menu_custom_sales_analytics"
+            name="Analytics"
+            parent="menu_custom_sales_root"
+            sequence="20"/>
+            
+        <menuitem 
+            id="menu_custom_sales_analytics_overview"
+            name="Sales Overview"
+            parent="menu_custom_sales_analytics"
+            sequence="1"
+            action="action_custom_sales_analytics"/>
+            
+        <menuitem 
+            id="menu_custom_sales_kpis"
+            name="KPI Analysis"
+            parent="menu_custom_sales_analytics"
+            sequence="2"
+            action="action_custom_sales_kpi_analysis"/>
+        
+        <!-- Reports Menu -->
+        <menuitem 
+            id="menu_custom_sales_reports"
+            name="Reports"
+            parent="menu_custom_sales_root"
+            sequence="30"/>
+            
+        <menuitem 
+            id="menu_custom_sales_reports_dashboard"
+            name="Dashboard Report"
+            parent="menu_custom_sales_reports"
+            sequence="1"
+            action="action_custom_sales_report_dashboard"/>
+            
+        <menuitem 
+            id="menu_custom_sales_reports_detailed"
+            name="Detailed Reports"
+            parent="menu_custom_sales_reports"
+            sequence="2"
+            action="action_custom_sales_report_detailed"/>
+        
+        <!-- Configuration Menu -->
+        <menuitem 
+            id="menu_custom_sales_config"
+            name="Configuration"
+            parent="menu_custom_sales_root"
+            sequence="90"
+            groups="custom_sales.group_sales_dashboard_manager"/>
+            
+        <menuitem 
+            id="menu_custom_sales_config_dashboard"
+            name="Dashboard Config"
+            parent="menu_custom_sales_config"
+            sequence="1"
+            action="action_custom_sales_dashboard_config"/>
+            
+        <menuitem 
+            id="menu_custom_sales_config_kpis"
+            name="KPI Configuration"
+            parent="menu_custom_sales_config"
+            sequence="2"
+            action="action_custom_sales_kpi_config"/>
+            
+        <menuitem 
+            id="menu_custom_sales_config_charts"
+            name="Chart Configuration"
+            parent="menu_custom_sales_config"
+            sequence="3"
+            action="action_custom_sales_chart_config"/>
+        
+    </data>
+</odoo>

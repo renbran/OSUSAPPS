@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Main Calendar Extended Menu -->
+    <menuitem id="menu_calendar_extended_root" 
+              name="Calendar Extended" 
+              sequence="15"
+              web_icon="calendar_extended,static/description/icon.png"/>
+    
+    <!-- Internal Meetings Submenu -->
+    <menuitem id="menu_calendar_internal_meetings" 
+              name="Internal Meetings" 
+              parent="menu_calendar_extended_root" 
+              sequence="10"/>
+    
+    <!-- Internal Meetings -->
+    <menuitem id="menu_calendar_internal_meeting_all" 
+              name="All Meetings" 
+              parent="menu_calendar_internal_meetings" 
+              action="action_calendar_internal_meeting" 
+              sequence="10"/>
+    
+    <!-- My Meetings -->
+    <menuitem id="menu_calendar_internal_meeting_my" 
+              name="My Meetings" 
+              parent="menu_calendar_internal_meetings" 
+              action="action_calendar_internal_meeting_my" 
+              sequence="20"/>
+    
+    <!-- Meetings Pending Approval -->
+    <menuitem id="menu_calendar_internal_meeting_approval" 
+              name="Pending Approval" 
+              parent="menu_calendar_internal_meetings" 
+              action="action_calendar_internal_meeting_approval" 
+              sequence="30"
+              groups="calendar_extended.group_calendar_manager"/>
+    
+    <!-- Configuration Submenu -->
+    <menuitem id="menu_calendar_extended_config" 
+              name="Configuration" 
+              parent="menu_calendar_extended_root" 
+              sequence="90"
+              groups="calendar_extended.group_calendar_manager"/>
+    
+    <!-- Department Groups -->
+    <menuitem id="menu_calendar_department_groups" 
+              name="Department Groups" 
+              parent="menu_calendar_extended_config" 
+              action="action_calendar_department_group" 
+              sequence="10"/>
+    
+    <!-- Event Types -->
+    <menuitem id="menu_calendar_event_types" 
+              name="Event Types" 
+              parent="menu_calendar_extended_config" 
+              action="action_calendar_event_type" 
+              sequence="20"/>
+    
+    <!-- Resources -->
+    <menuitem id="menu_calendar_resources" 
+              name="Resources" 
+              parent="menu_calendar_extended_config" 
+              action="action_calendar_resource" 
+              sequence="30"/>
+    
+    <!-- Templates -->
+    <menuitem id="menu_calendar_templates" 
+              name="Templates" 
+              parent="menu_calendar_extended_config" 
+              action="action_calendar_template" 
+              sequence="40"/>
+
+</odoo>

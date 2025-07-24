@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Meeting Invitation Email Template -->
+        <record id="email_template_meeting_invitation" model="mail.template">
+            <field name="name">Meeting Invitation</field>
+            <field name="model_id" ref="model_calendar_announcement"/>
+            <field name="subject">Meeting Invitation: {{ object.name }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p>Hello,</p>
+                    
+                    <p>You are invited to attend the following meeting:</p>
+                    
+                    <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Meeting:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ object.name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Date &amp; Time:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ object.start_datetime.strftime('%B %d, %Y at %I:%M %p') }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Duration:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">Until {{ object.end_datetime.strftime('%I:%M %p') }}</td>
+                        </tr>
+                        {% if object.location %}
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Location:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ object.location }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Organizer:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ object.submitted_by.name }}</td>
+                        </tr>
+                    </table>
+                    
+                    {% if object.description %}
+                    <h3>Meeting Details:</h3>
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                        {{ object.description | safe }}
+                    </div>
+                    {% endif %}
+                    
+                    <p>This meeting has been approved and scheduled. Please mark your calendar accordingly.</p>
+                    
+                    <p>Best regards,<br/>
+                    {{ object.submitted_by.name }}</p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+        
+        <!-- Meeting Approval Notification Template -->
+        <record id="email_template_meeting_approved" model="mail.template">
+            <field name="name">Meeting Approved Notification</field>
+            <field name="model_id" ref="model_calendar_announcement"/>
+            <field name="subject">Meeting Approved: {{ object.name }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p>Hello {{ object.submitted_by.name }},</p>
+                    
+                    <p>Your meeting announcement has been <strong style="color: green;">approved</strong>:</p>
+                    
+                    <table style="border-collapse: collapse; width: 100%; margin: 20px 0;">
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Meeting:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ object.name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Date &amp; Time:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ object.start_datetime.strftime('%B %d, %Y at %I:%M %p') }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Approved By:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ object.approved_by.name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9; font-weight: bold;">Attendees:</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{{ object.attendee_count }} people</td>
+                        </tr>
+                    </table>
+                    
+                    {% if object.approval_notes %}
+                    <h3>Approval Notes:</h3>
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9;">
+                        {{ object.approval_notes }}
+                    </div>
+                    {% endif %}
+                    
+                    <p>You can now send invitations to the attendees.</p>
+                    
+                    <p>Best regards,<br/>
+                    {{ object.approved_by.name }}</p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

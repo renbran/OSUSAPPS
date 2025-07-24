@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Calendar Template Views -->
+    <record id="view_calendar_template_tree" model="ir.ui.view">
+        <field name="name">calendar.template.tree</field>
+        <field name="model">calendar.template</field>
+        <field name="arch" type="xml">
+            <tree string="Templates">
+                <field name="name"/>
+                <field name="event_type_id"/>
+                <field name="default_duration"/>
+                <field name="is_active"/>
+            </tree>
+        </field>
+    </record>
+    
+    <record id="view_calendar_template_form" model="ir.ui.view">
+        <field name="name">calendar.template.form</field>
+        <field name="model">calendar.template</field>
+        <field name="arch" type="xml">
+            <form string="Template">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="event_type_id"/>
+                            <field name="default_duration"/>
+                        </group>
+                        <group>
+                            <field name="is_active"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                    <group string="Default Agenda">
+                        <field name="agenda" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Calendar Template Action -->
+    <record id="action_calendar_template" model="ir.actions.act_window">
+        <field name="name">Templates</field>
+        <field name="res_model">calendar.template</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

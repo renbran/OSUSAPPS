@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default Birthday Rule -->
+        <record id="default_birthday_rule" model="automated.mail.rule">
+            <field name="name">Default Birthday Announcements</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="mail_template_id" ref="mail_template_employee_birthday"/>
+            <field name="rule_type">birthday</field>
+            <field name="active">True</field>
+            <field name="send_to_all_employees">False</field>
+            <field name="days_before">0</field>
+        </record>
+
+        <!-- Default Work Anniversary Rule -->
+        <record id="default_anniversary_rule" model="automated.mail.rule">
+            <field name="name">Default Work Anniversary Announcements</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="mail_template_id" ref="mail_template_employee_anniversary"/>
+            <field name="rule_type">work_anniversary</field>
+            <field name="active">True</field>
+            <field name="send_to_all_employees">False</field>
+            <field name="days_before">0</field>
+        </record>
+
+        <!-- Company-wide Birthday Announcement Rule -->
+        <record id="company_birthday_rule" model="automated.mail.rule">
+            <field name="name">Company-wide Birthday Announcements</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="mail_template_id" ref="mail_template_employee_birthday"/>
+            <field name="rule_type">birthday</field>
+            <field name="active">False</field>
+            <field name="send_to_all_employees">True</field>
+            <field name="days_before">0</field>
+        </record>
+
+        <!-- Company-wide Anniversary Announcement Rule -->
+        <record id="company_anniversary_rule" model="automated.mail.rule">
+            <field name="name">Company-wide Anniversary Announcements</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="mail_template_id" ref="mail_template_employee_anniversary"/>
+            <field name="rule_type">work_anniversary</field>
+            <field name="active">False</field>
+            <field name="send_to_all_employees">True</field>
+            <field name="days_before">0</field>
+        </record>
+    </data>
+</odoo>

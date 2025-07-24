@@ -1,0 +1,28 @@
+<odoo>
+    <data>
+
+        <!-- Inherit Sales Order Form View -->
+        <record id="view_order_form_inherit_reconciliation_remarks" model="ir.ui.view">
+            <field name="name">sale.order.form.reconciliation.remarks</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name=reconcilation']" position="inside">
+                    <!-- Dynamic Group for Reconciliation Remarks -->
+                    <group name="reconciliation_remarks_group" string="Reconciliation Remarks">
+                        <field name="reconciliation_ids" widget="one2many_list">
+                            <tree>
+                                <field name="invoice_remarks"/>
+                                <field name="payment_remarks"/>
+                                <field name="invoiced_amount" widget="float"/>
+                                <field name="received_amount" widget="float"/>
+                                <field name="balance" widget="float"/>
+                            </tree>
+                        </field>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

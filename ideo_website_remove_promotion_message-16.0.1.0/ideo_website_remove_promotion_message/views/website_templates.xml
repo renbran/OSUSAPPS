@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="brand_promotion" inherit_id="website.brand_promotion" name="Brand Promotion">
+        <xpath expr="//t[@t-call='web.brand_promotion_message']" position="replace">
+        </xpath>
+    </template>
+    
+    <template id="email_brand_promotion" inherit_id="mail.notification_layout" name="Email Brand Promotion">
+        <xpath expr="//div[@class='o_mail_footer_links o_mail_footer_copy']" position="replace">
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Department Select Wizard Form View -->
+    <record id="calendar_department_select_wizard_form_view" model="ir.ui.view">
+        <field name="name">calendar.department.select.wizard.form</field>
+        <field name="model">calendar.department.select.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Select Attendees">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Select Meeting Attendees</h1>
+                        <p>Choose how you want to select attendees for this meeting announcement.</p>
+                    </div>
+                    
+                    <group>
+                        <field name="announcement_id" invisible="1"/>
+                        <field name="selection_mode" widget="radio"/>
+                    </group>
+                    
+                    <group string="Quick Actions">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button name="action_quick_select_all" string="Select All Employees" 
+                                        type="object" class="btn btn-info btn-block"/>
+                            </div>
+                            <div class="col-md-8">
+                                <span class="text-muted">
+                                    <field name="total_employees"/> total employees in company
+                                </span>
+                            </div>
+                        </div>
+                    </group>
+                    
+                    <!-- Department Selection -->
+                    <group string="Department Selection" invisible="selection_mode != 'departments'">
+                        <field name="select_all_departments"/>
+                        <field name="department_ids" widget="many2many_checkboxes" 
+                               invisible="select_all_departments"/>
+                    </group>
+                    
+                    <!-- Individual Employee Selection -->
+                    <group string="Employee Selection" invisible="selection_mode != 'individuals'">
+                        <field name="employee_ids" widget="many2many"/>
+                    </group>
+                    
+                    <!-- Selection Summary -->
+                    <group string="Selection Summary">
+                        <div class="alert alert-info">
+                            <strong>Selected Attendees: </strong>
+                            <field name="selected_count" readonly="1"/>
+                            <span> people will receive invitations</span>
+                        </div>
+                    </group>
+                </sheet>
+                
+                <footer>
+                    <button name="action_apply_selection" string="Apply Selection" 
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Department Select Wizard Action -->
+    <record id="calendar_department_select_wizard_action" model="ir.actions.act_window">
+        <field name="name">Select Attendees</field>
+        <field name="res_model">calendar.department.select.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

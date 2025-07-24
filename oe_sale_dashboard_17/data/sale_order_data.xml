@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This module is under copyright of 'OdooElevate' -->
+<odoo>
+    <!-- Data initialization not needed as fields are handled by osus_invoice_report module -->
+    <!-- <function model="sale.order" name="_init_booking_date_for_existing_orders"/> -->
+</odoo>

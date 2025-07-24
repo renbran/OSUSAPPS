@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Calendar Bulk Operation Wizard Views -->
+    <record id="view_calendar_bulk_operation_form" model="ir.ui.view">
+        <field name="name">calendar.bulk.operation.form</field>
+        <field name="model">calendar.bulk.operation</field>
+        <field name="arch" type="xml">
+            <form string="Bulk Calendar Operations">
+                <sheet>
+                    <group>
+                        <group string="Operation Details">
+                            <field name="operation_type"/>
+                            <field name="target_date_from"/>
+                            <field name="target_date_to"/>
+                        </group>
+                        <group string="Filters">
+                            <field name="event_type_ids" widget="many2many_tags"/>
+                            <field name="partner_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Selected Events" invisible="not event_ids">
+                        <field name="event_ids" nolabel="1">
+                            <tree>
+                                <field name="name"/>
+                                <field name="start"/>
+                                <field name="partner_ids" widget="many2many_tags"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
+                
+                <footer>
+                    <button name="action_execute_operation" type="object" 
+                            string="Execute Operation" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Calendar Bulk Operation Action -->
+    <record id="action_calendar_bulk_operation" model="ir.actions.act_window">
+        <field name="name">Bulk Calendar Operations</field>
+        <field name="res_model">calendar.bulk.operation</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_calendar_bulk_operation_form"/>
+    </record>
+
+</odoo>

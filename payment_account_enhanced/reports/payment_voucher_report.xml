@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Optimized Paper Format for Payment Voucher -->
+        <record id="paperformat_voucher_a4" model="report.paperformat">
+            <field name="name">Payment Voucher A4 Optimized</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">15</field>
+            <field name="margin_bottom">15</field>
+            <field name="margin_left">15</field>
+            <field name="margin_right">15</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">96</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+        </record>
+        
+        <!-- Report Action -->
+        <record id="action_report_payment_voucher" model="ir.actions.report">
+            <field name="name">Payment Voucher</field>
+            <field name="model">account.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">payment_account_enhanced.report_payment_voucher</field>
+            <field name="report_file">payment_account_enhanced.report_payment_voucher</field>
+            <field name="binding_model_id" ref="account.model_account_payment"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="payment_account_enhanced.paperformat_voucher_a4"/>
+        </record>
+    </data>
+</odoo>

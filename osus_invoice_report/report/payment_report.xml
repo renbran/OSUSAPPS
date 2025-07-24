@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_payment_voucher_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row">
+                            <!-- Report Title -->
+                            <div class="col-12 text-center mb-4">
+                                <h2 t-esc="o.get_report_type_name()" class="font-weight-bold"/>
+                                <h4 class="text-muted">Reference: <span t-field="o.name"/></h4>
+                            </div>
+                        </div>
+
+                        <!-- Payment Information -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <strong>Date:</strong> <span t-field="o.date" t-options='{"widget": "date"}'/>
+                                <br/>
+                                <strong>Payment Method:</strong> <span t-field="o.journal_id.name"/>
+                                <br/>
+                                <t t-if="o.ref">
+                                    <strong>Reference:</strong> <span t-field="o.ref"/>
+                                    <br/>
+                                </t>
+                                <strong>Memo:</strong> <span t-field="o.ref" t-if="o.ref"/>
+                                <span t-else="">-</span>
+                            </div>
+                            <div class="col-6">
+                                <t t-if="o.payment_type == 'inbound'">
+                                    <strong>Received From:</strong> <span t-field="o.partner_id.name"/>
+                                </t>
+                                <t t-else="">
+                                    <strong>Paid To:</strong> <span t-field="o.partner_id.name"/>
+                                </t>
+                                <br/>
+                                <t t-if="o.partner_id.mobile">
+                                    <strong>Mobile:</strong> <span t-field="o.partner_id.mobile"/>
+                                    <br/>
+                                </t>
+                                <t t-if="o.partner_id.email">
+                                    <strong>Email:</strong> <span t-field="o.partner_id.email"/>
+                                    <br/>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Amount Section -->
+                        <div class="row mb-5">
+                            <div class="col-12">
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th class="text-center">Amount</th>
+                                            <th class="text-center">Currency</th>
+                                            <th class="text-center">Amount in Words</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center">
+                                                <span t-field="o.amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="o.currency_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="o._get_amount_in_words()"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Related Invoices Section -->
+                        <t t-if="o.reconciled_invoice_ids">
+                            <div class="row mb-5">
+                                <div class="col-12">
+                                    <h5>Related Invoices</h5>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Invoice</th>
+                                                <th>Date</th>
+                                                <th class="text-right">Original Amount</th>
+                                                <th class="text-right">Amount Paid</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="o.reconciled_invoice_ids" t-as="inv">
+                                                <tr>
+                                                    <td><span t-field="inv.name"/></td>
+                                                    <td><span t-field="inv.invoice_date"/></td>
+                                                    <td class="text-right">
+                                                        <span t-field="inv.amount_total" t-options='{"widget": "monetary", "display_currency": inv.currency_id}'/>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <span t-esc="o.amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Signature Section -->
+                        <div class="row mt-5 pt-5">
+                            <div class="col-4 text-center">
+                                <div style="border-top: 1px solid #000;">
+                                    Prepared By
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div style="border-top: 1px solid #000;">
+                                    <t t-if="o.payment_type == 'inbound'">
+                                        Receiver's Signature
+                                    </t>
+                                    <t t-else="">
+                                        Recipient's Signature
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div style="border-top: 1px solid #000;">
+                                    Authorized Signatory
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Note -->
+                        <div class="row mt-5">
+                            <div class="col-12 small text-center text-muted">
+                                <t t-if="o.payment_type == 'inbound'">
+                                    This receipt is evidence of payment received from <span t-field="o.partner_id.name"/> on <span t-field="o.date" t-options='{"widget": "date"}'/>.
+                                </t>
+                                <t t-else="">
+                                    This voucher is evidence of payment made to <span t-field="o.partner_id.name"/> on <span t-field="o.date" t-options='{"widget": "date"}'/>.
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Main Report Template -->
+    <template id="report_payment_voucher">
+        <t t-call="web.html_container">
+            <t t-call="osus_invoice_report.report_payment_voucher_document"/>
+        </t>
+    </template>
+</odoo>

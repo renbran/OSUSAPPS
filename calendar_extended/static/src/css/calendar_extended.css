@@ -1,0 +1,347 @@
+/* Calendar Extended Module Styles */
+
+.calendar_extended_meeting_form {
+    max-width: 100%;
+}
+
+.calendar_extended_meeting_header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 20px;
+}
+
+.calendar_extended_meeting_header h3 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.calendar_extended_approval_section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.calendar_extended_approval_section.pending {
+    border-color: #ffc107;
+    background-color: #fff3cd;
+}
+
+.calendar_extended_approval_section.approved {
+    border-color: #28a745;
+    background-color: #d4edda;
+}
+
+.calendar_extended_approval_section.rejected {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+}
+
+.calendar_extended_state_badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+}
+
+.calendar_extended_state_badge.draft {
+    color: #6c757d;
+    background-color: #e9ecef;
+}
+
+.calendar_extended_state_badge.pending_approval {
+    color: #856404;
+    background-color: #fff3cd;
+}
+
+.calendar_extended_state_badge.approved {
+    color: #155724;
+    background-color: #d4edda;
+}
+
+.calendar_extended_state_badge.confirmed {
+    color: #004085;
+    background-color: #d1ecf1;
+}
+
+.calendar_extended_state_badge.completed {
+    color: #155724;
+    background-color: #d4edda;
+}
+
+.calendar_extended_state_badge.cancelled {
+    color: #721c24;
+    background-color: #f8d7da;
+}
+
+.calendar_extended_attendee_list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.calendar_extended_attendee_item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.calendar_extended_attendee_item:last-child {
+    border-bottom: none;
+}
+
+.calendar_extended_attendee_avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.calendar_extended_attendee_info {
+    flex: 1;
+}
+
+.calendar_extended_attendee_name {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.calendar_extended_attendee_email {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.calendar_extended_attendee_status {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.calendar_extended_attendee_status.accepted {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.calendar_extended_attendee_status.declined {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.calendar_extended_attendee_status.tentative {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.calendar_extended_attendee_status.needs_action {
+    background-color: #e2e3e5;
+    color: #495057;
+}
+
+.calendar_extended_department_group {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin: 8px 0;
+    overflow: hidden;
+}
+
+.calendar_extended_department_header {
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+}
+
+.calendar_extended_department_employees {
+    padding: 10px 15px;
+}
+
+.calendar_extended_employee_checkbox {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.calendar_extended_employee_checkbox input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.calendar_extended_resource_card {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 8px 0;
+    background-color: #fff;
+}
+
+.calendar_extended_resource_card.selected {
+    border-color: #007bff;
+    background-color: #f8f9ff;
+}
+
+.calendar_extended_resource_name {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #495057;
+}
+
+.calendar_extended_resource_type {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.calendar_extended_resource_details {
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.calendar_extended_quick_actions {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.calendar_extended_quick_actions .btn {
+    flex: 1;
+    min-height: 40px;
+}
+
+.calendar_extended_agenda_editor {
+    min-height: 120px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.calendar_extended_calendar_view .fc-event {
+    border-radius: 4px;
+    border: none;
+    color: white;
+    font-weight: 500;
+}
+
+.calendar_extended_calendar_view .fc-event.draft {
+    background-color: #6c757d;
+}
+
+.calendar_extended_calendar_view .fc-event.pending_approval {
+    background-color: #ffc107;
+}
+
+.calendar_extended_calendar_view .fc-event.approved {
+    background-color: #28a745;
+}
+
+.calendar_extended_calendar_view .fc-event.confirmed {
+    background-color: #007bff;
+}
+
+.calendar_extended_calendar_view .fc-event.completed {
+    background-color: #17a2b8;
+}
+
+.calendar_extended_calendar_view .fc-event.cancelled {
+    background-color: #dc3545;
+    text-decoration: line-through;
+}
+
+.calendar_extended_kanban_card {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.calendar_extended_kanban_header {
+    padding: 12px 15px;
+    font-weight: 600;
+    color: white;
+}
+
+.calendar_extended_kanban_body {
+    padding: 15px;
+    background-color: white;
+}
+
+.calendar_extended_kanban_footer {
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.calendar_extended_wizard {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.calendar_extended_wizard_step {
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.calendar_extended_wizard_step.active {
+    border-color: #007bff;
+    background-color: #f8f9ff;
+}
+
+.calendar_extended_wizard_navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .calendar_extended_quick_actions {
+        flex-direction: column;
+    }
+    
+    .calendar_extended_attendee_item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .calendar_extended_attendee_avatar {
+        margin-bottom: 5px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .calendar_extended_meeting_form {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    .calendar_extended_quick_actions,
+    .calendar_extended_wizard_navigation {
+        display: none;
+    }
+}

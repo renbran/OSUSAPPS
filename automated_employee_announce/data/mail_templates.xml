@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Birthday Email Template -->
+        <record id="mail_template_employee_birthday" model="mail.template">
+            <field name="name">Employee Birthday Announcement</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="subject">🎉 Happy Birthday ${object.name}!</field>
+            <field name="email_from">${(object.company_id.email or user.email)|safe}</field>
+            <field name="email_to">${object.work_email|safe}</field>
+            <field name="email_cc">${(object.parent_id.work_email or '')|safe}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
+                    <table border="0" cellpadding="0" cellspacing="0" style="padding-top: 16px; background-color: #F1F2F3; font-family: Arial, sans-serif; color: #454748; width: 100%; border-collapse: separate;">
+                        <tr>
+                            <td align="center">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" style="padding: 24px; background-color: white; border: 1px solid #e0e2e7; border-radius: 5px;">
+                                    <tr>
+                                        <td align="center" style="min-height: 590px;">
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <h1 style="color: #875A7B; font-size: 32px; margin: 0;">🎉 Happy Birthday! 🎉</h1>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <img src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3e%3cpath fill='%23875A7B' d='M50 10c22.091 0 40 17.909 40 40s-17.909 40-40 40S10 72.091 10 50 27.909 10 50 10zm0 7c-18.225 0-33 14.775-33 33s14.775 33 33 33 33-14.775 33-33-14.775-33-33-33zm-7 21c3.038 0 5.5 2.462 5.5 5.5S46.038 49 43 49s-5.5-2.462-5.5-5.5S39.962 38 43 38zm14 0c3.038 0 5.5 2.462 5.5 5.5S60.038 49 57 49s-5.5-2.462-5.5-5.5S53.962 38 57 38zM50 55c8.284 0 15 6.716 15 15H35c0-8.284 6.716-15 15-15z'/%3e%3c/svg%3e" alt="Birthday" style="width: 100px; height: 100px;"/>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 30px;">
+                                                <h2 style="color: #454748; font-size: 24px; margin: 0; margin-bottom: 10px;">Dear ${object.name},</h2>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 0;">
+                                                    Wishing you a fantastic birthday filled with joy, laughter, and wonderful memories! 🎂
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    Thank you for being such a valuable member of our team. Your contributions make our workplace a better place every day.
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    May this new year of your life bring you success, happiness, and all the good things you deserve!
+                                                </p>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <div style="background-color: #875A7B; color: white; padding: 15px; border-radius: 5px; display: inline-block;">
+                                                    <p style="margin: 0; font-size: 18px; font-weight: bold;">🎈 Have a wonderful day! 🎈</p>
+                                                </div>
+                                            </div>
+                                            <div style="text-align: center; margin-top: 30px;">
+                                                <p style="color: #875A7B; font-size: 16px; margin: 0;">
+                                                    Best wishes from the entire team at ${object.company_id.name}
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- Work Anniversary Email Template -->
+        <record id="mail_template_employee_anniversary" model="mail.template">
+            <field name="name">Employee Work Anniversary Announcement</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="subject">🎊 Congratulations on Your Work Anniversary ${object.name}!</field>
+            <field name="email_from">${(object.company_id.email or user.email)|safe}</field>
+            <field name="email_to">${object.work_email|safe}</field>
+            <field name="email_cc">${(object.parent_id.work_email or '')|safe}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
+                    <table border="0" cellpadding="0" cellspacing="0" style="padding-top: 16px; background-color: #F1F2F3; font-family: Arial, sans-serif; color: #454748; width: 100%; border-collapse: separate;">
+                        <tr>
+                            <td align="center">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" style="padding: 24px; background-color: white; border: 1px solid #e0e2e7; border-radius: 5px;">
+                                    <tr>
+                                        <td align="center" style="min-height: 590px;">
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <h1 style="color: #875A7B; font-size: 32px; margin: 0;">🎊 Work Anniversary! 🎊</h1>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <img src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3e%3cpath fill='%23875A7B' d='M50 5l12 36h38L75 61l12 36-37-24-37 24 12-36L0 41h38L50 5z'/%3e%3c/svg%3e" alt="Star" style="width: 100px; height: 100px;"/>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 30px;">
+                                                <h2 style="color: #454748; font-size: 24px; margin: 0; margin-bottom: 10px;">Dear ${object.name},</h2>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 0;">
+                                                    Congratulations on reaching another milestone in your career with us! 🏆
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    % if object.joining_date:
+                                                        You joined our team on ${object.joining_date.strftime('%B %d, %Y')} and have been an invaluable part of our success.
+                                                    % elif object.contract_date_start:
+                                                        You started your journey with us on ${object.contract_date_start.strftime('%B %d, %Y')} and have been an invaluable part of our success.
+                                                    % endif
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    Your dedication, hard work, and positive attitude have made a significant impact on our team and the company as a whole.
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    Thank you for your continued commitment and we look forward to many more years of working together!
+                                                </p>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <div style="background-color: #875A7B; color: white; padding: 15px; border-radius: 5px; display: inline-block;">
+                                                    <p style="margin: 0; font-size: 18px; font-weight: bold;">🌟 Thank you for your service! 🌟</p>
+                                                </div>
+                                            </div>
+                                            <div style="text-align: center; margin-top: 30px;">
+                                                <p style="color: #875A7B; font-size: 16px; margin: 0;">
+                                                    With appreciation from ${object.company_id.name}
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- Sale Order Invoice Notification Template -->
+        <record id="mail_template_saleorder_invoiced_agent1" model="mail.template">
+            <field name="name">Sale Order Invoiced - Agent Notification</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">📋 Order ${object.name} has been invoiced</field>
+            <field name="email_from">${(object.company_id.email or user.email)|safe}</field>
+            <field name="email_to">${object.agent1_partner_id.email|safe}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
+                    <table border="0" cellpadding="0" cellspacing="0" style="padding-top: 16px; background-color: #F1F2F3; font-family: Arial, sans-serif; color: #454748; width: 100%; border-collapse: separate;">
+                        <tr>
+                            <td align="center">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" style="padding: 24px; background-color: white; border: 1px solid #e0e2e7; border-radius: 5px;">
+                                    <tr>
+                                        <td align="center" style="min-height: 590px;">
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <h1 style="color: #875A7B; font-size: 32px; margin: 0;">📋 Order Invoiced</h1>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <img src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3e%3cpath fill='%23875A7B' d='M50 10C27.909 10 10 27.909 10 50s17.909 40 40 40 40-17.909 40-40S72.091 10 50 10zm0 7c18.225 0 33 14.775 33 33s-14.775 33-33 33-33-14.775-33-33S31.775 17 50 17zm-7.5 21c3.038 0 5.5 2.462 5.5 5.5S45.538 49 42.5 49s-5.5-2.462-5.5-5.5S39.962 38 42.5 38zm15 0c3.038 0 5.5 2.462 5.5 5.5S60.538 49 57.5 49s-5.5-2.462-5.5-5.5S54.962 38 57.5 38zM50 55c8.284 0 15 6.716 15 15H35c0-8.284 6.716-15 15-15z'/%3e%3c/svg%3e" alt="Invoice" style="width:100px;height:100px;"/>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 30px;">
+                                                <h2 style="color: #454748; font-size: 24px; margin: 0; margin-bottom: 10px;">Dear ${object.agent1_partner_id.name},</h2>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 0;">
+                                                    The sale order <strong>${object.name}</strong> has been invoiced successfully.
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    <strong>Customer:</strong> ${object.partner_id.name}<br/>
+                                                    % if object.booking_date:
+                                                        <strong>Booking Date:</strong> ${object.booking_date.strftime('%B %d, %Y')}<br/>
+                                                    % endif
+                                                    <strong>Amount:</strong> ${object.amount_total} ${object.currency_id.name}
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    The invoice has been generated and sent to the customer. You will be notified when payment is received.
+                                                </p>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <div style="background-color: #875A7B; color: white; padding: 15px; border-radius: 5px; display: inline-block;">
+                                                    <p style="margin: 0; font-size: 18px; font-weight: bold;">📋 Invoice Generated Successfully</p>
+                                                </div>
+                                            </div>
+                                            <div style="text-align: center; margin-top: 30px;">
+                                                <p style="color: #875A7B; font-size: 16px; margin: 0;">
+                                                    Best regards,<br/>${object.company_id.name}
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- Sale Order Deal Status Reminder Template -->
+        <record id="mail_template_saleorder_deal_status_reminder_agent1" model="mail.template">
+            <field name="name">Sale Order Deal Status Reminder - Agent Notification</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">⏰ Reminder: Deal ${object.name} needs attention</field>
+            <field name="email_from">${(object.company_id.email or user.email)|safe}</field>
+            <field name="email_to">${object.agent1_partner_id.email|safe}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
+                    <table border="0" cellpadding="0" cellspacing="0" style="padding-top: 16px; background-color: #F1F2F3; font-family: Arial, sans-serif; color: #454748; width: 100%; border-collapse: separate;">
+                        <tr>
+                            <td align="center">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" style="padding: 24px; background-color: white; border: 1px solid #e0e2e7; border-radius: 5px;">
+                                    <tr>
+                                        <td align="center" style="min-height: 590px;">
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <h1 style="color: #D2691E; font-size: 32px; margin: 0;">⏰ Deal Status Reminder</h1>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <img src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3e%3cpath fill='%23D2691E' d='M50 5c24.853 0 45 20.147 45 45S74.853 95 50 95 5 74.853 5 50 25.147 5 50 5zm0 7C28.909 12 12 28.909 12 50s16.909 38 38 38 38-16.909 38-38S71.091 12 50 12zm0 13c2.761 0 5 2.239 5 5v20l15 9c2.387 1.431 3.16 4.545 1.729 6.932-1.431 2.387-4.545 3.16-6.932 1.729L48 58c-1.65-.99-2.667-2.745-2.667-4.5V30c0-2.761 2.239-5 5-5z'/%3e%3c/svg%3e" alt="Clock" style="width: 100px; height: 100px;"/>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 30px;">
+                                                <h2 style="color: #454748; font-size: 24px; margin: 0; margin-bottom: 10px;">Dear ${object.agent1_partner_id.name},</h2>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 0;">
+                                                    This is a reminder about the deal <strong>${object.name}</strong> that requires your attention.
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    <strong>Customer:</strong> ${object.partner_id.name}<br/>
+                                                    % if object.booking_date:
+                                                        <strong>Booking Date:</strong> ${object.booking_date.strftime('%B %d, %Y')}<br/>
+                                                    % endif
+                                                    <strong>Current Status:</strong> ${dict(object._fields['state'].selection)[object.state]}<br/>
+                                                    <strong>Amount:</strong> ${object.amount_total} ${object.currency_id.name}
+                                                </p>
+                                                <p style="color: #D2691E; font-size: 16px; line-height: 1.6; margin: 10px 0; font-weight: bold;">
+                                                    This deal has been pending for more than 30 days since booking. Please follow up with the customer to finalize the transaction.
+                                                </p>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <div style="background-color: #D2691E; color: white; padding: 15px; border-radius: 5px; display: inline-block;">
+                                                    <p style="margin: 0; font-size: 18px; font-weight: bold;">⚠️ Action Required</p>
+                                                </div>
+                                            </div>
+                                            <div style="text-align: center; margin-top: 30px;">
+                                                <p style="color: #875A7B; font-size: 16px; margin: 0;">
+                                                    Best regards,<br/>${object.company_id.name}
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+        <!-- Sale Order Payment Initiated Template -->
+        <record id="mail_template_saleorder_payment_initiated_agent1" model="mail.template">
+            <field name="name">Sale Order Payment Initiated - Agent Notification</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">💰 Payment received for Order ${object.name}</field>
+            <field name="email_from">${(object.company_id.email or user.email)|safe}</field>
+            <field name="email_to">${object.agent1_partner_id.email|safe}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
+                    <table border="0" cellpadding="0" cellspacing="0" style="padding-top: 16px; background-color: #F1F2F3; font-family: Arial, sans-serif; color: #454748; width: 100%; border-collapse: separate;">
+                        <tr>
+                            <td align="center">
+                                <table border="0" cellpadding="0" cellspacing="0" width="590" style="padding: 24px; background-color: white; border: 1px solid #e0e2e7; border-radius: 5px;">
+                                    <tr>
+                                        <td align="center" style="min-height: 590px;">
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <h1 style="color: #28a745; font-size: 32px; margin: 0;">💰 Payment Received!</h1>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <img src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3e%3cpath fill='%2328a745' d='M50 5c24.853 0 45 20.147 45 45S74.853 95 50 95 5 74.853 5 50 25.147 5 50 5zm0 7C28.909 12 12 28.909 12 50s16.909 38 38 38 38-16.909 38-38S71.091 12 50 12zm22.5 25.5L45 65l-17.5-17.5 5-5L45 55l22.5-22.5 5 5z'/%3e%3c/svg%3e" alt="Payment" style="width: 100px; height: 100px;"/>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 30px;">
+                                                <h2 style="color: #454748; font-size: 24px; margin: 0; margin-bottom: 10px;">Dear ${object.agent1_partner_id.name},</h2>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 0;">
+                                                    Great news! Payment has been received for the sale order <strong>${object.name}</strong>.
+                                                </p>
+                                                <p style="color: #454748; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+                                                    <strong>Customer:</strong> ${object.partner_id.name}<br/>
+                                                    % if object.booking_date:
+                                                        <strong>Booking Date:</strong> ${object.booking_date.strftime('%B %d, %Y')}<br/>
+                                                    % endif
+                                                    <strong>Order Amount:</strong> ${object.amount_total} ${object.currency_id.name}
+                                                </p>
+                                                <p style="color: #28a745; font-size: 16px; line-height: 1.6; margin: 10px 0; font-weight: bold;">
+                                                    The transaction has been completed successfully. Commission calculations will be processed accordingly.
+                                                </p>
+                                            </div>
+                                            <div style="text-align: center; margin-bottom: 20px;">
+                                                <div style="background-color: #28a745; color: white; padding: 15px; border-radius: 5px; display: inline-block;">
+                                                    <p style="margin: 0; font-size: 18px; font-weight: bold;">✅ Payment Confirmed</p>
+                                                </div>
+                                            </div>
+                                            <div style="text-align: center; margin-top: 30px;">
+                                                <p style="color: #875A7B; font-size: 16px; margin: 0;">
+                                                    Congratulations!<br/>${object.company_id.name}
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+        </record>
+
+    </data>
+</odoo>

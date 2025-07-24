@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="zehntech_main_menu.NavBar" t-inherit="web.NavBar" t-inherit-mode="extension">
+        <!-- Don't hide the apps menu to allow muk_web_appsbar to work -->
+        <xpath expr="//t[@t-call='web.NavBar.AppsMenu']" position="after">
+            <div class="d-flex justify-content-center align-items-center cursor-pointer" t-on-click="onClickMenu">
+                <i class="oi oi-menu text-white mx-3 fs-4" title="Main Menu"/>
+            </div>
+        </xpath>
+    </t>
+</templates>

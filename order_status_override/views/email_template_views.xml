@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Email template for order approval -->
+        <record id="email_template_order_approved" model="mail.template">
+            <field name="name">Sales Order: Approved Notification</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">Order ${object.name} has been Approved</field>
+            <field name="email_from">${user.email_formatted | safe}</field>
+            <field name="email_to">${object.partner_id.email_formatted | safe}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Dear ${object.partner_id.name},
+        <br/><br/>
+        We are pleased to inform you that your order <strong>${object.name}</strong> has been approved.
+        <br/><br/>
+        Order details:
+        <ul>
+            <li>Order Reference: ${object.name}</li>
+            <li>Order Date: ${object.date_order}</li>
+            <li>Order Total: ${format_amount(object.amount_total, object.currency_id)}</li>
+        </ul>
+        <br/>
+        You can view your order details by clicking on the following link:
+        <br/>
+        <a href="/my/orders/${object.id}" style="background-color: #1abc9c; padding: 10px; text-decoration: none; color: #fff; border-radius: 5px; font-size: 12px;">View Your Order</a>
+        <br/><br/>
+        Thank you for your business.
+        <br/><br/>
+        Best regards,
+        <br/>
+        ${user.name}
+    </p>
+</div>
+            </field>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+        
+        <!-- Email template for order rejection -->
+        <record id="email_template_order_rejected" model="mail.template">
+            <field name="name">Sales Order: Rejection Notification</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="subject">Order ${object.name} Requires Revision</field>
+            <field name="email_from">${user.email_formatted | safe}</field>
+            <field name="email_to">${object.partner_id.email_formatted | safe}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Dear ${object.partner_id.name},
+        <br/><br/>
+        We regret to inform you that your order <strong>${object.name}</strong> requires some revisions before it can be processed.
+        <br/><br/>
+        Order details:
+        <ul>
+            <li>Order Reference: ${object.name}</li>
+            <li>Order Date: ${object.date_order}</li>
+        </ul>
+        <br/>
+        Our team will contact you shortly to discuss the necessary changes.
+        <br/><br/>
+        If you have any questions in the meantime, please don't hesitate to contact us.
+        <br/><br/>
+        Thank you for your understanding.
+        <br/><br/>
+        Best regards,
+        <br/>
+        ${user.name}
+    </p>
+</div>
+            </field>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

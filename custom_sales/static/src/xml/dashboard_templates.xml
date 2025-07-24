@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Main Dashboard Template -->
+    <t t-name="custom_sales.Dashboard">
+        <div class="custom-sales-dashboard">
+            <!-- Dashboard will be rendered here -->
+        </div>
+    </t>
+
+    <!-- Dashboard Main Content -->
+    <t t-name="custom_sales.DashboardMain">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header fade-in">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="dashboard-title">
+                        <i class="fa fa-chart-line mr-3"></i>
+                        <t t-esc="dashboard_config.name or 'Sales Dashboard Pro'"/>
+                    </h1>
+                    <p class="dashboard-subtitle">
+                        Advanced Sales Analytics &amp; Insights
+                        <t t-if="date_from and date_to">
+                            | <t t-esc="date_from"/> to <t t-esc="date_to"/>
+                        </t>
+                    </p>
+                </div>
+                <div class="col-md-4 text-right">
+                    <div class="dashboard-actions">
+                        <button class="refresh-btn custom_sales_refresh_dashboard">
+                            <i class="fa fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                        <div class="dropdown d-inline-block ml-2">
+                            <button class="btn btn-outline-light dropdown-toggle" type="button" data-toggle="dropdown">
+                                <i class="fa fa-download"></i>
+                                Export
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item export-dashboard" href="#" data-format="pdf">
+                                    <i class="fa fa-file-pdf"></i> PDF Report
+                                </a>
+                                <a class="dropdown-item export-dashboard" href="#" data-format="excel">
+                                    <i class="fa fa-file-excel"></i> Excel Export
+                                </a>
+                                <a class="dropdown-item export-dashboard" href="#" data-format="csv">
+                                    <i class="fa fa-file-csv"></i> CSV Data
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Controls -->
+        <div class="dashboard-controls fade-in">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <div class="control-group">
+                        <label class="control-label">Date From</label>
+                        <input type="date" class="control-input custom_sales_date_filter" 
+                               data-filter="date_from" t-att-value="date_from"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="control-group">
+                        <label class="control-label">Date To</label>
+                        <input type="date" class="control-input custom_sales_date_filter" 
+                               data-filter="date_to" t-att-value="date_to"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="control-group">
+                        <label class="control-label">Quick Filters</label>
+                        <select class="control-input" id="quick_filter">
+                            <option value="">Select Period</option>
+                            <option value="today">Today</option>
+                            <option value="this_week">This Week</option>
+                            <option value="this_month">This Month</option>
+                            <option value="this_quarter">This Quarter</option>
+                            <option value="this_year">This Year</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button class="refresh-btn toggle-auto-refresh" 
+                            t-att-class="dashboard_config.auto_refresh ? 'active' : ''">
+                        <i class="fa fa-clock"></i>
+                        <t t-if="dashboard_config.auto_refresh">Disable Auto Refresh</t>
+                        <t t-else="">Enable Auto Refresh</t>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Section -->
+        <div class="kpi-container"></div>
+
+        <!-- Charts Section -->
+        <div class="charts-container"></div>
+
+        <!-- Data Tables Section -->
+        <div class="data-tables-container"></div>
+    </t>
+
+    <!-- KPI Widgets Template -->
+    <t t-name="custom_sales.KPIWidgets">
+        <t t-foreach="kpis" t-as="kpi">
+            <div class="kpi-card" t-att-data-kpi-code="kpi.code">
+                <div class="kpi-header">
+                    <div class="kpi-icon">
+                        <i t-att-class="kpi.icon or 'fa fa-chart-bar'"></i>
+                    </div>
+                    <div class="kpi-info flex-grow-1">
+                        <div class="kpi-title">
+                            <t t-esc="kpi.name"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kpi-value">
+                    <t t-if="kpi.format_type == 'currency'">
+                        $<t t-esc="kpi.value.toLocaleString()"/>
+                    </t>
+                    <t t-elif="kpi.format_type == 'percentage'">
+                        <t t-esc="kpi.value.toFixed(1)"/>%
+                    </t>
+                    <t t-else="">
+                        <t t-esc="kpi.value.toLocaleString()"/>
+                    </t>
+                </div>
+                
+                <t t-if="kpi.comparison_percentage != null">
+                    <div t-att-class="'kpi-comparison ' + (kpi.comparison_percentage >= 0 ? 'positive' : 'negative')">
+                        <i t-att-class="'kpi-comparison-icon fa fa-arrow-' + (kpi.comparison_percentage >= 0 ? 'up' : 'down')"></i>
+                        <t t-esc="Math.abs(kpi.comparison_percentage).toFixed(1)"/>% vs previous period
+                    </div>
+                </t>
+            </div>
+        </t>
+    </t>
+
+    <!-- Chart Templates -->
+    <t t-name="custom_sales.ChartWidgets">
+        <t t-foreach="charts" t-as="chart">
+            <div class="chart-card" t-att-style="'grid-column: span ' + (chart.width or 6)">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <t t-esc="chart.name"/>
+                    </h3>
+                    <div class="chart-actions">
+                        <button class="chart-btn chart-fullscreen" title="Toggle Fullscreen">
+                            <i class="fa fa-expand"></i>
+                        </button>
+                        <button class="chart-btn chart-download" title="Download Chart">
+                            <i class="fa fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-content" t-att-id="'chart_' + chart.id">
+                    <canvas t-att-id="'canvas_' + chart.id" 
+                            t-att-height="chart.height or 400"></canvas>
+                </div>
+            </div>
+        </t>
+    </t>
+
+    <!-- Data Tables Template -->
+    <t t-name="custom_sales.DataTables">
+        <div class="data-table-container">
+            <div class="chart-header">
+                <h3 class="chart-title">Sales Summary</h3>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total Orders</td>
+                                <td><t t-esc="summary.total_orders or 0"/></td>
+                            </tr>
+                            <tr>
+                                <td>Total Revenue</td>
+                                <td>$<t t-esc="(summary.total_revenue or 0).toLocaleString()"/></td>
+                            </tr>
+                            <tr>
+                                <td>Pending Orders</td>
+                                <td><t t-esc="summary.pending_orders or 0"/></td>
+                            </tr>
+                            <tr>
+                                <td>Overdue Orders</td>
+                                <td><t t-esc="summary.overdue_orders or 0"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <!-- Additional summary tables can go here -->
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Average Order Value</div>
+                            <div class="stat-value">
+                                $<t t-esc="summary.total_orders ? (summary.total_revenue / summary.total_orders).toFixed(2) : '0.00'"/>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Completion Rate</div>
+                            <div class="stat-value">
+                                <t t-esc="summary.total_orders ? ((summary.total_orders - summary.pending_orders) / summary.total_orders * 100).toFixed(1) : '0'"/>%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- No Dashboard Template -->
+    <t t-name="custom_sales.NoDashboard">
+        <div class="custom-sales-dashboard">
+            <div class="dashboard-header text-center">
+                <h1 class="dashboard-title">
+                    <i class="fa fa-exclamation-circle mr-3"></i>
+                    No Dashboard Configuration
+                </h1>
+                <p class="dashboard-subtitle">
+                    Please contact your administrator to set up your sales dashboard.
+                </p>
+                <div class="mt-4">
+                    <button class="refresh-btn custom_sales_refresh_dashboard">
+                        <i class="fa fa-sync-alt"></i>
+                        Retry
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Error Template -->
+    <t t-name="custom_sales.DashboardError">
+        <div class="custom-sales-dashboard">
+            <div class="error-message">
+                <i class="error-icon fa fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Dashboard Error:</strong>
+                    <t t-esc="error_message"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

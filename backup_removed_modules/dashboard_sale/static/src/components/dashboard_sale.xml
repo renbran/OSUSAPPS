@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="dashboard_sale.DashboardSales" owl="1">
+        <style>
+            /* Define styles for the container */
+            .displayed-period {
+                margin-top: 20px;
+                border: 1px solid #ccc;
+                padding: 10px;
+                background-color: #f7f7f7;
+                border-radius: 5px;
+                text-align: center;
+            }
+            
+            /* Style the "Displayed Period" heading */
+            .displayed-period h1 {
+                font-weight: bold;
+                color: #28a745; /* Green color for success */
+            }
+            
+            /* Style the date spans */
+            .period-date {
+                font-weight: bold;
+                font-size: 16px;
+                color: #333;
+            }
+            
+            /* Style the separator between "Start" and "End" dates */
+            .separator {
+                margin: 0 10px;
+                color: #888;
+                font-weight: bold;
+            }
+            
+            /* Style the "Selected Day" paragraph */
+            .selected-day {
+                margin-top: 10px;
+                font-size: 14px;
+                color: #333;
+            }
+        </style>
+        
+        <div class="vh-100 overflow-auto bg-muted">
+            <div class="row m-3">
+                <div class="col-lg-7">
+                    <div class="row">
+                        <div class="col m-0 p-0">
+                            <div class="shadow-sm border m-2 p-4 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <button class="btn btn-link" t-on-click="navigateBackward">
+                                        <i class="fa fa-arrow-left"></i>
+                                    </button>
+                                    <h1 class="text-primary fw-bold">Sales Dashboard</h1>
+                                    <button class="btn btn-link" t-on-click="navigateForward">
+                                        <i class="fa fa-arrow-right"></i>
+                                    </button>
+                                    <div>                                        
+                                        <select class="form-select" t-model="state.periode" t-on-change="onChangePeriod">
+                                            <option value="day">Day</option>
+                                            <option value="week">Week</option>
+                                            <option value="month">Month</option>
+                                            <option value="quarter">Quarter</option>
+                                            <option value="halfyear">Half year</option>
+                                            <option value="year">Year</option>
+                                        </select>                                        
+                                    </div>
+                                    <div>
+                                        <input class="form-date" type="date" t-model="state.date" t-attf-value="state.date" t-on-change="onChangePeriod"/> 
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="displayed-period">
+                        <h1 class="text-success fw-bold">Displayed Period:</h1>
+                        <span class="period-date" name="'Start'" t-esc="state.current_periode_start_formated" />
+                        <span class="separator">to</span>
+                        <span class="period-date" name="'End'" t-esc="state.current_periode_end_formated" />
+                        <p class="selected-day">Selected Day: <t t-esc="state.date_formated" /></p>
+                    </div>
+
+                    <h1 class="text-success fw-bold">Invoiced revenue</h1>
+                    
+                    <div class="row">
+                        
+                        <KpiCard 
+                            name="'Total'"                             
+                            onClick.bind="viewInvoicedWithDomain"
+                            value="state.invoiced.all.thisPeriode.value" 
+                            percentage="state.invoiced.all.thisPeriode.percentage"
+                            previous="state.invoiced.all.lastPeriode.value"
+                            domain="state.invoiced.all.thisPeriode.domain" 
+                            textsize="32"
+                        />
+                        
+                        <KpiCard 
+                            name="'Denmark'" 
+                            onClick.bind="viewInvoicedWithDomain" 
+                            value="state.invoiced.denmark.thisPeriode.value" 
+                            percentage="state.invoiced.denmark.thisPeriode.percentage"
+                            previous="state.invoiced.denmark.lastPeriode.value"
+                            domain="state.invoiced.denmark.thisPeriode.domain"
+                            textsize="32"
+                        />
+                        <KpiCard 
+                            name="'EU'" 
+                            onClick.bind="viewInvoicedWithDomain"  
+                            value="state.invoiced.eu.thisPeriode.value" 
+                            percentage="state.invoiced.eu.thisPeriode.percentage"
+                            previous="state.invoiced.eu.lastPeriode.value"
+                            domain="state.invoiced.eu.thisPeriode.domain"
+                            textsize="32"
+                        /> 
+
+                        <KpiCard 
+                            name="'Foreign'" 
+                            onClick.bind="viewInvoicedWithDomain" 
+                            value="state.invoiced.foreign.thisPeriode.value" 
+                            percentage="state.invoiced.foreign.thisPeriode.percentage"
+                            previous="state.invoiced.foreign.lastPeriode.value"
+                            domain="state.invoiced.foreign.thisPeriode.domain"
+                            textsize="32"
+                        />
+                        
+                    </div>
+
+                    
+                    <h1 class="text-success fw-bold">Sales orders</h1>
+                    <div class="row">
+                        <KpiCard 
+                            name="'All'" 
+                            onClick.bind="viewSaleOrdersWithDomain"
+                            value="state.sale_orders.all.thisPeriode.value" 
+                            percentage="state.sale_orders.all.thisPeriode.percentage"
+                            previous="state.sale_orders.all.lastPeriode.value"
+                            domain="state.sale_orders.all.thisPeriode.domain"
+                            textsize="32"
+                        />
+                        
+                        <KpiCard 
+                            name="'Only web'" 
+                            onClick.bind="viewSaleOrdersWithDomain"
+                            value="state.sale_orders.web.thisPeriode.value" 
+                            percentage="state.sale_orders.web.thisPeriode.percentage"
+                            previous="state.sale_orders.web.lastPeriode.value"
+                            domain="state.sale_orders.web.thisPeriode.domain"
+                            textsize="32"
+                        />
+                        <KpiCard 
+                            name="'Not web'" 
+                            onClick.bind="viewSaleOrdersWithDomain"
+                            value="state.sale_orders.not_web.thisPeriode.value" 
+                            percentage="state.sale_orders.not_web.thisPeriode.percentage"
+                            previous="state.sale_orders.not_web.lastPeriode.value"
+                            domain="state.sale_orders.not_web.thisPeriode.domain"
+                            textsize="32"
+                        />
+                        <KpiCard 
+                            name="'Open orders'" 
+                            onClick.bind="viewOpenSaleOrders"
+                            value="this.state.sale_orders.open.value"
+                            percentage="0"
+                            previous="0"
+                            domain="this.state.sale_orders.open.domain"
+                            textsize="32"
+                        />
+
+                        <KpiCard 
+                            name="'Open order lines'" 
+                            onClick.bind="viewOpenSaleOrderLines"
+                            value="this.state.sale_orders.open_lines.value"
+                            percentage="0"
+                            previous="0"
+                            domain="this.state.sale_orders.open_lines.domain"
+                            textsize="32"
+                        />
+
+                        <!-- <KpiCard 
+                            name="'Lines to check'" 
+                            onClick.bind="viewOpenSaleOrderLines"
+                            t-if="this.state.sale_orders.open_lines_with_error.value !== 0"
+                            value="this.state.sale_orders.open_lines_with_error.value"
+                            percentage="0"
+                            previous="0"
+                            domain="this.state.sale_orders.open_lines_with_error.domain"
+                            textsize="32"
+                        /> -->
+                        
+                    </div>
+                    
+                   <div class="row">
+                        <div class="col-lg-6 m-0 p-0">
+                            <div class="shadow-sm border m-2 p-4 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h3 class="text-primary fw-bold">Top Products</h3>
+                                    <div class="px-3 py-1 bg-primary cursor-pointer">
+                                        <span class="fa fa-arrow-right text-white"/>
+                                    </div>
+                                </div>
+                                <ChartRenderer type="'doughnut'" title="'Top Products Report'" config="state.topProducts"/>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 m-0 p-0">
+                            <div class="shadow-sm border m-2 p-4 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h3 class="text-primary fw-bold">Top Sales People</h3>
+                                    <div class="px-3 py-1 bg-primary cursor-pointer">
+                                        <span class="fa fa-arrow-right text-white"/>
+                                    </div>
+                                </div>
+                                <ChartRenderer type="'pie'" title="'Top Sales People Report'" config="state.topSalesPeople"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="row">
+                        <div class="col m-0 p-0">
+                            <div class="shadow-sm border m-2 p-4 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h3 class="text-primary fw-bold">Monthly Sales</h3>
+                                    <div class="px-3 py-1 bg-primary cursor-pointer">
+                                        <span class="fa fa-arrow-right text-white"/>
+                                    </div>
+                                </div>
+                                <ChartRenderer 
+                                    type="'bar'" 
+                                    title="'Monthly Sales Report'" 
+                                    config="state.monthlySales"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col m-0 p-0">
+                            <div class="shadow-sm border m-2 p-4 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <h3 class="text-primary fw-bold">Partner Orders</h3>
+                                    <div class="px-3 py-1 bg-primary cursor-pointer">
+                                        <span class="fa fa-arrow-right text-white"/>
+                                    </div>
+                                </div>
+                                <ChartRenderer type="'line'" title="'Partner Orders Report'" config="state.partnerOrders"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

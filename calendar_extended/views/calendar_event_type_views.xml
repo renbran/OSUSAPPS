@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Calendar Event Type Views -->
+    <record id="view_calendar_event_type_tree" model="ir.ui.view">
+        <field name="name">calendar.event.type.tree</field>
+        <field name="model">calendar.event.type</field>
+        <field name="arch" type="xml">
+            <tree string="Event Types">
+                <field name="name"/>
+                <field name="duration_hours"/>
+                <field name="requires_approval"/>
+                <field name="color"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+    
+    <record id="view_calendar_event_type_form" model="ir.ui.view">
+        <field name="name">calendar.event.type.form</field>
+        <field name="model">calendar.event.type</field>
+        <field name="arch" type="xml">
+            <form string="Event Type">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="duration_hours"/>
+                            <field name="color" widget="color"/>
+                        </group>
+                        <group>
+                            <field name="requires_approval"/>
+                            <field name="reminder_minutes"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Calendar Event Type Action -->
+    <record id="action_calendar_event_type" model="ir.actions.act_window">
+        <field name="name">Event Types</field>
+        <field name="res_model">calendar.event.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

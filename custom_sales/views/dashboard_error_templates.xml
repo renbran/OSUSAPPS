@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Dashboard No Config Template -->
+        <template id="dashboard_no_config" name="Dashboard No Config">
+            <t t-call="website.layout">
+                <div id="wrap">
+                    <div class="container mt-5">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="alert alert-warning text-center">
+                                    <h2><i class="fa fa-exclamation-triangle"/> No Dashboard Configuration Found</h2>
+                                    <p class="lead">You don't have a dashboard configuration set up yet.</p>
+                                    <p>Please contact your administrator to set up a default dashboard configuration, or create one yourself if you have the appropriate permissions.</p>
+                                    <div class="mt-4">
+                                        <a href="/web#action=custom_sales.action_custom_sales_dashboard_config" class="btn btn-primary">
+                                            <i class="fa fa-cog"/> Configure Dashboard
+                                        </a>
+                                        <a href="/web" class="btn btn-secondary ml-2">
+                                            <i class="fa fa-home"/> Back to Home
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        
+        <!-- Dashboard Main Template -->
+        <template id="dashboard_main" name="Dashboard Main">
+            <t t-call="website.layout">
+                <div id="wrap">
+                    <div class="container-fluid custom-sales-dashboard-page">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="dashboard-header">
+                                    <h1 class="dashboard-title">
+                                        <i class="fa fa-tachometer"/> <t t-esc="dashboard_config.name"/>
+                                    </h1>
+                                    <div class="dashboard-controls">
+                                        <div class="btn-group">
+                                            <button class="btn btn-primary" onclick="refreshDashboard()">
+                                                <i class="fa fa-refresh"/> Refresh
+                                            </button>
+                                            <div class="dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                    <i class="fa fa-download"/> Export
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="/custom_sales/report/export?format=pdf">PDF Report</a></li>
+                                                    <li><a class="dropdown-item" href="/custom_sales/report/export?format=excel">Excel Report</a></li>
+                                                    <li><a class="dropdown-item" href="/custom_sales/report/export?format=csv">CSV Report</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- KPIs Section -->
+                                <t t-if="dashboard_data.get('kpis')">
+                                    <div class="kpis-section">
+                                        <h2>Key Performance Indicators</h2>
+                                        <div class="row">
+                                            <t t-foreach="dashboard_data['kpis']" t-as="kpi">
+                                                <div class="col-md-3 col-sm-6 mb-4">
+                                                    <div class="kpi-card">
+                                                        <div class="kpi-icon">
+                                                            <i t-attf-class="fa {{kpi.get('icon', 'fa-chart-line')}}" t-attf-style="color: {{kpi.get('color', '#8B0000')}}"/>
+                                                        </div>
+                                                        <div class="kpi-content">
+                                                            <h4 t-esc="kpi['name']"/>
+                                                            <div class="kpi-value" t-esc="kpi['value']"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                                
+                                <!-- Charts Section -->
+                                <t t-if="dashboard_data.get('charts')">
+                                    <div class="charts-section">
+                                        <h2>Analytics Charts</h2>
+                                        <div class="row">
+                                            <t t-foreach="dashboard_data['charts']" t-as="chart">
+                                                <div class="col-md-6 mb-4">
+                                                    <div class="chart-container">
+                                                        <h4 t-esc="chart['name']"/>
+                                                        <canvas t-attf-id="chart_{{chart['id']}}" width="400" height="300"/>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                                
+                                <!-- Summary Section -->
+                                <t t-if="dashboard_data.get('summary')">
+                                    <div class="summary-section">
+                                        <h2>Summary</h2>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <table class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Metric</th>
+                                                            <th>Value</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <t t-foreach="dashboard_data['summary'].items()" t-as="item">
+                                                            <tr>
+                                                                <td t-esc="item[0].replace('_', ' ').title()"/>
+                                                                <td t-esc="item[1]"/>
+                                                            </tr>
+                                                        </t>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart.js Integration -->
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    function refreshDashboard() {
+                        window.location.reload();
+                    }
+                    
+                    // Render charts when page loads
+                    document.addEventListener('DOMContentLoaded', function() {
+                        <t t-if="dashboard_data.get('charts')">
+                            <t t-foreach="dashboard_data['charts']" t-as="chart">
+                                var ctx_<t t-esc="chart['id']"/> = document.getElementById('chart_<t t-esc="chart['id']"/>');
+                                if (ctx_<t t-esc="chart['id']"/> &amp;&amp; window.Chart) {
+                                    new Chart(ctx_<t t-esc="chart['id']"/>, {
+                                        type: '<t t-esc="chart['type']"/>',
+                                        data: <t t-raw="chart['data']"/>,
+                                        options: <t t-raw="chart.get('options', '{}')"/>
+                                    });
+                                }
+                            </t>
+                        </t>
+                    });
+                </script>
+            </t>
+        </template>
+        
+        <!-- Dashboard Error Template -->
+        <template id="dashboard_error" name="Dashboard Error">
+            <t t-call="website.layout">
+                <div id="wrap">
+                    <div class="container mt-5">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="alert alert-danger text-center">
+                                    <h2><i class="fa fa-exclamation-circle"/> Dashboard Error</h2>
+                                    <p class="lead">An error occurred while loading the dashboard.</p>
+                                    <div class="error-details">
+                                        <strong>Error:</strong> <t t-esc="error_message"/>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button onclick="window.location.reload()" class="btn btn-primary">
+                                            <i class="fa fa-refresh"/> Retry
+                                        </button>
+                                        <a href="/web" class="btn btn-secondary ml-2">
+                                            <i class="fa fa-home"/> Back to Home
+                                        </a>
+                                        <a href="/web#action=custom_sales.action_custom_sales_dashboard_config" class="btn btn-info ml-2">
+                                            <i class="fa fa-cog"/> Dashboard Settings
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        
+        <!-- Export Error Template -->
+        <template id="export_error" name="Export Error">
+            <t t-call="website.layout">
+                <div id="wrap">
+                    <div class="container mt-5">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="alert alert-warning text-center">
+                                    <h2><i class="fa fa-download"/> Export Error</h2>
+                                    <p class="lead">An error occurred while exporting the report.</p>
+                                    <div class="error-details">
+                                        <strong>Error:</strong> <t t-esc="error_message"/>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button onclick="history.back()" class="btn btn-primary">
+                                            <i class="fa fa-arrow-left"/> Go Back
+                                        </button>
+                                        <a href="/custom_sales/dashboard" class="btn btn-secondary ml-2">
+                                            <i class="fa fa-tachometer"/> Back to Dashboard
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        
+    </data>
+</odoo>

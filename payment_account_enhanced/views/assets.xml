@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="assets_backend" inherit_id="web.assets_backend" name="Payment Voucher Report Assets">
+            <xpath expr="." position="inside">
+                <link rel="stylesheet" type="text/scss" href="/payment_account_enhanced/static/src/scss/payment_voucher_report.scss"/>
+            </xpath>
+        </template>
+    </data>
+</odoo>

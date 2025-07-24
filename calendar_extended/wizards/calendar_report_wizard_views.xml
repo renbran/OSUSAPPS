@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Calendar Report Wizard Views -->
+    <record id="view_calendar_report_wizard_form" model="ir.ui.view">
+        <field name="name">calendar.report.wizard.form</field>
+        <field name="model">calendar.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Calendar Reports">
+                <sheet>
+                    <group>
+                        <group string="Report Type">
+                            <field name="report_type"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group string="Filters">
+                            <field name="partner_ids" widget="many2many_tags"/>
+                            <field name="event_type_ids" widget="many2many_tags"/>
+                            <field name="department_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Options">
+                        <field name="group_by"/>
+                        <field name="include_private"/>
+                        <field name="output_format"/>
+                    </group>
+                </sheet>
+                
+                <footer>
+                    <button name="action_generate_report" type="object" 
+                            string="Generate Report" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Calendar Report Wizard Action -->
+    <record id="action_calendar_report_wizard" model="ir.actions.act_window">
+        <field name="name">Calendar Reports</field>
+        <field name="res_model">calendar.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_calendar_report_wizard_form"/>
+    </record>
+
+</odoo>

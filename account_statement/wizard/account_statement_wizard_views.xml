@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Account Statement Wizard Form View -->
+        <record id="view_account_statement_wizard_form" model="ir.ui.view">
+            <field name="name">account.statement.wizard.form</field>
+            <field name="model">account.statement.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Generate Account Statement">
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="action_generate_statement" string="Generate" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Account Statement Wizard Action -->
+        <record id="action_account_statement_wizard" model="ir.actions.act_window">
+            <field name="name">Generate Account Statement</field>
+            <field name="res_model">account.statement.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="view_id" ref="view_account_statement_wizard_form"/>
+        </record>
+    </data>
+</odoo>

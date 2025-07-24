@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Sequences -->
+        <record id="seq_custom_sales_order" model="ir.sequence">
+            <field name="name">Custom Sales Order</field>
+            <field name="code">custom.sales.order</field>
+            <field name="prefix">CSO</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+        
+        <!-- Default Dashboard Configuration -->
+        <record id="default_dashboard_config" model="custom.sales.dashboard.config">
+            <field name="name">Default Sales Dashboard</field>
+            <field name="is_default" eval="True"/>
+            <field name="is_active" eval="True"/>
+            <field name="show_kpis" eval="True"/>
+            <field name="show_charts" eval="True"/>
+            <field name="show_tables" eval="True"/>
+            <field name="show_filters" eval="True"/>
+            <field name="refresh_interval">300</field>
+            <field name="auto_refresh" eval="True"/>
+            <field name="primary_color">#8B0000</field>
+            <field name="secondary_color">#FFD700</field>
+            <field name="accent_color">#F5DEB3</field>
+            <field name="layout_type">grid</field>
+            <field name="columns_count">4</field>
+        </record>
+        
+        <!-- Default KPI Configurations -->
+        <record id="kpi_total_sales" model="custom.sales.kpi.config">
+            <field name="name">Total Sales Revenue</field>
+            <field name="code">total_sales_revenue</field>
+            <field name="sequence">1</field>
+            <field name="dashboard_config_id" ref="default_dashboard_config"/>
+            <field name="model_name">custom.sales.order</field>
+            <field name="field_name">actual_revenue</field>
+            <field name="calculation_type">sum</field>
+            <field name="date_field">create_date</field>
+            <field name="icon">fa-dollar-sign</field>
+            <field name="color">#8B0000</field>
+            <field name="format_type">currency</field>
+            <field name="widget_size">medium</field>
+            <field name="enable_comparison" eval="True"/>
+            <field name="comparison_period">previous_period</field>
+        </record>
+        
+        <record id="kpi_sales_count" model="custom.sales.kpi.config">
+            <field name="name">Total Orders</field>
+            <field name="code">total_orders</field>
+            <field name="sequence">2</field>
+            <field name="dashboard_config_id" ref="default_dashboard_config"/>
+            <field name="model_name">custom.sales.order</field>
+            <field name="field_name">id</field>
+            <field name="calculation_type">count</field>
+            <field name="date_field">create_date</field>
+            <field name="icon">fa-shopping-cart</field>
+            <field name="color">#FFD700</field>
+            <field name="format_type">number</field>
+            <field name="widget_size">medium</field>
+            <field name="enable_comparison" eval="True"/>
+            <field name="comparison_period">previous_period</field>
+        </record>
+        
+        <record id="kpi_avg_order_value" model="custom.sales.kpi.config">
+            <field name="name">Average Order Value</field>
+            <field name="code">avg_order_value</field>
+            <field name="sequence">3</field>
+            <field name="dashboard_config_id" ref="default_dashboard_config"/>
+            <field name="model_name">custom.sales.order</field>
+            <field name="field_name">actual_revenue</field>
+            <field name="calculation_type">avg</field>
+            <field name="date_field">create_date</field>
+            <field name="icon">fa-chart-line</field>
+            <field name="color">#F5DEB3</field>
+            <field name="format_type">currency</field>
+            <field name="widget_size">medium</field>
+            <field name="enable_comparison" eval="True"/>
+            <field name="comparison_period">previous_period</field>
+        </record>
+        
+        <record id="kpi_profit_margin" model="custom.sales.kpi.config">
+            <field name="name">Average Profit Margin</field>
+            <field name="code">avg_profit_margin</field>
+            <field name="sequence">4</field>
+            <field name="dashboard_config_id" ref="default_dashboard_config"/>
+            <field name="model_name">custom.sales.order</field>
+            <field name="field_name">profit_margin</field>
+            <field name="calculation_type">avg</field>
+            <field name="date_field">create_date</field>
+            <field name="icon">fa-percentage</field>
+            <field name="color">#DAA520</field>
+            <field name="format_type">percentage</field>
+            <field name="widget_size">medium</field>
+            <field name="enable_comparison" eval="True"/>
+            <field name="comparison_period">previous_period</field>
+        </record>
+        
+        <!-- Chart Configurations -->
+        <record id="chart_sales_by_month" model="custom.sales.chart.config">
+            <field name="name">Sales by Month</field>
+            <field name="sequence">1</field>
+            <field name="dashboard_config_id" ref="default_dashboard_config"/>
+            <field name="chart_type">bar</field>
+            <field name="model_name">custom.sales.order</field>
+            <field name="x_field">create_date</field>
+            <field name="y_field">actual_revenue</field>
+            <field name="limit">12</field>
+            <field name="width">6</field>
+            <field name="height">400</field>
+            <field name="show_legend" eval="True"/>
+            <field name="show_labels" eval="True"/>
+        </record>
+        
+        <record id="chart_sales_by_team" model="custom.sales.chart.config">
+            <field name="name">Sales by Team</field>
+            <field name="sequence">2</field>
+            <field name="dashboard_config_id" ref="default_dashboard_config"/>
+            <field name="chart_type">doughnut</field>
+            <field name="model_name">custom.sales.order</field>
+            <field name="x_field">sales_team_id</field>
+            <field name="y_field">actual_revenue</field>
+            <field name="limit">10</field>
+            <field name="width">6</field>
+            <field name="height">400</field>
+            <field name="show_legend" eval="True"/>
+            <field name="show_labels" eval="True"/>
+        </record>
+        
+        <record id="chart_customer_types" model="custom.sales.chart.config">
+            <field name="name">Sales by Customer Type</field>
+            <field name="sequence">3</field>
+            <field name="dashboard_config_id" ref="default_dashboard_config"/>
+            <field name="chart_type">pie</field>
+            <field name="model_name">custom.sales.order</field>
+            <field name="x_field">customer_type</field>
+            <field name="y_field">actual_revenue</field>
+            <field name="width">6</field>
+            <field name="height">400</field>
+            <field name="show_legend" eval="True"/>
+            <field name="show_labels" eval="True"/>
+        </record>
+        
+        <record id="chart_sales_trend" model="custom.sales.chart.config">
+            <field name="name">Sales Trend</field>
+            <field name="sequence">4</field>
+            <field name="dashboard_config_id" ref="default_dashboard_config"/>
+            <field name="chart_type">line</field>
+            <field name="model_name">custom.sales.order</field>
+            <field name="x_field">create_date</field>
+            <field name="y_field">actual_revenue</field>
+            <field name="limit">30</field>
+            <field name="width">6</field>
+            <field name="height">400</field>
+            <field name="show_legend" eval="True"/>
+            <field name="show_labels" eval="False"/>
+        </record>
+        
+        <!-- Dashboard Action -->
+        <record id="action_custom_sales_dashboard" model="ir.actions.client">
+            <field name="name">Sales Dashboard</field>
+            <field name="tag">custom_sales.dashboard</field>
+            <field name="target">current</field>
+        </record>
+        
+        <!-- Additional Actions -->
+        <record id="action_custom_sales_dashboard_config" model="ir.actions.act_window">
+            <field name="name">Dashboard Configuration</field>
+            <field name="res_model">custom.sales.dashboard.config</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first dashboard configuration!
+                </p>
+                <p>
+                    Configure dashboards with custom KPIs, charts, and settings
+                    to provide powerful sales analytics for your team.
+                </p>
+            </field>
+        </record>
+        
+        <record id="action_custom_sales_kpi_config" model="ir.actions.act_window">
+            <field name="name">KPI Configuration</field>
+            <field name="res_model">custom.sales.kpi.config</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Define your sales KPIs!
+                </p>
+                <p>
+                    Create and configure Key Performance Indicators to track
+                    your sales metrics and business goals.
+                </p>
+            </field>
+        </record>
+        
+        <record id="action_custom_sales_chart_config" model="ir.actions.act_window">
+            <field name="name">Chart Configuration</field>
+            <field name="res_model">custom.sales.chart.config</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Design your dashboard charts!
+                </p>
+                <p>
+                    Configure charts and visualizations to display your
+                    sales data in meaningful and actionable ways.
+                </p>
+            </field>
+        </record>
+        
+        <record id="action_custom_sales_analytics" model="ir.actions.act_window">
+            <field name="name">Sales Analytics</field>
+            <field name="res_model">custom.sales.analytics</field>
+            <field name="view_mode">graph,pivot,tree</field>
+            <field name="context">{'search_default_this_year': 1}</field>
+        </record>
+        
+    </data>
+</odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dashboard Menu -->
+    <menuitem id="menu_elite_dashboard_root" 
+              name="Elite Dashboard" 
+              web_icon="elite_sales_dashboard,static/description/icon.png" 
+              sequence="10"/>
+    
+    <menuitem id="menu_elite_dashboard" 
+              name="Sales Dashboard" 
+              parent="menu_elite_dashboard_root" 
+              action="action_elite_dashboard" 
+              sequence="10"/>
+    
+    <!-- Configuration Menu -->
+    <menuitem id="menu_elite_dashboard_config" 
+              name="Configuration" 
+              parent="menu_elite_dashboard_root" 
+              sequence="100"/>
+    
+    <!-- Agent Types Menu -->
+    <record id="action_elite_agent_type" model="ir.actions.act_window">
+        <field name="name">Agent Types</field>
+        <field name="res_model">elite.agent.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    
+    <menuitem id="menu_elite_agent_type" 
+              name="Agent Types" 
+              parent="menu_elite_dashboard_config" 
+              action="action_elite_agent_type" 
+              sequence="10"/>
+    
+    <!-- Agent Dashboard List Menu -->
+    <record id="action_elite_agent_dashboard" model="ir.actions.act_window">
+        <field name="name">Agents Performance</field>
+        <field name="res_model">elite.agent.dashboard</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    
+    <menuitem id="menu_elite_agent_dashboard" 
+              name="Agents Performance" 
+              parent="menu_elite_dashboard_config" 
+              action="action_elite_agent_dashboard" 
+              sequence="20"/>
+    
+    <!-- Dashboard Settings Menu -->
+    <record id="action_elite_dashboard_settings" model="ir.actions.act_window">
+        <field name="name">Dashboard Settings</field>
+        <field name="res_model">elite.dashboard.settings</field>
+        <field name="view_mode">form</field>
+        <field name="res_id">1</field>
+    </record>
+    
+    <menuitem id="menu_elite_dashboard_settings" 
+              name="Settings" 
+              parent="menu_elite_dashboard_config" 
+              action="action_elite_dashboard_settings" 
+              sequence="30"/>
+</odoo>

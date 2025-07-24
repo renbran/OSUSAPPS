@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Calendar Quick Meeting Wizard Views -->
+    <record id="view_calendar_quick_meeting_wizard_form" model="ir.ui.view">
+        <field name="name">calendar.quick.meeting.wizard.form</field>
+        <field name="model">calendar.quick.meeting.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Quick Meeting Setup">
+                <sheet>
+                    <group>
+                        <group string="Meeting Details">
+                            <field name="name" required="1"/>
+                            <field name="start_datetime"/>
+                            <field name="duration"/>
+                            <field name="location"/>
+                        </group>
+                        <group string="Settings">
+                            <field name="meeting_type_id"/>
+                            <field name="requires_approval"/>
+                            <field name="approver_id" invisible="not requires_approval"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Attendees">
+                            <group>
+                                <field name="department_group_ids" widget="many2many_tags" 
+                                       string="Department Groups"/>
+                                <field name="individual_attendee_ids" widget="many2many_tags" 
+                                       string="Individual Attendees"/>
+                            </group>
+                        </page>
+                        <page string="Agenda">
+                            <field name="agenda" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <footer>
+                    <button name="action_create_meeting" type="object" 
+                            string="Create Meeting" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Calendar Quick Meeting Wizard Action -->
+    <record id="action_calendar_quick_meeting_wizard" model="ir.actions.act_window">
+        <field name="name">Quick Meeting</field>
+        <field name="res_model">calendar.quick.meeting.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_calendar_quick_meeting_wizard_form"/>
+    </record>
+
+</odoo>

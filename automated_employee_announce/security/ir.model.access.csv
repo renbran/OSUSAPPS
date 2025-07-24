@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_automated_mail_rule_user,automated.mail.rule.user,model_automated_mail_rule,base.group_user,1,0,0,0
+access_automated_mail_rule_hr_user,automated.mail.rule.hr.user,model_automated_mail_rule,hr.group_hr_user,1,1,1,0
+access_automated_mail_rule_hr_manager,automated.mail.rule.hr.manager,model_automated_mail_rule,hr.group_hr_manager,1,1,1,1

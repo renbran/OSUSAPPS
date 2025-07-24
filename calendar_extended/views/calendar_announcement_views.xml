@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Calendar Announcement Form View -->
+    <record id="calendar_announcement_form_view" model="ir.ui.view">
+        <field name="name">calendar.announcement.form</field>
+        <field name="model">calendar.announcement</field>
+        <field name="arch" type="xml">
+            <form string="Meeting Announcement">
+                <header>
+                    <button name="action_submit_for_review" string="Submit for Review" 
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    
+                    <button name="action_approve" string="Approve" 
+                            type="object" class="btn-success"
+                            invisible="state != 'review'"
+                            groups="calendar_extended.group_calendar_manager"/>
+                    
+                    <button name="action_reject" string="Reject" 
+                            type="object" class="btn-warning"
+                            invisible="state != 'review'"
+                            groups="calendar_extended.group_calendar_manager"/>
+                    
+                    <button name="action_send_invitations" string="Send Invitations Now" 
+                            type="object" class="btn-primary"
+                            invisible="state != 'approved'"/>
+                    
+                    <button name="action_schedule_invitations" string="Schedule Invitations" 
+                            type="object" class="btn-secondary"
+                            invisible="state != 'approved'"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,review,approved,sent"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_select_attendees" type="object" 
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="attendee_count" widget="statinfo" string="Attendees"/>
+                        </button>
+                    </div>
+                    
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Meeting Title..."/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="start_datetime"/>
+                            <field name="end_datetime"/>
+                            <field name="location"/>
+                        </group>
+                        <group>
+                            <field name="submitted_by" readonly="1"/>
+                            <field name="invitation_sent" readonly="1"/>
+                            <field name="invitation_sent_date" readonly="1" 
+                                   invisible="not invitation_sent"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Description">
+                            <field name="description" widget="html"/>
+                        </page>
+                        
+                        <page string="Attendees">
+                            <group>
+                                <group>
+                                    <field name="all_employees"/>
+                                    <field name="attendee_count" readonly="1"/>
+                                </group>
+                                <group>
+                                    <button name="action_select_attendees" string="Select Attendees" 
+                                            type="object" class="btn-secondary"/>
+                                </group>
+                            </group>
+                            
+                            <group string="Departments" invisible="all_employees">
+                                <field name="department_ids" widget="many2many_tags"/>
+                            </group>
+                            
+                            <group string="Individual Employees" invisible="all_employees">
+                                <field name="attendee_ids" widget="many2many_tags"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Approval Details" invisible="state == 'draft'">
+                            <group>
+                                <group>
+                                    <field name="reviewed_by" readonly="1"/>
+                                    <field name="review_date" readonly="1"/>
+                                    <field name="approved_by" readonly="1"/>
+                                    <field name="approval_date" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="scheduled_send_date" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <group string="Review Notes">
+                                <field name="review_notes" nolabel="1"/>
+                            </group>
+                            
+                            <group string="Approval Notes">
+                                <field name="approval_notes" nolabel="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Calendar Announcement Tree View -->
+    <record id="calendar_announcement_tree_view" model="ir.ui.view">
+        <field name="name">calendar.announcement.tree</field>
+        <field name="model">calendar.announcement</field>
+        <field name="arch" type="xml">
+            <tree string="Meeting Announcements">
+                <field name="name"/>
+                <field name="start_datetime"/>
+                <field name="attendee_count"/>
+                <field name="state" decoration-info="state == 'draft'" 
+                       decoration-warning="state == 'review'" 
+                       decoration-success="state == 'approved'"
+                       decoration-muted="state == 'sent'"/>
+                <field name="submitted_by"/>
+                <field name="invitation_sent" widget="boolean"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Calendar Announcement Search View -->
+    <record id="calendar_announcement_search_view" model="ir.ui.view">
+        <field name="name">calendar.announcement.search</field>
+        <field name="model">calendar.announcement</field>
+        <field name="arch" type="xml">
+            <search string="Search Announcements">
+                <field name="name"/>
+                <field name="submitted_by"/>
+                <field name="department_ids"/>
+                
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="review" string="Under Review" domain="[('state', '=', 'review')]"/>
+                <filter name="approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                <filter name="sent" string="Sent" domain="[('state', '=', 'sent')]"/>
+                
+                <separator/>
+                <filter name="my_announcements" string="My Announcements" 
+                        domain="[('submitted_by', '=', uid)]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_submitter" string="Submitted By" context="{'group_by': 'submitted_by'}"/>
+                    <filter name="group_date" string="Meeting Date" context="{'group_by': 'start_datetime'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Calendar Announcement Action -->
+    <record id="calendar_announcement_action" model="ir.actions.act_window">
+        <field name="name">Meeting Announcements</field>
+        <field name="res_model">calendar.announcement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="calendar_announcement_search_view"/>
+        <field name="context">{'search_default_my_announcements': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first meeting announcement!
+            </p>
+            <p>
+                Meeting announcements allow you to plan meetings in advance with approval workflow.
+                Select attendees by department or individually, and control when invitations are sent.
+            </p>
+        </field>
+    </record>
+</odoo>

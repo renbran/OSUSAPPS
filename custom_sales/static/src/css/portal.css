@@ -1,0 +1,52 @@
+/* Portal styles for customer-facing pages */
+
+.portal-sales-dashboard {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.portal-kpi-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.portal-chart-container {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.portal-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.portal-summary-table th,
+.portal-summary-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.portal-summary-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .portal-sales-dashboard {
+        padding: 10px;
+    }
+    
+    .portal-kpi-card {
+        margin-bottom: 15px;
+    }
+}

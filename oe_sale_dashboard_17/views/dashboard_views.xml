@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <record id="action_yearly_sales_report_client" model="ir.actions.client">
+        <field name="name">OSUS Sales</field>
+        <field name="tag">oe_sale_dashboard_17_tag</field>
+    </record>
+
+    
+    <menuitem
+        id="menu_yearly_sales_report"
+        name="OSUS Sales"
+        action="action_yearly_sales_report_client"
+        sequence="10"
+        web_icon="oe_sale_dashboard_17,static/description/icon.png" />
+</odoo>

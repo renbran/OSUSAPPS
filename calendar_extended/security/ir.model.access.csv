@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_calendar_internal_meeting_user,access.calendar.internal.meeting.user,model_calendar_internal_meeting,group_calendar_user,1,1,1,1
+access_calendar_internal_meeting_manager,access.calendar.internal.meeting.manager,model_calendar_internal_meeting,group_calendar_manager,1,1,1,1
+access_calendar_meeting_attendee_user,access.calendar.meeting.attendee.user,model_calendar_meeting_attendee,group_calendar_user,1,1,1,1
+access_calendar_meeting_attendee_manager,access.calendar.meeting.attendee.manager,model_calendar_meeting_attendee,group_calendar_manager,1,1,1,1
+access_calendar_department_group_user,access.calendar.department.group.user,model_calendar_department_group,group_calendar_user,1,0,0,0
+access_calendar_department_group_manager,access.calendar.department.group.manager,model_calendar_department_group,group_calendar_manager,1,1,1,1
+access_calendar_resource_user,access.calendar.resource.user,model_calendar_resource,group_calendar_user,1,0,0,0
+access_calendar_resource_manager,access.calendar.resource.manager,model_calendar_resource,group_calendar_manager,1,1,1,1
+access_calendar_template_user,access.calendar.template.user,model_calendar_template,group_calendar_user,1,0,0,0
+access_calendar_template_manager,access.calendar.template.manager,model_calendar_template,group_calendar_manager,1,1,1,1
+access_calendar_recurrence_user,access.calendar.recurrence.user,model_calendar_recurrence,group_calendar_user,1,1,1,1
+access_calendar_recurrence_manager,access.calendar.recurrence.manager,model_calendar_recurrence,group_calendar_manager,1,1,1,1
+access_calendar_reminder_user,access.calendar.reminder.user,model_calendar_reminder,group_calendar_user,1,1,1,1
+access_calendar_reminder_manager,access.calendar.reminder.manager,model_calendar_reminder,group_calendar_manager,1,1,1,1
+access_calendar_event_type_user,access.calendar.event.type.user,model_calendar_event_type,group_calendar_user,1,0,0,0
+access_calendar_event_type_manager,access.calendar.event.type.manager,model_calendar_event_type,group_calendar_manager,1,1,1,1

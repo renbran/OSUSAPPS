@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="Dashboard" name="Elite Sales Dashboard">
+        <div class="elite_dashboard_container">
+            <div class="elite_dashboard_header">
+                <h1>Elite Sales Dashboard</h1>
+                <div class="elite_dashboard_controls">
+                    <button t-attf-class="btn {{ currentView.value === 'internal' ? 'btn-primary' : 'btn-secondary' }}"
+                            t-on-click="onToggleView"
+                            data-view="internal">
+                        Internal Agents
+                    </button>
+                    <button t-attf-class="btn {{ currentView.value === 'external' ? 'btn-primary' : 'btn-secondary' }}"
+                            t-on-click="onToggleView"
+                            data-view="external">
+                        External Partners
+                    </button>
+                </div>
+            </div>
+            <div class="elite_dashboard_summary">
+                <div class="elite_dashboard_card">
+                    <div class="elite_dashboard_card_title">Total Earnings</div>
+                    <div class="elite_dashboard_card_value">
+                        <t t-esc="dashboardData.total_earnings || 0" t-options="{ 'widget': 'monetary' }"/>
+                    </div>
+                    <div t-att-class="'elite_dashboard_card_change ' + (dashboardData.mom_change >= 0 ? 'positive' : 'negative')">
+                        <t t-if="dashboardData.mom_change >= 0">+</t><t t-esc="dashboardData.mom_change || 0"/>% from last month
+                    </div>
+                </div>
+                <div class="elite_dashboard_card">
+                    <div class="elite_dashboard_card_title">Completed Deals</div>
+                    <div class="elite_dashboard_card_value">
+                        <t t-esc="dashboardData.completed_deals || 0"/>
+                    </div>
+                    <div class="elite_dashboard_card_subtitle">
+                        <t t-esc="dashboardData.avg_per_agent.toFixed(1) || 0"/> avg per agent
+                    </div>
+                </div>
+                <div class="elite_dashboard_card">
+                    <div class="elite_dashboard_card_title">In Progress</div>
+                    <div class="elite_dashboard_card_value">
+                        <t t-esc="dashboardData.in_progress_deals || 0"/>
+                    </div>
+                    <div class="elite_dashboard_card_subtitle">
+                        Value: <t t-esc="dashboardData.in_progress_value || 0" t-options="{ 'widget': 'monetary' }"/>
+                    </div>
+                </div>
+                <div class="elite_dashboard_card">
+                    <div class="elite_dashboard_card_title">Total Agents</div>
+                    <div class="elite_dashboard_card_value">
+                        <t t-esc="dashboardData.agents_count || 0"/>
+                    </div>
+                    <div class="elite_dashboard_card_subtitle">
+                        <t t-esc="currentView.value === 'internal' ? 'Internal Agents' : 'External Partners'"/>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="elite_dashboard_charts">
+                <div class="elite_dashboard_chart">
+                    <div class="elite_dashboard_chart_title">Annual Sales Trend</div>
+                    <!-- Chart would be added here using a chart library -->
+                </div>
+                <div class="elite_dashboard_chart">
+                    <div class="elite_dashboard_chart_title">Performance Breakdown</div>
+                    <!-- Chart would be added here using a chart library -->
+                </div>
+            </div>
+            
+            <div class="elite_dashboard_leaderboard">
+                <div class="elite_dashboard_chart_title">Top Performers</div>
+                <div class="elite_dashboard_leaderboard_table">
+                    <div class="elite_dashboard_leaderboard_header">
+                        <div>Rank</div>
+                        <div>Agent</div>
+                        <div>Deals</div>
+                        <div>Amount</div>
+                    </div>
+                    <t t-foreach="dashboardData.leaderboard || []" t-as="agent">
+                        <div class="elite_dashboard_leaderboard_row">
+                            <div class="elite_dashboard_leaderboard_rank">
+                                <t t-esc="agent.rank"/>
+                                <t t-if="settings.show_rank_changes and agent.rank_change !== 0">
+                                    <span t-att-class="'elite_dashboard_rank_change ' + (agent.rank_change > 0 ? 'positive' : 'negative')">
+                                        <t t-if="agent.rank_change > 0">↑</t>
+                                        <t t-else="">↓</t>
+                                        <t t-esc="Math.abs(agent.rank_change)"/>
+                                    </span>
+                                </t>
+                            </div>
+                            <div class="elite_dashboard_leaderboard_agent">
+                                <div class="elite_dashboard_leaderboard_avatar">
+                                    <t t-esc="agent.name.charAt(0)"/>
+                                </div>
+                                <div class="elite_dashboard_leaderboard_name">
+                                    <t t-esc="agent.name"/>
+                                </div>
+                            </div>
+                            <div class="elite_dashboard_leaderboard_deals">
+                                <t t-esc="agent.deals_count"/> deals
+                                <div class="elite_dashboard_leaderboard_pending">
+                                    <t t-esc="agent.in_progress_count"/> in progress
+                                </div>
+                            </div>
+                            <div class="elite_dashboard_leaderboard_amount">
+                                <t t-esc="agent.total_sales" t-options="{ 'widget': 'monetary' }"/>
+                                <div class="elite_dashboard_leaderboard_pending">
+                                    <t t-esc="agent.pending_value" t-options="{ 'widget': 'monetary' }"/> pending
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            
+            <div class="elite_dashboard_footer">
+                Data last updated: <t t-esc="new Date().toLocaleString()"/>
+            </div>
+        </div>
+    </template>
+</odoo>

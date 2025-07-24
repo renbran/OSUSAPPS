@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Account Statement Tree View -->
+        <record id="view_account_statement_tree" model="ir.ui.view">
+            <field name="name">account.statement.tree</field>
+            <field name="model">account.statement</field>
+            <field name="arch" type="xml">
+                <tree string="Account Statements" decoration-info="state == 'draft'" 
+                      decoration-success="state == 'confirmed'" decoration-muted="state == 'cancelled'">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="date"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="total_debit" widget="monetary"/>
+                    <field name="total_credit" widget="monetary"/>
+                    <field name="balance" widget="monetary"/>
+                    <field name="state" widget="badge" decoration-info="state == 'draft'" 
+                           decoration-success="state == 'confirmed'" decoration-danger="state == 'cancelled'"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="currency_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Account Statement Form View -->
+        <record id="view_account_statement_form" model="ir.ui.view">
+            <field name="name">account.statement.form</field>
+            <field name="model">account.statement</field>
+            <field name="arch" type="xml">                <form string="Account Statement">
+                    <header>
+                        <button name="action_confirm" string="Confirm" type="object" 
+                                invisible="state != 'draft'" class="btn-primary"/>
+                        <button name="action_cancel" string="Cancel" type="object" 
+                                invisible="state not in ['draft', 'confirmed']" class="btn-secondary"/>
+                        <button name="action_draft" string="Reset to Draft" type="object" 
+                                invisible="state != 'cancelled'" class="btn-secondary"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,cancelled"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Statement Name..." readonly="state in ['confirmed', 'cancelled']"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id" readonly="state in ['confirmed', 'cancelled']"/>
+                                <field name="date" readonly="state in ['confirmed', 'cancelled']"/>
+                                <field name="company_id" readonly="state in ['confirmed', 'cancelled']" groups="base.group_multi_company"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="date_from" readonly="state in ['confirmed', 'cancelled']"/>
+                                <field name="date_to" readonly="state in ['confirmed', 'cancelled']"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Summary">
+                                <field name="total_debit" widget="monetary"/>
+                                <field name="total_credit" widget="monetary"/>
+                                <field name="balance" widget="monetary"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Statement Lines" name="lines">
+                                <field name="line_ids" nolabel="1" readonly="state in ['confirmed', 'cancelled']">
+                                    <tree string="Statement Lines" create="false" edit="false" delete="false">
+                                        <field name="date"/>
+                                        <field name="account_code"/>
+                                        <field name="account_name"/>
+                                        <field name="label"/>
+                                        <field name="debit" widget="monetary" sum="Total Debit"/>
+                                        <field name="credit" widget="monetary" sum="Total Credit"/>
+                                        <field name="running_balance" widget="monetary"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>        <!-- Account Statement Search View -->
+        <record id="view_account_statement_search" model="ir.ui.view">
+            <field name="name">account.statement.search</field>
+            <field name="model">account.statement</field>
+            <field name="arch" type="xml">
+                <search string="Search Account Statements">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="date"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <separator/>
+                    <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                    <filter string="Cancelled" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                    <separator/>
+                    <filter string="This Month" name="this_month" 
+                            domain="[('date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%%Y-%%m-01')), ('date', '&lt;=', (context_today()).strftime('%%Y-%%m-%%d'))]"/>
+                    <filter string="This Year" name="this_year" 
+                            domain="[('date', '&gt;=', (context_today()).strftime('%%Y-01-01')), ('date', '&lt;=', (context_today()).strftime('%%Y-12-31'))]"/>
+                    <separator/>
+                    <filter string="Customers" name="customers" domain="[('partner_id.customer_rank', '>', 0)]"/>
+                    <filter string="Vendors" name="vendors" domain="[('partner_id.supplier_rank', '>', 0)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Date" name="group_date" context="{'group_by': 'date'}"/>
+                        <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                        <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Company" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    </group>
+                </search>            </field>
+        </record>
+
+        <!-- Menu Items for Contacts App -->
+        <menuitem id="menu_contacts_statement_root"
+                  name="Account Statements"
+                  parent="contacts.menu_contacts"
+                  sequence="90"/>
+
+        <menuitem id="menu_contacts_statement_wizard"
+                  name="Generate Statement"
+                  parent="menu_contacts_statement_root"
+                  action="action_account_statement_wizard"
+                  sequence="10"/>
+
+        <menuitem id="menu_contacts_statement_list"
+                  name="View Statements"
+                  parent="menu_contacts_statement_root"
+                  action="action_account_statement"
+                  sequence="20"/>
+    </data>
+</odoo>

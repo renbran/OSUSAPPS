@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo Automated Mail Rules -->
+        <record id="demo_birthday_rule" model="automated.mail.rule">
+            <field name="name">Demo Birthday Announcements</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="mail_template_id" ref="mail_template_employee_birthday"/>
+            <field name="rule_type">birthday</field>
+            <field name="active">True</field>
+            <field name="send_to_all_employees">False</field>
+            <field name="days_before">0</field>
+        </record>
+
+        <record id="demo_anniversary_rule" model="automated.mail.rule">
+            <field name="name">Demo Work Anniversary Announcements</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="mail_template_id" ref="mail_template_employee_anniversary"/>
+            <field name="rule_type">work_anniversary</field>
+            <field name="active">True</field>
+            <field name="send_to_all_employees">False</field>
+            <field name="days_before">0</field>
+        </record>
+
+        <!-- Demo Employee Data with Birthdays and Anniversaries -->
+        <record id="demo_employee_1" model="hr.employee">
+            <field name="name">John Smith</field>
+            <field name="work_email">john.smith@demo.com</field>
+            <field name="birthday">1990-01-15</field>
+            <field name="joining_date">2020-03-01</field>
+        </record>
+
+        <record id="demo_employee_2" model="hr.employee">
+            <field name="name">Jane Doe</field>
+            <field name="work_email">jane.doe@demo.com</field>
+            <field name="birthday">1985-06-20</field>
+            <field name="joining_date">2018-09-15</field>
+        </record>
+
+        <record id="demo_employee_3" model="hr.employee">
+            <field name="name">Mike Johnson</field>
+            <field name="work_email">mike.johnson@demo.com</field>
+            <field name="birthday">1992-12-05</field>
+            <field name="joining_date">2021-01-10</field>
+        </record>
+    </data>
+</odoo>

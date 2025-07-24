@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Extend Sale Order Form View -->
+        <record id="view_order_form_status_inherit" model="ir.ui.view">
+            <field name="name">sale.order.form.status.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <!-- Add status bar at the top -->
+                <xpath expr="//field[@name='state']" position="before">
+                    <field name="custom_status_id" widget="statusbar" options="{'clickable': '1'}"/>
+                </xpath>
+                
+                <!-- Add status change button in header -->
+                <xpath expr="//header" position="inside">
+                    <button name="action_change_status" string="Change Status" type="object" class="btn-primary"/>
+                    <button name="action_approve_order" string="Approve" type="object" 
+                            options="{'invisible': [('custom_status_id.is_final', '=', False)]}" 
+                            class="btn-success"/>
+                    <button name="action_reject_order" string="Reject" type="object" 
+                            options="{'invisible': [('custom_status_id.is_initial', '=', False)]}" 
+                            class="btn-danger"/>
+                </xpath>
+                
+                <!-- Add Status Assignment Tab -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="Workflow Assignment" name="workflow_assignment">
+                        <group>
+                            <group string="Stage Assignments">
+                                <field name="documentation_user_id"/>
+                                <field name="commission_user_id"/>
+                                <field name="final_review_user_id"/>
+                            </group>
+                            <group string="Current Status Information">
+                                <field name="custom_status_id"/>
+                            </group>
+                        </group>
+                        <group string="Status History">
+                            <field name="custom_status_history_ids" nolabel="1" readonly="1">
+                                <tree>
+                                    <field name="create_date"/>
+                                    <field name="status_id"/>
+                                    <field name="user_id"/>
+                                    <field name="notes"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- Status Change Wizard Form -->
+        <record id="view_order_status_change_wizard" model="ir.ui.view">
+            <field name="name">order.status.change.wizard.form</field>
+            <field name="model">order.status.change.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Change Order Status">
+                    <group>
+                        <field name="order_id" invisible="1"/>
+                        <field name="current_status_id" readonly="1"/>
+                        <field name="new_status_id" domain="[('id', '!=', current_status_id)]"/>
+                        <field name="notes"/>
+                    </group>
+                    <footer>
+                        <button name="change_status" string="Change Status" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

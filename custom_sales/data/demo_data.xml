@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo data will be loaded here -->
+        <record id="demo_customer_1" model="res.partner">
+            <field name="name">Demo Customer 1</field>
+            <field name="is_company" eval="True"/>
+            <field name="customer_rank">1</field>
+        </record>
+        
+        <record id="demo_customer_2" model="res.partner">
+            <field name="name">Demo Customer 2</field>
+            <field name="is_company" eval="True"/>
+            <field name="customer_rank">1</field>
+        </record>
+    </data>
+</odoo>

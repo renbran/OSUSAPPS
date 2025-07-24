@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Calendar Resource Views -->
+    <record id="view_calendar_resource_tree" model="ir.ui.view">
+        <field name="name">calendar.resource.tree</field>
+        <field name="model">calendar.resource</field>
+        <field name="arch" type="xml">
+            <tree string="Resources">
+                <field name="name"/>
+                <field name="resource_type"/>
+                <field name="capacity"/>
+                <field name="is_available"/>
+                <field name="location"/>
+            </tree>
+        </field>
+    </record>
+    
+    <record id="view_calendar_resource_form" model="ir.ui.view">
+        <field name="name">calendar.resource.form</field>
+        <field name="model">calendar.resource</field>
+        <field name="arch" type="xml">
+            <form string="Resource">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="resource_type"/>
+                            <field name="capacity"/>
+                        </group>
+                        <group>
+                            <field name="is_available"/>
+                            <field name="location"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Calendar Resource Action -->
+    <record id="action_calendar_resource" model="ir.actions.act_window">
+        <field name="name">Resources</field>
+        <field name="res_model">calendar.resource</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

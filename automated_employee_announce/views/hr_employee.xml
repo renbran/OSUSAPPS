@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit HR Employee Form View -->
+    <record id="view_employee_form_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='birthday']" position="after">
+                <field name="joining_date"/>
+                <field name="years_of_service" readonly="1"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_send_birthday_wish" type="object" string="Send Birthday Wish" class="oe_stat_button" icon="fa-birthday-cake" invisible="not birthday"/>
+                <button name="action_send_anniversary_wish" type="object" string="Send Anniversary Wish" class="oe_stat_button" icon="fa-trophy" invisible="not joining_date"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- HR Employee Tree View with Additional Fields -->
+    <record id="view_employee_tree_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.tree.inherit</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='birthday']" position="after">
+                <field name="joining_date" optional="show"/>
+                <field name="years_of_service" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Employees with Upcoming Birthdays -->
+    <record id="action_employees_upcoming_birthdays" model="ir.actions.act_window">
+        <field name="name">Upcoming Birthdays</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('birthday', '!=', False)]</field>
+        <field name="context">{'search_default_birthday_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No upcoming birthdays found!
+            </p>
+            <p>
+                This view shows employees with upcoming birthdays in the current month.
+            </p>
+        </field>
+    </record>
+
+    <!-- Employees with Upcoming Work Anniversaries -->
+    <record id="action_employees_upcoming_anniversaries" model="ir.actions.act_window">
+        <field name="name">Upcoming Work Anniversaries</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">['|', ('joining_date', '!=', False), ('contract_date_start', '!=', False)]</field>
+        <field name="context">{'search_default_anniversary_this_month': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No upcoming work anniversaries found!
+            </p>
+            <p>
+                This view shows employees with upcoming work anniversaries in the current month.
+            </p>
+        </field>
+    </record>
+
+    <!-- Enhanced Employee Search View -->
+    <record id="view_employee_filter_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.search.inherit</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='birthday']" position="after">
+                <filter string="Birthday This Month" name="birthday_this_month" domain="[('birthday', '!=', False)]"/>
+                <filter string="Anniversary This Month" name="anniversary_this_month" domain="['|', ('joining_date', '!=', False), ('contract_date_start', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

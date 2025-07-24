@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Quick Meeting Creation Wizard -->
+    <record id="view_calendar_quick_meeting_wizard" model="ir.ui.view">
+        <field name="name">calendar.quick.meeting.wizard</field>
+        <field name="model">calendar.quick.meeting.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Quick Meeting Setup">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Meeting Subject..." required="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="start_datetime"/>
+                            <field name="duration"/>
+                            <field name="meeting_type"/>
+                            <field name="location"/>
+                        </group>
+                        <group>
+                            <field name="department_group_id"/>
+                            <field name="room_id"/>
+                            <field name="priority"/>
+                            <field name="requires_approval" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Attendees" name="attendees">
+                            <group>
+                                <group string="Departments">
+                                    <field name="department_ids" nolabel="1" widget="many2many_checkboxes"/>
+                                </group>
+                                <group string="Individual Employees">
+                                    <field name="employee_ids" nolabel="1" widget="many2many_checkboxes"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Details" name="details">
+                            <field name="description" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <footer>
+                    <button name="action_create_meeting" type="object" 
+                            string="Create Meeting" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Meeting Attendee Response Form -->
+    <record id="view_calendar_meeting_attendee_form" model="ir.ui.view">
+        <field name="name">calendar.meeting.attendee.form</field>
+        <field name="model">calendar.meeting.attendee</field>
+        <field name="arch" type="xml">
+            <form string="Meeting Response">
+                <header>
+                    <button name="action_accept" type="object" 
+                            string="Accept" class="oe_highlight" 
+                            invisible="status != 'pending'"/>
+                    <button name="action_decline" type="object" 
+                            string="Decline" invisible="status != 'pending'"/>
+                    <button name="action_tentative" type="object" 
+                            string="Maybe" invisible="status != 'pending'"/>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                
+                <sheet>
+                    <group>
+                        <field name="meeting_id" readonly="1"/>
+                        <field name="employee_id" readonly="1"/>
+                        <field name="is_required"/>
+                        <field name="response_date" readonly="1"/>
+                    </group>
+                    
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Dashboard view for internal meetings -->
+    <record id="view_calendar_internal_meeting_dashboard" model="ir.ui.view">
+        <field name="name">calendar.internal.meeting.dashboard</field>
+        <field name="model">calendar.internal.meeting</field>
+        <field name="arch" type="xml">
+            <graph string="Meeting Analytics" type="bar">
+                <field name="meeting_type"/>
+                <field name="current_attendees_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_calendar_internal_meeting_pivot" model="ir.ui.view">
+        <field name="name">calendar.internal.meeting.pivot</field>
+        <field name="model">calendar.internal.meeting</field>
+        <field name="arch" type="xml">
+            <pivot string="Meeting Analysis">
+                <field name="meeting_type" type="row"/>
+                <field name="state" type="col"/>
+                <field name="current_attendees_count" type="measure"/>
+                <field name="duration" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+</odoo>

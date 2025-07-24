@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Account Statement Wizard Action -->
+        <record id="action_account_statement_wizard" model="ir.actions.act_window">
+            <field name="name">Generate Account Statement</field>
+            <field name="res_model">account.statement.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="account_statement.view_account_statement_wizard_form"/>
+            <field name="target">new</field>
+        </record>        <!-- Account Statement Wizard Form View -->
+        <record id="view_account_statement_wizard_form" model="ir.ui.view">
+            <field name="name">account.statement.wizard.form</field>
+            <field name="model">account.statement.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Generate Account Statement">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="partner_id" placeholder="Select Partner..." 
+                                       options="{'no_create': True}" 
+                                       domain="['|', ('customer_rank', '>', 0), ('supplier_rank', '>', 0)]"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Date Range">
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <group string="Filters">
+                                <field name="account_type_filter"/>
+                                <field name="show_zero_balance"/>
+                                <field name="excel_available" invisible="1"/>
+                            </group>
+                        </group>
+                        
+                        <group string="Summary" invisible="not partner_id">
+                            <group>
+                                <field name="total_debit" widget="monetary"/>
+                                <field name="total_credit" widget="monetary"/>
+                                <field name="balance" widget="monetary"/>
+                            </group>
+                        </group>
+                        
+                        <notebook invisible="not partner_id">
+                            <page string="Statement Lines" name="lines">
+                                <field name="line_ids" nolabel="1">
+                                    <tree string="Statement Lines" create="false" edit="false" delete="false">
+                                        <field name="date"/>
+                                        <field name="account_code"/>
+                                        <field name="account_name"/>
+                                        <field name="label"/>
+                                        <field name="debit" widget="monetary" sum="Total Debit"/>
+                                        <field name="credit" widget="monetary" sum="Total Credit"/>
+                                        <field name="running_balance" widget="monetary"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <footer>
+                        <button name="action_generate_pdf" string="Print PDF" type="object" 
+                                class="btn-primary" invisible="not partner_id"/>
+                        <button name="action_generate_excel" string="Export Excel" type="object" 
+                                class="btn-secondary" invisible="not partner_id or not excel_available"/>
+                        <button name="action_save_statement" string="Save Statement" type="object" 
+                                class="btn-secondary" invisible="not partner_id"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Account Statement Action -->
+        <record id="action_account_statement" model="ir.actions.act_window">
+            <field name="name">Account Statements</field>
+            <field name="res_model">account.statement</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first account statement!
+                </p>
+            </field>
+        </record>
+
+        <!-- Menu Items -->
+        <menuitem id="menu_account_statement_root" 
+                  name="Account Statements" 
+                  parent="account.menu_finance_reports" 
+                  sequence="50"/>
+        
+        <menuitem id="menu_account_statement_wizard" 
+                  name="Generate Statement" 
+                  parent="menu_account_statement_root" 
+                  action="action_account_statement_wizard" 
+                  sequence="10"/>
+        
+        <menuitem id="menu_account_statement_list" 
+                  name="Statements" 
+                  parent="menu_account_statement_root" 
+                  action="action_account_statement" 
+                  sequence="20"/>
+    </data>
+</odoo>

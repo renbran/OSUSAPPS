@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Internal Meeting Tree View -->
+    <record id="view_calendar_internal_meeting_tree" model="ir.ui.view">
+        <field name="name">calendar.internal.meeting.tree</field>
+        <field name="model">calendar.internal.meeting</field>
+        <field name="arch" type="xml">
+            <tree string="Internal Meetings" decoration-info="state=='draft'" 
+                  decoration-warning="state=='pending_approval'" 
+                  decoration-success="state=='approved'"
+                  decoration-danger="state=='rejected'">
+                <field name="name"/>
+                <field name="organizer_id"/>
+                <field name="start_datetime"/>
+                <field name="duration"/>
+                <field name="meeting_type"/>
+                <field name="current_attendees_count"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state=='draft'"
+                       decoration-warning="state=='pending_approval'"
+                       decoration-success="state in ['approved','confirmed']"
+                       decoration-danger="state=='rejected'"/>
+                <field name="priority" widget="priority"/>
+                <field name="approver_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Internal Meeting Form View -->
+    <record id="view_calendar_internal_meeting_form" model="ir.ui.view">
+        <field name="name">calendar.internal.meeting.form</field>
+        <field name="model">calendar.internal.meeting</field>
+        <field name="arch" type="xml">
+            <form string="Internal Meeting">
+                <header>
+                    <button name="action_submit_for_approval" type="object" 
+                            class="oe_highlight" string="Submit for Approval"
+                            invisible="state != 'draft'" groups="base.group_user"/>
+                    <button name="action_approve" type="object" 
+                            class="oe_highlight" string="Approve"
+                            invisible="state != 'pending_approval'" 
+                            groups="calendar_extended.group_calendar_manager"/>
+                    <button name="action_reject" type="object" 
+                            string="Reject" invisible="state != 'pending_approval'"
+                            groups="calendar_extended.group_calendar_manager"/>
+                    <button name="action_confirm" type="object" 
+                            class="oe_highlight" string="Confirm"
+                            invisible="state != 'approved'" groups="base.group_user"/>
+                    <button name="action_start" type="object" 
+                            string="Start Meeting" invisible="state != 'confirmed'"
+                            groups="base.group_user"/>
+                    <button name="action_complete" type="object" 
+                            string="Complete" invisible="state != 'in_progress'"
+                            groups="base.group_user"/>
+                    <button name="action_cancel" type="object" 
+                            string="Cancel" 
+                            invisible="state not in ('draft', 'pending_approval', 'approved', 'confirmed')"
+                            groups="base.group_user"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,pending_approval,approved,confirmed,completed"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_calendar_event" type="object"
+                                class="oe_stat_button" icon="fa-calendar"
+                                invisible="not calendar_event_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Calendar</span>
+                                <span class="o_stat_text">Event</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Meeting Subject..." required="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="organizer_id" readonly="1"/>
+                            <field name="meeting_type"/>
+                            <field name="priority"/>
+                            <field name="start_datetime"/>
+                            <field name="end_datetime"/>
+                            <field name="duration" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="location"/>
+                            <field name="room_id"/>
+                            <field name="max_attendees"/>
+                            <field name="current_attendees_count" readonly="1"/>
+                            <field name="requires_approval" readonly="1"/>
+                            <field name="approver_id" required="requires_approval"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Attendees" name="attendees">
+                            <group>
+                                <group string="Individual Attendees">
+                                    <field name="attendee_ids" nolabel="1" widget="many2many_tags"/>
+                                </group>
+                                <group string="Department-wise Invitation">
+                                    <field name="department_ids" nolabel="1" widget="many2many_tags"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Job Position-wise Invitation">
+                                    <field name="job_position_ids" nolabel="1" widget="many2many_tags"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Meeting Details" name="details">
+                            <group>
+                                <field name="description" nolabel="1" colspan="2"/>
+                            </group>
+                            <group string="Agenda">
+                                <field name="agenda" nolabel="1" colspan="2"/>
+                            </group>
+                            <group string="Preparation Notes">
+                                <field name="preparation_notes" nolabel="1" colspan="2"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Resources" name="resources">
+                            <group>
+                                <field name="equipment_ids" nolabel="1" 
+                                       domain="[('resource_type', '=', 'equipment')]"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Recurrence" name="recurrence" 
+                              invisible="state in ('completed', 'cancelled')">
+                            <group>
+                                <field name="is_recurring"/>
+                                <field name="recurrence_pattern" 
+                                       invisible="not is_recurring"/>
+                                <field name="recurrence_count" 
+                                       invisible="not is_recurring"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Approval" name="approval"
+                              invisible="not requires_approval">
+                            <group>
+                                <field name="approval_date" readonly="1"/>
+                                <field name="approval_notes"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Internal Meeting Calendar View -->
+    <record id="view_calendar_internal_meeting_calendar" model="ir.ui.view">
+        <field name="name">calendar.internal.meeting.calendar</field>
+        <field name="model">calendar.internal.meeting</field>
+        <field name="arch" type="xml">
+            <calendar string="Internal Meetings" date_start="start_datetime" 
+                      date_stop="end_datetime" color="meeting_type"
+                      quick_create="False" event_open_popup="True">
+                <field name="name"/>
+                <field name="organizer_id"/>
+                <field name="state"/>
+                <field name="meeting_type"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Internal Meeting Kanban View -->
+    <record id="view_calendar_internal_meeting_kanban" model="ir.ui.view">
+        <field name="name">calendar.internal.meeting.kanban</field>
+        <field name="model">calendar.internal.meeting</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="organizer_id"/>
+                <field name="start_datetime"/>
+                <field name="state"/>
+                <field name="priority"/>
+                <field name="current_attendees_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="oe_kanban_details">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                    <div class="o_kanban_record_subtitle">
+                                        <field name="organizer_id"/>
+                                    </div>
+                                    <div class="o_kanban_record_body">
+                                        <field name="start_datetime" widget="datetime"/>
+                                        <br/>
+                                        <i class="fa fa-users"/> <field name="current_attendees_count"/> attendees
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="oe_kanban_footer">
+                                <div class="oe_kanban_footer_left">
+                                    <field name="priority" widget="priority"/>
+                                </div>
+                                <div class="oe_kanban_footer_right">
+                                    <field name="state" widget="label_selection"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Internal Meeting Search View -->
+    <record id="view_calendar_internal_meeting_search" model="ir.ui.view">
+        <field name="name">calendar.internal.meeting.search</field>
+        <field name="model">calendar.internal.meeting</field>
+        <field name="arch" type="xml">
+            <search string="Internal Meetings">
+                <field name="name" string="Meeting" filter_domain="[('name', 'ilike', self)]"/>
+                <field name="organizer_id"/>
+                <field name="attendee_ids" string="Attendee"/>
+                <field name="department_ids" string="Department"/>
+                <field name="location"/>
+                
+                <filter string="My Meetings" name="my_meetings"
+                        domain="[('organizer_id', '=', uid)]"/>
+                <filter string="I'm Attending" name="attending"
+                        domain="[('attendee_ids.user_id', '=', uid)]"/>
+                <filter string="Draft" name="draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter string="Pending Approval" name="pending_approval"
+                        domain="[('state', '=', 'pending_approval')]"/>
+                <filter string="Approved" name="approved"
+                        domain="[('state', '=', 'approved')]"/>
+                <filter string="This Week" name="this_week"
+                        domain="[('start_datetime', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')),
+                                ('start_datetime', '&lt;', (context_today() + datetime.timedelta(days=7-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter string="Next Week" name="next_week"
+                        domain="[('start_datetime', '&gt;=', (context_today() + datetime.timedelta(days=7-context_today().weekday())).strftime('%Y-%m-%d')),
+                                ('start_datetime', '&lt;', (context_today() + datetime.timedelta(days=14-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                
+                <separator/>
+                <filter string="High Priority" name="high_priority"
+                        domain="[('priority', 'in', ['2', '3'])]"/>
+                <filter string="Requires Approval" name="requires_approval"
+                        domain="[('requires_approval', '=', True)]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter string="Organizer" name="group_organizer" context="{'group_by': 'organizer_id'}"/>
+                    <filter string="Meeting Type" name="group_type" context="{'group_by': 'meeting_type'}"/>
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Start Date" name="group_start_date" context="{'group_by': 'start_datetime:day'}"/>
+                    <filter string="Department" name="group_department" context="{'group_by': 'department_ids'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_calendar_internal_meeting" model="ir.actions.act_window">
+        <field name="name">Internal Meetings</field>
+        <field name="res_model">calendar.internal.meeting</field>
+        <field name="view_mode">kanban,calendar,tree,form</field>
+        <field name="search_view_id" ref="view_calendar_internal_meeting_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Schedule a new internal meeting
+            </p>
+            <p>
+                Book meeting rooms, invite departments or specific employees,
+                and manage approvals for internal meetings.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_calendar_internal_meeting_my" model="ir.actions.act_window">
+        <field name="name">My Meetings</field>
+        <field name="res_model">calendar.internal.meeting</field>
+        <field name="view_mode">kanban,calendar,tree,form</field>
+        <field name="domain">[('organizer_id', '=', uid)]</field>
+        <field name="context">{'search_default_my_meetings': 1}</field>
+    </record>
+
+    <record id="action_calendar_internal_meeting_approval" model="ir.actions.act_window">
+        <field name="name">Meetings Pending Approval</field>
+        <field name="res_model">calendar.internal.meeting</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="domain">[('state', '=', 'pending_approval'), ('approver_id', '=', uid)]</field>
+        <field name="context">{'search_default_pending_approval': 1}</field>
+    </record>
+
+</odoo>

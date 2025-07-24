@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Custom Sales Order Form View -->
+        <record id="view_custom_sales_order_form" model="ir.ui.view">
+            <field name="name">custom.sales.order.form</field>
+            <field name="model">custom.sales.order</field>
+            <field name="arch" type="xml">
+                <form string="Custom Sales Order">
+                    <header>
+                        <button name="action_confirm" type="object" string="Confirm" 
+                                class="oe_highlight" states="draft,sent"/>
+                        <button name="action_send_quotation" type="object" string="Send Quotation" 
+                                states="draft,sent"/>
+                        <button name="action_cancel" type="object" string="Cancel" 
+                                states="draft,sent,confirmed"/>
+                        <field name="state" widget="statusbar" 
+                               statusbar_visible="draft,sent,confirmed,in_progress,delivered,invoiced,paid"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_sale_order" type="object" 
+                                    class="oe_stat_button" icon="fa-shopping-cart"
+                                    attrs="{'invisible': [('sale_order_id', '=', False)]}">
+                                <div class="o_field_widget o_stat_info">
+                                    <span class="o_stat_text">Sale Order</span>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1><field name="name" placeholder="Order Reference..."/></h1>
+                        </div>
+                        
+                        <group>
+                            <group name="order_details">
+                                <field name="sales_person_id" options="{'no_create': True}"/>
+                                <field name="sales_team_id" options="{'no_create': True}"/>
+                                <field name="custom_field_3" string="Customer" 
+                                       options="{'no_create_edit': True}"/>
+                                <field name="customer_type"/>
+                                <field name="priority" widget="priority"/>
+                            </group>
+                            <group name="dates">
+                                <field name="order_date"/>
+                                <field name="expected_delivery_date"/>
+                                <field name="actual_delivery_date" 
+                                       attrs="{'readonly': [('state', 'not in', ['delivered', 'invoiced', 'paid'])]}"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <page string="Custom Fields" name="custom_fields">
+                                <group>
+                                    <group>
+                                        <field name="custom_field_1"/>
+                                        <field name="custom_field_2"/>
+                                    </group>
+                                    <group>
+                                        <field name="estimated_revenue" widget="monetary"/>
+                                        <field name="actual_revenue" widget="monetary"/>
+                                        <field name="profit_margin" widget="percentage"/>
+                                    </group>
+                                </group>
+                            </page>
+                            
+                            <page string="Analytics" name="analytics">
+                                <group>
+                                    <group>
+                                        <field name="days_to_delivery" 
+                                               attrs="{'invisible': [('expected_delivery_date', '=', False)]}"/>
+                                        <field name="is_overdue" widget="boolean_toggle"/>
+                                        <field name="customer_satisfaction" widget="radio" 
+                                               options="{'horizontal': true}"/>
+                                    </group>
+                                </group>
+                                
+                                <separator string="Performance Metrics"/>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Revenue Analysis</h5>
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <strong>Estimated:</strong>
+                                                        <field name="estimated_revenue" widget="monetary" readonly="1"/>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <strong>Actual:</strong>
+                                                        <field name="actual_revenue" widget="monetary" readonly="1"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Delivery Status</h5>
+                                                <field name="days_to_delivery" readonly="1"/>
+                                                <span> days remaining</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </page>
+                            
+                            <page string="Notes" name="notes">
+                                <group>
+                                    <field name="internal_notes" placeholder="Internal notes for team members..."/>
+                                    <field name="customer_notes" placeholder="Notes visible to customer..."/>
+                                </group>
+                            </page>
+                            
+                            <page string="Related Records" name="related">
+                                <group>
+                                    <field name="sale_order_id" readonly="1"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Custom Sales Order Tree View -->
+        <record id="view_custom_sales_order_tree" model="ir.ui.view">
+            <field name="name">custom.sales.order.tree</field>
+            <field name="model">custom.sales.order</field>
+            <field name="arch" type="xml">
+                <tree string="Custom Sales Orders" decoration-success="state == 'paid'" 
+                      decoration-warning="state == 'confirmed'" 
+                      decoration-danger="is_overdue == True"
+                      decoration-muted="state == 'cancelled'">
+                    <field name="name"/>
+                    <field name="sales_person_id"/>
+                    <field name="custom_field_3" string="Customer"/>
+                    <field name="customer_type"/>
+                    <field name="estimated_revenue" widget="monetary"/>
+                    <field name="actual_revenue" widget="monetary"/>
+                    <field name="profit_margin" widget="percentage"/>
+                    <field name="priority" widget="priority"/>
+                    <field name="state" widget="badge" 
+                           decoration-success="state == 'paid'"
+                           decoration-warning="state in ['confirmed', 'in_progress']"
+                           decoration-info="state in ['draft', 'sent']"
+                           decoration-danger="state == 'cancelled'"/>
+                    <field name="order_date"/>
+                    <field name="expected_delivery_date"/>
+                    <field name="is_overdue" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Custom Sales Order Kanban View -->
+        <record id="view_custom_sales_order_kanban" model="ir.ui.view">
+            <field name="name">custom.sales.order.kanban</field>
+            <field name="model">custom.sales.order</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="state" class="o_kanban_small_column">
+                    <field name="name"/>
+                    <field name="sales_person_id"/>
+                    <field name="custom_field_3"/>
+                    <field name="actual_revenue"/>
+                    <field name="state"/>
+                    <field name="priority"/>
+                    <field name="is_overdue"/>
+                    <field name="customer_type"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click 
+                                              #{record.is_overdue.raw_value ? 'oe_kanban_card_danger' : ''}
+                                              #{record.priority.raw_value > '1' ? 'oe_kanban_card_fancy' : ''}">
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <strong class="o_kanban_record_title">
+                                                <field name="name"/>
+                                            </strong>
+                                            <span class="o_kanban_record_subtitle text-muted">
+                                                <field name="custom_field_3"/>
+                                            </span>
+                                        </div>
+                                        <div class="o_kanban_record_top_right">
+                                            <field name="priority" widget="priority"/>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_body">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <strong>Revenue:</strong>
+                                                <field name="actual_revenue" widget="monetary"/>
+                                            </div>
+                                            <div class="col-6">
+                                                <strong>Type:</strong>
+                                                <field name="customer_type"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_bottom">
+                                        <div class="oe_kanban_bottom_left">
+                                            <field name="sales_person_id" widget="many2one_avatar_user"/>
+                                        </div>
+                                        <div class="oe_kanban_bottom_right">
+                                            <t t-if="record.is_overdue.raw_value">
+                                                <span class="badge badge-danger">Overdue</span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+        
+        <!-- Custom Sales Order Search View -->
+        <record id="view_custom_sales_order_search" model="ir.ui.view">
+            <field name="name">custom.sales.order.search</field>
+            <field name="model">custom.sales.order</field>
+            <field name="arch" type="xml">
+                <search string="Search Custom Sales Orders">
+                    <field name="name" string="Order Reference"/>
+                    <field name="custom_field_3" string="Customer"/>
+                    <field name="sales_person_id"/>
+                    <field name="sales_team_id"/>
+                    <field name="custom_field_1"/>
+                    <field name="customer_type"/>
+                    <field name="state"/>
+                    
+                    <filter name="my_orders" string="My Orders" 
+                            domain="[('sales_person_id', '=', uid)]"/>
+                    <filter name="my_team_orders" string="My Team" 
+                            domain="[('sales_team_id.member_ids', 'in', [uid])]"/>
+                    <separator/>
+                    <filter name="draft" string="Draft" 
+                            domain="[('state', '=', 'draft')]"/>
+                    <filter name="confirmed" string="Confirmed" 
+                            domain="[('state', '=', 'confirmed')]"/>
+                    <filter name="in_progress" string="In Progress" 
+                            domain="[('state', '=', 'in_progress')]"/>
+                    <separator/>
+                    <filter name="overdue" string="Overdue" 
+                            domain="[('is_overdue', '=', True)]"/>
+                    <filter name="high_priority" string="High Priority" 
+                            domain="[('priority', '>=', '2')]"/>
+                    <separator/>
+                    <filter name="this_month" string="This Month" 
+                            domain="[('order_date', '>=', (context_today() - relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                    <filter name="this_year" string="This Year" 
+                            domain="[('order_date', '>=', (context_today() - relativedelta(month=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                    
+                    <group expand="0" string="Group By">
+                        <filter name="group_salesperson" string="Salesperson" 
+                                context="{'group_by': 'sales_person_id'}"/>
+                        <filter name="group_team" string="Sales Team" 
+                                context="{'group_by': 'sales_team_id'}"/>
+                        <filter name="group_state" string="Status" 
+                                context="{'group_by': 'state'}"/>
+                        <filter name="group_customer_type" string="Customer Type" 
+                                context="{'group_by': 'customer_type'}"/>
+                        <filter name="group_priority" string="Priority" 
+                                context="{'group_by': 'priority'}"/>
+                        <separator/>
+                        <filter name="group_order_date" string="Order Date" 
+                                context="{'group_by': 'order_date:month'}"/>
+                        <filter name="group_delivery_date" string="Delivery Date" 
+                                context="{'group_by': 'expected_delivery_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Actions -->
+        <record id="action_custom_sales_order" model="ir.actions.act_window">
+            <field name="name">Custom Sales Orders</field>
+            <field name="res_model">custom.sales.order</field>
+            <field name="view_mode">kanban,tree,form,graph,pivot</field>
+            <field name="search_view_id" ref="view_custom_sales_order_search"/>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first custom sales order!
+                </p>
+                <p>
+                    Use custom sales orders to track additional business-specific information
+                    and get advanced analytics on your sales performance.
+                </p>
+            </field>
+        </record>
+        
+        <record id="action_custom_sales_order_my" model="ir.actions.act_window">
+            <field name="name">My Sales Orders</field>
+            <field name="res_model">custom.sales.order</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="search_view_id" ref="view_custom_sales_order_search"/>
+            <field name="context">{'search_default_my_orders': 1}</field>
+            <field name="domain">[('sales_person_id', '=', uid)]</field>
+        </record>
+        
+        <record id="action_custom_sales_order_team" model="ir.actions.act_window">
+            <field name="name">Team Sales Orders</field>
+            <field name="res_model">custom.sales.order</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="search_view_id" ref="view_custom_sales_order_search"/>
+            <field name="context">{'search_default_my_team_orders': 1}</field>
+            <field name="domain">[('sales_team_id.member_ids', 'in', [uid])]</field>
+        </record>
+        
+        <!-- Graph Views -->
+        <record id="view_custom_sales_order_graph" model="ir.ui.view">
+            <field name="name">custom.sales.order.graph</field>
+            <field name="model">custom.sales.order</field>
+            <field name="arch" type="xml">
+                <graph string="Sales Analysis" type="bar">
+                    <field name="sales_person_id"/>
+                    <field name="actual_revenue" type="measure"/>
+                    <field name="estimated_revenue" type="measure"/>
+                </graph>
+            </field>
+        </record>
+        
+        <!-- Pivot Views -->
+        <record id="view_custom_sales_order_pivot" model="ir.ui.view">
+            <field name="name">custom.sales.order.pivot</field>
+            <field name="model">custom.sales.order</field>
+            <field name="arch" type="xml">
+                <pivot string="Sales Analysis">
+                    <field name="sales_person_id" type="row"/>
+                    <field name="customer_type" type="row"/>
+                    <field name="order_date" type="col" interval="month"/>
+                    <field name="actual_revenue" type="measure"/>
+                    <field name="profit_margin" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

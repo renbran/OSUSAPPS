@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="email_template_document_request" model="mail.template">
+            <field name="name">Certificate: Document Request</field>
+            <field name="model_id" ref="certificate_license_expiry.model_certificates"/>
+            <field name="subject">Document Upload Request: ${object.name}</field>
+            <field name="email_from">{object.company_id.email|safe}</field>
+            <field name="email_to">{object.customer_id.email|safe}</field>
+            <field name="body_html" type="html">
+                <div style="width: 100%; max-width: 1200px; margin: auto; background: #800020; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 15px #bf6b10;">
+                    <h2 style="margin:0px 0 8px 0;box-sizing:border-box;background:#FFD700; color: black; padding: 10px; border-radius: 5px; font-size:21px;line-height:1.2;font-weight:bolder;font-family:'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, 'Noto Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';">Request for Document Submission</h2>
+                    <p style="margin:0px 0 16px 0;box-sizing:border-box;color: #FFEBCD; font-size: 16px; line-height: 1.6;">
+                        Dear {object.customer_id.name},
+                    </p>
+                    <p style="margin:0px 0 16px 0;box-sizing:border-box;color: #FFEBCD; font-size: 16px; line-height: 1.6;">
+                        We hope this message finds you well. As part of the agreement initiation process for certificate "${object.name}" (${object.certificate_number}), we kindly request you to submit the following documents at your earliest convenience:
+                    </p>
+                    <ul style="padding:0 0 0 32px;margin:0px 0 16px 0;box-sizing:border-box;list-style-type:disc;color: #FFEBCD; font-size: 16px; line-height: 1.6;">
+                        <li style="box-sizing:border-box;color:#ffebcd;">Signed Brokerage/Agency Agreement</li>
+                        <li style="box-sizing:border-box;color:#ffebcd;">No object Certificate</li>
+                        <li style="box-sizing:border-box;color:#ffebcd;">VAT Certificate</li>
+                        <li style="box-sizing:border-box;color:#ffebcd;">Trade License</li>
+                        <li style="box-sizing:border-box;color:#ffebcd;">Marketing Agreement</li>
+                        <li style="box-sizing:border-box;color:#ffebcd;">Owner's Documents</li>
+                    </ul>
+                    <p style="margin:0px 0 16px 0;box-sizing:border-box;color: #FFEBCD; font-size: 16px; line-height: 1.6;">
+                        Please ensure that all documents are clear, legible, and submitted in PDF format. You can upload the documents using the secure link provided below:
+                    </p>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <a href="{object.get_base_url()}/certificate/upload/{object.id}/{object.access_token}" 
+                           style="box-sizing:border-box;background: #FFD700; color: black; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block;">
+                            Upload Documents
+                        </a>
+                    </div>
+                    <p style="margin:0px 0 8px 0;box-sizing:border-box;color: #FFEBCD; font-size: 16px; line-height: 1.6;">
+                        This secure link is valid for 7 days. If you experience any issues, please contact us immediately.
+                    </p>
+                    <p style="margin:0px 0 16px 0;box-sizing:border-box;color: #FFEBCD; font-size: 16px; line-height: 1.6;">
+                        Should you have any questions or require assistance, please feel free to contact us at <a href="mailto:{object.company_id.email}" style="text-decoration:none;box-sizing:border-box;color: #FFD700; font-weight: bold;">{object.company_id.email}</a>.
+                    </p>
+                    <p style="margin:0px 0 16px 0;box-sizing:border-box;color: #FFEBCD; font-size: 16px; line-height: 1.6;">
+                        Thank you for your prompt attention to this matter. We look forward to your cooperation.
+                    </p>
+                    <p style="margin:0px 0 16px 0;box-sizing:border-box;color: #FFEBCD; font-size: 16px; line-height: 1.6;">
+                        Best regards,<br/>
+                        {object.company_id.name}
+                    </p>
+                </div>
+            </field>
+        </record>
+    </data>
+</odoo>

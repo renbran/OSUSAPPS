@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Document Upload Form Template -->
+    <template id="portal_certificate_upload" name="Certificate Document Upload">
+        <t t-call="portal.portal_layout">
+            <div class="container pt-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">Upload Documents - <t t-esc="certificate.name"/></h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Certificate Number: <strong t-field="certificate.certificate_number"/></p>
+                        <form action="/certificate/upload/submit/#{certificate.id}/#{access_token}" method="post" enctype="multipart/form-data">
+                            <div class="row">
+                                <!-- Developer Documents -->
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <h4>Developer Documents</h4>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="developer_doc1">Developer Document 1</label>
+                                        <input type="file" class="form-control" name="developer_doc1" id="developer_doc1"/>
+                                        <small class="form-text text-muted" t-if="certificate.developer_doc1_uploaded">
+                                            <i class="fa fa-check text-success"/> Already uploaded
+                                        </small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="developer_doc2">Developer Document 2</label>
+                                        <input type="file" class="form-control" name="developer_doc2" id="developer_doc2"/>
+                                        <small class="form-text text-muted" t-if="certificate.developer_doc2_uploaded">
+                                            <i class="fa fa-check text-success"/> Already uploaded
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Signed Documents -->
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <h4>Signed &amp; Verified Documents</h4>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="signed_doc1">Signed Document 1</label>
+                                        <input type="file" class="form-control" name="signed_doc1" id="signed_doc1"/>
+                                        <small class="form-text text-muted" t-if="certificate.signed_doc1_uploaded">
+                                            <i class="fa fa-check text-success"/> Already uploaded
+                                        </small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="signed_doc2">Signed Document 2</label>
+                                        <input type="file" class="form-control" name="signed_doc2" id="signed_doc2"/>
+                                        <small class="form-text text-muted" t-if="certificate.signed_doc2_uploaded">
+                                            <i class="fa fa-check text-success"/> Already uploaded
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary">Upload Documents</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    
+    <!-- Upload Result Template -->
+    <template id="portal_certificate_upload_result" name="Certificate Upload Result">
+        <t t-call="portal.portal_layout">
+            <div class="container pt-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">Document Upload Results</h3>
+                    </div>
+                    <div class="card-body">
+                        <div t-if="upload_success" class="alert alert-success">
+                            <i class="fa fa-check-circle"/> Documents uploaded successfully!
+                        </div>
+                        <div t-if="not upload_success" class="alert alert-warning">
+                            <i class="fa fa-exclamation-triangle"/> No files were uploaded.
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h4>Upload Status:</h4>
+                            <ul class="list-group list-group-flush">
+                                <li t-if="upload_status.get('developer_doc1')" class="list-group-item">
+                                    <i class="fa fa-check text-success"/> Developer Document 1 uploaded successfully
+                                </li>
+                                <li t-if="upload_status.get('developer_doc2')" class="list-group-item">
+                                    <i class="fa fa-check text-success"/> Developer Document 2 uploaded successfully
+                                </li>
+                                <li t-if="upload_status.get('signed_doc1')" class="list-group-item">
+                                    <i class="fa fa-check text-success"/> Signed Document 1 uploaded successfully
+                                </li>
+                                <li t-if="upload_status.get('signed_doc2')" class="list-group-item">
+                                    <i class="fa fa-check text-success"/> Signed Document 2 uploaded successfully
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="/certificate/upload/#{certificate.id}/#{access_token}" class="btn btn-secondary">
+                                Upload More Documents
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

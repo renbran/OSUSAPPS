@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Send Invitation Wizard Form View -->
+    <record id="calendar_send_invitation_wizard_form_view" model="ir.ui.view">
+        <field name="name">calendar.send.invitation.wizard.form</field>
+        <field name="model">calendar.send.invitation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send Invitations">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Send Meeting Invitations</h1>
+                        <p>Choose when to send invitations for this approved meeting.</p>
+                    </div>
+                    
+                    <group>
+                        <field name="announcement_id" invisible="1"/>
+                        <field name="announcement_name" readonly="1"/>
+                        <field name="announcement_date" readonly="1"/>
+                        <field name="attendee_count" readonly="1"/>
+                    </group>
+                    
+                    <group string="Send Options">
+                        <field name="send_mode" widget="radio"/>
+                        <field name="scheduled_date" invisible="send_mode != 'schedule'" 
+                               required="send_mode == 'schedule'"/>
+                    </group>
+                    
+                    <group string="Invitation Preview">
+                        <field name="preview_message" nolabel="1" readonly="1"/>
+                    </group>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button name="action_preview_attendees" string="Preview Attendee List" 
+                                    type="object" class="btn btn-info btn-block"/>
+                        </div>
+                    </div>
+                </sheet>
+                
+                <footer>
+                    <button name="action_send_invitations" string="Send Invitations" 
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Send Invitation Wizard Action -->
+    <record id="calendar_send_invitation_wizard_action" model="ir.actions.act_window">
+        <field name="name">Send Invitations</field>
+        <field name="res_model">calendar.send.invitation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

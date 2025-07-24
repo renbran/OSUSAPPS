@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="account_statement_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <!-- Header -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h2 class="text-center mb-4">
+                                        <strong>ACCOUNT STATEMENT</strong>
+                                    </h2>
+                                </div>
+                            </div>
+
+                            <!-- Partner Information -->
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <h4>Partner Information</h4>
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td><strong>Name:</strong></td>
+                                            <td><span t-field="doc.partner_id.name"/></td>
+                                        </tr>
+                                        <tr t-if="doc.partner_id.contact_address">
+                                            <td><strong>Address:</strong></td>
+                                            <td><span t-field="doc.partner_id.contact_address"/></td>
+                                        </tr>
+                                        <tr t-if="doc.partner_id.vat">
+                                            <td><strong>VAT:</strong></td>
+                                            <td><span t-field="doc.partner_id.vat"/></td>
+                                        </tr>
+                                        <tr t-if="doc.partner_id.phone">
+                                            <td><strong>Phone:</strong></td>
+                                            <td><span t-field="doc.partner_id.phone"/></td>
+                                        </tr>
+                                        <tr t-if="doc.partner_id.email">
+                                            <td><strong>Email:</strong></td>
+                                            <td><span t-field="doc.partner_id.email"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-6">
+                                    <h4>Statement Information</h4>
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <td><strong>Statement Date:</strong></td>
+                                            <td><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Period From:</strong></td>
+                                            <td><span t-field="doc.date_from"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Period To:</strong></td>
+                                            <td><span t-field="doc.date_to"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Currency:</strong></td>
+                                            <td><span t-field="doc.currency_id.name"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Statement Lines -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <h4>Statement Details</h4>
+                                    <table class="table table-sm table-striped">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Account</th>
+                                                <th>Label</th>
+                                                <th class="text-right">Debit</th>
+                                                <th class="text-right">Credit</th>
+                                                <th class="text-right">Running Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-set="lines" t-value="doc.line_ids.sorted(lambda l: l.date or datetime.date.today())"/>
+                                            <tr t-foreach="lines" t-as="line">
+                                                <td><span t-field="line.date"/></td>
+                                                <td><span t-esc="(line.account_code or '') + ' ' + (line.account_name or '')"/></td>
+                                                <td><span t-field="line.label"/></td>
+                                                <td class="text-right">
+                                                    <span t-field="line.debit" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-field="line.credit" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span t-field="line.running_balance" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                                </td>
+                                            </tr>
+                                            <t t-if="not lines">
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted">
+                                                        <em>No transactions found for the selected period</em>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Summary -->
+                            <div class="row mt-4">
+                                <div class="col-8"></div>
+                                <div class="col-4">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>Total Debit:</strong></td>
+                                            <td class="text-right">
+                                                <strong>
+                                                    <span t-field="doc.total_debit" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Total Credit:</strong></td>
+                                            <td class="text-right">
+                                                <strong>
+                                                    <span t-field="doc.total_credit" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                        <tr class="table-dark">
+                                            <td><strong>Net Balance:</strong></td>
+                                            <td class="text-right">
+                                                <strong>
+                                                    <span t-field="doc.balance" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Footer Note -->
+                            <div class="row mt-5">
+                                <div class="col-12">
+                                    <p class="text-muted small">
+                                        <em>This statement is generated automatically and shows all posted invoices for the selected partner and period. 
+                                        For any discrepancies, please contact our accounting department.</em>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
