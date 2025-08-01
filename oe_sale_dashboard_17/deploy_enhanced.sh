@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# Enhanced Sales Dashboard Deployment Script
-# Use this script to update the module in your Odoo instance
+# Enhanced Sales Dashboard CloudPepper Deployment Script
+# Use this script to deploy the module to CloudPepper Odoo instance
 
-echo "=== Enhanced Sales Dashboard Deployment ==="
+echo "=== Enhanced Sales Dashboard CloudPepper Deployment ==="
 echo "Module: oe_sale_dashboard_17"
-echo "Location: $(pwd)"
+echo "CloudPepper Location: /var/odoo/coatest/extra-addons/odoo17_final.git-6880b7fcd4844/oe_sale_dashboard_17"
+echo "Current Location: $(pwd)"
 echo ""
 
 # Check if we're in the right directory
