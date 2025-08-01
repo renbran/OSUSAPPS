@@ -16,10 +16,10 @@ ssh your-username@your-cloudpepper-server.com
 cd /var/odoo/coatest/extra-addons/odoo17_final.git-6880b7fcd4844
 
 # Make deployment script executable
-chmod +x oe_sale_dashboard_17/deploy_cloudpepper.sh
+chmod +x deploy_cloudpepper.sh
 
 # Run deployment (replace 'your_database_name' with actual database)
-sudo ./oe_sale_dashboard_17/deploy_cloudpepper.sh your_database_name
+sudo ./deploy_cloudpepper.sh your_database_name
 ```
 
 ### Method 2: Manual Deployment

@@ -61,15 +61,20 @@ echo ""
 
 # Navigate to the module directory
 MODULE_PATH="/var/odoo/coatest/extra-addons/odoo17_final.git-6880b7fcd4844"
-print_info "Navigating to module directory..."
+print_info "Checking current directory..."
 
-if [ ! -d "$MODULE_PATH" ]; then
+# Check if we're already in the module directory
+if [ -f "__manifest__.py" ] && [ "$(basename $(pwd))" = "oe_sale_dashboard_17" ]; then
+    print_status "Already in module directory: $(pwd)"
+    cd ..  # Go up to the parent directory to run git commands
+    MODULE_PATH="$(pwd)"
+elif [ ! -d "$MODULE_PATH" ]; then
     print_error "Module path not found: $MODULE_PATH"
     exit 1
+else
+    cd "$MODULE_PATH"
+    print_status "Changed to directory: $(pwd)"
 fi
-
-cd "$MODULE_PATH"
-print_status "Changed to directory: $(pwd)"
 
 # Check if oe_sale_dashboard_17 exists
 if [ ! -d "oe_sale_dashboard_17" ]; then
