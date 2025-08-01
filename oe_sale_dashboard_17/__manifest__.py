@@ -1,26 +1,44 @@
 {
-    'name': 'OSUS Executive Sales Dashboard',
-    'version': '17.0.0.3.0',  # Bumped version to add deployment robustness improvements
+    'name': 'OSUS Executive Sales Dashboard - Enhanced & Merged',
+    'version': '17.0.1.0.0',  # Major version bump for merged best practices
     'category': 'Sales',
-    'summary': 'Custom dashboard for yearly sales report.',
+    'summary': 'Advanced executive sales dashboard with merged best practices and enhanced analytics.',
     'description': """
-        Enhanced Executive Sales Dashboard with modern visualizations and business intelligence.
+        Enhanced Executive Sales Dashboard - Merged Best Practices Edition
         
-        Key Features:
-        - Interactive Chart.js powered visualizations
-        - Executive-level KPI cards with gradient designs
-        - Real-time sales funnel analysis
-        - Enhanced date range filtering with booking_date reference
-        - Beautiful modern UI with animated components
-        - Responsive design optimized for all devices
-        - Advanced revenue distribution charts
-        - Sales performance trend analysis
-        - Professional color-coded tables and cards
+        🚀 **New Merged Features:**
+        - **Defensive Field Checking**: Compatible with different Odoo setups and field configurations
+        - **Auto-refresh Capability**: Real-time data updates with configurable intervals
+        - **Advanced Error Handling**: Comprehensive error management with user-friendly messages
+        - **Performance Tracking**: Load time monitoring and performance metrics
+        - **Enhanced KPIs**: Conversion rate, pipeline velocity, revenue growth, and average deal size
+        - **Data Quality Indicators**: Real-time assessment of data completeness and accuracy
+        - **Export Functionality**: CSV export capability for external analysis
+        - **Responsive Design**: Mobile-first approach with adaptive layouts
         
-        Transform your sales data into beautiful, actionable insights with this comprehensive
-        executive dashboard using booking_date and sale_value fields from the osus_invoice_report module.
+        📊 **Core Features:**
+        - **Smart Date & Category Filtering**: Automatic fallback from booking_date to create_date
+        - **Category Scorecards**: Comprehensive performance metrics by sales categories
+        - **Sub-category Analytics**: Draft, Sales Orders, and Invoice breakdowns with totals
+        - **Interactive Visualizations**: Chart.js 4.4.0 with enhanced styling and animations
+        - **Sales Type Distribution**: Professional pie charts with hover effects
+        - **Trend Analysis**: Line charts showing revenue progression over time
+        - **Comparison Analytics**: Side-by-side performance comparisons
+        - **Ranking Tables**: Performance leaderboards with medal indicators
+        - **Executive KPI Cards**: Modern card design with gradient styling
+        
+        🔧 **Technical Excellence:**
+        - **Field Compatibility**: Automatic detection of booking_date, sale_value fields
+        - **Graceful Degradation**: Works with and without sales type configurations
+        - **Error Recovery**: Robust error handling with retry mechanisms
+        - **Performance Optimization**: Efficient data loading and chart rendering
+        - **Browser Compatibility**: Cross-browser support with fallbacks
+        - **Accessibility**: ARIA labels and keyboard navigation support
+        
+        Transform your sales data into actionable business insights with this comprehensive
+        dashboard that combines the best practices from multiple implementations.
     """,
-    'author': 'RENBRAN',
+    'author': 'RENBRAN - Enhanced with AI Best Practices',
     'website': 'WWW.TACHIMAO.COM',
     'depends': ['web', 'sale_management', 'osus_invoice_report', 'le_sale_type'],
     'data': [
@@ -29,20 +47,15 @@
     ],
     'assets': {
         'web.assets_backend': [
-            # Primary CDN loading for Chart.js
-            'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js',
-            # Module assets in proper loading order
-            'oe_sale_dashboard_17/static/src/css/dashboard.css',
-            'oe_sale_dashboard_17/static/src/js/chart.fallback.js',    # Must load before any chart usage
-            'oe_sale_dashboard_17/static/src/js/field_mapping.js',     # Field validation and mapping
-            'oe_sale_dashboard_17/static/src/js/compatibility.js',     # Compatibility layer and error handling
-            'oe_sale_dashboard_17/static/src/js/dashboard.js',         # Main dashboard component
+            # Enhanced merged assets with best practices
+            'oe_sale_dashboard_17/static/src/css/dashboard_merged.css',
+            'oe_sale_dashboard_17/static/src/js/dashboard_merged.js',
         ],
         'web.assets_web': [
-            'oe_sale_dashboard_17/static/src/xml/dashboard_template.xml',
+            'oe_sale_dashboard_17/static/src/xml/dashboard_merged_template.xml',
         ],
         'web.assets_web_dark': [
-            'oe_sale_dashboard_17/static/src/xml/dashboard_template.xml',
+            'oe_sale_dashboard_17/static/src/xml/dashboard_merged_template.xml',
         ],
     },
     'images': ['static/description/banner.gif'],

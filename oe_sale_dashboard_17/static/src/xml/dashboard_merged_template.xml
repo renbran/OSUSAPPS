@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Merged Enhanced Dashboard Template with Best Practices -->
+    <t t-name="oe_sale_dashboard_17.SaleDashboardTemplate" owl="1">
+        <div class="oe_dashboard_merged">
+            <!-- Enhanced Loading Overlay with Progress -->
+            <div t-if="state.isLoading" class="loading-overlay">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="loading-text">Loading Dashboard Data...</div>
+                    <div class="loading-details">
+                        <span t-if="state.loadTime > 0">Last load: <t t-esc="Math.round(state.loadTime)"/>ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State with Retry Option -->
+            <div t-if="state.error" class="error-container">
+                <div class="error-message">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    <span t-esc="state.error"/>
+                    <button class="btn btn-primary retry-btn" t-on-click="manualRefresh">
+                        <i class="fa fa-refresh"/> Try Again
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Header with Controls -->
+            <div class="dashboard-header">
+                <div class="header-title">
+                    <h1>Enhanced Sales Dashboard</h1>
+                    <div class="header-subtitle">
+                        Real-time insights with advanced analytics
+                        <span class="data-quality-indicator" t-att-style="'color: ' + getDataQualityColor()">
+                            ● <t t-esc="state.dataQuality.replace('_', ' ').toUpperCase()"/>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Dashboard Controls -->
+                <div class="dashboard-controls">
+                    <div class="control-group">
+                        <button class="btn btn-secondary" t-on-click="manualRefresh" 
+                                t-att-disabled="state.isLoading">
+                            <i class="fa fa-refresh"/> Refresh
+                        </button>
+                        
+                        <button class="btn btn-outline-primary" t-on-click="toggleAutoRefresh">
+                            <i t-att-class="state.autoRefresh ? 'fa fa-pause' : 'fa fa-play'"/>
+                            <t t-if="state.autoRefresh">Auto-Refresh ON</t>
+                            <t t-else="">Auto-Refresh OFF</t>
+                        </button>
+                        
+                        <button class="btn btn-success" t-on-click="exportDashboardData">
+                            <i class="fa fa-download"/> Export CSV
+                        </button>
+                    </div>
+                    
+                    <div class="refresh-info" t-if="state.lastRefresh">
+                        Last updated: <span t-esc="state.lastRefresh.toLocaleTimeString()"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label class="filter-label">Date Range</label>
+                    <div class="date-inputs">
+                        <input type="date" 
+                               t-att-value="state.filters.startDate" 
+                               t-on-change="(ev) => { state.filters.startDate = ev.target.value; this.onFilterChange(); }"
+                               class="form-control"/>
+                        <span class="date-separator">to</span>
+                        <input type="date" 
+                               t-att-value="state.filters.endDate" 
+                               t-on-change="(ev) => { state.filters.endDate = ev.target.value; this.onFilterChange(); }"
+                               class="form-control"/>
+                    </div>
+                </div>
+
+                <div class="filter-group" t-if="state.salesTypes.length > 0">
+                    <label class="filter-label">Sales Types</label>
+                    <div class="sales-type-checkboxes">
+                        <div t-foreach="state.salesTypes" t-as="salesType" t-key="salesType.id" class="checkbox-item">
+                            <input type="checkbox" 
+                                   t-att-id="'salesType_' + salesType.id"
+                                   t-att-checked="state.filters.selectedSalesTypes.includes(salesType.id)"
+                                   t-on-change="(ev) => this.onSalesTypeChange(salesType.id, ev.target.checked)"/>
+                            <label t-att-for="'salesType_' + salesType.id" t-esc="salesType.name"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced KPI Cards -->
+            <div class="kpi-section">
+                <!-- Primary KPIs -->
+                <div class="kpi-row">
+                    <div class="kpi-card primary">
+                        <div class="kpi-icon">
+                            <i class="fa fa-dollar-sign"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" t-esc="formatCurrency(state.dashboardData.totals.total_amount)"/>
+                            <div class="kpi-label">Total Revenue</div>
+                            <div class="kpi-change" t-if="state.dashboardData.totals.revenue_growth !== 0">
+                                <span t-att-class="state.dashboardData.totals.revenue_growth >= 0 ? 'positive' : 'negative'">
+                                    <i t-att-class="state.dashboardData.totals.revenue_growth >= 0 ? 'fa fa-arrow-up' : 'fa fa-arrow-down'"/>
+                                    <t t-esc="Math.abs(state.dashboardData.totals.revenue_growth)"/>%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card success">
+                        <div class="kpi-icon">
+                            <i class="fa fa-chart-line"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" t-esc="state.dashboardData.totals.conversion_rate.toFixed(1) + '%'"/>
+                            <div class="kpi-label">Conversion Rate</div>
+                            <div class="kpi-subtext">Quotes to Invoices</div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card info">
+                        <div class="kpi-icon">
+                            <i class="fa fa-handshake"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" t-esc="formatCurrency(state.dashboardData.totals.avg_deal_size)"/>
+                            <div class="kpi-label">Avg Deal Size</div>
+                            <div class="kpi-subtext">Per Transaction</div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card warning">
+                        <div class="kpi-icon">
+                            <i class="fa fa-clock"></i>
+                        </div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" t-esc="state.dashboardData.totals.pipeline_velocity + ' days'"/>
+                            <div class="kpi-label">Pipeline Velocity</div>
+                            <div class="kpi-subtext">Quote to Invoice</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary KPIs -->
+                <div class="kpi-row secondary">
+                    <div class="kpi-card outline">
+                        <div class="kpi-content">
+                            <div class="kpi-value" t-esc="state.dashboardData.totals.draft_count"/>
+                            <div class="kpi-label">Draft Orders</div>
+                            <div class="kpi-amount" t-esc="formatCurrency(state.dashboardData.totals.draft_amount)"/>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card outline">
+                        <div class="kpi-content">
+                            <div class="kpi-value" t-esc="state.dashboardData.totals.sales_order_count"/>
+                            <div class="kpi-label">Sales Orders</div>
+                            <div class="kpi-amount" t-esc="formatCurrency(state.dashboardData.totals.sales_order_amount)"/>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card outline">
+                        <div class="kpi-content">
+                            <div class="kpi-value" t-esc="state.dashboardData.totals.invoice_count"/>
+                            <div class="kpi-label">Invoiced</div>
+                            <div class="kpi-amount" t-esc="formatCurrency(state.dashboardData.totals.invoice_amount)"/>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card outline">
+                        <div class="kpi-content">
+                            <div class="kpi-value" t-esc="state.dashboardData.totals.total_count"/>
+                            <div class="kpi-label">Total Orders</div>
+                            <div class="kpi-amount" t-esc="formatCurrency(state.dashboardData.totals.total_amount)"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown Cards -->
+            <div class="categories-section" t-if="Object.keys(state.dashboardData.categories).length > 0">
+                <h3 class="section-title">
+                    <i class="fa fa-tags"></i> Revenue by Category
+                </h3>
+                <div class="category-grid">
+                    <div t-foreach="Object.entries(state.dashboardData.categories)" 
+                         t-as="categoryEntry" 
+                         t-key="categoryEntry[0]" 
+                         class="category-card">
+                        <div class="category-header">
+                            <h4 t-esc="categoryEntry[0]"/>
+                            <div class="category-total" t-esc="formatCurrency(categoryEntry[1].total_amount)"/>
+                        </div>
+                        
+                        <div class="category-breakdown">
+                            <div class="breakdown-item">
+                                <div class="breakdown-dot draft"></div>
+                                <span class="breakdown-label">Drafts</span>
+                                <span class="breakdown-count" t-esc="categoryEntry[1].draft_count"/>
+                                <span class="breakdown-amount" t-esc="formatCurrency(categoryEntry[1].draft_amount)"/>
+                            </div>
+                            
+                            <div class="breakdown-item">
+                                <div class="breakdown-dot sales"></div>
+                                <span class="breakdown-label">Sales Orders</span>
+                                <span class="breakdown-count" t-esc="categoryEntry[1].sales_order_count"/>
+                                <span class="breakdown-amount" t-esc="formatCurrency(categoryEntry[1].sales_order_amount)"/>
+                            </div>
+                            
+                            <div class="breakdown-item">
+                                <div class="breakdown-dot invoice"></div>
+                                <span class="breakdown-label">Invoiced</span>
+                                <span class="breakdown-count" t-esc="categoryEntry[1].invoice_count"/>
+                                <span class="breakdown-amount" t-esc="formatCurrency(categoryEntry[1].invoice_amount)"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="charts-grid">
+                    <!-- Trend Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-line-chart"></i> Revenue Trend
+                            </h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas t-ref="trendChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Category Distribution Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-pie-chart"></i> Category Distribution
+                            </h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas t-ref="categoryChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Status Distribution Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-bar-chart"></i> Orders by Status
+                            </h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas t-ref="statusChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fa fa-balance-scale"></i> Period Comparison
+                            </h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas t-ref="comparisonChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ranking Tables Section -->
+            <div class="tables-section">
+                <div class="tables-grid">
+                    <!-- Top Performing Categories -->
+                    <div class="table-container">
+                        <h3 class="table-title">
+                            <i class="fa fa-trophy"></i> Top Performing Categories
+                        </h3>
+                        <div class="table-wrapper">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Category</th>
+                                        <th>Revenue</th>
+                                        <th>Orders</th>
+                                        <th>Avg Deal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="Object.entries(state.dashboardData.categories).sort((a, b) => b[1].total_amount - a[1].total_amount)" 
+                                        t-as="categoryEntry" 
+                                        t-key="categoryEntry[0]">
+                                        <td class="rank-cell">
+                                            <span class="rank-number" t-esc="categoryEntry_index + 1"/>
+                                            <span t-if="categoryEntry_index === 0" class="rank-badge gold">👑</span>
+                                            <span t-elif="categoryEntry_index === 1" class="rank-badge silver">🥈</span>
+                                            <span t-elif="categoryEntry_index === 2" class="rank-badge bronze">🥉</span>
+                                        </td>
+                                        <td class="category-name" t-esc="categoryEntry[0]"/>
+                                        <td class="amount-cell" t-esc="formatCurrency(categoryEntry[1].total_amount)"/>
+                                        <td class="count-cell" t-esc="categoryEntry[1].total_count"/>
+                                        <td class="avg-cell" t-esc="formatCurrency(categoryEntry[1].total_count > 0 ? categoryEntry[1].total_amount / categoryEntry[1].total_count : 0)"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Performance Summary -->
+                    <div class="table-container">
+                        <h3 class="table-title">
+                            <i class="fa fa-analytics"></i> Performance Summary
+                        </h3>
+                        <div class="summary-metrics">
+                            <div class="metric-item">
+                                <div class="metric-label">Total Categories</div>
+                                <div class="metric-value" t-esc="Object.keys(state.dashboardData.categories).length"/>
+                            </div>
+                            
+                            <div class="metric-item">
+                                <div class="metric-label">Data Completeness</div>
+                                <div class="metric-value">
+                                    <span t-if="state.dashboardData.metadata.has_sales_types" class="badge success">Sales Types ✓</span>
+                                    <span t-if="state.dashboardData.metadata.has_sale_value" class="badge success">Sale Values ✓</span>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-item">
+                                <div class="metric-label">Date Field</div>
+                                <div class="metric-value" t-esc="state.dashboardData.metadata.date_field_used"/>
+                            </div>
+                            
+                            <div class="metric-item">
+                                <div class="metric-label">Load Performance</div>
+                                <div class="metric-value">
+                                    <span t-if="state.loadTime > 0" t-esc="Math.round(state.loadTime) + 'ms'"/>
+                                    <span t-else="">Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer with Metadata -->
+            <div class="dashboard-footer">
+                <div class="footer-content">
+                    <div class="footer-item">
+                        <i class="fa fa-database"></i>
+                        Data Quality: <span t-esc="state.dataQuality.replace('_', ' ').toUpperCase()"/>
+                    </div>
+                    <div class="footer-item">
+                        <i class="fa fa-refresh"></i>
+                        Auto-refresh: <span t-esc="state.autoRefresh ? 'Enabled' : 'Disabled'"/>
+                    </div>
+                    <div class="footer-item">
+                        <i class="fa fa-clock-o"></i>
+                        Last updated: <span t-esc="state.lastRefresh ? state.lastRefresh.toLocaleString() : 'Never'"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart.js CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"/>
+    </t>
+</templates>
