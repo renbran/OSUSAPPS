@@ -50,11 +50,6 @@
             # Enhanced merged assets with best practices
             'oe_sale_dashboard_17/static/src/css/dashboard_merged.css',
             'oe_sale_dashboard_17/static/src/js/dashboard_merged.js',
-        ],
-        'web.assets_web': [
-            'oe_sale_dashboard_17/static/src/xml/dashboard_merged_template.xml',
-        ],
-        'web.assets_web_dark': [
             'oe_sale_dashboard_17/static/src/xml/dashboard_merged_template.xml',
         ],
     },

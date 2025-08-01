@@ -860,5 +860,5 @@ export class SaleDashboardMerged extends Component {
     }
 }
 
-// Register the component
-registry.category("actions").add("oe_sale_dashboard_17.sales_dashboard_action", SaleDashboardMerged);
+// Register the component with the correct tag name that matches dashboard_views.xml
+registry.category("actions").add("oe_sale_dashboard_17_tag", SaleDashboardMerged);
