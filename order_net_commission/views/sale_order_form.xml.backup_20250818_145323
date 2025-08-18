@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Override Sales Order Form View with Custom Workflow -->
+        <record id="view_order_form_inherit_net_commission" model="ir.ui.view">
+            <field name="name">sale.order.form.net.commission</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                
+                <!-- Complete Header Replacement with Custom Workflow -->
+                <xpath expr="//header" position="replace">
+                    <header class="o_order_net_commission_header">
+                        
+                        <!-- Custom Status Bar -->
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,documentation,commission,sale,done,cancel"
+                               statusbar_colors='{"documentation":"info","commission":"warning","sale":"success"}'/>
+
+                        <!-- Invisible helper fields for button logic -->
+                        <field name="can_set_documentation" invisible="1"/>
+                        <field name="can_set_commission" invisible="1"/>  
+                        <field name="can_approve_commission" invisible="1"/>
+
+                        <!-- CUSTOM WORKFLOW BUTTONS -->
+                        
+                        <!-- Documentation Stage Button -->
+                        <button name="action_set_documentation"
+                                type="object"
+                                string="📋 Send to Documentation"
+                                class="btn-primary o_commission_btn_documentation"
+                                attrs="{'invisible': ['|', ('state','!=','draft'), ('can_set_documentation','=',False)]}"
+                                groups="order_net_commission.group_documentation_officer"
+                                help="Move order to documentation stage for review"/>
+
+                        <!-- Commission Stage Button -->
+                        <button name="action_set_commission"
+                                type="object"
+                                string="💰 Calculate Commission"
+                                class="btn-warning o_commission_btn_commission"
+                                attrs="{'invisible': ['|', ('state','!=','documentation'), ('can_set_commission','=',False)]}"
+                                groups="order_net_commission.group_commission_analyst"
+                                help="Move order to commission calculation stage"/>
+
+                        <!-- Final Approval Button -->
+                        <button name="action_approve_commission"
+                                type="object"
+                                string="✅ Approve &amp; Confirm Sale"
+                                class="btn-success o_commission_btn_approve"
+                                attrs="{'invisible': ['|', ('state','!=','commission'), ('can_approve_commission','=',False)]}"
+                                groups="order_net_commission.group_sales_approver"
+                                help="Approve commission and confirm the sales order"/>
+
+                        <!-- Legacy Send by Email Button - Hidden -->
+                        <button name="action_quotation_send"
+                                type="object"
+                                string="Send by Email"
+                                class="btn-primary"
+                                attrs="{'invisible': [('state','!=','never_show')]}"
+                                groups="base.group_no_one"/>
+
+                        <!-- Legacy Confirm Button - Hidden -->
+                        <button name="action_confirm"
+                                type="object"
+                                string="Confirm"
+                                class="btn-primary"
+                                attrs="{'invisible': [('state','!=','never_show')]}"
+                                groups="base.group_no_one"/>
+
+                        <!-- Cancel Button - Available for all authorized users -->
+                        <button name="action_cancel"
+                                type="object"
+                                string="❌ Cancel"
+                                class="btn-secondary"
+                                attrs="{'invisible': [('state','in',('sale','done','cancel'))]}"
+                                confirm="Are you sure you want to cancel this order?"
+                                help="Cancel this sales order"/>
+
+                        <!-- Unlock Button for Sale Orders -->
+                        <button name="action_unlock"
+                                type="object"
+                                string="🔓 Unlock"
+                                class="btn-secondary"
+                                attrs="{'invisible': [('state','!=','sale')]}"
+                                groups="sales_team.group_sale_manager"
+                                help="Unlock confirmed sales order for modifications"/>
+
+                        <!-- Print Button -->
+                        <button name="%(sale.action_report_saleorder)d"
+                                type="action"
+                                string="🖨️ Print"
+                                class="btn-secondary"
+                                attrs="{'invisible': [('state','in',('draft','cancel'))]}"
+                                help="Print sales order"/>
+
+                    </header>
+                </xpath>
+
+                <!-- Add Commission Fields Section - CloudPepper Compatible -->
+                <xpath expr="//notebook" position="inside">
+                    <page name="commission_page" string="💰 Commission Details" 
+                          attrs="{'invisible': [('state','in',('draft','cancel'))]}">
+                        <group name="commission_section" string="Commission Calculation">
+                            <group string="Cost Analysis">
+                                <field name="total_internal" 
+                                       attrs="{'readonly': [('state','not in',('documentation','commission'))]}"/>
+                                <field name="total_external"
+                                       attrs="{'readonly': [('state','not in',('documentation','commission'))]}"/>
+                            </group>
+                            <group string="Net Commission">
+                                <field name="net_commission" 
+                                       attrs="{'readonly': [('state','!=','commission')]}"
+                                       widget="monetary"/>
+                            </group>
+                        </group>
+                        
+                        <!-- Commission Summary -->
+                        <separator string="Commission Summary"/>
+                        <group>
+                            <group>
+                                <field name="amount_untaxed" readonly="1" string="Order Subtotal"/>
+                                <field name="amount_tax" readonly="1" string="Taxes"/>
+                            </group>
+                            <group>
+                                <field name="amount_total" readonly="1" string="Order Total"/>
+                                <field name="net_commission" readonly="1" widget="monetary" 
+                                       string="Calculated Net Commission"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+
+                <!-- Add Workflow Tracking Information - CloudPepper Compatible -->
+                <xpath expr="//notebook" position="inside">
+                    <page name="workflow_tracking_page" string="📊 Workflow Tracking">
+                        <group name="workflow_tracking" string="Workflow Progress">
+                            <group string="Stage Progress">
+                                <field name="documentation_date" readonly="1"/>
+                                <field name="documentation_user_id" readonly="1"/>
+                                <field name="commission_date" readonly="1"/>
+                                <field name="commission_user_id" readonly="1"/>
+                            </group>
+                            <group string="Approval Tracking">
+                                <field name="approver_user_id" readonly="1"/>
+                                <field name="create_date" readonly="1" string="Order Created"/>
+                                <field name="write_date" readonly="1" string="Last Modified"/>
+                            </group>
+                        </group>
+                        
+                        <!-- Workflow Status Summary -->
+                        <separator string="Workflow Status Summary"/>
+                        <div class="o_workflow_summary">
+                            <div class="alert alert-info" style="margin: 10px 0;">
+                                <strong>Current Stage:</strong> 
+                                <field name="state" readonly="1" widget="badge"/>
+                                <br/>
+                                <small>Use the buttons in the header to advance through the workflow stages.</small>
+                            </div>
+                        </div>
+                    </page>
+                </xpath>
+
+                <!-- CloudPepper Compatible Footer Button Hiding -->
+                <xpath expr="//footer" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                
+                <!-- Alternative: Hide specific footer buttons if footer exists -->
+                <xpath expr="//footer//button" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Quotation View Form Override -->
+        <record id="view_order_form_quotation_inherit_net_commission" model="ir.ui.view">
+            <field name="name">sale.order.form.quotation.net.commission</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form_readonly"/>
+            <field name="arch" type="xml">
+                
+                <!-- Apply same header override to quotation view -->
+                <xpath expr="//header" position="replace">
+                    <header class="o_order_net_commission_header">
+                        
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,documentation,commission,sale,done,cancel"
+                               statusbar_colors='{"documentation":"info","commission":"warning","sale":"success"}'
+                               readonly="1"/>
+
+                        <!-- Show workflow progress for quotations -->
+                        <div class="alert alert-info" attrs="{'invisible': [('state','=','draft')]}">
+                            <strong>Workflow Progress:</strong>
+                            <span attrs="{'invisible': [('state','!=','documentation')]}">
+                                📋 Currently in Documentation Review
+                            </span>
+                            <span attrs="{'invisible': [('state','!=','commission')]}">
+                                💰 Commission Calculation in Progress
+                            </span>
+                            <span attrs="{'invisible': [('state','not in',('sale','done'))]}">
+                                ✅ Approved and Confirmed
+                            </span>
+                        </div>
+
+                    </header>
+                </xpath>
+
+                <!-- Add commission information to quotation view -->
+                <xpath expr="//field[@name='amount_total']" position="after">
+                    <field name="net_commission" 
+                           attrs="{'invisible': [('state','in',('draft','cancel'))]}"
+                           widget="monetary"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

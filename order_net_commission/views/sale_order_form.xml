@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Odoo 17.0 Compatible View - No 'attrs' Usage -->
+        <record id="view_order_form_inherit_net_commission_safe" model="ir.ui.view">
+            <field name="name">sale.order.form.net.commission.safe</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                
+                <!-- Safe Header Override with Locked Field - Odoo 17.0 Compatible -->
+                <xpath expr="//header" position="replace">
+                    <header>
+                        <!-- CRITICAL: Include locked field to satisfy view modifiers -->
+                        <field name="locked" invisible="1"/>
+                        
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,documentation,commission,sale,done"/>
+
+                        <!-- Safe Workflow Buttons - Odoo 17.0 Compatible -->
+                        <button name="action_set_documentation"
+                                type="object"
+                                string="Documentation"
+                                class="btn-info"
+                                invisible="state != 'draft'"
+                                groups="order_net_commission.group_documentation_officer"/>
+
+                        <button name="action_set_commission"
+                                type="object"
+                                string="Commission"
+                                class="btn-warning"
+                                invisible="state != 'documentation'"
+                                groups="order_net_commission.group_commission_analyst"/>
+
+                        <button name="action_approve_commission"
+                                type="object"
+                                string="Approve"
+                                class="btn-success"
+                                invisible="state != 'commission'"
+                                groups="order_net_commission.group_sales_approver"/>
+
+                        <button name="action_cancel"
+                                type="object"
+                                string="Cancel"
+                                invisible="state in ('sale','done','cancel')"/>
+
+                    </header>
+                </xpath>
+
+                <!-- Safe Commission Fields - Add as separate page -->
+                <xpath expr="//notebook" position="inside">
+                    <page name="commission_safe" string="Commission">
+                        <group string="Commission Calculation">
+                            <field name="total_internal"/>
+                            <field name="total_external"/>
+                            <field name="net_commission" widget="monetary"/>
+                        </group>
+                        <group string="Workflow Tracking">
+                            <field name="documentation_date" readonly="1"/>
+                            <field name="commission_date" readonly="1"/>
+                            <field name="documentation_user_id" readonly="1"/>
+                            <field name="commission_user_id" readonly="1"/>
+                            <field name="approver_user_id" readonly="1"/>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

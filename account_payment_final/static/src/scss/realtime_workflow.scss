@@ -1,0 +1,341 @@
+/* Payment Workflow Real-time Updates Styling */
+
+/* Workflow Progress Indicators */
+/* Consider using BEM methodology: .o_module_name__workflow-progress */
+.o_module_workflow-progress {
+  margin: 20px 0;
+  padding: 15px;
+  background: var(--bs-light);
+  border-radius: 8px;
+  border-left: 4px solid #1f4788;
+}
+
+.workflow-progress h5 {
+  color: #1f4788;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+/* Consider using BEM methodology: .o_module_name__progress-container */
+.o_module_progress-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Consider using BEM methodology: .o_module_name__progress-step */
+.o_module_progress-step {
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.progress-step i {
+  font-size: 14px;
+}
+
+.progress-step.step-completed {
+  background: #28a745;
+  color: white;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.progress-step.step-current {
+  background: #ffc107;
+  color: #212529;
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.progress-step.step-pending {
+  background: #e9ecef;
+  color: #6c757d;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Real-time Notifications */
+/* Consider using BEM methodology: .o_module_name__payment-notification */
+.o_module_payment-notification {
+  max-width: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Field Warning Styles */
+/* Consider using BEM methodology: .o_module_name__amount-warning */
+.o_module_amount-warning {
+  margin-top: 5px;
+  font-size: 12px;
+  border-radius: 4px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Enhanced Button States */
+.workflow-buttons button {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.workflow-buttons button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.workflow-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.workflow-buttons button .fa-spinner {
+  margin-left: 5px;
+}
+
+/* Status Bar Enhancements */
+.payment-header .statusbar {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.payment-header .statusbar .o_statusbar_status {
+  transition: all 0.3s ease;
+}
+
+.payment-header .statusbar .o_statusbar_status.o_active {
+  animation: statusHighlight 1s ease;
+}
+
+@keyframes statusHighlight {
+  0% {
+    background-color: inherit;
+  }
+  50% {
+    background-color: rgba(31, 71, 136, 0.1);
+  }
+  100% {
+    background-color: inherit;
+  }
+}
+
+/* Form Field Real-time Updates */
+.o_field_widget.o_field_changed {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-color: #ffc107;
+  transition: all 0.3s ease;
+}
+
+.o_field_widget.o_field_updated {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-color: #28a745;
+  animation: fieldUpdated 1s ease;
+}
+
+@keyframes fieldUpdated {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Loading States */
+/* Consider using BEM methodology: .o_module_name__workflow-loading */
+.o_module_workflow-loading {
+  position: relative;
+}
+
+.workflow-loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workflow-loading::before {
+  content: "\f110";
+  font-family: "FontAwesome";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: #1f4788;
+  z-index: 1;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Real-time Status Badges */
+/* Consider using BEM methodology: .o_module_name__status-badge */
+.o_module_status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.draft {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.status-badge.under-review {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-badge.for-approval {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.posted {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+/* Consider using BEM methodology: .o_module_name__progress-container */
+  .o_module_progress-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+/* Consider using BEM methodology: .o_module_name__progress-step */
+  .o_module_progress-step {
+    justify-content: center;
+    margin-bottom: 5px;
+  }
+
+/* Consider using BEM methodology: .o_module_name__payment-notification */
+  .o_module_payment-notification {
+    left: 10px !important;
+    right: 10px !important;
+    max-width: none;
+  }
+
+/* Consider using BEM methodology: .o_module_name__workflow-buttons */
+  .o_module_workflow-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .workflow-buttons button {
+    width: 100%;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+/* Consider using BEM methodology: .o_module_name__workflow-progress */
+  .o_module_workflow-progress {
+    background: var(--bs-dark);
+    border-left-color: #4a90e2;
+  }
+
+  .workflow-progress h5 {
+    color: #4a90e2;
+  }
+
+  .progress-step.step-pending {
+    background: #495057;
+    color: #adb5bd;
+  }
+
+/* Consider using BEM methodology: .o_module_name__payment-notification */
+  .o_module_payment-notification {
+    background: var(--bs-dark);
+    border-color: var(--bs-border-color);
+  }
+}
+
+/* High Contrast Support */
+@media (prefers-contrast: high) {
+/* Consider using BEM methodology: .o_module_name__progress-step */
+  .o_module_progress-step {
+    border: 2px solid currentColor;
+  }
+
+  .workflow-buttons button {
+    border: 2px solid currentColor;
+  }
+
+/* Consider using BEM methodology: .o_module_name__status-badge */
+  .o_module_status-badge {
+    border: 1px solid currentColor;
+  }
+}

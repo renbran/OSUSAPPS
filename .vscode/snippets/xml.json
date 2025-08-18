@@ -1,0 +1,90 @@
+{
+    "Odoo View Record": {
+        "prefix": "odoo-view",
+        "body": [
+            "<record id=\"${1:view_id}\" model=\"ir.ui.view\">",
+            "    <field name=\"name\">${2:View Name}</field>",
+            "    <field name=\"model\">${3:model.name}</field>",
+            "    <field name=\"arch\" type=\"xml\">",
+            "        $0",
+            "    </field>",
+            "</record>"
+        ],
+        "description": "Create an Odoo view record"
+    },
+    "Odoo Form View": {
+        "prefix": "odoo-form",
+        "body": [
+            "<form string=\"${1:Form Title}\">",
+            "    <header>",
+            "        $0",
+            "    </header>",
+            "    <sheet>",
+            "        <group>",
+            "            <field name=\"${2:field_name}\"/>",
+            "        </group>",
+            "    </sheet>",
+            "</form>"
+        ],
+        "description": "Create an Odoo form view"
+    },
+    "Odoo Tree View": {
+        "prefix": "odoo-tree",
+        "body": [
+            "<tree string=\"${1:Tree Title}\">",
+            "    <field name=\"${2:field_name}\"/>",
+            "    $0",
+            "</tree>"
+        ],
+        "description": "Create an Odoo tree view"
+    },
+    "Odoo Button": {
+        "prefix": "odoo-button",
+        "body": [
+            "<button name=\"${1:action_method}\" string=\"${2:Button Text}\" type=\"object\" class=\"${3:oe_highlight}\" invisible=\"${4:state != 'draft'}\"/>"
+        ],
+        "description": "Create an Odoo button"
+    },
+    "Odoo XPath": {
+        "prefix": "odoo-xpath",
+        "body": [
+            "<xpath expr=\"${1://field[@name='field_name']}\" position=\"${2:after}\">",
+            "    $0",
+            "</xpath>"
+        ],
+        "description": "Create an Odoo XPath"
+    },
+    "Odoo Inherit View": {
+        "prefix": "odoo-inherit",
+        "body": [
+            "<record id=\"${1:view_id}\" model=\"ir.ui.view\">",
+            "    <field name=\"name\">${2:View Name}</field>",
+            "    <field name=\"model\">${3:model.name}</field>",
+            "    <field name=\"inherit_id\" ref=\"${4:module.view_id}\"/>",
+            "    <field name=\"arch\" type=\"xml\">",
+            "        <xpath expr=\"${5://field[@name='field_name']}\" position=\"${6:after}\">",
+            "            $0",
+            "        </xpath>",
+            "    </field>",
+            "</record>"
+        ],
+        "description": "Create an Odoo inherited view"
+    },
+    "Odoo Field": {
+        "prefix": "odoo-field",
+        "body": [
+            "<field name=\"${1:field_name}\" ${2:invisible=\"${3:state == 'draft'}\"}$0/>"
+        ],
+        "description": "Create an Odoo field"
+    },
+    "Odoo Group": {
+        "prefix": "odoo-group",
+        "body": [
+            "<group string=\"${1:Group Title}\">",
+            "    <field name=\"${2:field_name}\"/>",
+            "    $0",
+            "</group>"
+        ],
+        "description": "Create an Odoo group"
+    }
+}

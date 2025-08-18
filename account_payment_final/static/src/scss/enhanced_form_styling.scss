@@ -1,0 +1,153 @@
+/* Enhanced Form Styling - CloudPepper Optimized */
+/* Modern form enhancements for better UX */
+
+.o_form_enhanced {
+    .o_form_sheet {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
+        margin: 1rem;
+    }
+
+    .o_form_sheet_bg {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
+        border-radius: 12px;
+    }
+
+    // Enhanced field groups
+    .o_group {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+
+        .o_group_text {
+            font-weight: 600;
+            color: var(--osus-primary, #722f37);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+    }
+
+    // Enhanced notebooks/tabs
+    .o_notebook {
+/* Consider using BEM methodology: .o_module_name__nav-tabs */
+        .o_module_nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+
+/* Consider using BEM methodology: .o_module_name__nav-link */
+            .o_module_nav-link {
+                border: none;
+                border-bottom: 2px solid transparent;
+                background: none;
+                color: #6c757d;
+                font-weight: 500;
+                padding: 0.75rem 1.5rem;
+
+                &.active {
+                    border-bottom-color: var(--osus-primary, #722f37);
+                    color: var(--osus-primary, #722f37);
+                    background: none;
+                }
+
+                &:hover {
+                    border-bottom-color: #adb5bd;
+                    color: #495057;
+                }
+            }
+        }
+
+/* Consider using BEM methodology: .o_module_name__tab-content */
+        .o_module_tab-content {
+            padding: 1.5rem 0;
+        }
+    }
+
+    // Enhanced buttons
+/* Consider using BEM methodology: .o_module_name__oe_button_box */
+    .o_module_oe_button_box {
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            transition: all 0.2s ease;
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            }
+        }
+    }
+}
+
+// Enhanced field widgets
+.o_field_enhanced {
+    .o_field_widget {
+        margin-bottom: 1rem;
+
+        label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            border: 1.5px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            background: white;
+
+            &:focus {
+                border-color: var(--osus-primary, #722f37);
+                box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+                outline: none;
+            }
+
+            &:hover {
+                border-color: #adb5bd;
+            }
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .o_field_boolean {
+            input[type="checkbox"] {
+                width: auto;
+                margin-right: 0.5rem;
+            }
+        }
+    }
+}
+
+// Enhanced status bar
+.o_form_statusbar {
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    padding: 1rem 1.5rem;
+    margin: -2rem -2rem 1.5rem -2rem;
+
+    .o_statusbar_status {
+        .o_arrow_button {
+            border-radius: 6px;
+            margin-right: 0.5rem;
+
+            &.btn-primary {
+                background: var(--osus-primary, #722f37);
+                border-color: var(--osus-primary, #722f37);
+            }
+        }
+    }
+}

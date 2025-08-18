@@ -2,39 +2,10 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "docker-build",
-			"label": "docker-build",
-			"platform": "python",
-			"dockerBuild": {
-				"tag": "odoo17final:latest",
-				"dockerfile": "${workspaceFolder}/Dockerfile",
-				"context": "${workspaceFolder}",
-				"pull": true
-			}
-		},
-		{
-			"type": "docker-run",
-			"label": "docker-run: debug",
-			"dependsOn": [
-				"docker-build"
-			],
-			"dockerRun": {
-				"env": {
-					"FLASK_APP": "whatsapp_redirect\\__init__.py"
-				}
-			},
-			"python": {
-				"args": [
-					"run",
-					"--no-debugger",
-					"--no-reload",
-					"--host",
-					"0.0.0.0",
-					"--port",
-					"5002"
-				],
-				"module": "flask"
-			}
+			"type": "shell",
+			"label": "Odoo 17 Test: account_payment_final",
+			"command": "docker-compose exec odoo odoo --test-enable --log-level=test --stop-after-init -d odoo -i account_payment_final",
+			"group": "test"
 		}
 	]
 }

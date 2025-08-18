@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    
+    <!-- Payment Approval Widget Template -->
+    <t t-name="account_payment_final.PaymentApprovalWidget" owl="1">
+        <div class="o_payment_approval_widget" t-att-class="props.readonly ? 'o_readonly' : ''">
+            <div class="approval-workflow-container">
+                <h6 class="text-primary mb-3">
+                    <i class="fa fa-check-circle me-2"></i>
+                    Approval Workflow
+                </h6>
+                
+                <t t-if="state.isLoading">
+                    <div class="text-center py-3">
+                        <i class="fa fa-spinner fa-spin me-2"></i>
+                        Loading workflow data...
+                    </div>
+                </t>
+                
+                <t t-else="">
+                    <div class="workflow-stages">
+                        <t t-foreach="state.approvalStages" t-as="stage" t-key="stage.id">
+                            <div class="workflow-stage d-flex align-items-center mb-2">
+                                <div t-attf-class="stage-icon me-3 {{ stage.status }}">
+                                    <i t-attf-class="fa {{ stage.icon }}"></i>
+                                </div>
+                                <div class="stage-info flex-grow-1">
+                                    <div class="stage-name fw-bold" t-esc="stage.name"></div>
+                                    <div class="stage-description small text-muted" t-esc="stage.description"></div>
+                                    <div t-if="stage.user_id" class="stage-user small">
+                                        <i class="fa fa-user me-1"></i>
+                                        <span t-esc="stage.user_id[1]"></span>
+                                    </div>
+                                </div>
+                                <div t-if="stage.date" class="stage-date small text-muted">
+                                    <t t-esc="stage.date"></t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                    
+                    <div t-if="!props.readonly and (state.canApprove or state.canReject)" class="workflow-actions mt-3 text-end">
+                        <button t-if="state.canReject" 
+                                class="btn btn-outline-danger btn-sm me-2" 
+                                t-on-click="onReject">
+                            <i class="fa fa-times me-1"></i>
+                            Reject
+                        </button>
+                        <button t-if="state.canApprove" 
+                                class="btn btn-primary btn-sm" 
+                                t-on-click="onApprove">
+                            <i class="fa fa-check me-1"></i>
+                            Approve
+                        </button>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+    
+    <!-- QR Code Field Widget Template -->
+    <t t-name="account_payment_final.QRCodeField" owl="1">
+        <div class="o_qr_code_field">
+            <t t-if="state.qrCodeData">
+                <div class="qr-code-container text-center">
+                    <img t-attf-src="data:image/png;base64,{{ state.qrCodeData }}" 
+                         alt="Payment QR Code" 
+                         class="img-fluid" 
+                         style="max-width: 200px; border: 1px solid #ddd; border-radius: 8px;"/>
+                    <div class="mt-2">
+                        <small class="text-muted">QR Code for Payment Verification</small>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="text-center py-3 text-muted">
+                    <i class="fa fa-qrcode fa-2x mb-2"></i>
+                    <div>QR Code will be generated after saving</div>
+                </div>
+            </t>
+        </div>
+    </t>
+    
+    <!-- Payment List View Enhanced Template -->
+    <t t-name="account_payment_final.PaymentListView" owl="1">
+        <div class="o_payment_list_enhanced">
+            <div class="list-controls mb-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="filter-buttons">
+                            <button class="btn btn-outline-primary btn-sm me-2" 
+                                    t-att-class="state.filter === 'all' ? 'active' : ''"
+                                    t-on-click="() => this.setFilter('all')">
+                                All Payments
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm me-2"
+                                    t-att-class="state.filter === 'pending' ? 'active' : ''"
+                                    t-on-click="() => this.setFilter('pending')">
+                                Pending Approval
+                            </button>
+                            <button class="btn btn-outline-success btn-sm"
+                                    t-att-class="state.filter === 'approved' ? 'active' : ''"
+                                    t-on-click="() => this.setFilter('approved')">
+                                Approved
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="search-box">
+                            <input type="text" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="Search payments..."
+                                   t-model="state.searchTerm"
+                                   t-on-input="onSearch"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+    
+    <!-- Payment Status Badge Template -->
+    <t t-name="account_payment_final.PaymentStatusBadge" owl="1">
+        <span t-attf-class="badge payment-status-badge status-{{ props.status }}"
+              t-att-title="props.tooltip or ''">
+            <i t-if="props.icon" t-attf-class="fa {{ props.icon }} me-1"></i>
+            <t t-esc="props.text or props.status"></t>
+        </span>
+    </t>
+
+</templates>

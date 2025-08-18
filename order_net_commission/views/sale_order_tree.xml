@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Sales Order Tree View Enhancement -->
+        <record id="view_quotation_tree_net_commission" model="ir.ui.view">
+            <field name="name">sale.order.tree.net.commission</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+                
+                <!-- Enhance state field display -->
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="optional">show</attribute>
+                    <attribute name="widget">badge</attribute>
+                    <attribute name="decoration-info">state == 'documentation'</attribute>
+                    <attribute name="decoration-warning">state == 'commission'</attribute>
+                    <attribute name="decoration-success">state == 'sale'</attribute>
+                </xpath>
+
+                <!-- Add Net Commission after Amount Total -->
+                <xpath expr="//field[@name='amount_total']" position="after">
+                    <field name="net_commission" 
+                           optional="show" 
+                           widget="monetary"
+                           sum="Total Net Commission"/>
+                </xpath>
+
+                <!-- Add workflow tracking users -->
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="documentation_user_id" 
+                           optional="hide"
+                           string="Doc Officer"/>
+                    <field name="commission_user_id" 
+                           optional="hide"
+                           string="Commission Analyst"/>
+                    <field name="approver_user_id" 
+                           optional="hide"
+                           string="Approver"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Confirmed Sales Order Tree View Enhancement -->
+        <record id="view_order_tree_net_commission" model="ir.ui.view">
+            <field name="name">sale.order.tree.net.commission.sale</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                
+                <!-- Add Net Commission after Amount Total -->
+                <xpath expr="//field[@name='amount_total']" position="after">
+                    <field name="net_commission" 
+                           optional="show" 
+                           widget="monetary"
+                           sum="Total Net Commission"/>
+                </xpath>
+
+                <!-- Add workflow completion tracking -->
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="approver_user_id" 
+                           optional="show"
+                           string="Approved By"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Custom Search View for Commission Workflow -->
+        <record id="view_sales_order_commission_filter" model="ir.ui.view">
+            <field name="name">sale.order.commission.search</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+            <field name="arch" type="xml">
+                
+                <!-- Add Commission Workflow Filters -->
+                <xpath expr="//filter[@name='my_quotation']" position="after">
+                    <separator/>
+                    <filter name="documentation_stage" 
+                            string="In Documentation" 
+                            domain="[('state','=','documentation')]"/>
+                    <filter name="commission_stage" 
+                            string="Commission Calculation" 
+                            domain="[('state','=','commission')]"/>
+                    <filter name="with_commission" 
+                            string="With Commission" 
+                            domain="[('net_commission','>',0)]"/>
+                </xpath>
+
+                <!-- Add Commission Grouping -->
+                <xpath expr="//group/filter[@name='salesperson']" position="after">
+                    <filter name="group_by_workflow_stage" 
+                            string="Workflow Stage" 
+                            domain="[]" 
+                            context="{'group_by':'state'}"/>
+                    <filter name="group_by_documentation_officer" 
+                            string="Documentation Officer" 
+                            domain="[]" 
+                            context="{'group_by':'documentation_user_id'}"/>
+                    <filter name="group_by_commission_analyst" 
+                            string="Commission Analyst" 
+                            domain="[]" 
+                            context="{'group_by':'commission_user_id'}"/>
+                    <filter name="group_by_approver" 
+                            string="Approver" 
+                            domain="[]" 
+                            context="{'group_by':'approver_user_id'}"/>
+                </xpath>
+
+                <!-- Add Commission Search Fields -->
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="net_commission"/>
+                    <field name="total_internal"/>
+                    <field name="total_external"/>
+                    <field name="documentation_user_id"/>
+                    <field name="commission_user_id"/>
+                    <field name="approver_user_id"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Commission Dashboard Action -->
+        <record id="action_orders_commission_dashboard" model="ir.actions.act_window">
+            <field name="name">Commission Dashboard</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_mode">tree,form,kanban,graph,pivot</field>
+            <field name="domain">[('state','in',['documentation','commission','sale'])]</field>
+            <field name="context">{
+                'search_default_with_commission': 1,
+                'search_default_group_by_workflow_stage': 1,
+                'default_state': 'draft'
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Welcome to the Commission Dashboard!
+                </p>
+                <p>
+                    Track orders through the commission workflow:
+                    <br/>• Documentation Review
+                    <br/>• Commission Calculation  
+                    <br/>• Final Approval
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

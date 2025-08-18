@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Mail Activity Types for Commission Workflow -->
+        
+        <!-- Documentation Review Activity -->
+        <record id="mail_activity_documentation_review" model="mail.activity.type">
+            <field name="name">Documentation Review</field>
+            <field name="summary">Review order documentation</field>
+            <field name="category">meeting</field>
+            <field name="delay_count">1</field>
+            <field name="delay_unit">days</field>
+            <field name="delay_from">current_date</field>
+            <field name="icon">fa-file-text-o</field>
+            <field name="decoration_type">info</field>
+            <field name="res_model">sale.order</field>
+        </record>
+
+        <!-- Commission Calculation Activity -->
+        <record id="mail_activity_commission_calculation" model="mail.activity.type">
+            <field name="name">Commission Calculation</field>
+            <field name="summary">Calculate order commission</field>
+            <field name="category">phonecall</field>
+            <field name="delay_count">2</field>
+            <field name="delay_unit">days</field>
+            <field name="delay_from">current_date</field>
+            <field name="icon">fa-calculator</field>
+            <field name="decoration_type">warning</field>
+            <field name="res_model">sale.order</field>
+        </record>
+
+        <!-- Commission Approval Activity -->
+        <record id="mail_activity_commission_approval" model="mail.activity.type">
+            <field name="name">Commission Approval</field>
+            <field name="summary">Approve commission and confirm sale</field>
+            <field name="category">meeting</field>
+            <field name="delay_count">1</field>
+            <field name="delay_unit">days</field>
+            <field name="delay_from">current_date</field>
+            <field name="icon">fa-check-circle</field>
+            <field name="decoration_type">success</field>
+            <field name="res_model">sale.order</field>
+        </record>
+
+        <!-- Commission Workflow Activity Types for Menu -->
+        <record id="mail_activity_commission_urgent" model="mail.activity.type">
+            <field name="name">Urgent Commission Review</field>
+            <field name="summary">Urgent commission review required</field>
+            <field name="category">other</field>
+            <field name="delay_count">0</field>
+            <field name="delay_unit">days</field>
+            <field name="delay_from">current_date</field>
+            <field name="icon">fa-exclamation-triangle</field>
+            <field name="decoration_type">danger</field>
+            <field name="res_model">sale.order</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,61 +1,109 @@
+# -*- coding: utf-8 -*-
 {
-    'name': 'OSUS Executive Sales Dashboard - Enhanced & Merged',
-    'version': '17.0.1.0.0',  # Major version bump for merged best practices
+    'name': 'Sales Dashboard - Odoo 17',
+    'version': '17.0.1.6.2',
     'category': 'Sales',
-    'summary': 'Advanced executive sales dashboard with merged best practices and enhanced analytics.',
+    'summary': 'Enhanced Sales Dashboard - Responsive Charts, Predefined Date Filters & Booking Date Support (#800020 Maroon Theme)',
     'description': """
-        Enhanced Executive Sales Dashboard - Merged Best Practices Edition
-        
-        🚀 **New Merged Features:**
-        - **Defensive Field Checking**: Compatible with different Odoo setups and field configurations
-        - **Auto-refresh Capability**: Real-time data updates with configurable intervals
-        - **Advanced Error Handling**: Comprehensive error management with user-friendly messages
-        - **Performance Tracking**: Load time monitoring and performance metrics
-        - **Enhanced KPIs**: Conversion rate, pipeline velocity, revenue growth, and average deal size
-        - **Data Quality Indicators**: Real-time assessment of data completeness and accuracy
-        - **Export Functionality**: CSV export capability for external analysis
-        - **Responsive Design**: Mobile-first approach with adaptive layouts
-        
-        📊 **Core Features:**
-        - **Smart Date & Category Filtering**: Automatic fallback from booking_date to create_date
-        - **Category Scorecards**: Comprehensive performance metrics by sales categories
-        - **Sub-category Analytics**: Draft, Sales Orders, and Invoice breakdowns with totals
-        - **Interactive Visualizations**: Chart.js 4.4.0 with enhanced styling and animations
-        - **Sales Type Distribution**: Professional pie charts with hover effects
-        - **Trend Analysis**: Line charts showing revenue progression over time
-        - **Comparison Analytics**: Side-by-side performance comparisons
-        - **Ranking Tables**: Performance leaderboards with medal indicators
-        - **Executive KPI Cards**: Modern card design with gradient styling
-        
-        🔧 **Technical Excellence:**
-        - **Field Compatibility**: Automatic detection of booking_date, sale_value fields
-        - **Graceful Degradation**: Works with and without sales type configurations
-        - **Error Recovery**: Robust error handling with retry mechanisms
-        - **Performance Optimization**: Efficient data loading and chart rendering
-        - **Browser Compatibility**: Cross-browser support with fallbacks
-        - **Accessibility**: ARIA labels and keyboard navigation support
-        
-        Transform your sales data into actionable business insights with this comprehensive
-        dashboard that combines the best practices from multiple implementations.
+Enhanced Sales Dashboard for Odoo 17 - COMPLETELY ISOLATED EDITION  
+==================================================================
+
+‚ö†Ô∏è  IMPORTANT: This module DOES NOT modify sale.order model or views ‚ö†Ô∏è
+
+This module provides a completely independent enhanced sales dashboard with:
+
+üîπ ZERO INHERITANCE of sale.order model - completely separate
+üîπ NO MODIFICATIONS to quotation/order forms or views
+üîπ Independent TransientModel 'sale.dashboard' for data only
+üîπ Visual analytics with #800020 maroon primary color theme
+üîπ Interactive Chart.js visualizations with brand color palette  
+üîπ Mobile-responsive design optimized for brand presentation
+üîπ Real-time data updates through isolated data queries
+
+NEW ENHANCED FEATURES:
+---------------------
+‚úÖ Agent Rankings (agent1_partner_id) by deal count, price_unit and amount_total
+‚úÖ Broker Rankings (broker_partner_id) by deal count, price_unit and amount_total
+‚úÖ Booking Date Integration (booking_date field support from invoice_report_for_realestate)
+‚úÖ Sale Type Filtering (sale_order_type_id from le_sale_type module)
+‚úÖ Enhanced performance tables with detailed agent/broker analytics
+‚úÖ Multi-select sale type filters for targeted analysis
+‚úÖ Comprehensive agent and broker performance metrics
+
+Complete Independence:
+---------------------
+* sale.order forms remain 100% unchanged
+* No view inheritance affecting quotations
+* No data modifications to sales workflow
+* Pure read-only dashboard functionality
+* Zero impact on sales module operations
+
+Enhanced Architecture:
+---------------------
+* TransientModel 'sale.dashboard' - completely separate from sale.order
+* Client-side only dashboard rendering with enhanced agent analytics
+* Read-only queries to existing sale.order data with commission_ax integration
+* No model extensions or inheritance
+* No view modifications to sales module
+* Intelligent field detection (booking_date fallback to date_order)
+
+Enhanced Features:
+-----------------
+* Interactive charts with custom brand colors (#800020)
+* Agent and broker ranking visualizations
+* Sales pipeline visualization in maroon/gold theme
+* Performance KPIs with white text contrast and agent metrics
+* Monthly/quarterly reports with professional styling and booking date support
+* Export capabilities with brand consistency
+* Multi-currency support with enhanced formatting
+* Sale type filtering for targeted analysis
+* Responsive design for mobile and desktop
+
+Module Dependencies:
+-------------------
+* le_sale_type (for sale_order_type_id filtering)
+* commission_ax (for agent1_partner_id and broker_partner_id)
+* invoice_report_for_realestate (for booking_date field)
+
+This module is SAFE to install and will NOT affect your sales quotation workflow.
+All enhancements are contained within the dashboard interface only.
     """,
-    'author': 'RENBRAN - Enhanced with AI Best Practices',
-    'website': 'WWW.TACHIMAO.COM',
-    'depends': ['web', 'sale_management', 'osus_invoice_report', 'le_sale_type'],
+    'author': 'Your Company',
+    'website': 'https://www.yourcompany.com',
+    'depends': [
+        'base',
+        'sale',
+        'sale_management',
+        'web',
+        'le_sale_type',
+        'commission_ax',
+        'invoice_report_for_realestate',
+    ],
     'data': [
-        'data/sale_order_data.xml',
-        'views/dashboard_views.xml',
+        'security/ir.model.access.csv',
+        'views/sales_dashboard_views.xml',
+        'views/sales_dashboard_menus.xml',
     ],
     'assets': {
         'web.assets_backend': [
-            # Enhanced merged assets with best practices
-            'oe_sale_dashboard_17/static/src/css/dashboard_merged.css',
-            'oe_sale_dashboard_17/static/src/js/dashboard_merged.js',
-            'oe_sale_dashboard_17/static/src/xml/dashboard_merged_template.xml',
+            ('include', 'web._assets_helpers'),
+            # CloudPepper Error Fixes (load first)
+            ('prepend', 'oe_sale_dashboard_17/static/src/js/cloudpepper_dashboard_fix.js'),
+            
+            'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js',
+            'oe_sale_dashboard_17/static/src/css/dashboard.css',
+            'oe_sale_dashboard_17/static/src/css/enhanced_dashboard.css',
+            'oe_sale_dashboard_17/static/src/xml/sales_dashboard_main.xml',
+            'oe_sale_dashboard_17/static/src/xml/enhanced_sales_dashboard.xml',
+            'oe_sale_dashboard_17/static/src/js/sales_dashboard.js',
+            'oe_sale_dashboard_17/static/src/js/enhanced_sales_dashboard.js',
         ],
     },
-    'images': ['static/description/banner.gif'],
+    'demo': [],
+    'images': ['static/description/banner.svg'],
     'installable': True,
-    'application': False,
     'auto_install': False,
-    'license': 'AGPL-3',
+    'application': False,
+    'license': 'LGPL-3',
+    'license': 'LGPL-3',
 }
