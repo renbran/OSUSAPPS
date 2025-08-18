@@ -31,7 +31,82 @@ _logger = logging.getLogger(__name__)
 class AccountPayment(models.Model):
     """This class inherits model "account.payment" and adds required fields """
     _inherit = "account.payment"
-    _inherits = {'account.move': 'move_id'}
+
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('reviewed', 'Reviewed'),
+        ('approved', 'Approved'),
+        ('authorized', 'Authorized'),
+        ('posted', 'Posted'),
+    ], default='draft', string='Status', tracking=True)
+
+    reviewer_id = fields.Many2one('res.users', string='Reviewer', tracking=True)
+    approver_id = fields.Many2one('res.users', string='Approver', tracking=True)
+    authorizer_id = fields.Many2one('res.users', string='Authorizer', tracking=True)
+    poster_id = fields.Many2one('res.users', string='Poster', tracking=True)
+
+    reviewed_date = fields.Datetime(string='Reviewed Date', tracking=True)
+    approved_date = fields.Datetime(string='Approved Date', tracking=True)
+    authorized_date = fields.Datetime(string='Authorized Date', tracking=True)
+    posted_date = fields.Datetime(string='Posted Date', tracking=True)
+
+    qr_code = fields.Binary(string='QR Code', readonly=True)
+    qr_token = fields.Char(string='QR Token', size=64, readonly=True)
+
+    def _generate_qr_code(self):
+        import qrcode
+        import io
+        import base64
+        for rec in self:
+            if not rec.qr_token:
+                import secrets
+                rec.qr_token = secrets.token_hex(32)
+            url = f'https://my-odoo.com/verify/{rec.id}/{rec.qr_token}'
+            qr = qrcode.QRCode(version=1, box_size=10, border=2)
+            qr.add_data(url)
+            qr.make(fit=True)
+            img = qr.make_image(fill='black', back_color='white')
+            buf = io.BytesIO()
+            img.save(buf, format='PNG')
+            rec.qr_code = base64.b64encode(buf.getvalue())
+
+    def action_review(self):
+        for rec in self:
+            if rec.state != 'draft':
+                raise UserError(_('Only draft payments can be reviewed.'))
+            rec.state = 'reviewed'
+            rec.reviewer_id = self.env.user
+            rec.reviewed_date = fields.Datetime.now()
+
+    def action_approve(self):
+        for rec in self:
+            if rec.state != 'reviewed':
+                raise UserError(_('Only reviewed payments can be approved.'))
+            rec.state = 'approved'
+            rec.approver_id = self.env.user
+            rec.approved_date = fields.Datetime.now()
+
+    def action_authorize(self):
+        for rec in self:
+            if rec.state != 'approved':
+                raise UserError(_('Only approved payments can be authorized.'))
+            rec.state = 'authorized'
+            rec.authorizer_id = self.env.user
+            rec.authorized_date = fields.Datetime.now()
+
+    def action_post(self):
+        for rec in self:
+            if rec.payment_type == 'inbound':
+                if rec.state != 'approved':
+                    raise UserError(_('Receipts must be approved before posting.'))
+            else:
+                if rec.state != 'authorized':
+                    raise UserError(_('Payments must be authorized before posting.'))
+            res = super().action_post()
+            rec.state = 'posted'
+            rec.poster_id = self.env.user
+            rec.posted_date = fields.Datetime.now()
+            return res
 
     def _compute_is_approve_person(self):
         """This function checks if the current user is authorized to approve payments.

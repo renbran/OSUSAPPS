@@ -6,25 +6,31 @@
             <field name="model">account.payment</field>
             <field name="inherit_id" ref="account.view_account_payment_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//header//button[@name='action_post']" position="attributes">
-                    <attribute name="visibility">state in ['draft', 'approved']</attribute>
+                <xpath expr="//header" position="inside">
+                    <button name="action_review" string="Review" type="object"
+                        class="btn-primary" groups="account_payment_approval.group_payment_reviewer"
+                        attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button name="action_approve" string="Approve" type="object"
+                        class="btn-success" groups="account_payment_approval.group_payment_approver"
+                        attrs="{'invisible': [('state', '!=', 'reviewed')]}"/>
+                    <button name="action_authorize" string="Authorize" type="object"
+                        class="btn-warning" groups="account_payment_approval.group_payment_authorizer"
+                        attrs="{'invisible': [('state', '!=', 'approved')]}"/>
+                    <button name="action_post" string="Post" type="object"
+                        class="btn-info" groups="account_payment_approval.group_payment_poster"
+                        attrs="{'invisible': [('state', 'not in', ['authorized','approved'])]}"/>
                 </xpath>
-                <xpath expr="//header//button[@name='action_cancel']" position="attributes">
-                    <attribute name="visibility">state in ['draft', 'waiting_approval', 'approved']</attribute>
-                </xpath>
-                <xpath expr="//header//button[@name='action_draft']" position="attributes">
-                    <attribute name="visibility">state in ['rejected', 'cancelled']</attribute>
-                </xpath>
-                <xpath expr="//header//button[@name='action_post']" position="before">
-                    <button name="action_submit_review" string="Submit for Review" type="object"
-                            class="oe_highlight" 
-                            visibility="state == 'draft'"/>
-                    <button name="approve_transfer" string="Approve" type="object"
-                            class="oe_highlight"
-                            visibility="is_approve_person and state == 'waiting_approval'"/>
-                    <button name="reject_transfer" string="Reject" type="object"
-                            class="oe_highlight" 
-                            visibility="is_approve_person and state == 'waiting_approval'"/>
+                <xpath expr="//sheet" position="inside">
+                    <field name="state" widget="statusbar" statusbar_visible="draft,reviewed,approved,authorized,posted"/>
+                    <field name="reviewer_id"/>
+                    <field name="reviewed_date"/>
+                    <field name="approver_id"/>
+                    <field name="approved_date"/>
+                    <field name="authorizer_id"/>
+                    <field name="authorized_date"/>
+                    <field name="poster_id"/>
+                    <field name="posted_date"/>
+                    <field name="qr_code" widget="image"/>
                 </xpath>
                 <field name="partner_id" position="after">
                     <field name="is_approve_person" invisible="1"/>

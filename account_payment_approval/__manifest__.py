@@ -21,7 +21,7 @@
 #############################################################################
 {
     'name': 'Payment Approvals',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'category': 'Accounting',
     'summary': """ This modules Enables to use the approval feature in
                     customer and vendor payments.""",
@@ -32,11 +32,16 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",
-    'depends': ['account'],
+    'depends': ['base', 'account', 'web', 'qr_code_base'],
     'data': [
-        'views/res_config_settings_views.xml',
+        'security/account_payment_approval_groups.xml',
+        'security/account_payment_approval_security.xml',
+        'security/ir.model.access.csv',
         'views/account_payment_views.xml',
-        'views/account_move_views.xml',
+        'views/account_payment_approval_menus.xml',
+        'report/payment_voucher_report.xml',
+        'report/payment_voucher_templates.xml',
+        'views/verify_payment_template.xml',
         'data/server_actions.xml',
     ],
     'license': 'LGPL-3',

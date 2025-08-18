@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_payment_reviewer,account.payment reviewer,account.model_account_payment,account_payment_approval.group_payment_reviewer,1,0,0,0
+access_account_payment_approver,account.payment approver,account.model_account_payment,account_payment_approval.group_payment_approver,1,0,0,0
+access_account_payment_authorizer,account.payment authorizer,account.model_account_payment,account_payment_approval.group_payment_authorizer,1,0,0,0
+access_account_payment_poster,account.payment poster,account.model_account_payment,account_payment_approval.group_payment_poster,1,1,0,0
