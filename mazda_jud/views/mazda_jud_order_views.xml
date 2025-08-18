@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mazda_jud_order_view_form" model="ir.ui.view">
+        <field name="name">mazda.jud.order.form</field>
+        <field name="model">mazda.jud.order</field>
+        <field name="arch" type="xml">
+            <form string="Mazda Jud Order">
+                <header>
+                    <div class="oe_statusbar">
+                        <div class="oe_statusbar_steps">
+                            <span class="oe_step" t-att-class="{'oe_active': state == 'documentation'}">Documentation</span>
+                            <span class="oe_step" t-att-class="{'oe_active': state == 'review'}">Review</span>
+                            <span class="oe_step" t-att-class="{'oe_active': state == 'approve'}">Approve</span>
+                            <span class="oe_step" t-att-class="{'oe_active': state == 'posted'}">Posted</span>
+                        </div>
+                    </div>
+                    <button name="action_to_documentation" string="Send to Documentation" type="object" class="btn-primary" groups="mazda_jud.group_doc_user" attrs="{'invisible': [('can_doc', '=', False)]}"/>
+                    <button name="action_to_review" string="Send to Review" type="object" class="btn-success" groups="mazda_jud.group_review_user" attrs="{'invisible': [('can_review', '=', False)]}"/>
+                    <button name="action_to_approve" string="Send to Approve" type="object" class="btn-warning" groups="mazda_jud.group_approve_user" attrs="{'invisible': [('can_approve', '=', False)]}"/>
+                    <button name="action_post_stage" string="Post Order" type="object" class="btn-info" groups="mazda_jud.group_post_user" attrs="{'invisible': [('can_post', '=', False)]}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="state" invisible="1"/>
+                        <field name="assigned_doc_user_id"/>
+                        <field name="assigned_review_user_id"/>
+                        <field name="assigned_approve_user_id"/>
+                        <field name="assigned_post_user_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
