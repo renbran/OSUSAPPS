@@ -1,17 +1,19 @@
-# 🧠 Copilot Instructions for odoo17_final
+# 🧠 Copilot Instructions for OSUSAPPS (Odoo 17)
 
-## Project Overview
-- This repo is a Dockerized Odoo 17 environment with many custom modules for business management (finance, CRM, reporting, communication, UI, tools).
-- Major modules are in top-level folders (e.g., `account_payment_approval/`, `osus_invoice_report/`, `dynamic_accounts_report/`). Each is a standard Odoo module with models, views, security, etc.
-- The environment is designed for rapid local development, testing, and production deployment using Docker Compose.
+## Big Picture Architecture
+- **Multi-module Odoo 17 system** for business management (finance, CRM, reporting, workflow, UI).
+- **Each module** is self-contained: `models/`, `views/`, `security/`, `data/`, `static/`, `tests/`, etc.
+- **Dockerized environment**: Odoo and Postgres containers, all modules mounted at `/mnt/extra-addons`.
+- **CloudPepper hosting optimizations**: error suppression, asset loading order, emergency JS fixes.
 
-## Architecture & Workflows
-- **Odoo runs in a Docker container**. All development, testing, and debugging should be done via Docker Compose (`docker-compose.yml`).
-- **Custom modules** are loaded from the repo root. Each module follows Odoo's best practices for structure and manifest.
-- **Database** is managed via a separate Postgres container. Use `docker-compose exec db ...` for DB operations.
-- **Setup scripts**: Use `setup.bat` (Windows) or `setup.sh` (Linux/Mac) for common tasks (start, stop, logs, backup).
-- **Access Odoo** at http://localhost:8069 (default admin: `admin`/`admin`).
-- **Important note**: All custom modules are mounted at `/mnt/extra-addons` in the container.
+## Developer Workflows
+- **Start/stop**: Use `setup.bat` (Windows) or `setup.sh` (Linux/Mac), or `docker-compose up -d` / `down`.
+- **Update modules**: `docker-compose exec odoo odoo --update=all --stop-after-init` or single module with `--update=module_name`.
+- **Run tests**: `docker-compose exec odoo odoo --test-enable --log-level=test --stop-after-init -d odoo -i module_name`.
+- **Debug JS**: Use `fix_dashboard_js.py` and check asset order in manifest.
+- **Debug XML**: Use `--dev xml --stop-after-init` for XML validation.
+- **Multi-company issues**: Domain fields referencing `company_id` need `groups="base.group_multi_company"` or alternative logic.
+- **DB backup/restore**: See key commands below.
 
 ## Key Commands
 - **Start environment**: `setup.bat` (Windows) or `setup.sh` (Linux/Mac), or `docker-compose up -d`
@@ -24,20 +26,30 @@
 - **Enter Odoo shell**: `docker-compose exec odoo bash`
 - **Run Odoo tests**: `docker-compose exec odoo odoo --test-enable --log-level=test --stop-after-init -d odoo -i module_name`
 
-## Project Conventions
-- **Module structure**: Each module has `__manifest__.py`, `models/`, `views/`, `security/`, `data/`, `demo/`, `static/`, `tests/`, etc.
-- **Naming**: Use snake_case for module and model names. Prefix custom models with the module name (e.g., `module_name.model_name`).
-- **Security**: Always define `ir.model.access.csv` and `security.xml` for each module (see `account_payment_approval/security/` as an example).
-- **Testing**: Create test classes inheriting from `TransactionCase` in `tests/` directory (see `tk_sale_split_invoice/tests/test_sale_split_invoice.py`).
+## Project-Specific Conventions
+- **Naming**: snake_case for modules/models; prefix models with module name.
+- **Security**: Every module must define `ir.model.access.csv` and security XML; use role-based groups (see `account_payment_final/security/`).
+- **State machines**: Use Selection fields and statusbar in form views (see `account_payment_approval/views/`).
+- **Branding**: OSUS modules use strict color schemes and branded SCSS (`osus_branding.scss`).
+- **CloudPepper**: JS assets include error suppression and emergency fixes; asset order matters for stability.
+- **Multi-company**: Views with `company_id` domains require `groups="base.group_multi_company"` or alternative logic.
+
+## Integration & Data Flows
+- **REST API endpoints**: Controllers use `@http.route` with proper auth/CSRF (see `om_dynamic_report/controllers/`).
+- **Report generation**: QWeb XML for PDFs, controllers for Excel/CSV.
+- **Email notifications**: Workflow stages trigger emails (see `account_payment_final/data/email_templates.xml`).
+- **QR code verification**: Payment modules use `qrcode` and `pillow` for secure voucher generation.
 - **External dependencies**: All Python packages must be declared in both `__manifest__.py` and Dockerfile.
 
-## Common Patterns
-- **Model inheritance**: Prefer `_inherit` for extension, `_inherits` for delegation. Example in `account_payment_approval/models/account_payment.py`.
-- **State machines**: Use Selection fields with states and statusbar_visible in form views (`account_payment_approval` module).
-- **API endpoints**: Create controllers using `@http.route` decorator with proper auth and CSRF settings (see `om_dynamic_report/controllers/`).
-- **Report generation**: Use QWeb reports (XML templates) for PDF reports, or controllers for Excel/CSV exports.
-- **Configuration**: Store settings in `res.config.settings` and `ir.config_parameter` (see `account_payment_approval/models/res_config_settings.py`).
+## Examples & Patterns
+- **Module structure**: See `account_payment_approval/` and `account_payment_final/README.md`.
+- **Workflow logic**: 4-stage approval in `account_payment_final/models/account_payment.py`.
+- **Model inheritance**: Prefer `_inherit` for extension, `_inherits` for delegation.
+- **State machines**: Use Selection fields with statusbar_visible in form views.
+- **Configuration**: Store settings in `res.config.settings` and `ir.config_parameter`.
 - **Error handling**: Use `ValidationError` for constraint errors, `UserError` for user-facing errors.
+- **Testing**: Use `TransactionCase` in `tests/` (see `tk_sale_split_invoice/tests/test_sale_split_invoice.py`).
+- **Asset config**: Manifest files must list JS/SCSS in correct order for CloudPepper.
 
 ## Common Issues & Fixes
 - **Database errors**: If cron jobs fail, check `fix_cron_in_odoo.py` script.
@@ -45,12 +57,7 @@
 - **JavaScript errors**: Run `fix_dashboard_js.py` to analyze and fix common JS issues.
 - **Permission issues**: Always check `ir.model.access.csv` entries if getting access errors.
 - **Module dependencies**: Ensure all dependencies are properly declared in `__manifest__.py` before installing.
-
-## Examples
-- **Module structure**: `account_payment_approval/` shows proper module organization
-- **API endpoint**: `om_dynamic_report/controllers/om_dynamic_report_controller.py` demonstrates REST API pattern
-- **Form view**: `account_payment_approval/views/account_payment_views.xml` shows proper form view structure
-- **Testing**: `tk_sale_split_invoice/tests/test_sale_split_invoice.py` demonstrates proper test setup
+- **Multi-company issues**: Domain fields referencing `company_id` need `groups="base.group_multi_company"` or alternative logic.
 
 ## Tips for AI Agents
 - Always use Docker Compose for running, testing, and debugging code.
@@ -58,6 +65,10 @@
 - For Odoo-specific logic, prefer Odoo ORM, API, and security mechanisms over custom code.
 - Include proper security definitions for any new models and check for access rights.
 - Use Odoo's built-in test infrastructure rather than separate test scripts.
+
+---
+
+For more details, see the root `README.md` and module-level `README.md` files. If in doubt, mimic the structure and patterns of the most recently updated modules.
 
 ---
 
