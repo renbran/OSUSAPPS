@@ -1,0 +1,139 @@
+# ===================================================================
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Enhanced Payment Form View -->
+        <record id="view_account_payment_form_osus_enhanced" model="ir.ui.view">
+            <field name="name">account.payment.form.osus.enhanced</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                
+                <!-- Add OSUS Print Button -->
+                <xpath expr="//header" position="inside">
+                    <button name="action_print_osus_voucher" 
+                            string="Print OSUS Voucher" 
+                            type="object" 
+                            class="btn-primary"
+                            icon="fa-print"
+                            attrs="{'invisible': [('state', '=', 'draft')]}"/>
+                    <button name="action_validate_and_post" 
+                            string="Validate &amp; Post" 
+                            type="object" 
+                            class="btn-success"
+                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                </xpath>
+                
+                <!-- Enhanced Information Section -->
+                <xpath expr="//field[@name='ref']" position="after">
+                    <field name="remarks" 
+                           placeholder="Enter additional remarks or memo for this payment voucher..."
+                           widget="text"/>
+                </xpath>
+                
+                <!-- Authorization Information -->
+                <xpath expr="//field[@name='currency_id']" position="after">
+                    <field name="authorized_by" 
+                           readonly="1" 
+                           attrs="{'invisible': [('state', '!=', 'posted')]}"
+                           string="Authorized By"/>
+                    <field name="actual_approver_id" 
+                           readonly="1" 
+                           attrs="{'invisible': [('state', '!=', 'posted')]}"
+                           string="Approved By"/>
+                </xpath>
+                
+                <!-- Destination Account Field -->
+                <xpath expr="//field[@name='journal_id']" position="after">
+                    <field name="destination_account_id" 
+                           attrs="{'required': [('state', '=', 'draft')], 'readonly': [('state', '!=', 'draft')]}"
+                           domain="[('company_id', '=', company_id)]"/>
+                </xpath>
+                
+            </field>
+        </record>
+        
+        <!-- Enhanced Payment Tree View -->
+        <record id="view_account_payment_tree_osus_enhanced" model="ir.ui.view">
+            <field name="name">account.payment.tree.osus.enhanced</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount']" position="after">
+                    <field name="authorized_by" optional="hide"/>
+                    <field name="remarks" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- Payment Register Wizard Enhancement -->
+        <record id="view_account_payment_register_form_enhanced" model="ir.ui.view">
+            <field name="name">account.payment.register.form.enhanced</field>
+            <field name="model">account.payment.register</field>
+            <field name="inherit_id" ref="account.view_account_payment_register_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='memo']" position="after">
+                    <field name="remarks" 
+                           string="Voucher Remarks"
+                           placeholder="Additional remarks for the payment voucher..."/>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- Company Settings Enhancement -->
+        <record id="view_company_form_osus_enhanced" model="ir.ui.view">
+            <field name="name">res.company.form.osus.enhanced</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="OSUS Voucher Settings" name="osus_voucher">
+                        <group>
+                            <group string="Branding">
+                                <field name="use_osus_branding"/>
+                            </group>
+                            <group string="Voucher Customization">
+                                <field name="voucher_footer_message" 
+                                       widget="text" 
+                                       placeholder="Thank you for your business"/>
+                                <field name="voucher_terms" 
+                                       widget="text"
+                                       placeholder="Terms and conditions..."/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- Action Definitions -->
+        <record id="action_payment_voucher_osus" model="ir.actions.act_window">
+            <field name="name">OSUS Payment Vouchers</field>
+            <field name="res_model">account.payment</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('payment_type', 'in', ['outbound', 'inbound'])]</field>
+            <field name="context">{
+                'default_payment_type': 'outbound',
+                'search_default_posted': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first OSUS payment voucher
+                </p>
+                <p>
+                    OSUS branded payment vouchers provide professional,
+                    luxury-styled documentation for all your payments.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Menu Items -->
+        <menuitem id="menu_osus_payment_vouchers"
+                  name="OSUS Vouchers"
+                  parent="account.menu_finance_payables"
+                  action="action_payment_voucher_osus"
+                  sequence="15"/>
+                  
+    </data>
+</odoo>

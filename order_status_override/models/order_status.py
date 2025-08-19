@@ -8,7 +8,6 @@ class OrderStatus(models.Model):
     _order = 'sequence, id'
     
     name = fields.Char(string='Status Name', required=True)
-    code = fields.Char(string='Status Code', required=True, help="Unique code for this status")
     sequence = fields.Integer(string='Sequence', default=10)
     description = fields.Text(string='Description')
     is_initial = fields.Boolean(string='Is Initial Status', default=False)
@@ -31,7 +30,6 @@ class OrderStatus(models.Model):
     _sql_constraints = [
         ('unique_initial_status', 'UNIQUE(is_initial) WHERE is_initial = True', 
          'There can only be one initial status!'),
-        ('unique_code', 'UNIQUE(code)', 'Status code must be unique!'),
     ]
     
     @api.constrains('is_initial', 'is_final')
