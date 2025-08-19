@@ -1,1 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mazda_jud_order_doc_user,mazda.jud.order.doc,model_mazda_jud_order,group_doc_user,1,1,1,0
+access_mazda_jud_order_review_user,mazda.jud.order.review,model_mazda_jud_order,group_review_user,1,1,0,0
+access_mazda_jud_order_approve_user,mazda.jud.order.approve,model_mazda_jud_order,group_approve_user,1,1,0,0
+access_mazda_jud_order_post_user,mazda.jud.order.post,model_mazda_jud_order,group_post_user,1,1,0,0
+access_mazda_jud_order_manager,mazda.jud.order.manager,model_mazda_jud_order,base.group_system,1,1,1,1

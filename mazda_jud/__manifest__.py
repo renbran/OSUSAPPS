@@ -10,9 +10,11 @@
     'data': [
         'security/ir.model.access.csv',
         'security/mazda_jud_security.xml',
-        'views/mazda_jud_views.xml',
+        'data/sequences.xml',
         'data/groups.xml',
         'data/ir_cron.xml',
+        'views/mazda_jud_views.xml',
+        'views/mazda_jud_order_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

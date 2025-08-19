@@ -5,7 +5,12 @@ class MazdaJudOrder(models.Model):
     _name = 'mazda.jud.order'
     _description = 'Mazda Jud Order'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'create_date desc'
 
+    # Basic Information
+    name = fields.Char(string='Order Reference', required=True, copy=False, readonly=True, default='New')
+    description = fields.Text(string='Description')
+    
     state = fields.Selection([
         ('draft', 'Draft'),
         ('documentation', 'Documentation'),
@@ -76,3 +81,9 @@ class MazdaJudOrder(models.Model):
                 raise UserError(_('Order must be in Approve to post.'))
             rec.state = 'posted'
             rec.message_post(body=_('Order posted.'))
+
+    @api.model
+    def create(self, vals):
+        if vals.get('name', 'New') == 'New':
+            vals['name'] = self.env['ir.sequence'].next_by_code('mazda.jud.order') or 'New'
+        return super(MazdaJudOrder, self).create(vals)

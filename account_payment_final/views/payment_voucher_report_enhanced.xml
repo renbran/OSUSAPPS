@@ -4,6 +4,7 @@
     <record id="payment_voucher_enhanced_template" model="ir.ui.view">
         <field name="name">Enhanced Payment Voucher Report</field>
         <field name="model">account.payment</field>
+        <field name="type">qweb</field>
         <field name="key">account_payment_final.payment_voucher_enhanced</field>
         <field name="arch" type="xml">
             <t t-name="account_payment_final.payment_voucher_enhanced">

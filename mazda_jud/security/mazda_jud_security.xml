@@ -1,4 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Add security rules here -->
+    <!-- Record Rules for Mazda Jud Orders -->
+    
+    <!-- Documentation Users can see orders assigned to them for documentation -->
+    <record id="mazda_jud_order_rule_doc_user" model="ir.rule">
+        <field name="name">Mazda Jud Order: Documentation Users</field>
+        <field name="model_id" ref="model_mazda_jud_order"/>
+        <field name="domain_force">[('assigned_doc_user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_doc_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Review Users can see orders assigned to them for review -->
+    <record id="mazda_jud_order_rule_review_user" model="ir.rule">
+        <field name="name">Mazda Jud Order: Review Users</field>
+        <field name="model_id" ref="model_mazda_jud_order"/>
+        <field name="domain_force">[('assigned_review_user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_review_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Approve Users can see orders assigned to them for approval -->
+    <record id="mazda_jud_order_rule_approve_user" model="ir.rule">
+        <field name="name">Mazda Jud Order: Approve Users</field>
+        <field name="model_id" ref="model_mazda_jud_order"/>
+        <field name="domain_force">[('assigned_approve_user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_approve_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Post Users can see orders assigned to them for posting -->
+    <record id="mazda_jud_order_rule_post_user" model="ir.rule">
+        <field name="name">Mazda Jud Order: Post Users</field>
+        <field name="model_id" ref="model_mazda_jud_order"/>
+        <field name="domain_force">[('assigned_post_user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_post_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- System Administrators can see all records -->
+    <record id="mazda_jud_order_rule_admin" model="ir.rule">
+        <field name="name">Mazda Jud Order: Administrators</field>
+        <field name="model_id" ref="model_mazda_jud_order"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
 </odoo>

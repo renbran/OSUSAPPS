@@ -1,1 +1,1 @@
-# Mazda Jud models
+from . import mazda_jud_order
