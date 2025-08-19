@@ -50,16 +50,13 @@
         
         # Data
         'data/statement_config_data.xml',
+        'data/followup_levels.xml',
         'data/mail_templates.xml',
         'data/cron_jobs.xml',
         
         # Views
         'views/partner_views.xml',
         'views/wizard_views.xml',
-        'views/menu_views.xml',
-        
-        # Reports
-        'reports/statement_reports.xml',
         'views/statement_menus.xml',
         
         # Wizards

@@ -2,8 +2,8 @@
 <odoo>
     <data noupdate="1">
         
-        <!-- Default Statement Configuration -->
-        <record id="default_statement_config" model="res.partner.statement.config">
+        <!-- Default Follow-up Configuration -->
+        <record id="default_followup_config" model="res.partner.statement.config">
             <field name="name">Default Follow-up Configuration</field>
             <field name="company_id" ref="base.main_company"/>
             <field name="ageing_bucket_1">30</field>
