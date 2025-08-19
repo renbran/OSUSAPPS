@@ -28,7 +28,7 @@ def generate_qr_code_payment(value):
         qr_img = base64.b64encode(stream.getvalue())
         return qr_img
     except Exception as e:
-        _logger.error(f"Error generating QR code: {e}")
+        _logger.error("Error generating QR code: %s", e)
         return False
 
 
@@ -218,10 +218,10 @@ class AccountPayment(models.Model):
         for record in self:
             if record.voucher_number and record.partner_id:
                 payment_type_label = 'Receipt' if record.payment_type == 'inbound' else 'Payment'
-                record.display_name = f"{payment_type_label} Voucher {record.voucher_number} - {record.partner_id.name}"
+                record.display_name = "%s Voucher %s - %s" % (payment_type_label, record.voucher_number, record.partner_id.name)
             elif record.name and record.partner_id:
                 payment_type_label = 'Receipt' if record.payment_type == 'inbound' else 'Payment'
-                record.display_name = f"{payment_type_label} Voucher {record.name} - {record.partner_id.name}"
+                record.display_name = "%s Voucher %s - %s" % (payment_type_label, record.name, record.partner_id.name)
             else:
                 record.display_name = record.voucher_number or record.name or 'New Payment'
 
@@ -251,28 +251,29 @@ class AccountPayment(models.Model):
                     
                     if base_url and record._origin.id:
                         # Create verification URL that points to our controller
-                        qr_data = f"{base_url}/payment/verify/{record._origin.id}"
+                        qr_data = "%s/payment/verify/%s" % (base_url, record._origin.id)
                     else:
                         # Fallback: Include structured payment details for manual verification
                         voucher_ref = record.voucher_number or record.name or 'Draft Payment'
                         partner_name = record.partner_id.name if record.partner_id else 'Unknown Partner'
-                        amount_str = f"{record.amount:.2f} {record.currency_id.name if record.currency_id else 'USD'}"
+                        amount_str = "%.2f %s" % (record.amount, record.currency_id.name if record.currency_id else 'USD')
                         date_str = record.date.strftime('%Y-%m-%d') if record.date else 'Draft'
                         
                         # Structured data that can be manually verified
-                        qr_data = f"""PAYMENT VERIFICATION
-Voucher: {voucher_ref}
-Amount: {amount_str}
-To: {partner_name}
-Date: {date_str}
-Status: {record.approval_state.upper()}
-Company: {record.company_id.name}
-Verify at: {base_url}/payment/qr-guide"""
+                        qr_data = """PAYMENT VERIFICATION
+Voucher: %s
+Amount: %s
+To: %s
+Date: %s
+Status: %s
+Company: %s
+Verify at: %s/payment/qr-guide""" % (voucher_ref, amount_str, partner_name, date_str, 
+                                      record.approval_state.upper(), record.company_id.name, base_url)
                     
                     # Generate the QR code image
                     record.qr_code = generate_qr_code_payment(qr_data)
                 except Exception as e:
-                    _logger.error(f"Error generating QR code for payment {record.voucher_number or 'Draft'}: {e}")
+                    _logger.error("Error generating QR code for payment %s: %s", record.voucher_number or 'Draft', e)
                     record.qr_code = False
             else:
                 record.qr_code = False
@@ -367,7 +368,7 @@ Verify at: {base_url}/payment/qr-guide"""
                 return self.env['ir.sequence'].next_by_code('payment.voucher.payment') or '/'
         except:
             # Fallback sequence generation
-            return self.env['ir.sequence'].next_by_code('payment.voucher') or f"PV{self.env['ir.sequence'].next_by_code('account.payment') or ''}"
+            return self.env['ir.sequence'].next_by_code('payment.voucher') or "PV%s" % (self.env['ir.sequence'].next_by_code('account.payment') or '')
 
     @api.depends('approval_state', 'actual_approver_id', 'write_uid', 'authorizer_id', 'approver_id')
     def _compute_authorized_by(self):
@@ -618,8 +619,8 @@ Verify at: {base_url}/payment/qr-guide"""
                 return self._manual_amount_to_words()
                 
         except Exception as e:
-            _logger.warning(f"Error converting amount to words: {e}")
-            return f"{self.currency_id.name} {self.amount:,.2f} Only"
+            _logger.warning("Error converting amount to words: %s", e)
+            return "%s %s Only" % (self.currency_id.name, "{:,.2f}".format(self.amount))
 
     def _manual_amount_to_words(self):
         """Manual amount to words conversion for basic amounts"""
@@ -627,7 +628,7 @@ Verify at: {base_url}/payment/qr-guide"""
         currency = self.currency_id.name or 'Dollars'
         
         if amount == 0:
-            return f"Zero {currency} Only"
+            return "Zero %s Only" % currency
         
         # Simple conversion for whole numbers up to thousands
         ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
@@ -1560,4 +1561,37 @@ class AccountPaymentRegister(models.TransientModel):
         if self.remarks:
             payment_vals['remarks'] = self.remarks
             
+        return payment_vals
+
+    # Dashboard method for frontend
+    @api.model
+    def get_dashboard_data(self):
+        """Get dashboard statistics for payment overview"""
+        try:
+            domain = [('state', '!=', 'cancel')]
+            
+            # Count by approval states
+            pending_count = self.search_count(domain + [('approval_state', 'in', ['draft', 'under_review'])])
+            approved_count = self.search_count(domain + [('approval_state', 'in', ['approved', 'posted'])])
+            
+            # Total amount calculation
+            total_amount = 0.0
+            payments = self.search(domain + [('approval_state', '!=', 'cancelled')])
+            if payments:
+                total_amount = sum(payments.mapped('amount'))
+            
+            return {
+                'pending': pending_count,
+                'approved': approved_count,
+                'total_amount': "{:,.2f}".format(total_amount),
+                'recent_payments': []
+            }
+        except Exception as e:
+            _logger.error("Error getting dashboard data: %s", e)
+            return {
+                'pending': 0,
+                'approved': 0,
+                'total_amount': '0.00',
+                'recent_payments': []
+            }
         return payment_vals
