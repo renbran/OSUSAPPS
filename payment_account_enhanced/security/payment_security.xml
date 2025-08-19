@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Enhanced Payment Security Groups -->
+        <record id="group_payment_voucher_manager" model="res.groups">
+            <field name="name">Payment Voucher Manager</field>
+            <field name="category_id" ref="base.module_category_accounting_and_finance"/>
+            <field name="comment">Can approve high-value payments and manage voucher settings</field>
+        </record>
+        
+        <record id="group_payment_voucher_user" model="res.groups">
+            <field name="name">Payment Voucher User</field>
+            <field name="category_id" ref="base.module_category_accounting_and_finance"/>
+            <field name="comment">Can create and view payment vouchers</field>
+        </record>
+        
+        <!-- Record Rules -->
+        <record id="payment_voucher_company_rule" model="ir.rule">
+            <field name="name">Payment Voucher: Company Rule</field>
+            <field name="model_id" ref="account.model_account_payment"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="global" eval="True"/>
+        </record>
+        
+        <record id="payment_voucher_user_rule" model="ir.rule">
+            <field name="name">Payment Voucher: User Access Rule</field>
+            <field name="model_id" ref="account.model_account_payment"/>
+            <field name="domain_force">['|', ('create_uid', '=', user.id), ('state', '=', 'posted')]</field>
+            <field name="groups" eval="[(4, ref('group_payment_voucher_user'))]"/>
+        </record>
+        
+        <!-- Data Protection Rules -->
+        <record id="payment_large_amount_rule" model="ir.rule">
+            <field name="name">Large Payment Approval Rule</field>
+            <field name="model_id" ref="account.model_account_payment"/>
+            <field name="domain_force">[('amount', '&lt;=', 10000)]</field>
+            <field name="groups" eval="[(4, ref('group_payment_voucher_user'))]"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+        </record>
+        
+    </data>
+</odoo>
