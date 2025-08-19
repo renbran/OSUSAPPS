@@ -88,6 +88,16 @@
                                 <label for="can_post_manual" string="Can Post Manually"/>
                             </div>
                         </group>
+
+                        <!-- QR Code Verification Section -->
+                        <group name="qr_verification" string="Verification QR Code" invisible="not qr_code_invoice">
+                            <div class="text-center">
+                                <field name="qr_code_invoice" widget="image" options="{'size': [150, 150]}" readonly="1"/>
+                                <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                                    Scan this QR code to verify the authenticity of this invoice/bill
+                                </div>
+                            </div>
+                        </group>
                     </page>
                 </xpath>
 
