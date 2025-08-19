@@ -64,8 +64,9 @@
             <tree string="Ageing Periods">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
-                <field name="date_from"/>
-                <field name="date_to"/>
+                <field name="days_from"/>
+                <field name="days_to"/>
+                <field name="color" widget="color"/>
                 <field name="active"/>
             </tree>
         </field>
@@ -81,10 +82,16 @@
                         <group>
                             <field name="name"/>
                             <field name="sequence"/>
+                            <field name="config_id"/>
                         </group>
                         <group>
+                            <field name="days_from"/>
+                            <field name="days_to"/>
                             <field name="date_from"/>
                             <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="color" widget="color"/>
                             <field name="active"/>
                         </group>
                     </group>
@@ -172,8 +179,9 @@
                                 <tree>
                                     <field name="sequence" widget="handle"/>
                                     <field name="name"/>
-                                    <field name="date_from"/>
-                                    <field name="date_to"/>
+                                    <field name="days_from"/>
+                                    <field name="days_to"/>
+                                    <field name="color" widget="color"/>
                                     <field name="active"/>
                                 </tree>
                             </field>

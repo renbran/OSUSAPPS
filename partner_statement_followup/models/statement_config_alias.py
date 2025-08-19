@@ -71,13 +71,6 @@ class StatementConfigAlias(models.Model):
     show_aging = fields.Boolean(string='Show Aging Analysis', default=True)
     show_payments = fields.Boolean(string='Show Payments', default=True)
 
-class StatementAgeingPeriodConfig(models.Model):
-    """Enhanced ageing period with config reference"""
-    _inherit = 'statement.ageing.period'
-    
-    config_id = fields.Many2one('statement.config', string='Configuration', 
-                               ondelete='cascade')
-
 class FollowupHistoryAlias(models.Model):
     """Alias model for followup.history references"""
     _name = 'followup.history'
