@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-﻿/**
+/**
  * Emergency CloudPepper Error Fix
  * Addresses critical console errors and rendering issues
  * NON-MODULE VERSION to prevent import statement errors

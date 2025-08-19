@@ -96,15 +96,3 @@ export class PaymentDashboardView extends Component {
 
 // Register the component properly
 registry.category("fields").add("payment_dashboard", PaymentDashboardView);
-        } catch (error) {
-            this.notification.add(_t("Error creating payment"), { type: "danger" });
-        }
-    }
-    
-    cleanupResources() {
-        // Cleanup any resources, event listeners, etc.
-        console.log("Payment dashboard cleanup");
-    }
-}
-
-registry.category("views").add("payment_dashboard", PaymentDashboardView);
