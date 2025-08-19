@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_res_partner_statement_config_user,res.partner.statement.config.user,model_res_partner_statement_config,group_statement_user,1,0,0,0
+access_res_partner_statement_config_manager,res.partner.statement.config.manager,model_res_partner_statement_config,group_statement_manager,1,1,1,1
+access_res_partner_followup_history_user,res.partner.followup.history.user,model_res_partner_followup_history,group_statement_user,1,1,1,0
+access_res_partner_followup_history_manager,res.partner.followup.history.manager,model_res_partner_followup_history,group_statement_manager,1,1,1,1
+access_statement_wizard_user,statement.wizard.user,model_statement_wizard,group_statement_user,1,1,1,1
+access_statement_wizard_manager,statement.wizard.manager,model_statement_wizard,group_statement_manager,1,1,1,1
+access_batch_followup_wizard_user,batch.followup.wizard.user,model_batch_followup_wizard,group_statement_user,1,1,1,1
+access_batch_followup_wizard_manager,batch.followup.wizard.manager,model_batch_followup_wizard,group_statement_manager,1,1,1,1

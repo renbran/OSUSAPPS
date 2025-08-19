@@ -209,6 +209,37 @@ class AccountPayment(models.Model):
     )
 
     # ============================================================================
+    # ENHANCED REPORT FIELDS FOR PAYMENT VOUCHER
+    # ============================================================================
+
+    # Enhanced QR Code fields with better error handling
+    qr_code_urls = fields.Char(
+        string="QR Code URL",
+        compute='_compute_qr_code_urls',
+        help="QR code as data URL for report display"
+    )
+
+    display_qr_code = fields.Boolean(
+        string="Display QR Code",
+        compute='_compute_display_qr_code',
+        help="Whether QR code should be displayed in report"
+    )
+
+    # Signatory summary for report
+    signatory_summary = fields.Json(
+        string='Signatory Summary',
+        compute='_compute_signatory_summary',
+        help="Summary of all signatories for report display"
+    )
+
+    # Enhanced workflow tracking
+    workflow_progress = fields.Integer(
+        string='Workflow Progress',
+        compute='_compute_workflow_progress',
+        help="Workflow completion percentage (0-100)"
+    )
+
+    # ============================================================================
     # COMPUTE METHODS
     # ============================================================================
 
@@ -384,6 +415,113 @@ Verify at: %s/payment/qr-guide""" % (voucher_ref, amount_str, partner_name, date
                 record.authorized_by = record.write_uid.name
             else:
                 record.authorized_by = record.create_uid.name if record.create_uid else 'System'
+
+    # ============================================================================
+    # ENHANCED REPORT COMPUTE METHODS
+    # ============================================================================
+
+    @api.depends('qr_code', 'qr_in_report')
+    def _compute_qr_code_urls(self):
+        """Compute QR code as data URL for report"""
+        for record in self:
+            try:
+                if (hasattr(record, 'qr_code') and record.qr_code and 
+                    hasattr(record, 'qr_in_report') and record.qr_in_report):
+                    if isinstance(record.qr_code, bytes):
+                        qr_data = record.qr_code
+                    else:
+                        qr_data = record.qr_code.encode('utf-8')
+                    record.qr_code_urls = f"data:image/png;base64,{base64.b64encode(qr_data).decode('utf-8')}"
+                else:
+                    record.qr_code_urls = False
+            except Exception as e:
+                _logger.warning(f"Error computing QR code URL: {e}")
+                record.qr_code_urls = False
+
+    @api.depends('payment_type', 'qr_code', 'qr_in_report')
+    def _compute_display_qr_code(self):
+        """Compute whether QR code should be displayed"""
+        for record in self:
+            try:
+                record.display_qr_code = (
+                    record.payment_type == 'inbound' and
+                    hasattr(record, 'qr_in_report') and record.qr_in_report and
+                    hasattr(record, 'qr_code') and record.qr_code and
+                    record.amount > 0
+                )
+            except Exception:
+                record.display_qr_code = False
+
+    @api.depends('reviewer_id', 'approver_id', 'authorizer_id', 'actual_approver_id',
+                 'reviewer_date', 'approver_date', 'authorizer_date')
+    def _compute_signatory_summary(self):
+        """Compute summary of all signatories for quick access"""
+        for record in self:
+            try:
+                signatories = []
+                
+                # Reviewer
+                if hasattr(record, 'reviewer_id') and record.reviewer_id:
+                    signatories.append({
+                        'role': 'Reviewer',
+                        'name': record.reviewer_id.name,
+                        'initials': record._get_user_initials(record.reviewer_id),
+                        'date': record.reviewer_date.strftime('%d/%m/%Y %H:%M') if hasattr(record, 'reviewer_date') and record.reviewer_date else None,
+                        'signed': bool(record.reviewer_date)
+                    })
+                
+                # Approver
+                if hasattr(record, 'approver_id') and record.approver_id:
+                    signatories.append({
+                        'role': 'Approver',
+                        'name': record.approver_id.name,
+                        'initials': record._get_user_initials(record.approver_id),
+                        'date': record.approver_date.strftime('%d/%m/%Y %H:%M') if hasattr(record, 'approver_date') and record.approver_date else None,
+                        'signed': bool(record.approver_date)
+                    })
+                
+                # Authorizer/Poster
+                final_user = (record.authorizer_id if hasattr(record, 'authorizer_id') and record.authorizer_id 
+                             else record.actual_approver_id if hasattr(record, 'actual_approver_id') and record.actual_approver_id
+                             else None)
+                if final_user:
+                    role = 'Authorizer' if record.payment_type == 'outbound' else 'Poster'
+                    final_date = (record.authorizer_date if hasattr(record, 'authorizer_date') and record.authorizer_date
+                                 else record.write_date if record.write_date else None)
+                    signatories.append({
+                        'role': role,
+                        'name': final_user.name,
+                        'initials': record._get_user_initials(final_user),
+                        'date': final_date.strftime('%d/%m/%Y %H:%M') if final_date else None,
+                        'signed': bool(final_date)
+                    })
+                
+                record.signatory_summary = signatories
+            except Exception as e:
+                _logger.warning(f"Error computing signatory summary: {e}")
+                record.signatory_summary = []
+
+    @api.depends('approval_state')
+    def _compute_workflow_progress(self):
+        """Compute workflow completion percentage"""
+        for record in self:
+            try:
+                if not hasattr(record, 'approval_state'):
+                    record.workflow_progress = 100 if record.state == 'posted' else 0
+                    continue
+                    
+                progress_map = {
+                    'draft': 0,
+                    'under_review': 25,
+                    'for_approval': 50,
+                    'for_authorization': 75,
+                    'approved': 90,
+                    'posted': 100,
+                    'cancelled': 0
+                }
+                record.workflow_progress = progress_map.get(record.approval_state, 0)
+            except Exception:
+                record.workflow_progress = 0
 
     # ============================================================================
     # ONCHANGE METHODS
@@ -1543,6 +1681,404 @@ Verify at: %s/payment/qr-guide""" % (voucher_ref, amount_str, partner_name, date
             stats[state] = self.search_count(domain + [('approval_state', '=', state)])
         
         return stats
+
+    # ============================================================================
+    # ENHANCED REPORT METHODS FOR PAYMENT VOUCHER
+    # ============================================================================
+
+    def get_related_document_info(self):
+        """Get information about related invoices/bills for the voucher"""
+        self.ensure_one()
+        
+        try:
+            # Check for reconciled invoices/bills
+            reconciled_moves = self.env['account.move']
+            
+            if hasattr(self, 'reconciled_invoice_ids') and self.reconciled_invoice_ids:
+                reconciled_moves |= self.reconciled_invoice_ids
+            if hasattr(self, 'reconciled_bill_ids') and self.reconciled_bill_ids:
+                reconciled_moves |= self.reconciled_bill_ids
+            
+            # If no reconciled moves found, try to get from move lines
+            if not reconciled_moves and self.move_id:
+                for line in self.move_id.line_ids:
+                    for partial_rec in line.matched_debit_ids + line.matched_credit_ids:
+                        if partial_rec.debit_move_id.move_id.move_type in ['out_invoice', 'in_invoice', 'out_refund', 'in_refund']:
+                            reconciled_moves |= partial_rec.debit_move_id.move_id
+                        elif partial_rec.credit_move_id.move_id.move_type in ['out_invoice', 'in_invoice', 'out_refund', 'in_refund']:
+                            reconciled_moves |= partial_rec.credit_move_id.move_id
+            
+            if reconciled_moves:
+                count = len(reconciled_moves)
+                if count == 1:
+                    doc = reconciled_moves[0]
+                    doc_type = "Invoice" if doc.move_type in ['out_invoice', 'out_refund'] else "Bill"
+                    return {
+                        'label': f'Related {doc_type}',
+                        'references': doc.name,
+                        'count': count,
+                        'documents': reconciled_moves
+                    }
+                else:
+                    refs = ', '.join(reconciled_moves.mapped('name')[:3])
+                    if count > 3:
+                        refs += f' + {count - 3} more'
+                    return {
+                        'label': f'Related Documents ({count})',
+                        'references': refs,
+                        'count': count,
+                        'documents': reconciled_moves
+                    }
+            else:
+                # Fallback to payment reference
+                return {
+                    'label': 'Payment Reference',
+                    'references': self.ref or self.name or '-',
+                    'count': 0,
+                    'documents': self.env['account.move']
+                }
+        except Exception as e:
+            # Fallback in case of any error
+            return {
+                'label': 'Payment Reference',
+                'references': self.ref or self.name or '-',
+                'count': 0,
+                'documents': self.env['account.move']
+            }
+
+    def get_payment_summary(self):
+        """Get payment summary information for the voucher"""
+        self.ensure_one()
+        
+        try:
+            total_invoice_amount = 0.0
+            is_full_payment = True
+            remaining_balance = 0.0
+            currency = self.currency_id
+            
+            # Get related documents
+            doc_info = self.get_related_document_info()
+            if doc_info['documents']:
+                for doc in doc_info['documents']:
+                    total_invoice_amount += doc.amount_total
+                    if doc.amount_residual > 0.01:  # Small tolerance for rounding
+                        is_full_payment = False
+                        remaining_balance += doc.amount_residual
+            
+            return {
+                'total_invoice_amount': total_invoice_amount,
+                'is_full_payment': is_full_payment,
+                'remaining_balance': remaining_balance,
+                'currency': currency
+            }
+        except Exception:
+            return {
+                'total_invoice_amount': 0.0,
+                'is_full_payment': True,
+                'remaining_balance': 0.0,
+                'currency': self.currency_id
+            }
+
+    def get_voucher_description(self):
+        """Get a descriptive text for the payment voucher"""
+        self.ensure_one()
+        
+        try:
+            if self.payment_type == 'inbound':
+                base_desc = f"Receipt of {self.currency_id.name} {self.amount:,.2f} from {self.partner_id.name}"
+            else:
+                base_desc = f"Payment of {self.currency_id.name} {self.amount:,.2f} to {self.partner_id.name}"
+            
+            # Add payment method
+            if self.journal_id:
+                base_desc += f" via {self.journal_id.name}"
+            
+            # Add related document info
+            doc_info = self.get_related_document_info()
+            if doc_info['count'] > 0:
+                base_desc += f" for {doc_info['references']}"
+            
+            return base_desc
+        except Exception:
+            return f"Payment voucher {self.voucher_number or self.name}"
+
+    def _get_amount_in_words(self):
+        """Convert payment amount to words - enhanced version"""
+        self.ensure_one()
+        try:
+            # Try to use the built-in Odoo method if available
+            if hasattr(self.currency_id, 'amount_to_text'):
+                return self.currency_id.amount_to_text(self.amount)
+            
+            # Try num2words library
+            try:
+                from num2words import num2words
+                amount_text = num2words(self.amount, lang='en', to='currency')
+                # Capitalize first letter of each word
+                return ' '.join(word.capitalize() for word in amount_text.split())
+            except ImportError:
+                # Ultimate fallback - manual conversion for common amounts
+                return self._manual_amount_to_words()
+                
+        except Exception as e:
+            _logger.warning("Error converting amount to words: %s", e)
+            return f"{self.currency_id.name} {self.amount:,.2f} Only"
+
+    def _manual_amount_to_words(self):
+        """Manual amount to words conversion for basic amounts"""
+        amount = self.amount
+        currency = self.currency_id.name or 'Dollars'
+        
+        if amount == 0:
+            return f"Zero {currency} Only"
+        
+        # Simple conversion for whole numbers up to thousands
+        ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
+        teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", 
+                "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
+        tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
+        
+        def convert_hundreds(num):
+            result = ""
+            if num >= 100:
+                result += ones[num // 100] + " Hundred "
+                num %= 100
+            if num >= 20:
+                result += tens[num // 10] + " "
+                num %= 10
+            elif num >= 10:
+                result += teens[num - 10] + " "
+                num = 0
+            if num > 0:
+                result += ones[num] + " "
+            return result.strip()
+        
+        # Split into integer and decimal parts
+        integer_part = int(amount)
+        decimal_part = int((amount - integer_part) * 100)
+        
+        result = ""
+        if integer_part >= 1000000:
+            result += convert_hundreds(integer_part // 1000000) + " Million "
+            integer_part %= 1000000
+        if integer_part >= 1000:
+            result += convert_hundreds(integer_part // 1000) + " Thousand "
+            integer_part %= 1000
+        if integer_part > 0:
+            result += convert_hundreds(integer_part)
+        
+        if not result:
+            result = "Zero"
+        
+        result += f" {currency}"
+        
+        if decimal_part > 0:
+            result += f" and {decimal_part:02d}/100"
+        
+        return result.strip() + " Only"
+
+    def get_approval_workflow_status(self):
+        """Get the current approval workflow status for display"""
+        self.ensure_one()
+        
+        try:
+            if not hasattr(self, 'approval_state'):
+                return {
+                    'stage': 'posted' if self.state == 'posted' else 'draft',
+                    'percentage': 100 if self.state == 'posted' else 0,
+                    'next_action': 'Complete' if self.state == 'posted' else 'Submit for approval'
+                }
+            
+            workflow_stages = {
+                'draft': {'stage': 1, 'percentage': 0, 'next_action': 'Submit for Review'},
+                'under_review': {'stage': 2, 'percentage': 25, 'next_action': 'Review Payment'},
+                'for_approval': {'stage': 3, 'percentage': 50, 'next_action': 'Approve Payment'},
+                'for_authorization': {'stage': 4, 'percentage': 75, 'next_action': 'Authorize Payment'},
+                'approved': {'stage': 5, 'percentage': 90, 'next_action': 'Post Payment'},
+                'posted': {'stage': 6, 'percentage': 100, 'next_action': 'Complete'},
+                'cancelled': {'stage': 0, 'percentage': 0, 'next_action': 'Cancelled'}
+            }
+            
+            return workflow_stages.get(self.approval_state, {'stage': 1, 'percentage': 0, 'next_action': 'Unknown'})
+        except Exception:
+            return {'stage': 1, 'percentage': 0, 'next_action': 'Submit for approval'}
+
+    def get_signatory_info(self, signatory_type):
+        """Get signatory information for the report"""
+        self.ensure_one()
+        
+        try:
+            signatory_map = {
+                'reviewer': {
+                    'user_field': 'reviewer_id' if hasattr(self, 'reviewer_id') else None,
+                    'date_field': 'reviewer_date' if hasattr(self, 'reviewer_date') else None,
+                    'label': 'Reviewed By'
+                },
+                'approver': {
+                    'user_field': 'approver_id' if hasattr(self, 'approver_id') else None,
+                    'date_field': 'approver_date' if hasattr(self, 'approver_date') else None,
+                    'label': 'Approved By'
+                },
+                'authorizer': {
+                    'user_field': 'authorizer_id' if hasattr(self, 'authorizer_id') else 'actual_approver_id' if hasattr(self, 'actual_approver_id') else None,
+                    'date_field': 'authorizer_date' if hasattr(self, 'authorizer_date') else 'write_date',
+                    'label': 'Authorized By' if self.payment_type == 'outbound' else 'Posted By'
+                }
+            }
+            
+            config = signatory_map.get(signatory_type, {})
+            
+            user_field = config.get('user_field')
+            date_field = config.get('date_field')
+            
+            user = getattr(self, user_field) if user_field and hasattr(self, user_field) else None
+            date = getattr(self, date_field) if date_field and hasattr(self, date_field) else None
+            
+            if user:
+                # Generate initials
+                name_parts = user.name.split() if user.name else []
+                if len(name_parts) >= 2:
+                    initials = name_parts[0][:1] + name_parts[-1][:1]
+                elif len(name_parts) == 1:
+                    initials = name_parts[0][:2]
+                else:
+                    initials = "--"
+                
+                return {
+                    'user': user,
+                    'name': user.name,
+                    'initials': initials.upper(),
+                    'signature': user.signature if hasattr(user, 'signature') and user.signature else None,
+                    'date': date,
+                    'formatted_date': date.strftime('%d/%m/%Y %H:%M') if date else None,
+                    'label': config.get('label', 'Signatory'),
+                    'is_signed': bool(user and date)
+                }
+            else:
+                return {
+                    'user': None,
+                    'name': None,
+                    'initials': '--',
+                    'signature': None,
+                    'date': None,
+                    'formatted_date': None,
+                    'label': config.get('label', 'Signatory'),
+                    'is_signed': False
+                }
+        except Exception as e:
+            _logger.warning(f"Error getting signatory info for {signatory_type}: {e}")
+            return {
+                'user': None,
+                'name': None,
+                'initials': '--',
+                'signature': None,
+                'date': None,
+                'formatted_date': None,
+                'label': 'Signatory',
+                'is_signed': False
+            }
+
+    def _get_user_initials(self, user):
+        """Helper method to get user initials"""
+        if not user or not user.name:
+            return "--"
+        
+        name_parts = user.name.split()
+        if len(name_parts) >= 2:
+            return (name_parts[0][:1] + name_parts[-1][:1]).upper()
+        elif len(name_parts) == 1:
+            return name_parts[0][:2].upper()
+        else:
+            return "--"
+
+    def _validate_report_data(self):
+        """Validate that all required data is available for report generation"""
+        self.ensure_one()
+        
+        errors = []
+        
+        # Basic required fields
+        if not self.partner_id:
+            errors.append("Partner is required")
+        if not self.amount or self.amount <= 0:
+            errors.append("Valid amount is required")
+        if not self.date:
+            errors.append("Payment date is required")
+        if not self.journal_id:
+            errors.append("Journal is required")
+        
+        # Voucher number
+        if not self.voucher_number or self.voucher_number in ['/', 'NEW']:
+            errors.append("Voucher number is missing")
+        
+        if errors:
+            raise ValidationError("Cannot generate report. Missing required data:\n" + "\n".join(errors))
+        
+        return True
+
+    def get_report_data(self):
+        """Get all data needed for the report in a structured format"""
+        self.ensure_one()
+        
+        # Validate required data first
+        self._validate_report_data()
+        
+        return {
+            # Basic payment info
+            'voucher_number': self.voucher_number,
+            'payment_type_label': 'Receipt' if self.payment_type == 'inbound' else 'Payment Voucher',
+            'partner_name': self.partner_id.name,
+            'partner_mobile': self.partner_id.mobile or '-',
+            'amount': self.amount,
+            'amount_formatted': f"{self.currency_id.symbol}{self.amount:,.2f}",
+            'amount_in_words': self._get_amount_in_words(),
+            'date': self.date,
+            'date_formatted': self.date.strftime('%d %B %Y'),
+            'journal_name': self.journal_id.name,
+            'currency_name': self.currency_id.name,
+            
+            # Status and workflow
+            'approval_state': self.approval_state if hasattr(self, 'approval_state') else self.state,
+            'approval_state_label': self._get_approval_state_label(),
+            'workflow_progress': self.workflow_progress,
+            
+            # Signatories
+            'reviewer': self.get_signatory_info('reviewer'),
+            'approver': self.get_signatory_info('approver'),
+            'authorizer': self.get_signatory_info('authorizer'),
+            
+            # Related documents
+            'related_docs': self.get_related_document_info(),
+            'payment_summary': self.get_payment_summary(),
+            
+            # QR Code
+            'qr_code_url': self.qr_code_urls,
+            'show_qr_code': self.display_qr_code,
+            
+            # Remarks
+            'remarks': self.remarks if hasattr(self, 'remarks') and self.remarks else self.ref or '-',
+            
+            # Timestamps
+            'created_date': self.create_date,
+            'created_formatted': self.create_date.strftime('%d/%m/%Y %H:%M') if self.create_date else '',
+            'printed_date': datetime.datetime.now().strftime('%d/%m/%Y %H:%M'),
+        }
+
+    def _get_approval_state_label(self):
+        """Get human-readable approval state label"""
+        if not hasattr(self, 'approval_state'):
+            return self.state.title()
+        
+        state_labels = {
+            'draft': 'Draft',
+            'under_review': 'Under Review',
+            'for_approval': 'For Approval',
+            'for_authorization': 'For Authorization',
+            'approved': 'Approved',
+            'posted': 'Posted',
+            'cancelled': 'Cancelled'
+        }
+        return state_labels.get(self.approval_state, self.approval_state.title())
 
 
 class AccountPaymentRegister(models.TransientModel):

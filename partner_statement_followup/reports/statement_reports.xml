@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Partner Statement Report -->
+    <record id="action_report_partner_statement" model="ir.actions.report">
+        <field name="name">Partner Statement</field>
+        <field name="model">statement.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">partner_statement_followup.report_partner_statement</field>
+        <field name="report_file">partner_statement_followup.report_partner_statement</field>
+        <field name="print_report_name">'Statement - %s - %s' % (object.partner_id.name, object.date_to)</field>
+        <field name="binding_model_id" ref="model_statement_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Statement Report Template -->
+    <template id="report_partner_statement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Header -->
+                        <div class="row">
+                            <div class="col-6">
+                                <h2>CUSTOMER STATEMENT</h2>
+                                <p class="text-muted">Statement Period: <span t-field="doc.date_from"/> to <span t-field="doc.date_to"/></p>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p>
+                                    <strong>Date:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/><br/>
+                                    <strong>Company:</strong> <span t-field="doc.company_id.name"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Customer Details -->
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Bill To:</strong><br/>
+                                <address t-field="doc.partner_id" t-options="{'widget': 'contact', 'fields': ['address', 'name'], 'no_marker': True}"/>
+                            </div>
+                            <div class="col-6 text-right">
+                                <p t-if="doc.partner_id.vat">
+                                    <strong>Tax ID:</strong> <span t-field="doc.partner_id.vat"/>
+                                </p>
+                                <p t-if="doc.partner_id.ref">
+                                    <strong>Customer Code:</strong> <span t-field="doc.partner_id.ref"/>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Ageing Analysis -->
+                        <div class="row mt-4" t-if="doc.show_ageing">
+                            <div class="col-12">
+                                <h4>Ageing Analysis</h4>
+                                <table class="table table-bordered">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Current</th>
+                                            <th>1-30 Days</th>
+                                            <th>31-60 Days</th>
+                                            <th>61-90 Days</th>
+                                            <th>90+ Days</th>
+                                            <th class="text-right"><strong>Total Outstanding</strong></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span t-field="doc.ageing_current" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                            <td><span t-field="doc.ageing_30" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                            <td><span t-field="doc.ageing_60" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                            <td><span t-field="doc.ageing_90" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                            <td><span t-field="doc.ageing_90_plus" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                            <td class="text-right"><strong><span t-field="doc.total_balance" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Transaction Details -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4>Transaction Details</h4>
+                                <table class="table table-striped">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Due Date</th>
+                                            <th>Reference</th>
+                                            <th>Description</th>
+                                            <th class="text-right">Debit</th>
+                                            <th class="text-right">Credit</th>
+                                            <th class="text-right">Outstanding</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="doc.line_ids" t-as="line" 
+                                            t-att-class="'text-danger' if line.days_overdue > 90 else ('text-warning' if line.days_overdue > 30 else '')">
+                                            <td><span t-field="line.date"/></td>
+                                            <td><span t-field="line.date_maturity"/></td>
+                                            <td><span t-field="line.reference"/></td>
+                                            <td><span t-field="line.description"/></td>
+                                            <td class="text-right">
+                                                <span t-field="line.debit" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.credit" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.amount_residual" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-if="line.reconciled" class="badge badge-success">Paid</span>
+                                                <span t-elif="line.days_overdue == 0" class="badge badge-info">Current</span>
+                                                <span t-elif="line.days_overdue &lt;= 30" class="badge badge-warning">
+                                                    <t t-esc="line.days_overdue"/> days
+                                                </span>
+                                                <span t-else="" class="badge badge-danger">
+                                                    <t t-esc="line.days_overdue"/> days
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-info">
+                                            <td colspan="6" class="text-right"><strong>Total Outstanding:</strong></td>
+                                            <td class="text-right">
+                                                <strong><span t-field="doc.total_balance" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></strong>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="row mt-5">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <p><strong>Payment Terms:</strong> Please remit payment within 30 days of statement date.</p>
+                                    <p><strong>Questions?</strong> Contact our accounts department at 
+                                       <span t-esc="doc.company_id.phone or 'N/A'"/> or 
+                                       <span t-esc="doc.company_id.email or 'N/A'"/>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Footer if configured -->
+                        <t t-if="doc.company_id">
+                            <t t-set="config" t-value="request.env['res.partner.statement.config'].get_company_config(doc.company_id.id)"/>
+                            <div class="row mt-3" t-if="config.statement_footer">
+                                <div class="col-12">
+                                    <t t-raw="config.statement_footer"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Additional email template for sending statements -->
+    <record id="statement_email_template" model="mail.template">
+        <field name="name">Statement Email</field>
+        <field name="model_id" ref="model_statement_wizard"/>
+        <field name="subject">Account Statement - ${object.partner_id.name}</field>
+        <field name="email_to">${object.partner_id.email}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Dear ${object.partner_id.name},</p>
+                
+                <p>Please find attached your account statement for the period from ${object.date_from} to ${object.date_to}.</p>
+                
+                <p><strong>Current Outstanding Balance:</strong> ${object.total_balance} ${object.currency_id.name}</p>
+                
+                <p>If you have any questions regarding this statement or need to discuss payment arrangements, 
+                   please contact our accounts department.</p>
+                
+                <p>Thank you for your business.</p>
+                
+                <p>Best regards,<br/>
+                ${object.company_id.name}<br/>
+                Accounts Department</p>
+            </div>
+        </field>
+    </record>
+</odoo>

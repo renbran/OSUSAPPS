@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Statement Wizard Views -->
+    <record id="view_statement_wizard_form" model="ir.ui.view">
+        <field name="name">statement.wizard.form</field>
+        <field name="model">statement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Partner Statement">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="partner_id" placeholder="Select Partner..." required="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group name="filters">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group name="options">
+                            <field name="include_reconciled"/>
+                            <field name="show_ageing"/>
+                            <field name="output_format"/>
+                        </group>
+                    </group>
+                    
+                    <div class="row" name="statement_summary" attrs="{'invisible': [('partner_id', '=', False)]}">
+                        <div class="col-md-12">
+                            <h3>Statement Summary</h3>
+                        </div>
+                    </div>
+                    
+                    <!-- Ageing Analysis -->
+                    <div class="row" name="ageing_analysis" attrs="{'invisible': ['|', ('partner_id', '=', False), ('show_ageing', '=', False)]}">
+                        <div class="col-md-12">
+                            <h4>Ageing Analysis</h4>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Current</th>
+                                        <th>1-30 Days</th>
+                                        <th>31-60 Days</th>
+                                        <th>61-90 Days</th>
+                                        <th>90+ Days</th>
+                                        <th class="text-right"><strong>Total</strong></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><field name="ageing_current" nolabel="1" readonly="1"/></td>
+                                        <td><field name="ageing_30" nolabel="1" readonly="1"/></td>
+                                        <td><field name="ageing_60" nolabel="1" readonly="1"/></td>
+                                        <td><field name="ageing_90" nolabel="1" readonly="1"/></td>
+                                        <td><field name="ageing_90_plus" nolabel="1" readonly="1"/></td>
+                                        <td class="text-right"><strong><field name="total_balance" nolabel="1" readonly="1"/></strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Statement Lines -->
+                    <div class="row" name="statement_lines" attrs="{'invisible': [('partner_id', '=', False)]}">
+                        <div class="col-md-12">
+                            <h4>Transaction Details</h4>
+                            <field name="line_ids" nolabel="1" readonly="1">
+                                <tree string="Statement Lines" 
+                                      decoration-danger="reconciled == False and days_overdue &gt; 90"
+                                      decoration-warning="reconciled == False and days_overdue &gt; 30"
+                                      decoration-muted="reconciled == True">
+                                    <field name="date"/>
+                                    <field name="date_maturity"/>
+                                    <field name="reference"/>
+                                    <field name="description"/>
+                                    <field name="debit"/>
+                                    <field name="credit"/>
+                                    <field name="amount_residual"/>
+                                    <field name="days_overdue"/>
+                                    <field name="ageing_bucket"/>
+                                    <field name="reconciled"/>
+                                    <button name="action_view_move" 
+                                            string="View" 
+                                            type="object" 
+                                            icon="fa-external-link"/>
+                                    <button name="action_reconcile" 
+                                            string="Quick Reconcile" 
+                                            type="object" 
+                                            icon="fa-check"
+                                            attrs="{'invisible': [('reconciled', '=', True)]}"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </div>
+                </sheet>
+                
+                <footer>
+                    <button name="action_view_statement" 
+                            string="Refresh" 
+                            type="object" 
+                            class="btn-secondary"/>
+                    <button name="action_print_pdf" 
+                            string="Print PDF" 
+                            type="object" 
+                            class="btn-primary"
+                            attrs="{'invisible': [('output_format', '!=', 'pdf')]}"/>
+                    <button name="action_export_excel" 
+                            string="Export Excel" 
+                            type="object" 
+                            class="btn-primary"
+                            attrs="{'invisible': [('output_format', '!=', 'excel')]}"/>
+                    <button name="action_send_email" 
+                            string="Send Email" 
+                            type="object" 
+                            class="btn-success"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Batch Follow-up Wizard Views -->
+    <record id="view_batch_followup_wizard_form" model="ir.ui.view">
+        <field name="name">batch.followup.wizard.form</field>
+        <field name="model">batch.followup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Batch Follow-up">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Batch Follow-up Processing</h1>
+                    </div>
+                    
+                    <group>
+                        <group name="criteria">
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="followup_level"/>
+                            <field name="min_balance"/>
+                            <field name="overdue_days"/>
+                        </group>
+                        <group name="options">
+                            <field name="partner_ids" widget="many2many_tags"/>
+                            <field name="exclude_blocked"/>
+                            <field name="preview_mode"/>
+                        </group>
+                    </group>
+                    
+                    <div class="row" name="summary" attrs="{'invisible': [('total_partners', '=', 0)]}">
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <strong>Summary:</strong><br/>
+                                <span><field name="total_partners" nolabel="1"/> partners eligible</span><br/>
+                                <span>Total balance: <field name="total_balance" nolabel="1"/></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Eligible Partners -->
+                    <div class="row" name="eligible_partners" attrs="{'invisible': [('total_partners', '=', 0)]}">
+                        <div class="col-md-12">
+                            <h4>Eligible Partners</h4>
+                            <field name="eligible_partner_ids" nolabel="1">
+                                <tree string="Eligible Partners" editable="bottom">
+                                    <field name="selected"/>
+                                    <field name="partner_id"/>
+                                    <field name="current_level"/>
+                                    <field name="next_level"/>
+                                    <field name="balance_due"/>
+                                    <field name="days_overdue"/>
+                                    <field name="last_followup"/>
+                                    <button name="action_view_partner" 
+                                            string="View Partner" 
+                                            type="object" 
+                                            icon="fa-external-link"/>
+                                    <button name="action_view_statement" 
+                                            string="Statement" 
+                                            type="object" 
+                                            icon="fa-file-text-o"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </div>
+                </sheet>
+                
+                <footer>
+                    <button name="action_preview_followup" 
+                            string="Refresh Preview" 
+                            type="object" 
+                            class="btn-secondary"/>
+                    <button name="action_select_all" 
+                            string="Select All" 
+                            type="object" 
+                            class="btn-link"/>
+                    <button name="action_deselect_all" 
+                            string="Deselect All" 
+                            type="object" 
+                            class="btn-link"/>
+                    <button name="action_generate_statements" 
+                            string="Generate Statements" 
+                            type="object" 
+                            class="btn-warning"/>
+                    <button name="action_send_followup" 
+                            string="Send Follow-ups" 
+                            type="object" 
+                            class="btn-primary"
+                            attrs="{'invisible': [('preview_mode', '=', True)]}"
+                            confirm="Are you sure you want to send follow-up emails to all selected partners?"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Statement Configuration Views -->
+    <record id="view_statement_config_form" model="ir.ui.view">
+        <field name="name">res.partner.statement.config.form</field>
+        <field name="model">res.partner.statement.config</field>
+        <field name="arch" type="xml">
+            <form string="Statement Configuration">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="company_id" placeholder="Select Company..." required="1"/>
+                        </h1>
+                    </div>
+                    
+                    <notebook>
+                        <page string="Ageing Configuration" name="ageing">
+                            <group>
+                                <group name="ageing_buckets">
+                                    <field name="ageing_bucket_1"/>
+                                    <field name="ageing_bucket_2"/>
+                                    <field name="ageing_bucket_3"/>
+                                </group>
+                            </group>
+                            
+                            <div class="alert alert-info">
+                                <strong>Ageing Buckets:</strong><br/>
+                                • Current: Not yet due<br/>
+                                • Bucket 1: 1 to <field name="ageing_bucket_1" nolabel="1" readonly="1"/> days<br/>
+                                • Bucket 2: <span t-esc="doc.ageing_bucket_1 + 1"/> to <field name="ageing_bucket_2" nolabel="1" readonly="1"/> days<br/>
+                                • Bucket 3: <span t-esc="doc.ageing_bucket_2 + 1"/> to <field name="ageing_bucket_3" nolabel="1" readonly="1"/> days<br/>
+                                • Bucket 4: <span t-esc="doc.ageing_bucket_3 + 1"/>+ days
+                            </div>
+                        </page>
+                        
+                        <page string="Follow-up Configuration" name="followup">
+                            <group>
+                                <group name="followup_settings">
+                                    <field name="auto_followup"/>
+                                    <field name="days_between_levels"/>
+                                    <field name="max_followup_level"/>
+                                </group>
+                            </group>
+                            
+                            <div class="mt16">
+                                <button name="action_test_followup_template" 
+                                        string="Test Email Templates" 
+                                        type="object" 
+                                        class="btn-secondary"/>
+                            </div>
+                        </page>
+                        
+                        <page string="Statement Settings" name="statement">
+                            <group>
+                                <group name="statement_options">
+                                    <field name="include_reconciled"/>
+                                    <field name="statement_period_days"/>
+                                    <field name="show_payment_details"/>
+                                </group>
+                                <group name="statement_display">
+                                    <field name="statement_logo"/>
+                                </group>
+                            </group>
+                            
+                            <group string="Statement Footer">
+                                <field name="statement_footer" nolabel="1"/>
+                            </group>
+                        </page>
+                        
+                        <page string="Email Settings" name="email">
+                            <group>
+                                <group name="email_config">
+                                    <field name="followup_email_from"/>
+                                    <field name="cc_accounts_team"/>
+                                    <field name="accounts_team_email" attrs="{'required': [('cc_accounts_team', '=', True)]}"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_statement_config_tree" model="ir.ui.view">
+        <field name="name">res.partner.statement.config.tree</field>
+        <field name="model">res.partner.statement.config</field>
+        <field name="arch" type="xml">
+            <tree string="Statement Configurations">
+                <field name="company_id"/>
+                <field name="auto_followup"/>
+                <field name="max_followup_level"/>
+                <field name="days_between_levels"/>
+                <field name="ageing_bucket_1"/>
+                <field name="ageing_bucket_2"/>
+                <field name="ageing_bucket_3"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Actions for Wizards -->
+    <record id="action_statement_wizard" model="ir.actions.act_window">
+        <field name="name">Partner Statement</field>
+        <field name="res_model">statement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_batch_followup_wizard" model="ir.actions.act_window">
+        <field name="name">Batch Follow-up</field>
+        <field name="res_model">batch.followup.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_statement_config" model="ir.actions.act_window">
+        <field name="name">Statement Configuration</field>
+        <field name="res_model">res.partner.statement.config</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
