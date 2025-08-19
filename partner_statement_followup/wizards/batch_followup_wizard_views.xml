@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Batch Follow-up Wizard Views -->
-    
+
     <!-- Batch Follow-up Wizard Form View -->
     <record id="view_batch_followup_wizard_form" model="ir.ui.view">
         <field name="name">batch.followup.wizard.form</field>
@@ -13,29 +13,26 @@
                         <h1>Automated Follow-up Campaign</h1>
                         <p>Send automated follow-up communications to overdue customers</p>
                     </div>
-                    
+
                     <group>
                         <group name="selection">
-                            <field name="partner_ids" widget="many2many_tags" 
-                                   placeholder="Select partners (leave empty for all overdue customers)"/>
+                            <field name="partner_ids" widget="many2many_tags" placeholder="Select partners (leave empty for all overdue customers)"/>
                             <field name="overdue_days_min"/>
                             <field name="overdue_days_max"/>
                             <field name="minimum_amount"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
-                        
+
                         <group name="communication">
                             <field name="followup_level_id" required="1"/>
                             <field name="communication_method" widget="radio"/>
-                            <field name="email_template_id" 
-                                   attrs="{'invisible': [('communication_method', '!=', 'email')],
+                            <field name="email_template_id" attrs="{'invisible': [('communication_method', '!=', 'email')],
                                            'required': [('communication_method', '=', 'email')]}"/>
-                            <field name="sms_template_id" 
-                                   attrs="{'invisible': [('communication_method', '!=', 'sms')],
+                            <field name="sms_template_id" attrs="{'invisible': [('communication_method', '!=', 'sms')],
                                            'required': [('communication_method', '=', 'sms')]}"/>
                         </group>
                     </group>
-                    
+
                     <group name="options">
                         <group>
                             <field name="schedule_date"/>
@@ -43,11 +40,10 @@
                             <field name="test_mode"/>
                             <field name="exclude_weekends"/>
                         </group>
-                        
+
                         <group>
                             <field name="create_activities"/>
-                            <field name="activity_type_id" 
-                                   attrs="{'invisible': [('create_activities', '=', False)]}"/>
+                            <field name="activity_type_id" attrs="{'invisible': [('create_activities', '=', False)]}"/>
                             <field name="update_payment_terms"/>
                             <field name="block_future_sales"/>
                         </group>
@@ -67,10 +63,8 @@
                     </field>
                 </sheet>
                 <footer>
-                    <button name="action_refresh_preview" string="Refresh Preview" 
-                            type="object" class="btn-secondary"/>
-                    <button name="action_process_followup" string="Process Follow-up" 
-                            type="object" class="btn-primary"/>
+                    <button name="action_refresh_preview" string="Refresh Preview" type="object" class="btn-secondary"/>
+                    <button name="action_process_followup" string="Process Follow-up" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -85,9 +79,11 @@
             <form string="Follow-up Level">
                 <sheet>
                     <div class="oe_title">
-                        <h1><field name="name" placeholder="Follow-up Level Name"/></h1>
+                        <h1>
+                            <field name="name" placeholder="Follow-up Level Name"/>
+                        </h1>
                     </div>
-                    
+
                     <group>
                         <group>
                             <field name="sequence"/>
@@ -95,7 +91,7 @@
                             <field name="active"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
-                        
+
                         <group>
                             <field name="auto_execute"/>
                             <field name="block_sales"/>
@@ -103,7 +99,7 @@
                             <field name="escalate_to_legal"/>
                         </group>
                     </group>
-                    
+
                     <notebook>
                         <page string="Email Configuration">
                             <group>
@@ -113,7 +109,7 @@
                             </group>
                             <field name="email_body" widget="html"/>
                         </page>
-                        
+
                         <page string="SMS Configuration">
                             <group>
                                 <field name="sms_template_id"/>
@@ -121,12 +117,11 @@
                             </group>
                             <field name="sms_body" widget="text"/>
                         </page>
-                        
+
                         <page string="Actions">
                             <group>
                                 <field name="create_activity"/>
-                                <field name="activity_type_id" 
-                                       attrs="{'invisible': [('create_activity', '=', False)]}"/>
+                                <field name="activity_type_id" attrs="{'invisible': [('create_activity', '=', False)]}"/>
                                 <field name="activity_note"/>
                                 <field name="assign_to_user_id"/>
                             </group>

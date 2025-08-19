@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Partner Statement Report Configuration -->
-    
+
     <!-- Report Action Definition -->
     <record id="action_report_partner_statement" model="ir.actions.report">
         <field name="name">Partner Statement</field>
@@ -135,7 +135,7 @@ if records:
             'view_mode': 'form',
         })
         result = action
-</field>
+        </field>
     </record>
 
     <!-- Automated Statement Generation via Cron -->
@@ -156,7 +156,7 @@ wizard = wizard_obj.create({
     'auto_followup': True,
 })
 wizard.action_generate_statement()
-</field>
+        </field>
         <field name="interval_number">1</field>
         <field name="interval_type">months</field>
         <field name="numbercall">-1</field>
@@ -170,25 +170,25 @@ wizard.action_generate_statement()
         <field name="model_id" ref="base.model_res_partner"/>
         <field name="subject">Statement of Account - {{ object.name }}</field>
         <field name="body_html" type="html">
-<div style="margin: 0px; padding: 0px;">
-    <p>Dear {{ object.name }},</p>
-    
-    <p>Please find attached your Statement of Account as of {{ ctx.get('date_to', '') }}.</p>
-    
-    <p>If you have any questions about your account or need clarification on any items, 
+            <div style="margin: 0px; padding: 0px;">
+                <p>Dear {{ object.name }},</p>
+
+                <p>Please find attached your Statement of Account as of {{ ctx.get('date_to', '') }}.</p>
+
+                <p>If you have any questions about your account or need clarification on any items, 
        please don't hesitate to contact us.</p>
-    
-    <p>Thank you for your business.</p>
-    
-    <p>Best regards,<br/>
+
+                <p>Thank you for your business.</p>
+
+                <p>Best regards,<br/>
        {{ user.name }}<br/>
        {{ user.company_id.name }}
-    </p>
-</div>
-        </field>
-        <field name="attachment_ids" eval="[(6, 0, [])]"/>
-        <field name="auto_delete" eval="True"/>
-        <field name="email_from">{{ user.email }}</field>
-        <field name="email_to">{{ object.email }}</field>
-    </record>
+            </p>
+        </div>
+    </field>
+    <field name="attachment_ids" eval="[(6, 0, [])]"/>
+    <field name="auto_delete" eval="True"/>
+    <field name="email_from">{{ user.email }}</field>
+    <field name="email_to">{{ object.email }}</field>
+</record>
 </odoo>

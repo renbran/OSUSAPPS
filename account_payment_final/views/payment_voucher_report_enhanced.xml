@@ -11,7 +11,7 @@
                 <t t-call="web.html_container">
                     <t t-foreach="docs" t-as="doc">
                         <t t-set="report_data" t-value="doc.get_report_data()"/>
-                        
+
                         <div class="page" style="font-family: 'Helvetica', 'Arial', sans-serif; color: #333; margin: 0; padding: 20px;">
                             <!-- Header Section -->
                             <div class="header" style="text-align: center; border-bottom: 3px solid #004080; padding-bottom: 20px; margin-bottom: 30px;">
@@ -34,19 +34,24 @@
                                             <div style="background: #f8f9fa; border-left: 4px solid #004080; padding: 15px; border-radius: 5px;">
                                                 <h3 style="color: #004080; margin: 0 0 10px 0; font-size: 18px;">Payment Information</h3>
                                                 <div style="margin-bottom: 8px;">
-                                                    <strong>Paid To/From:</strong> <span t-esc="report_data['partner_name']"/>
+                                                    <strong>Paid To/From:</strong>
+                                                    <span t-esc="report_data['partner_name']"/>
                                                 </div>
                                                 <div style="margin-bottom: 8px;" t-if="report_data['partner_mobile'] != '-'">
-                                                    <strong>Mobile:</strong> <span t-esc="report_data['partner_mobile']"/>
+                                                    <strong>Mobile:</strong>
+                                                    <span t-esc="report_data['partner_mobile']"/>
                                                 </div>
                                                 <div style="margin-bottom: 8px;">
-                                                    <strong>Amount:</strong> <span style="color: #28a745; font-weight: bold; font-size: 18px;" t-esc="report_data['amount_formatted']"/>
+                                                    <strong>Amount:</strong>
+                                                    <span style="color: #28a745; font-weight: bold; font-size: 18px;" t-esc="report_data['amount_formatted']"/>
                                                 </div>
                                                 <div style="margin-bottom: 8px;">
-                                                    <strong>Method:</strong> <span t-esc="report_data['journal_name']"/>
+                                                    <strong>Method:</strong>
+                                                    <span t-esc="report_data['journal_name']"/>
                                                 </div>
                                                 <div t-if="report_data['related_docs']['references'] != report_data['voucher_number']">
-                                                    <strong t-esc="report_data['related_docs']['label']"/>: <span t-esc="report_data['related_docs']['references']"/>
+                                                    <strong t-esc="report_data['related_docs']['label']"/>
+:                                                    <span t-esc="report_data['related_docs']['references']"/>
                                                 </div>
                                             </div>
                                         </td>
@@ -83,7 +88,7 @@
                                 <h3 style="color: #004080; border-bottom: 2px solid #004080; padding-bottom: 10px; margin-bottom: 20px;">
                                     Approval Workflow
                                 </h3>
-                                
+
                                 <table style="width: 100%; border-collapse: collapse;">
                                     <tr>
                                         <!-- Reviewer (Stage 1) -->
@@ -93,7 +98,7 @@
                                                     <i class="fa fa-search" style="margin-right: 5px;"/>
                                                     REVIEWER
                                                 </h4>
-                                                
+
                                                 <div t-if="report_data['reviewer']['is_signed']" style="border: 2px solid #28a745; padding: 15px; border-radius: 8px; background: #f8fff9;">
                                                     <div t-if="report_data['reviewer']['signature']" style="margin-bottom: 10px;">
                                                         <img t-att-src="'data:image/png;base64,' + report_data['reviewer']['signature']" style="max-width: 120px; max-height: 40px;" alt="Signature"/>
@@ -111,7 +116,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div t-else="" style="border: 2px dashed #ddd; padding: 15px; border-radius: 8px; background: #f8f9fa;">
                                                     <div style="height: 40px; border-bottom: 1px dashed #ddd; margin-bottom: 10px;"/>
                                                     <div style="color: #6c757d; font-size: 14px;">Pending Review</div>
@@ -127,7 +132,7 @@
                                                     <i class="fa fa-check-circle" style="margin-right: 5px;"/>
                                                     APPROVER
                                                 </h4>
-                                                
+
                                                 <div t-if="report_data['approver']['is_signed']" style="border: 2px solid #ffc107; padding: 15px; border-radius: 8px; background: #fffdf5;">
                                                     <div t-if="report_data['approver']['signature']" style="margin-bottom: 10px;">
                                                         <img t-att-src="'data:image/png;base64,' + report_data['approver']['signature']" style="max-width: 120px; max-height: 40px;" alt="Signature"/>
@@ -145,7 +150,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div t-else="" style="border: 2px dashed #ddd; padding: 15px; border-radius: 8px; background: #f8f9fa;">
                                                     <div style="height: 40px; border-bottom: 1px dashed #ddd; margin-bottom: 10px;"/>
                                                     <div style="color: #6c757d; font-size: 14px;">Pending Approval</div>
@@ -161,7 +166,7 @@
                                                     <i class="fa fa-shield-alt" style="margin-right: 5px;"/>
                                                     <t t-esc="report_data['authorizer']['label'].upper()"/>
                                                 </h4>
-                                                
+
                                                 <div t-if="report_data['authorizer']['is_signed']" style="border: 2px solid #dc3545; padding: 15px; border-radius: 8px; background: #fdf2f2;">
                                                     <div t-if="report_data['authorizer']['signature']" style="margin-bottom: 10px;">
                                                         <img t-att-src="'data:image/png;base64,' + report_data['authorizer']['signature']" style="max-width: 120px; max-height: 40px;" alt="Signature"/>
@@ -179,7 +184,7 @@
                                                         </span>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div t-else="" style="border: 2px dashed #ddd; padding: 15px; border-radius: 8px; background: #f8f9fa;">
                                                     <div style="height: 40px; border-bottom: 1px dashed #ddd; margin-bottom: 10px;"/>
                                                     <div style="color: #6c757d; font-size: 14px;">Pending Authorization</div>
@@ -205,14 +210,15 @@
                                             <h4 style="color: #004080; margin: 0 0 10px 0;">Payment Summary:</h4>
                                             <div style="background: #e8f4fd; border: 1px solid #b3d9ff; padding: 15px; border-radius: 5px;">
                                                 <div style="margin-bottom: 8px;">
-                                                    <strong>Total Amount:</strong> <span t-esc="report_data['amount_formatted']"/>
+                                                    <strong>Total Amount:</strong>
+                                                    <span t-esc="report_data['amount_formatted']"/>
                                                 </div>
                                                 <div t-if="report_data['payment_summary']['total_invoice_amount'] > 0" style="margin-bottom: 8px;">
-                                                    <strong>Invoice Total:</strong> 
+                                                    <strong>Invoice Total:</strong>
                                                     <span t-esc="'{:,.2f}'.format(report_data['payment_summary']['total_invoice_amount'])"/>
                                                 </div>
                                                 <div t-if="not report_data['payment_summary']['is_full_payment']" style="margin-bottom: 8px; color: #dc3545;">
-                                                    <strong>Remaining:</strong> 
+                                                    <strong>Remaining:</strong>
                                                     <span t-esc="'{:,.2f}'.format(report_data['payment_summary']['remaining_balance'])"/>
                                                 </div>
                                                 <div t-else="" style="color: #28a745;">
@@ -230,7 +236,7 @@
                                 <div style="text-align: center; margin-bottom: 20px; font-style: italic; color: #666;">
                                     I acknowledge receipt of the above payment and confirm all details are correct.
                                 </div>
-                                
+
                                 <table style="width: 100%; border-collapse: collapse;">
                                     <tr>
                                         <td style="width: 50%; text-align: center; padding: 20px; border-right: 1px solid #ddd;">
@@ -250,8 +256,12 @@
                             <!-- Footer -->
                             <div class="footer" style="border-top: 2px solid #004080; padding-top: 15px; text-align: center; font-size: 12px; color: #666;">
                                 <div style="margin-bottom: 8px;">
-                                    <strong>Generated on:</strong> <span t-esc="report_data['printed_date']"/>
-                                    <span style="margin-left: 20px;"><strong>Created:</strong> <span t-esc="report_data['created_formatted']"/></span>
+                                    <strong>Generated on:</strong>
+                                    <span t-esc="report_data['printed_date']"/>
+                                    <span style="margin-left: 20px;">
+                                        <strong>Created:</strong>
+                                        <span t-esc="report_data['created_formatted']"/>
+                                    </span>
                                 </div>
                                 <div style="font-style: italic;">
                                     This is an electronically generated voucher and is valid without signature if all approvals are complete.
@@ -287,13 +297,7 @@
         <field name="arch" type="xml">
             <div class="workflow-buttons osus-workflow" position="inside">
                 <!-- Enhanced Voucher Print Button -->
-                <button name="%(action_payment_voucher_enhanced_report)d" 
-                        string="Print Enhanced Voucher" 
-                        type="action" 
-                        class="btn osus_secondary_btn"
-                        groups="account.group_account_user"
-                        invisible="approval_state == 'draft'"
-                        icon="fa-print"/>
+                <button name="%(action_payment_voucher_enhanced_report)d" string="Print Enhanced Voucher" type="action" class="btn osus_secondary_btn" groups="account.group_account_user" invisible="approval_state == 'draft'" icon="fa-print"/>
             </div>
         </field>
     </record>

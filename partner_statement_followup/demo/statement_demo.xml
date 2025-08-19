@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Demo Data for Partner Statement Follow-up Module -->
-    
+
     <!-- Demo Follow-up Levels -->
     <record id="demo_followup_level_1" model="followup.level">
         <field name="name">First Reminder</field>
@@ -15,7 +15,7 @@
 <p>Please arrange payment at your earliest convenience.</p>
 <p>If you have any questions, please contact us.</p>
 <p>Thank you,<br/>{{ user.name }}</p>
-        ]]></field>
+        ]]>        </field>
         <field name="active">True</field>
     </record>
 
@@ -33,7 +33,7 @@
 <p>This is your second notice. Please remit payment immediately to avoid further collection activities.</p>
 <p>If payment has been sent, please disregard this notice.</p>
 <p>Accounts Receivable Department<br/>{{ user.company_id.name }}</p>
-        ]]></field>
+        ]]>        </field>
         <field name="active">True</field>
     </record>
 
@@ -58,7 +58,7 @@
 </ul>
 <p>Please contact us immediately to resolve this matter.</p>
 <p>Collections Department<br/>{{ user.company_id.name }}</p>
-        ]]></field>
+        ]]>        </field>
         <field name="active">True</field>
     </record>
 
@@ -174,89 +174,88 @@
         <field name="model_id" ref="base.model_res_partner"/>
         <field name="subject">Estado de Cuenta - {{ object.name }}</field>
         <field name="body_html" type="html">
-<div style="margin: 0px; padding: 0px;">
-    <p>Estimado/a {{ object.name }},</p>
-    
-    <p>Adjunto encontrará su Estado de Cuenta al {{ ctx.get('date_to', '') }}.</p>
-    
-    <p>Si tiene alguna pregunta sobre su cuenta o necesita aclaración sobre algún elemento, 
+            <div style="margin: 0px; padding: 0px;">
+                <p>Estimado/a {{ object.name }},</p>
+
+                <p>Adjunto encontrará su Estado de Cuenta al {{ ctx.get('date_to', '') }}.</p>
+
+                <p>Si tiene alguna pregunta sobre su cuenta o necesita aclaración sobre algún elemento, 
        no dude en contactarnos.</p>
-    
-    <p>Gracias por su negocio.</p>
-    
-    <p>Saludos cordiales,<br/>
+
+                <p>Gracias por su negocio.</p>
+
+                <p>Saludos cordiales,<br/>
        {{ user.name }}<br/>
        {{ user.company_id.name }}
-    </p>
-</div>
-        </field>
-        <field name="lang">es_ES</field>
-        <field name="auto_delete" eval="True"/>
-    </record>
+            </p>
+        </div>
+    </field>
+    <field name="lang">es_ES</field>
+    <field name="auto_delete" eval="True"/>
+</record>
 
-    <!-- Demo Batch Processing Configuration -->
-    <record id="demo_batch_config_weekly" model="batch.followup.config">
-        <field name="name">Weekly Auto Follow-up</field>
-        <field name="frequency">weekly</field>
-        <field name="day_of_week">1</field>
-        <field name="auto_process">True</field>
-        <field name="min_overdue_days">7</field>
-        <field name="exclude_weekends">True</field>
-        <field name="test_mode">True</field>
-        <field name="active">False</field>
-    </record>
+<!-- Demo Batch Processing Configuration -->
+<record id="demo_batch_config_weekly" model="batch.followup.config">
+    <field name="name">Weekly Auto Follow-up</field>
+    <field name="frequency">weekly</field>
+    <field name="day_of_week">1</field>
+    <field name="auto_process">True</field>
+    <field name="min_overdue_days">7</field>
+    <field name="exclude_weekends">True</field>
+    <field name="test_mode">True</field>
+    <field name="active">False</field>
+</record>
 
-    <!-- Demo Activities for Follow-up -->
-    <record id="demo_activity_followup_call" model="mail.activity.type">
-        <field name="name">Follow-up Call</field>
-        <field name="category">phonecall</field>
-        <field name="delay_count">1</field>
-        <field name="delay_unit">days</field>
-        <field name="summary">Call customer regarding overdue payment</field>
-        <field name="res_model_id" ref="base.model_res_partner"/>
-    </record>
+<!-- Demo Activities for Follow-up -->
+<record id="demo_activity_followup_call" model="mail.activity.type">
+    <field name="name">Follow-up Call</field>
+    <field name="category">phonecall</field>
+    <field name="delay_count">1</field>
+    <field name="delay_unit">days</field>
+    <field name="summary">Call customer regarding overdue payment</field>
+    <field name="res_model_id" ref="base.model_res_partner"/>
+</record>
 
-    <!-- Demo Report Configurations -->
-    <record id="demo_report_config_monthly" model="report.config">
-        <field name="name">Monthly Ageing Report</field>
-        <field name="report_type">ageing</field>
-        <field name="frequency">monthly</field>
-        <field name="auto_generate">True</field>
-        <field name="email_recipients">manager@company.demo,accounting@company.demo</field>
-        <field name="include_zero_balance">False</field>
-        <field name="active">True</field>
-    </record>
+<!-- Demo Report Configurations -->
+<record id="demo_report_config_monthly" model="report.config">
+    <field name="name">Monthly Ageing Report</field>
+    <field name="report_type">ageing</field>
+    <field name="frequency">monthly</field>
+    <field name="auto_generate">True</field>
+    <field name="email_recipients">manager@company.demo,accounting@company.demo</field>
+    <field name="include_zero_balance">False</field>
+    <field name="active">True</field>
+</record>
 
-    <!-- Demo User Groups Assignment -->
-    <record id="demo_user_statement_manager" model="res.users">
-        <field name="name">Demo Statement Manager</field>
-        <field name="login">statement.manager@demo.com</field>
-        <field name="email">statement.manager@demo.com</field>
-        <field name="groups_id" eval="[(6, 0, [ref('partner_statement_group_manager')])]"/>
-        <field name="active">False</field>
-    </record>
+<!-- Demo User Groups Assignment -->
+<record id="demo_user_statement_manager" model="res.users">
+    <field name="name">Demo Statement Manager</field>
+    <field name="login">statement.manager@demo.com</field>
+    <field name="email">statement.manager@demo.com</field>
+    <field name="groups_id" eval="[(6, 0, [ref('partner_statement_group_manager')])]"/>
+    <field name="active">False</field>
+</record>
 
-    <record id="demo_user_statement_user" model="res.users">
-        <field name="name">Demo Statement User</field>
-        <field name="login">statement.user@demo.com</field>
-        <field name="email">statement.user@demo.com</field>
-        <field name="groups_id" eval="[(6, 0, [ref('partner_statement_group_user')])]"/>
-        <field name="active">False</field>
-    </record>
+<record id="demo_user_statement_user" model="res.users">
+    <field name="name">Demo Statement User</field>
+    <field name="login">statement.user@demo.com</field>
+    <field name="email">statement.user@demo.com</field>
+    <field name="groups_id" eval="[(6, 0, [ref('partner_statement_group_user')])]"/>
+    <field name="active">False</field>
+</record>
 
-    <!-- Demo Cron Jobs (Disabled by Default) -->
-    <record id="demo_cron_daily_followup" model="ir.cron">
-        <field name="name">Demo Daily Follow-up Check</field>
-        <field name="model_id" ref="model_batch_followup_wizard"/>
-        <field name="state">code</field>
-        <field name="code">
-# Demo automated follow-up processing
-env['batch.followup.wizard'].with_context(demo_mode=True).process_daily_followups()
-        </field>
-        <field name="interval_number">1</field>
-        <field name="interval_type">days</field>
-        <field name="numbercall">-1</field>
-        <field name="active">False</field>
-        <field name="doall">False</field>
-    </record>
+<!-- Demo Cron Jobs (Disabled by Default) -->
+<record id="demo_cron_daily_followup" model="ir.cron">
+    <field name="name">Demo Daily Follow-up Check</field>
+    <field name="model_id" ref="model_batch_followup_wizard"/>
+    <field name="state">code</field>
+    <field name="code">
+# Demo automated follow-up processing env['batch.followup.wizard'].with_context(demo_mode=True).process_daily_followups()
+    </field>
+    <field name="interval_number">1</field>
+    <field name="interval_type">days</field>
+    <field name="numbercall">-1</field>
+    <field name="active">False</field>
+    <field name="doall">False</field>
+</record>
 </odoo>

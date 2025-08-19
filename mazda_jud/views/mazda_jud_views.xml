@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View for Mazda Jud Orders -->
+    <record id="mazda_jud_order_view_tree" model="ir.ui.view">
+        <field name="name">mazda.jud.order.tree</field>
+        <field name="model">mazda.jud.order</field>
+        <field name="arch" type="xml">
+            <tree string="Mazda Jud Orders">
+                <field name="name"/>
+                <field name="state"/>
+                <field name="assigned_doc_user_id"/>
+                <field name="assigned_review_user_id"/>
+                <field name="assigned_approve_user_id"/>
+                <field name="assigned_post_user_id"/>
+                <field name="create_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action for Mazda Jud Orders -->
+    <record id="mazda_jud_order_action" model="ir.actions.act_window">
+        <field name="name">Mazda Jud Orders</field>
+        <field name="res_model">mazda.jud.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="mazda_jud_order_view_tree"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Mazda Jud Order
+            </p>
+            <p>
+                Manage workflow orders with multi-stage approval process.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="mazda_jud_main_menu" name="Mazda Jud" sequence="100"/>
+
+    <menuitem id="mazda_jud_orders_menu" name="Orders" parent="mazda_jud_main_menu" action="mazda_jud_order_action" sequence="10"/>
+</odoo>

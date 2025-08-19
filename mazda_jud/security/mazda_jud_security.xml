@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Record Rules for Mazda Jud Orders -->
-    
+
     <!-- Documentation Users can see orders assigned to them for documentation -->
     <record id="mazda_jud_order_rule_doc_user" model="ir.rule">
         <field name="name">Mazda Jud Order: Documentation Users</field>

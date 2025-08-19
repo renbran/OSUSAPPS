@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Statement Configuration Data -->
-    
+
     <!-- Default Statement Configuration -->
     <record id="default_statement_config" model="statement.config">
         <field name="name">Default Statement Configuration</field>
