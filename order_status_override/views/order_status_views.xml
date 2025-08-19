@@ -9,7 +9,6 @@
                 <tree string="Order Statuses" decoration-info="is_initial" decoration-success="is_final">
                     <field name="sequence" widget="handle"/>
                     <field name="name"/>
-                    <field name="code"/>
                     <field name="responsible_type"/>
                     <field name="is_initial"/>
                     <field name="is_final"/>
@@ -30,7 +29,6 @@
                         </div>
                         <group>
                             <group>
-                                <field name="code" required="1"/>
                                 <field name="sequence"/>
                                 <field name="responsible_type"/>
                                 <field name="color" widget="color_picker"/>

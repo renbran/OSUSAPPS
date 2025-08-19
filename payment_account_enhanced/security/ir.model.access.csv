@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_account_payment_enhanced_user,account.payment.enhanced.user,account.model_account_payment,base.group_user,1,1,1,1
+access_account_payment_enhanced,account.payment.enhanced,account.model_account_payment,account.group_account_user,1,1,1,0
+access_account_payment_enhanced_manager,account.payment.enhanced.manager,account.model_account_payment,account.group_account_manager,1,1,1,1
+access_account_payment_register_enhanced,account.payment.register.enhanced,account.model_account_payment_register,account.group_account_user,1,1,1,1
