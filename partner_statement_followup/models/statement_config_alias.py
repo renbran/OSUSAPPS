@@ -13,8 +13,51 @@ class StatementConfigAlias(models.Model):
     company_id = fields.Many2one('res.company', string='Company', 
                                 default=lambda self: self.env.company)
     
-    # Basic statement settings
+    # Ageing bucket fields (referenced in XML data)
+    ageing_bucket_1 = fields.Integer(string='Ageing Bucket 1 (Days)', default=30)
+    ageing_bucket_2 = fields.Integer(string='Ageing Bucket 2 (Days)', default=60)
+    ageing_bucket_3 = fields.Integer(string='Ageing Bucket 3 (Days)', default=90)
+    ageing_bucket_4 = fields.Integer(string='Ageing Bucket 4 (Days)', default=120)
+    
+    # Basic statement settings (referenced in XML data)
     include_zero_balance = fields.Boolean(string='Include Zero Balance', default=False)
+    show_credit_balance = fields.Boolean(string='Show Credit Balance', default=True)
+    currency_format = fields.Selection([
+        ('symbol_before', 'Symbol Before'),
+        ('symbol_after', 'Symbol After'),
+        ('code_before', 'Code Before'),
+        ('code_after', 'Code After')
+    ], string='Currency Format', default='symbol_before')
+    date_format = fields.Selection([
+        ('dd/mm/yyyy', 'DD/MM/YYYY'),
+        ('mm/dd/yyyy', 'MM/DD/YYYY'),
+        ('yyyy-mm-dd', 'YYYY-MM-DD'),
+        ('dd-mm-yyyy', 'DD-MM-YYYY')
+    ], string='Date Format', default='dd/mm/yyyy')
+    statement_footer = fields.Text(string='Statement Footer', 
+                                  default='Thank you for your business. Please contact us if you have any questions about this statement.')
+    
+    # Follow-up settings (referenced in XML data)
+    auto_followup = fields.Boolean(string='Auto Follow-up', default=True)
+    followup_interval = fields.Integer(string='Follow-up Interval (Days)', default=7)
+    
+    # Additional fields referenced in demo data
+    frequency = fields.Selection([
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('yearly', 'Yearly')
+    ], string='Frequency', default='monthly')
+    auto_send = fields.Boolean(string='Auto Send', default=False)
+    email_template_id = fields.Many2one('mail.template', string='Email Template')
+    include_ageing = fields.Boolean(string='Include Ageing Analysis', default=True)
+    filter_by = fields.Selection([
+        ('all', 'All Partners'),
+        ('customers', 'Customers Only'),
+        ('suppliers', 'Suppliers Only')
+    ], string='Filter By', default='customers')
+    exclude_zero_balance = fields.Boolean(string='Exclude Zero Balance', default=True)
+    
+    # Legacy fields for compatibility
     aging_bucket_ids = fields.One2many('statement.ageing.period', 'config_id', 
                                      string='Aging Buckets')
     

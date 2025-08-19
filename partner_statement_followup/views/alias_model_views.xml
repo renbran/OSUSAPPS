@@ -27,6 +27,8 @@
                             <field name="name"/>
                             <field name="sequence"/>
                             <field name="days"/>
+                            <field name="delay_days"/>
+                            <field name="active"/>
                         </group>
                         <group>
                             <field name="send_email"/>
@@ -35,11 +37,15 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Email Template" attrs="{'invisible': [('send_email', '=', False)]}">
+                            <group>
+                                <field name="email_template_id"/>
+                                <field name="email_subject"/>
+                            </group>
+                            <field name="email_body"/>
+                        </page>
                         <page string="Description">
                             <field name="description"/>
-                        </page>
-                        <page string="Email Template" attrs="{'invisible': [('send_email', '=', False)]}">
-                            <field name="email_template_id"/>
                         </page>
                         <page string="Manual Action" attrs="{'invisible': [('manual_action', '=', False)]}">
                             <field name="manual_action_note"/>
@@ -95,7 +101,9 @@
             <tree string="Statement Configurations">
                 <field name="name"/>
                 <field name="statement_format"/>
+                <field name="frequency"/>
                 <field name="show_aging"/>
+                <field name="auto_followup"/>
                 <field name="active"/>
                 <field name="company_id" groups="base.group_multi_company"/>
             </tree>
@@ -113,19 +121,53 @@
                             <field name="name"/>
                             <field name="statement_format"/>
                             <field name="active"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                         <group>
                             <field name="show_aging"/>
                             <field name="show_payments"/>
                             <field name="include_zero_balance"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="show_credit_balance"/>
                         </group>
                     </group>
                     <notebook>
+                        <page string="Ageing Configuration">
+                            <group>
+                                <group string="Ageing Buckets (Days)">
+                                    <field name="ageing_bucket_1"/>
+                                    <field name="ageing_bucket_2"/>
+                                    <field name="ageing_bucket_3"/>
+                                    <field name="ageing_bucket_4"/>
+                                </group>
+                                <group string="Format Settings">
+                                    <field name="currency_format"/>
+                                    <field name="date_format"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Follow-up Settings">
+                            <group>
+                                <group string="Automation">
+                                    <field name="auto_followup"/>
+                                    <field name="followup_interval" attrs="{'invisible': [('auto_followup', '=', False)]}"/>
+                                    <field name="auto_send"/>
+                                    <field name="email_template_id" attrs="{'invisible': [('auto_send', '=', False)]}"/>
+                                </group>
+                                <group string="Frequency &amp; Filtering">
+                                    <field name="frequency"/>
+                                    <field name="filter_by"/>
+                                    <field name="include_ageing"/>
+                                    <field name="exclude_zero_balance"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Statement Footer">
+                            <field name="statement_footer"/>
+                        </page>
                         <page string="Description">
                             <field name="description"/>
                         </page>
-                        <page string="Aging Buckets">
+                        <page string="Aging Buckets (Detailed)">
                             <field name="aging_bucket_ids">
                                 <tree>
                                     <field name="sequence" widget="handle"/>
