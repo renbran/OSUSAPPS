@@ -26,7 +26,7 @@
                             <field name="name" placeholder="Configuration Name"/>
                         </h1>
                     </div>
-                    
+
                     <group>
                         <group>
                             <field name="company_id" groups="base.group_multi_company"/>
@@ -44,7 +44,7 @@
                                 </group>
                             </group>
                         </page>
-                        
+
                         <page string="Follow-up Settings">
                             <group>
                                 <group string="Automation">
@@ -58,7 +58,7 @@
                                 </group>
                             </group>
                         </page>
-                        
+
                         <page string="Statement Settings">
                             <group>
                                 <group string="Display Options">
@@ -70,7 +70,7 @@
                                 </group>
                             </group>
                         </page>
-                        
+
                         <page string="Email Settings">
                             <group>
                                 <group>
@@ -82,7 +82,7 @@
                                 </group>
                             </group>
                         </page>
-                        
+
                         <page string="Report Settings">
                             <group>
                                 <field name="statement_logo"/>
