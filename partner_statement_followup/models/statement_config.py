@@ -167,8 +167,8 @@ class StatementConfig(models.Model):
         
         if not config:
             # Create default configuration
-            config = self.create({
-                'name': f'Default Configuration - {self.env['res.company'].browse(company_id).name}',
+                config = self.create({
+                    'name': f"Default Configuration - {self.env['res.company'].browse(company_id).name}",
                 'company_id': company_id,
                 'ageing_bucket_1': 30,
                 'ageing_bucket_2': 60,
