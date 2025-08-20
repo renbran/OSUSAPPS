@@ -59,6 +59,7 @@
         'views/wizard_views.xml',
         'views/statement_menus.xml',
         'views/alias_model_views.xml',
+        'views/statement_config_views.xml',
         
         # Wizards
         'wizards/statement_wizard_views.xml',

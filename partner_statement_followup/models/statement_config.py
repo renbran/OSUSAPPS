@@ -7,7 +7,13 @@ from odoo.exceptions import ValidationError
 class StatementConfig(models.Model):
     _name = 'res.partner.statement.config'
     _description = 'Partner Statement Configuration'
-    _rec_name = 'company_id'
+    _rec_name = 'name'
+
+    name = fields.Char(
+        string='Configuration Name',
+        required=True,
+        help="Name for this configuration"
+    )
 
     company_id = fields.Many2one(
         'res.company',
@@ -38,6 +44,13 @@ class StatementConfig(models.Model):
         help="Third ageing bucket (Y+1-Z days)"
     )
     
+    ageing_bucket_4 = fields.Integer(
+        string='Bucket 4 (Days)',
+        default=120,
+        required=True,
+        help="Fourth ageing bucket (Z+1-W days)"
+    )
+    
     # Follow-up configuration
     auto_followup = fields.Boolean(
         string='Enable Auto Follow-up',
@@ -57,6 +70,18 @@ class StatementConfig(models.Model):
         default=3,
         required=True,
         help="Maximum number of follow-up levels"
+    )
+    
+    send_email = fields.Boolean(
+        string='Send Follow-up Email',
+        default=True,
+        help="Send email notifications for follow-up activities"
+    )
+    
+    create_activity = fields.Boolean(
+        string='Create Follow-up Activity',
+        default=True,
+        help="Create activities for follow-up reminders"
     )
     
     # Statement configuration
@@ -112,11 +137,11 @@ class StatementConfig(models.Model):
         help="Footer text for statement reports"
     )
 
-    @api.constrains('ageing_bucket_1', 'ageing_bucket_2', 'ageing_bucket_3')
+    @api.constrains('ageing_bucket_1', 'ageing_bucket_2', 'ageing_bucket_3', 'ageing_bucket_4')
     def _check_ageing_buckets(self):
         """Validate ageing bucket configuration"""
         for record in self:
-            if not (record.ageing_bucket_1 < record.ageing_bucket_2 < record.ageing_bucket_3):
+            if not (record.ageing_bucket_1 < record.ageing_bucket_2 < record.ageing_bucket_3 < record.ageing_bucket_4):
                 raise ValidationError(_("Ageing buckets must be in ascending order"))
             
             if record.ageing_bucket_1 <= 0:
@@ -143,13 +168,17 @@ class StatementConfig(models.Model):
         if not config:
             # Create default configuration
             config = self.create({
+                'name': f'Default Configuration - {self.env['res.company'].browse(company_id).name}',
                 'company_id': company_id,
                 'ageing_bucket_1': 30,
                 'ageing_bucket_2': 60,
                 'ageing_bucket_3': 90,
+                'ageing_bucket_4': 120,
                 'auto_followup': True,
                 'days_between_levels': 7,
                 'max_followup_level': 3,
+                'send_email': True,
+                'create_activity': True,
                 'statement_period_days': 365,
                 'show_payment_details': True,
                 'cc_accounts_team': True,
@@ -166,7 +195,8 @@ class StatementConfig(models.Model):
             'bucket_1': _('1-%d Days') % self.ageing_bucket_1,
             'bucket_2': _('%d-%d Days') % (self.ageing_bucket_1 + 1, self.ageing_bucket_2),
             'bucket_3': _('%d-%d Days') % (self.ageing_bucket_2 + 1, self.ageing_bucket_3),
-            'bucket_4': _('%d+ Days') % (self.ageing_bucket_3 + 1),
+            'bucket_4': _('%d-%d Days') % (self.ageing_bucket_3 + 1, self.ageing_bucket_4),
+            'bucket_5': _('%d+ Days') % (self.ageing_bucket_4 + 1),
         }
 
     def action_test_followup_template(self):

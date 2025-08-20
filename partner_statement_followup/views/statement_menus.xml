@@ -27,7 +27,7 @@
     <menuitem id="menu_batch_followup" name="Batch Follow-up" parent="followup_submenu" action="action_batch_followup_wizard" sequence="30"/>
 
     <!-- Configuration Menu Items -->
-    <menuitem id="menu_statement_config" name="Statement Configuration" parent="configuration_submenu" action="action_statement_config" sequence="10"/>
+    <menuitem id="menu_statement_config" name="Statement Configuration" parent="configuration_submenu" action="action_res_partner_statement_config" sequence="10"/>
 
     <menuitem id="menu_followup_levels" name="Follow-up Levels" parent="configuration_submenu" action="action_followup_levels" sequence="20"/>
 
