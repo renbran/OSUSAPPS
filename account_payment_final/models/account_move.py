@@ -1,10 +1,13 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from odoo.exceptions import UserError, ValidationError
+<<<<<<< Updated upstream
 import qrcode
 import base64
 from io import BytesIO
 from PIL import Image, ImageDraw
+=======
+>>>>>>> Stashed changes
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -146,6 +149,7 @@ class AccountMove(models.Model):
                 }
 
     # ============================================================================
+<<<<<<< Updated upstream
     # QR CODE GENERATION FOR INVOICE/BILL VERIFICATION
     # ============================================================================
 
@@ -248,6 +252,8 @@ class AccountMove(models.Model):
     # ============================================================================
     # ENHANCED WORKFLOW CONSTRAINTS AND VALIDATION
     # ============================================================================
+=======
+>>>>>>> Stashed changes
     # WORKFLOW METHODS
     # ============================================================================
 
@@ -490,6 +496,7 @@ class AccountMove(models.Model):
 
     @api.onchange('approval_state')
     def _onchange_approval_state_move(self):
+<<<<<<< Updated upstream
         """Enhanced real-time status updates for invoice/bill approval workflow"""
         # Update approval timestamps in real-time
         now = fields.Datetime.now()
@@ -529,6 +536,22 @@ class AccountMove(models.Model):
                 'approver_id': self.approver_id.id if self.approver_id else False,
                 'approver_date': self.approver_date,
             },
+=======
+        """Real-time status updates for invoice/bill approval workflow"""
+        if self.approval_state == 'posted' and self.state != 'posted':
+            # Don't automatically post - require explicit action
+            return {
+                'warning': {
+                    'title': _('Ready to Post'),
+                    'message': _('This invoice/bill has been approved and is ready to be posted. Please use the Post button to complete the process.')
+                }
+            }
+        
+        # Trigger UI refresh for real-time updates
+        return {
+            'domain': {},
+            'value': {},
+>>>>>>> Stashed changes
         }
 
     @api.onchange('state')
@@ -538,6 +561,7 @@ class AccountMove(models.Model):
             if self.env.user.has_group('account.group_account_manager'):
                 self.approval_state = 'posted'
 
+<<<<<<< Updated upstream
     @api.onchange('amount_total', 'partner_id', 'invoice_date', 'invoice_line_ids')
     def _onchange_invoice_validation_enhanced(self):
         """Enhanced real-time validation for invoice/bill amounts, partners, and workflow requirements"""
@@ -545,10 +569,18 @@ class AccountMove(models.Model):
             warnings = []
             
             # Validate amount with enhanced thresholds
+=======
+    @api.onchange('amount_total', 'partner_id')
+    def _onchange_invoice_validation(self):
+        """Real-time validation for invoice/bill amounts and partners"""
+        if self.move_type in ['in_invoice', 'in_refund', 'out_invoice', 'out_refund']:
+            # Validate amount
+>>>>>>> Stashed changes
             if self.amount_total <= 0:
                 return {
                     'warning': {
                         'title': _('Invalid Amount'),
+<<<<<<< Updated upstream
                         'message': _('Invoice/bill amount must be greater than zero. Please check the invoice lines.')
                     }
                 }
@@ -562,10 +594,27 @@ class AccountMove(models.Model):
                 warnings.append(_('MEDIUM: Amount exceeds $10,000 - standard approval workflow applies.'))
             
             # Validate partner with enhanced checks
+=======
+                        'message': _('Invoice/bill amount must be greater than zero.')
+                    }
+                }
+            
+            # Check if high amount requires special approval
+            if self.amount_total > 50000:  # High amount threshold
+                return {
+                    'warning': {
+                        'title': _('High Amount Invoice/Bill'),
+                        'message': _('This invoice/bill amount is high and may require enhanced approval workflow.')
+                    }
+                }
+            
+            # Validate partner
+>>>>>>> Stashed changes
             if not self.partner_id:
                 return {
                     'warning': {
                         'title': _('Partner Required'),
+<<<<<<< Updated upstream
                         'message': _('Please select a vendor/customer for this invoice/bill to proceed with approval workflow.')
                     }
                 }
@@ -600,5 +649,8 @@ class AccountMove(models.Model):
                     'warning': {
                         'title': _('Workflow Validation'),
                         'message': '\n'.join(warnings)
+=======
+                        'message': _('Please select a partner for this invoice/bill.')
+>>>>>>> Stashed changes
                     }
                 }

@@ -42,6 +42,7 @@ export class PaymentDashboardView extends Component {
     async loadPaymentData() {
         try {
             this.state.isLoading = true;
+<<<<<<< Updated upstream
             this.state.error = null;
             
             // Safe RPC call with fallback
@@ -59,6 +60,14 @@ export class PaymentDashboardView extends Component {
         } catch (error) {
             console.error("Payment dashboard error:", error);
             this.state.error = error.message || "Unknown error occurred";
+=======
+            const data = await this.orm.call("account.payment", "get_dashboard_data", []);
+            this.state.paymentData = data;
+            this.state.error = null;
+        } catch (error) {
+            console.error("Payment dashboard error:", error);
+            this.state.error = error.message;
+>>>>>>> Stashed changes
             this.notification.add(_t("Failed to load payment data"), { type: "danger" });
         } finally {
             this.state.isLoading = false;
@@ -67,6 +76,7 @@ export class PaymentDashboardView extends Component {
     
     async onCreatePayment() {
         try {
+<<<<<<< Updated upstream
             // Use standard Odoo action instead of custom method
             const action = {
                 type: 'ir.actions.act_window',
@@ -82,11 +92,17 @@ export class PaymentDashboardView extends Component {
             this.actionService.doAction(action);
         } catch (error) {
             console.error("Error creating payment:", error);
+=======
+            const action = await this.orm.call("account.payment", "action_create_payment", []);
+            this.actionService.doAction(action);
+        } catch (error) {
+>>>>>>> Stashed changes
             this.notification.add(_t("Error creating payment"), { type: "danger" });
         }
     }
     
     cleanupResources() {
+<<<<<<< Updated upstream
         // Clean up any subscriptions or intervals
         if (this.refreshInterval) {
             clearInterval(this.refreshInterval);
@@ -96,3 +112,11 @@ export class PaymentDashboardView extends Component {
 
 // Register the component properly
 registry.category("fields").add("payment_dashboard", PaymentDashboardView);
+=======
+        // Cleanup any resources, event listeners, etc.
+        console.log("Payment dashboard cleanup");
+    }
+}
+
+registry.category("views").add("payment_dashboard", PaymentDashboardView);
+>>>>>>> Stashed changes

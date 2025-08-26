@@ -88,6 +88,7 @@
                                 <label for="can_post_manual" string="Can Post Manually"/>
                             </div>
                         </group>
+<<<<<<< Updated upstream
 
                         <!-- QR Code Verification Section -->
                         <group name="qr_verification" string="Verification QR Code" invisible="not qr_code_invoice">
@@ -98,6 +99,8 @@
                                 </div>
                             </div>
                         </group>
+=======
+>>>>>>> Stashed changes
                     </page>
                 </xpath>
 

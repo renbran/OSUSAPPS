@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     
+<<<<<<< Updated upstream
     <!-- Payment Dashboard Template -->
     <t t-name="account_payment_final.Dashboard" owl="1">
         <div class="o_payment_dashboard osus_branded">
@@ -72,6 +73,8 @@
         </div>
     </t>
 
+=======
+>>>>>>> Stashed changes
     <!-- Payment Approval Widget Template -->
     <t t-name="account_payment_final.PaymentApprovalWidget" owl="1">
         <div class="o_payment_approval_widget" t-att-class="props.readonly ? 'o_readonly' : ''">
