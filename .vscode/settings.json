@@ -304,5 +304,7 @@
         "reportIncompleteStub": "none",
         "reportUnsupportedDunderAll": "none",
         "reportUnusedCoroutine": "none"
-    }
+    },
+    "xml.symbols.enabled": false,
+    "python.languageServer": "None"
 }
