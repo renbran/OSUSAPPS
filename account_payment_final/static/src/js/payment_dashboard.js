@@ -44,6 +44,7 @@ export class PaymentDashboardView extends Component {
             this.state.isLoading = true;
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this.state.error = null;
             
             // Safe RPC call with fallback
@@ -64,6 +65,8 @@ export class PaymentDashboardView extends Component {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             const data = await this.orm.call("account.payment", "get_dashboard_data", []);
             this.state.paymentData = data;
             this.state.error = null;
@@ -71,6 +74,9 @@ export class PaymentDashboardView extends Component {
             console.error("Payment dashboard error:", error);
             this.state.error = error.message;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -82,6 +88,7 @@ export class PaymentDashboardView extends Component {
     
     async onCreatePayment() {
         try {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
             // Use standard Odoo action instead of custom method
@@ -109,11 +116,17 @@ export class PaymentDashboardView extends Component {
             this.actionService.doAction(action);
         } catch (error) {
 >>>>>>> Stashed changes
+=======
+            const action = await this.orm.call("account.payment", "action_create_payment", []);
+            this.actionService.doAction(action);
+        } catch (error) {
+>>>>>>> Stashed changes
             this.notification.add(_t("Error creating payment"), { type: "danger" });
         }
     }
     
     cleanupResources() {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         // Clean up any subscriptions or intervals
@@ -128,6 +141,8 @@ registry.category("fields").add("payment_dashboard", PaymentDashboardView);
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         // Cleanup any resources, event listeners, etc.
         console.log("Payment dashboard cleanup");
     }
@@ -135,6 +150,9 @@ registry.category("fields").add("payment_dashboard", PaymentDashboardView);
 
 registry.category("views").add("payment_dashboard", PaymentDashboardView);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

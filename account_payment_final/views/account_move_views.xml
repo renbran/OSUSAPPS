@@ -90,6 +90,7 @@
                         </group>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
                         <!-- QR Code Verification Section -->
                         <group name="qr_verification" string="Verification QR Code" invisible="not qr_code_invoice">
@@ -100,6 +101,8 @@
                                 </div>
                             </div>
                         </group>
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======

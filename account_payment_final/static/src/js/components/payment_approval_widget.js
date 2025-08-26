@@ -1,7 +1,10 @@
 ﻿/** @odoo-module **/
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         // OSUS Properties Brand Colors
@@ -27,6 +30,9 @@
         };
         
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -36,6 +42,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 // OSUS Properties Brand Colors
@@ -64,6 +71,8 @@ const brandColors = {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 /**
  * Enhanced Payment Approval Widget Component
  * 
@@ -78,8 +87,13 @@ export class PaymentApprovalWidget extends Component {
         record: Object,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         update: Function
     };
+=======
+        update: Function;
+};
+>>>>>>> Stashed changes
 =======
         update: Function;
 };
