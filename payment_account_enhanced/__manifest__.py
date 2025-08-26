@@ -1,67 +1,84 @@
 {
-    'name': 'OSUS Payment Voucher Enhanced',
+    'name': 'Account Payment Final - Professional Payment Management',
     'version': '17.0.1.0.0',
-    'category': 'Accounting/Payments',
-    'summary': 'Enhanced Payment Vouchers with OSUS Brand Identity',
-    'description': '''
-        Enhanced Payment Voucher System for OSUS Properties
+    'category': 'Accounting/Accounting',
+    'summary': 'Complete payment workflow with QR verification, 4-stage approval, and professional vouchers',
+    'description': """
+        Professional Payment Management System for Odoo 17
         ==================================================
         
-        Features:
-        * OSUS branded payment voucher reports with wow factor design
-        * Follows OSUS brand guidelines (Burgundy & Gold color scheme)
-        * Enhanced payment tracking and authorization
-        * Professional typography using Montserrat font
-        * Responsive design for both print and digital viewing
-        * Advanced signature sections with approval workflow
-        * Gradient backgrounds and premium visual elements
-        * Enhanced security and validation for large payments
-        * Customizable company branding options
+        **Key Features:**
+        • 4-stage approval workflow (Draft → Review → Approval → Authorization → Posted)
+        • QR code generation and public verification portal
+        • Professional payment and receipt voucher templates
+        • Invoice/Bill approval integration
+        • Comprehensive audit trail and approval history
+        • Role-based security and permissions
+        • Company-level configuration and branding
+        • Bulk operations and advanced reporting
         
-        Design Elements:
-        * Primary colors: Burgundy (#8B1538) and Gold (#D4AF37)
-        * Modern gradients and shadow effects
-        * Sophisticated card-based layout
-        * Professional signature sections
-        * Responsive grid system
-        * Print-optimized color management
+        **Business Benefits:**
+        • Enhanced security through QR verification
+        • Streamlined approval processes
+        • Professional document generation
+        • Complete audit compliance
+        • Flexible workflow configuration
         
-        This module transforms standard Odoo payment vouchers into 
-        premium, branded documents that reflect OSUS Properties' 
-        luxury real estate excellence.
-    ''',
+        This module provides enterprise-grade payment management with complete
+        workflow control, security, and professional reporting capabilities.
+    """,
     'author': 'OSUS Properties',
     'website': 'https://www.osusproperties.com',
-    'license': 'LGPL-3',
     'depends': [
+        'base',
         'account',
-        'web',
+        'mail',
+        'website',
+        'portal'
     ],
+    'external_dependencies': {
+        'python': ['qrcode', 'Pillow']
+    },
     'data': [
-        'security/ir.model.access.csv',
+        # Security (Load first)
         'security/payment_security.xml',
+        'security/ir.model.access.csv',
+        
+        # Data
+        'data/payment_sequence.xml',
+        'data/mail_template_data.xml',
+        
+        # Views
         'views/account_payment_views.xml',
-        'reports/payment_voucher_reports.xml',
-        'data/paper_format_data.xml',
+        'views/account_move_views.xml',
+        'views/payment_approval_history_views.xml',
+        'views/payment_qr_verification_views.xml',
+        'views/payment_workflow_stage_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/website_verification_templates.xml',
+        'views/menuitems.xml',
+        
+        # Reports
+        'reports/payment_voucher_report.xml',
+        'reports/invoice_bill_approval_report.xml',
+        
+        # Wizards
+        'wizard/payment_register_views.xml',
     ],
+    'demo': [],
     'assets': {
         'web.assets_backend': [
-            'payment_account_enhanced/static/src/css/osus_backend.css',
+            'account_payment_final/static/src/css/payment_workflow.css',
         ],
-        'web.report_assets_pdf': [
-            'payment_account_enhanced/static/src/css/osus_report.css',
+        'web.assets_frontend': [
+            'account_payment_final/static/src/css/verification_portal.css',
         ],
     },
-    'images': [
-        'static/description/icon.png',
-        'static/description/banner.png',
-        'static/description/screenshot_1.png',
-        'static/description/screenshot_2.png',
-    ],
     'installable': True,
+    'application': True,
     'auto_install': False,
-    'application': False,
-    'sequence': 1,
-    'price': 199.99,
-    'currency': 'USD',
+    'license': 'LGPL-3',
+    'sequence': 15,
+    'post_init_hook': 'post_init_hook',
+    'uninstall_hook': 'uninstall_hook',
 }

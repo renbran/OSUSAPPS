@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Payment Workflow Stage Tree View -->
+        <record id="view_payment_workflow_stage_tree" model="ir.ui.view">
+            <field name="name">payment.workflow.stage.tree</field>
+            <field name="model">payment.workflow.stage</field>
+            <field name="arch" type="xml">
+                <tree string="Payment Workflow Stages" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="is_initial_stage"/>
+                    <field name="is_final_stage"/>
+                    <field name="require_approval"/>
+                    <field name="payment_count"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Payment Workflow Stage Form View -->
+        <record id="view_payment_workflow_stage_form" model="ir.ui.view">
+            <field name="name">payment.workflow.stage.form</field>
+            <field name="model">payment.workflow.stage</field>
+            <field name="arch" type="xml">
+                <form string="Payment Workflow Stage">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_payments" type="object" class="oe_stat_button" icon="fa-money" attrs="{'invisible': [('payment_count', '=', 0)]}">
+                                <field name="payment_count" widget="statinfo" string="Payments"/>
+                            </button>
+                        </div>
+
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1>
+                                <field name="name" placeholder="Stage Name"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group string="Basic Information">
+                                <field name="code"/>
+                                <field name="sequence"/>
+                                <field name="description"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                            <group string="Stage Properties">
+                                <field name="is_initial_stage"/>
+                                <field name="is_final_stage"/>
+                                <field name="allow_edit"/>
+                                <field name="require_approval"/>
+                                <field name="color" widget="color"/>
+                                <field name="icon"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Access Control" name="access_control">
+                                <group>
+                                    <group string="Approval Groups">
+                                        <field name="approval_group_ids" nolabel="1" widget="many2many_tags"/>
+                                    </group>
+                                    <group string="Visibility Groups">
+                                        <field name="visibility_group_ids" nolabel="1" widget="many2many_tags"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Automation" name="automation">
+                                <group>
+                                    <group string="Auto Advance">
+                                        <field name="auto_advance"/>
+                                        <field name="auto_advance_condition" attrs="{'invisible': [('auto_advance', '=', False)]}" placeholder="Python expression for auto advance condition"/>
+                                    </group>
+                                    <group string="Notifications">
+                                        <field name="send_notification"/>
+                                        <field name="notification_template_id" attrs="{'invisible': [('send_notification', '=', False)]}" domain="[('model', '=', 'account.payment')]"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Stage Transitions" name="transitions">
+                                <field name="next_stage_ids">
+                                    <tree editable="bottom">
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="require_approval"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Payment Workflow Stage Search View -->
+        <record id="view_payment_workflow_stage_search" model="ir.ui.view">
+            <field name="name">payment.workflow.stage.search</field>
+            <field name="model">payment.workflow.stage</field>
+            <field name="arch" type="xml">
+                <search string="Search Workflow Stages">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="description"/>
+
+                    <filter name="initial_stages" string="Initial Stages" domain="[('is_initial_stage', '=', True)]"/>
+                    <filter name="final_stages" string="Final Stages" domain="[('is_final_stage', '=', True)]"/>
+                    <filter name="require_approval" string="Require Approval" domain="[('require_approval', '=', True)]"/>
+                    <filter name="auto_advance" string="Auto Advance" domain="[('auto_advance', '=', True)]"/>
+
+                    <group expand="0" string="Group By">
+                        <filter name="group_company" string="Company" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                        <filter name="group_require_approval" string="Approval Required" domain="[]" context="{'group_by': 'require_approval'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Payment Workflow Stage Action -->
+        <record id="action_payment_workflow_stage" model="ir.actions.act_window">
+            <field name="name">Workflow Stages</field>
+            <field name="res_model">payment.workflow.stage</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_payment_workflow_stage_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first workflow stage
+                </p>
+                <p>
+                    Workflow stages define the approval process for payment vouchers.
+                    Configure stages, approval requirements, and access controls here.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
