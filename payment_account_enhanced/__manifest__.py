@@ -55,11 +55,9 @@
         'views/payment_workflow_stage_views.xml',
         'views/res_config_settings_views.xml',
         'views/website_verification_templates.xml',
-        'views/menuitems.xml',
         
         # Reports
         'reports/payment_voucher_report.xml',
-        'reports/invoice_bill_approval_report.xml',
         
         # Wizards
         'wizard/payment_register_views.xml',
