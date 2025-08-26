@@ -15,7 +15,6 @@
         • Comprehensive audit trail and approval history
         • Role-based security and permissions
         • Company-level configuration and branding
-        • Bulk operations and advanced reporting
         
         **Business Benefits:**
         • Enhanced security through QR verification
@@ -68,6 +67,7 @@
     'demo': [],
     'assets': {
         'web.assets_backend': [
+
             'account_payment_final/static/src/css/payment_workflow.css',
         ],
         'web.assets_frontend': [
