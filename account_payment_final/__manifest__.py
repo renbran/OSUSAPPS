@@ -61,7 +61,10 @@
         'views/account_payment_views.xml',
         'views/account_move_views.xml',
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         'views/invoice_bill_report_template.xml',
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         'views/res_company_views.xml',
@@ -74,9 +77,12 @@
         'reports/payment_voucher_template.xml',
         
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         # Enhanced Reports
         'views/payment_voucher_report_enhanced.xml',
         
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         # Website/Portal Views
@@ -86,6 +92,7 @@
     ],
     'assets': {
         'web.assets_backend': [
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
             # OSUS Branding & Core Styles (Load First)
             'account_payment_final/static/src/scss/osus_branding.scss',
@@ -100,6 +107,8 @@
             'account_payment_final/static/src/js/payment_dashboard.js',
             'account_payment_final/static/src/js/payment_workflow_safe.js',
 =======
+=======
+>>>>>>> Stashed changes
             # IMMEDIATE EMERGENCY FIX: Must load FIRST before anything else
             ('prepend', 'account_payment_final/static/src/js/immediate_emergency_fix.js'),
             # NUCLEAR FIX: Load nuclear fix FIRST to prevent ALL JavaScript crashes
@@ -126,16 +135,22 @@
             'account_payment_final/static/src/scss/professional_payment_ui.scss',
             'account_payment_final/static/src/scss/enhanced_form_styling.scss',
             'account_payment_final/static/src/scss/realtime_workflow.scss',
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             
             # Component-specific styles
             'account_payment_final/static/src/scss/components/payment_widget.scss',
             'account_payment_final/static/src/scss/components/table_enhancements.scss',
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             'account_payment_final/static/src/scss/views/form_view.scss',
             'account_payment_final/static/src/scss/payment_voucher.scss',
 
 =======
+=======
+>>>>>>> Stashed changes
             
             # View-specific styles
             'account_payment_final/static/src/scss/views/form_view.scss',
@@ -148,11 +163,15 @@
             # DISABLED: 'account_payment_final/static/src/js/fields/qr_code_field.js', # Contains import statements
             # DISABLED: 'account_payment_final/static/src/js/views/payment_list_view.js', # Contains import statements
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             # XML templates
             'account_payment_final/static/src/xml/payment_templates.xml',
         ],
         'web.assets_web_dark': [
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
             # CloudPepper compatibility for dark theme
             'account_payment_final/static/src/js/emergency_error_fix.js',
@@ -161,6 +180,8 @@
             # Dark theme specific styles
             'account_payment_final/static/src/scss/osus_branding.scss',
 =======
+=======
+>>>>>>> Stashed changes
             # IMMEDIATE EMERGENCY FIX for dark theme
             ('prepend', 'account_payment_final/static/src/js/immediate_emergency_fix.js'),
             # Nuclear fix and critical error handlers for dark theme (MUST LOAD FIRST)
@@ -171,6 +192,9 @@
             
             # Additional dark theme JavaScript (REMOVED problematic files)
             # DISABLED: 'account_payment_final/static/src/js/views/payment_list_view.js', # Contains import statements
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             
             # XML templates for dark theme
@@ -182,6 +206,7 @@
         ],
         'web.assets_frontend': [
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             # Frontend verification portal
             'account_payment_final/static/src/scss/frontend/verification_portal.scss',
             'account_payment_final/static/src/js/frontend/qr_verification.js',
@@ -189,11 +214,16 @@
             # Emergency fix for frontend
             'account_payment_final/static/src/js/emergency_error_fix.js',
 =======
+=======
+>>>>>>> Stashed changes
             # IMMEDIATE EMERGENCY FIX for frontend
             ('prepend', 'account_payment_final/static/src/js/immediate_emergency_fix.js'),
             # Frontend verification portal
             'account_payment_final/static/src/scss/frontend/verification_portal.scss',
             'account_payment_final/static/src/js/frontend/qr_verification.js',
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         ],
         'web.qunit_suite_tests': [

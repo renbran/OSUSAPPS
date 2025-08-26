@@ -29,7 +29,11 @@ def generate_qr_code_payment(value):
         return qr_img
     except Exception as e:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         _logger.error("Error generating QR code: %s", e)
+=======
+        _logger.error(f"Error generating QR code: {e}")
+>>>>>>> Stashed changes
 =======
         _logger.error(f"Error generating QR code: {e}")
 >>>>>>> Stashed changes
@@ -214,6 +218,7 @@ class AccountPayment(models.Model):
 
     # ============================================================================
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     # ENHANCED REPORT FIELDS FOR PAYMENT VOUCHER
     # ============================================================================
 
@@ -247,6 +252,8 @@ class AccountPayment(models.Model):
     # ============================================================================
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     # COMPUTE METHODS
     # ============================================================================
 
@@ -257,15 +264,21 @@ class AccountPayment(models.Model):
             if record.voucher_number and record.partner_id:
                 payment_type_label = 'Receipt' if record.payment_type == 'inbound' else 'Payment'
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 record.display_name = "%s Voucher %s - %s" % (payment_type_label, record.voucher_number, record.partner_id.name)
             elif record.name and record.partner_id:
                 payment_type_label = 'Receipt' if record.payment_type == 'inbound' else 'Payment'
                 record.display_name = "%s Voucher %s - %s" % (payment_type_label, record.name, record.partner_id.name)
 =======
+=======
+>>>>>>> Stashed changes
                 record.display_name = f"{payment_type_label} Voucher {record.voucher_number} - {record.partner_id.name}"
             elif record.name and record.partner_id:
                 payment_type_label = 'Receipt' if record.payment_type == 'inbound' else 'Payment'
                 record.display_name = f"{payment_type_label} Voucher {record.name} - {record.partner_id.name}"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             else:
                 record.display_name = record.voucher_number or record.name or 'New Payment'
@@ -297,7 +310,11 @@ class AccountPayment(models.Model):
                     if base_url and record._origin.id:
                         # Create verification URL that points to our controller
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                         qr_data = "%s/payment/verify/%s" % (base_url, record._origin.id)
+=======
+                        qr_data = f"{base_url}/payment/verify/{record._origin.id}"
+>>>>>>> Stashed changes
 =======
                         qr_data = f"{base_url}/payment/verify/{record._origin.id}"
 >>>>>>> Stashed changes
@@ -305,6 +322,7 @@ class AccountPayment(models.Model):
                         # Fallback: Include structured payment details for manual verification
                         voucher_ref = record.voucher_number or record.name or 'Draft Payment'
                         partner_name = record.partner_id.name if record.partner_id else 'Unknown Partner'
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                         amount_str = "%.2f %s" % (record.amount, record.currency_id.name if record.currency_id else 'USD')
                         date_str = record.date.strftime('%Y-%m-%d') if record.date else 'Draft'
@@ -320,6 +338,8 @@ Company: %s
 Verify at: %s/payment/qr-guide""" % (voucher_ref, amount_str, partner_name, date_str, 
                                       record.approval_state.upper(), record.company_id.name, base_url)
 =======
+=======
+>>>>>>> Stashed changes
                         amount_str = f"{record.amount:.2f} {record.currency_id.name if record.currency_id else 'USD'}"
                         date_str = record.date.strftime('%Y-%m-%d') if record.date else 'Draft'
                         
@@ -332,13 +352,20 @@ Date: {date_str}
 Status: {record.approval_state.upper()}
 Company: {record.company_id.name}
 Verify at: {base_url}/payment/qr-guide"""
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
                     
                     # Generate the QR code image
                     record.qr_code = generate_qr_code_payment(qr_data)
                 except Exception as e:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     _logger.error("Error generating QR code for payment %s: %s", record.voucher_number or 'Draft', e)
+=======
+                    _logger.error(f"Error generating QR code for payment {record.voucher_number or 'Draft'}: {e}")
+>>>>>>> Stashed changes
 =======
                     _logger.error(f"Error generating QR code for payment {record.voucher_number or 'Draft'}: {e}")
 >>>>>>> Stashed changes
@@ -437,7 +464,11 @@ Verify at: {base_url}/payment/qr-guide"""
         except:
             # Fallback sequence generation
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return self.env['ir.sequence'].next_by_code('payment.voucher') or "PV%s" % (self.env['ir.sequence'].next_by_code('account.payment') or '')
+=======
+            return self.env['ir.sequence'].next_by_code('payment.voucher') or f"PV{self.env['ir.sequence'].next_by_code('account.payment') or ''}"
+>>>>>>> Stashed changes
 =======
             return self.env['ir.sequence'].next_by_code('payment.voucher') or f"PV{self.env['ir.sequence'].next_by_code('account.payment') or ''}"
 >>>>>>> Stashed changes
@@ -458,6 +489,7 @@ Verify at: {base_url}/payment/qr-guide"""
                 record.authorized_by = record.create_uid.name if record.create_uid else 'System'
 
     # ============================================================================
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     # ENHANCED REPORT COMPUTE METHODS
     # ============================================================================
@@ -566,6 +598,8 @@ Verify at: {base_url}/payment/qr-guide"""
                 record.workflow_progress = 0
 
     # ============================================================================
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     # ONCHANGE METHODS
@@ -802,8 +836,13 @@ Verify at: {base_url}/payment/qr-guide"""
                 
         except Exception as e:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             _logger.warning("Error converting amount to words: %s", e)
             return "%s %s Only" % (self.currency_id.name, "{:,.2f}".format(self.amount))
+=======
+            _logger.warning(f"Error converting amount to words: {e}")
+            return f"{self.currency_id.name} {self.amount:,.2f} Only"
+>>>>>>> Stashed changes
 =======
             _logger.warning(f"Error converting amount to words: {e}")
             return f"{self.currency_id.name} {self.amount:,.2f} Only"
@@ -816,7 +855,11 @@ Verify at: {base_url}/payment/qr-guide"""
         
         if amount == 0:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return "Zero %s Only" % currency
+=======
+            return f"Zero {currency} Only"
+>>>>>>> Stashed changes
 =======
             return f"Zero {currency} Only"
 >>>>>>> Stashed changes
@@ -1736,6 +1779,7 @@ Verify at: {base_url}/payment/qr-guide"""
         return stats
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     # ============================================================================
     # ENHANCED REPORT METHODS FOR PAYMENT VOUCHER
     # ============================================================================
@@ -2136,6 +2180,8 @@ Verify at: {base_url}/payment/qr-guide"""
 
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
 class AccountPaymentRegister(models.TransientModel):
     """Enhanced payment registration wizard"""
@@ -2153,6 +2199,7 @@ class AccountPaymentRegister(models.TransientModel):
         if self.remarks:
             payment_vals['remarks'] = self.remarks
             
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
         return payment_vals
 
@@ -2187,6 +2234,8 @@ class AccountPaymentRegister(models.TransientModel):
                 'total_amount': '0.00',
                 'recent_payments': []
             }
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         return payment_vals

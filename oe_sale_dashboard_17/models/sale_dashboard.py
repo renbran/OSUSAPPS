@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 class SaleDashboard(models.Model):
     _inherit = 'sale.order'
 
@@ -20,6 +21,15 @@ class SaleDashboard(models.Model):
         Returns:
             str: Formatted string with appropriate suffix
         """
+=======
+class SaleDashboardSimple(models.TransientModel):
+    _name = 'sale.dashboard'
+    _description = 'Sales Dashboard'
+
+    @api.model
+    def format_dashboard_value(self, value):
+        """Format large numbers for dashboard display with K/M/B suffixes"""
+>>>>>>> Stashed changes
 =======
 class SaleDashboardSimple(models.TransientModel):
     _name = 'sale.dashboard'
@@ -48,7 +58,10 @@ class SaleDashboardSimple(models.TransientModel):
 
     @api.model
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     def get_sales_performance_data(self, start_date, end_date, sale_type_ids=None):
         """Get sales performance data with optional sale type filtering"""
         try:

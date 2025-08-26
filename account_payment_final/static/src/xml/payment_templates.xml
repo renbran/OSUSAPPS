@@ -2,6 +2,7 @@
 <templates xml:space="preserve">
     
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <!-- Payment Dashboard Template -->
     <t t-name="account_payment_final.Dashboard" owl="1">
         <div class="o_payment_dashboard osus_branded">
@@ -73,6 +74,8 @@
         </div>
     </t>
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     <!-- Payment Approval Widget Template -->

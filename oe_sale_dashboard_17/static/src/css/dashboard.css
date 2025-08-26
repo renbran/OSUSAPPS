@@ -750,6 +750,7 @@ Consider refactoring to use more specific selectors instead.
     }
     
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     .metrics-grid {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 15px;
@@ -784,6 +785,11 @@ Consider refactoring to use more specific selectors instead.
     
     .metric-card {
         padding: 15px;
+=======
+    #agent_ranking_chart, #broker_ranking_chart {
+        min-height: 200px;
+        padding: 10px;
+>>>>>>> Stashed changes
 =======
     #agent_ranking_chart, #broker_ranking_chart {
         min-height: 200px;

@@ -2,10 +2,13 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from odoo.exceptions import UserError, ValidationError
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import qrcode
 import base64
 from io import BytesIO
 from PIL import Image, ImageDraw
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 import logging
@@ -150,6 +153,7 @@ class AccountMove(models.Model):
 
     # ============================================================================
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     # QR CODE GENERATION FOR INVOICE/BILL VERIFICATION
     # ============================================================================
 
@@ -252,6 +256,8 @@ class AccountMove(models.Model):
     # ============================================================================
     # ENHANCED WORKFLOW CONSTRAINTS AND VALIDATION
     # ============================================================================
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     # WORKFLOW METHODS
@@ -497,6 +503,7 @@ class AccountMove(models.Model):
     @api.onchange('approval_state')
     def _onchange_approval_state_move(self):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Enhanced real-time status updates for invoice/bill approval workflow"""
         # Update approval timestamps in real-time
         now = fields.Datetime.now()
@@ -537,6 +544,8 @@ class AccountMove(models.Model):
                 'approver_date': self.approver_date,
             },
 =======
+=======
+>>>>>>> Stashed changes
         """Real-time status updates for invoice/bill approval workflow"""
         if self.approval_state == 'posted' and self.state != 'posted':
             # Don't automatically post - require explicit action
@@ -551,6 +560,9 @@ class AccountMove(models.Model):
         return {
             'domain': {},
             'value': {},
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         }
 
@@ -562,6 +574,7 @@ class AccountMove(models.Model):
                 self.approval_state = 'posted'
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     @api.onchange('amount_total', 'partner_id', 'invoice_date', 'invoice_line_ids')
     def _onchange_invoice_validation_enhanced(self):
         """Enhanced real-time validation for invoice/bill amounts, partners, and workflow requirements"""
@@ -570,16 +583,22 @@ class AccountMove(models.Model):
             
             # Validate amount with enhanced thresholds
 =======
+=======
+>>>>>>> Stashed changes
     @api.onchange('amount_total', 'partner_id')
     def _onchange_invoice_validation(self):
         """Real-time validation for invoice/bill amounts and partners"""
         if self.move_type in ['in_invoice', 'in_refund', 'out_invoice', 'out_refund']:
             # Validate amount
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if self.amount_total <= 0:
                 return {
                     'warning': {
                         'title': _('Invalid Amount'),
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                         'message': _('Invoice/bill amount must be greater than zero. Please check the invoice lines.')
                     }
@@ -595,6 +614,8 @@ class AccountMove(models.Model):
             
             # Validate partner with enhanced checks
 =======
+=======
+>>>>>>> Stashed changes
                         'message': _('Invoice/bill amount must be greater than zero.')
                     }
                 }
@@ -609,11 +630,15 @@ class AccountMove(models.Model):
                 }
             
             # Validate partner
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             if not self.partner_id:
                 return {
                     'warning': {
                         'title': _('Partner Required'),
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
                         'message': _('Please select a vendor/customer for this invoice/bill to proceed with approval workflow.')
                     }
@@ -649,6 +674,9 @@ class AccountMove(models.Model):
                     'warning': {
                         'title': _('Workflow Validation'),
                         'message': '\n'.join(warnings)
+=======
+                        'message': _('Please select a partner for this invoice/bill.')
+>>>>>>> Stashed changes
 =======
                         'message': _('Please select a partner for this invoice/bill.')
 >>>>>>> Stashed changes
