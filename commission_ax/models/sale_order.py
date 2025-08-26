@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 from odoo.exceptions import UserError, ValidationError
 import logging
 
@@ -114,6 +115,8 @@ class SaleOrder(models.Model):
     # Related fields
     purchase_order_ids = fields.One2many('purchase.order', 'origin_so_id', string="Generated Purchase Orders")
     purchase_order_count = fields.Integer(string="PO Count", compute="_compute_purchase_order_count")
+    purchase_order_total_amount = fields.Monetary(string="Total PO Amount", compute="_compute_purchase_order_count", 
+                                                 help="Total amount of all commission purchase orders")
     commission_processed = fields.Boolean(string="Commissions Processed", default=False)
     commission_status = fields.Selection([
         ('draft', 'Draft'),
@@ -121,16 +124,110 @@ class SaleOrder(models.Model):
         ('confirmed', 'Confirmed')
     ], string="Commission Processing Status", default='draft')
 
-    @api.depends('purchase_order_ids')
+    @api.depends('purchase_order_ids', 'purchase_order_ids.amount_total')
     def _compute_purchase_order_count(self):
         for order in self:
             order.purchase_order_count = len(order.purchase_order_ids)
+            # Calculate total amount of commission purchase orders
+            order.purchase_order_total_amount = sum(
+                po.amount_total for po in order.purchase_order_ids if po.state != 'cancel'
+            )
 
     @api.constrains('order_line')
     def _check_single_order_line(self):
         for order in self:
             if len(order.order_line) > 1:
                 raise ValidationError("Only one order line is allowed per sale order for commission clarity.")
+
+    def _check_partner_po_cancellation_required(self, partner_id):
+        """Check if partner has existing POs that need cancellation before new commission calculation."""
+        if not partner_id:
+            return True
+        
+        existing_pos = self.env['purchase.order'].search([
+            ('partner_id', '=', partner_id.id),
+            ('origin_so_id', '=', self.id),
+            ('state', '!=', 'cancel')
+        ])
+        
+        if existing_pos:
+            # Check if there are any cancelled POs for this partner (allowing update)
+            cancelled_pos = self.env['purchase.order'].search([
+                ('partner_id', '=', partner_id.id),
+                ('origin_so_id', '=', self.id),
+                ('state', '=', 'cancel')
+            ])
+            
+            if not cancelled_pos:
+                raise ValidationError(
+                    f"Cannot update commission calculation for partner '{partner_id.name}' "
+                    f"without first cancelling existing purchase orders: {', '.join(existing_pos.mapped('name'))}. "
+                    f"Please cancel the related POs before updating commission settings."
+                )
+        
+        return True
+
+    def _check_po_creation_constraints(self):
+        """Check if new PO creation is allowed based on cancellation logic."""
+        self.ensure_one()
+        
+        # Get all commission partners
+        commission_partners = []
+        
+        # External partners
+        if self.broker_partner_id:
+            commission_partners.append(self.broker_partner_id)
+        if self.referrer_partner_id:
+            commission_partners.append(self.referrer_partner_id)
+        if self.cashback_partner_id:
+            commission_partners.append(self.cashback_partner_id)
+        if self.other_external_partner_id:
+            commission_partners.append(self.other_external_partner_id)
+        
+        # Internal partners
+        if self.agent1_partner_id:
+            commission_partners.append(self.agent1_partner_id)
+        if self.agent2_partner_id:
+            commission_partners.append(self.agent2_partner_id)
+        if self.manager_partner_id:
+            commission_partners.append(self.manager_partner_id)
+        if self.director_partner_id:
+            commission_partners.append(self.director_partner_id)
+        
+        # Legacy partners
+        if self.consultant_id:
+            commission_partners.append(self.consultant_id)
+        if self.manager_id:
+            commission_partners.append(self.manager_id)
+        if self.director_id:
+            commission_partners.append(self.director_id)
+        if self.second_agent_id:
+            commission_partners.append(self.second_agent_id)
+        
+        # Check each partner for existing POs
+        for partner in commission_partners:
+            existing_pos = self.env['purchase.order'].search([
+                ('partner_id', '=', partner.id),
+                ('origin_so_id', '=', self.id),
+                ('state', 'not in', ['draft', 'cancel'])
+            ])
+            
+            if existing_pos and not self.commission_processed:
+                # Allow creation only if there are cancelled POs (indicating updates are allowed)
+                cancelled_pos = self.env['purchase.order'].search([
+                    ('partner_id', '=', partner.id),
+                    ('origin_so_id', '=', self.id),
+                    ('state', '=', 'cancel')
+                ])
+                
+                if not cancelled_pos:
+                    raise ValidationError(
+                        f"Cannot create new purchase orders for partner '{partner.name}' "
+                        f"because confirmed POs already exist: {', '.join(existing_pos.mapped('name'))}. "
+                        f"To update commissions, first cancel the existing POs."
+                    )
+        
+        return True
 
     def _calculate_commission_amount(self, rate, commission_type, order):
         if commission_type == 'fixed':
@@ -155,19 +252,35 @@ class SaleOrder(models.Model):
         for order in self:
             base_amount = order.amount_total
 
-            # Legacy commission calculations (for backward compatibility)
-            order.salesperson_commission = (order.consultant_comm_percentage / 100) * base_amount
-            order.manager_commission = (order.manager_comm_percentage / 100) * base_amount
-            order.second_agent_commission = (order.second_agent_comm_percentage / 100) * base_amount
-            order.director_commission = (order.director_comm_percentage / 100) * base_amount
+            # Legacy commission calculations (removed default computation to prevent conflicts)
+            # Only calculate if explicitly set by user
+            if order.consultant_id and order.consultant_comm_percentage > 0:
+                order.salesperson_commission = (order.consultant_comm_percentage / 100) * base_amount
+            else:
+                order.salesperson_commission = 0.0
+                
+            if order.manager_id and order.manager_comm_percentage > 0:
+                order.manager_commission = (order.manager_comm_percentage / 100) * base_amount
+            else:
+                order.manager_commission = 0.0
+                
+            if order.second_agent_id and order.second_agent_comm_percentage > 0:
+                order.second_agent_commission = (order.second_agent_comm_percentage / 100) * base_amount
+            else:
+                order.second_agent_commission = 0.0
+                
+            if order.director_id and order.director_comm_percentage > 0:
+                order.director_commission = (order.director_comm_percentage / 100) * base_amount
+            else:
+                order.director_commission = 0.0
 
-            # External commissions
+            # External commissions (modern structure)
             order.broker_amount = self._calculate_commission_amount(order.broker_rate, order.broker_commission_type, order)
             order.referrer_amount = self._calculate_commission_amount(order.referrer_rate, order.referrer_commission_type, order)
             order.cashback_amount = self._calculate_commission_amount(order.cashback_rate, order.cashback_commission_type, order)
             order.other_external_amount = self._calculate_commission_amount(order.other_external_rate, order.other_external_commission_type, order)
 
-            # Internal commissions
+            # Internal commissions (modern structure)
             order.agent1_amount = self._calculate_commission_amount(order.agent1_rate, order.agent1_commission_type, order)
             order.agent2_amount = self._calculate_commission_amount(order.agent2_rate, order.agent2_commission_type, order)
             order.manager_amount = self._calculate_commission_amount(order.manager_rate, order.manager_commission_type, order)
@@ -248,7 +361,8 @@ class SaleOrder(models.Model):
         if amount <= 0:
             raise UserError("Commission amount must be greater than zero")
         
-        return {
+        # Prepare base values
+        vals = {
             'partner_id': partner.id,
             'date_order': fields.Date.today(),
             'currency_id': self.currency_id.id,
@@ -266,6 +380,73 @@ class SaleOrder(models.Model):
                 'taxes_id': [(6, 0, product.supplier_taxes_id.ids)],
             })]
         }
+        
+        # Add vendor reference from customer reference if available
+        if self.client_order_ref:
+            vals['partner_ref'] = self.client_order_ref
+            _logger.info(
+                f"Adding vendor reference '{self.client_order_ref}' to commission PO for {partner.name}"
+            )
+        
+        return vals
+
+    def _get_all_commission_partners(self):
+        """Get all commission partner IDs from this sale order."""
+        self.ensure_one()
+        partner_ids = []
+        
+        # Legacy commission partners
+        if self.consultant_id:
+            partner_ids.append(self.consultant_id.id)
+        if self.manager_id:
+            partner_ids.append(self.manager_id.id)
+        if self.director_id:
+            partner_ids.append(self.director_id.id)
+        if self.second_agent_id:
+            partner_ids.append(self.second_agent_id.id)
+        
+        # External commission partners
+        if self.broker_partner_id:
+            partner_ids.append(self.broker_partner_id.id)
+        if self.referrer_partner_id:
+            partner_ids.append(self.referrer_partner_id.id)
+        if self.cashback_partner_id:
+            partner_ids.append(self.cashback_partner_id.id)
+        if self.other_external_partner_id:
+            partner_ids.append(self.other_external_partner_id.id)
+        
+        # Internal commission partners
+        if self.agent1_partner_id:
+            partner_ids.append(self.agent1_partner_id.id)
+        if self.agent2_partner_id:
+            partner_ids.append(self.agent2_partner_id.id)
+        if self.manager_partner_id:
+            partner_ids.append(self.manager_partner_id.id)
+        if self.director_partner_id:
+            partner_ids.append(self.director_partner_id.id)
+        
+        return list(set(partner_ids))  # Remove duplicates
+
+    def action_view_commission_pos(self):
+        """Action to view commission purchase orders."""
+        self.ensure_one()
+        action = self.env.ref('purchase.purchase_form_action').read()[0]
+        
+        if self.purchase_order_count == 1:
+            action['views'] = [(self.env.ref('purchase.purchase_order_form').id, 'form')]
+            action['res_id'] = self.purchase_order_ids[0].id
+        else:
+            action['domain'] = [('id', 'in', self.purchase_order_ids.ids)]
+            action['context'] = {
+                'default_origin_so_id': self.id,
+                'search_default_commission_pos': 1,
+            }
+        
+        action['context'].update({
+            'create': False,  # Don't allow creating POs from this view
+        })
+        
+        return action
 
     def _get_commission_entries(self):
         """Get all commission entries that need purchase orders."""
@@ -371,6 +552,9 @@ class SaleOrder(models.Model):
         if self.amount_total <= 0:
             raise UserError("Cannot process commissions for orders with zero or negative amounts.")
         
+        # Check PO creation constraints (cancellation logic)
+        self._check_po_creation_constraints()
+        
         # Update status
         self.commission_status = 'calculated'
         
@@ -398,7 +582,7 @@ class SaleOrder(models.Model):
             self.commission_processed = True
             
             if created_pos:
-                message = f"Successfully created {len(created_pos)} commission purchase orders"
+                message = f"Successfully created {len(created_pos)} commission purchase orders with total amount {sum(po.amount_total for po in created_pos)}"
                 self.message_post(body=message)
                 return {
                     'type': 'ir.actions.client',
@@ -458,6 +642,40 @@ class SaleOrder(models.Model):
             order.message_post(body="Commission status reset to draft. Purchase orders deleted.")
         return True
 
+    def action_cancel_partner_pos(self, partner_id):
+        """Cancel all purchase orders for a specific partner (used for commission updates)."""
+        self.ensure_one()
+        if not partner_id:
+            raise UserError("Partner ID is required to cancel purchase orders.")
+        
+        partner_pos = self.purchase_order_ids.filtered(
+            lambda po: po.partner_id.id == partner_id and po.state not in ['cancel']
+        )
+        
+        if not partner_pos:
+            return True  # No POs to cancel
+        
+        # Check if any are already confirmed
+        confirmed_pos = partner_pos.filtered(lambda po: po.state not in ['draft', 'sent'])
+        if confirmed_pos:
+            raise UserError(
+                f"Cannot cancel confirmed purchase orders for partner: "
+                f"{', '.join(confirmed_pos.mapped('name'))}. "
+                f"Please handle these manually through the Purchase module."
+            )
+        
+        # Cancel draft/sent POs
+        cancelable_pos = partner_pos.filtered(lambda po: po.state in ['draft', 'sent'])
+        if cancelable_pos:
+            cancelable_pos.button_cancel()
+            self.message_post(
+                body=f"Cancelled {len(cancelable_pos)} purchase orders for partner "
+                     f"{self.env['res.partner'].browse(partner_id).name}: "
+                     f"{', '.join(cancelable_pos.mapped('name'))}"
+            )
+        
+        return True
+
     def action_confirm(self):
         """Override Sale Order confirmation."""
         result = super(SaleOrder, self).action_confirm()
@@ -479,6 +697,27 @@ class SaleOrder(models.Model):
 
     def write(self, vals):
         """Override write to recompute commissions when relevant fields change."""
+        # Check partner PO cancellation requirements before updating commission fields
+        commission_partner_fields = [
+            'broker_partner_id', 'referrer_partner_id', 'cashback_partner_id', 
+            'other_external_partner_id', 'agent1_partner_id', 'agent2_partner_id',
+            'manager_partner_id', 'director_partner_id',
+            'consultant_id', 'manager_id', 'director_id', 'second_agent_id'
+        ]
+        
+        # Check if any commission partner fields are being changed
+        if any(field in vals for field in commission_partner_fields):
+            for order in self:
+                for field in commission_partner_fields:
+                    if field in vals:
+                        old_partner_id = getattr(order, field, False)
+                        new_partner_id = vals.get(field)
+                        
+                        # If partner is changing and there are existing POs, check cancellation requirement
+                        if old_partner_id and old_partner_id != new_partner_id:
+                            old_partner = self.env['res.partner'].browse(old_partner_id)
+                            order._check_partner_po_cancellation_required(old_partner)
+        
         result = super(SaleOrder, self).write(vals)
         
         # Reset commission processing if commission-related fields are changed
@@ -505,7 +744,8 @@ class SaleOrder(models.Model):
                         'commission_status': 'draft'
                     })
                     order.message_post(
-                        body="Commission settings changed. Please recalculate commissions."
+                        body="Commission settings changed. Please recalculate commissions. "
+                             "Note: If you changed partner assignments, ensure related POs are cancelled first."
                     )
         
         return result

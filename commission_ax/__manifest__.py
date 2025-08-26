@@ -25,8 +25,9 @@
     'data': [
         'security/ir.model.access.csv',
         'data/commission_demo_data.xml',
+        'data/commission_email_templates.xml',
         'views/sale_order.xml',
-        'views/purchase_order.xml',
+        'views/purchase_order_views.xml',
     ],
     'demo': [],
     'installable': True,
