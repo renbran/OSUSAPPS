@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_backend" inherit_id="web.assets_backend">
+        <link rel="stylesheet" type="text/scss" href="/osus_enterprise_module/static/src/scss/variables.scss"/>
+        <link rel="stylesheet" type="text/scss" href="/osus_enterprise_module/static/src/scss/components/custom_widget.scss"/>
+        <script type="text/javascript" src="/osus_enterprise_module/static/src/js/components/custom_widget.js"/>
+    </template>
+    <template id="hello_template" name="Hello Template">
+        <div>Hello from OSUS Enterprise Module!</div>
+    </template>
+</odoo>

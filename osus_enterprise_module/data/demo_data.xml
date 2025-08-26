@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="osus_main_model_demo" model="osus.main.model">
+        <field name="name">Demo Record</field>
+        <field name="state">draft</field>
+    </record>
+</odoo>
