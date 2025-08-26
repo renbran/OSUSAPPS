@@ -16,5 +16,19 @@
                 "projectType": "flask"
             }
         }
+        ,
+        {
+            "name": "Attach to Odoo (pydevd-odoo)",
+            "type": "python",
+            "request": "attach",
+            "host": "localhost",
+            "port": 5678,
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/mnt/extra-addons"
+                }
+            ]
+        }
     ]
 }
