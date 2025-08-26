@@ -1,1 +1,1 @@
-# controllers init
+from . import main
