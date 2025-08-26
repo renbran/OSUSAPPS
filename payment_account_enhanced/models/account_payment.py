@@ -190,31 +190,25 @@ class AccountPayment(models.Model):
             
             record.can_approve = (
                 record.approval_state == 'for_approval' and
-                user.has_group('account_payment_final.group_payment_approver')
+                bool(user.groups_id.filtered(lambda g: g.xml_id == 'account_payment_final.group_payment_approver'))
             )
-            
             record.can_authorize = (
                 record.approval_state == 'for_authorization' and
-                record.payment_type == 'outbound' and
-                user.has_group('account_payment_final.group_payment_authorizer')
+                record.payment_type in ['outbound', 'transfer'] and
+                bool(user.groups_id.filtered(lambda g: g.xml_id == 'account_payment_final.group_payment_authorizer'))
             )
 
-    @api.depends('name', 'amount', 'partner_id', 'approval_state', 'verification_status', 'qr_in_report', 'id')
+    @api.depends('name', 'amount', 'partner_id', 'approval_state', 'verification_status', 'qr_in_report')
     def _compute_payment_qr_code(self):
-        """Generate QR code for payment voucher verification"""
         for record in self:
             if record.qr_in_report and record.id:
                 try:
                     base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-                    
                     if base_url:
                         qr_data = f"{base_url}/payment/verify/{record.id}"
-                        record.qr_code = record._generate_qr_image(qr_data)
                     else:
-                        # Fallback: structured data for manual verification
-                        qr_data = self._create_fallback_qr_data(record)
-                        record.qr_code = record._generate_qr_image(qr_data)
-                        
+                        qr_data = f"Payment:{record.id}"
+                    record.qr_code = record._generate_qr_image(qr_data)
                 except Exception as e:
                     _logger.error("Error generating QR code for payment %s: %s", record.voucher_number or 'Draft', e)
                     record.qr_code = False
@@ -222,46 +216,36 @@ class AccountPayment(models.Model):
                 record.qr_code = False
 
     def _generate_qr_image(self, data):
-        """Generate QR code image with error handling"""
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            box_size=10,
+            border=4
+        )
         try:
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_M,
-                box_size=10,
-                border=4
-            )
             qr.add_data(data)
             qr.make(fit=True)
-            
             img = qr.make_image(fill_color="black", back_color="white")
             stream = BytesIO()
             img.save(stream, format="PNG")
             return base64.b64encode(stream.getvalue())
-            
         except Exception as e:
-            _logger.error("Error generating QR image: %s", e)
+            _logger.error("Error generating QR code: %s", e)
             return False
 
     def _create_fallback_qr_data(self, record):
         """Create structured QR data for manual verification when URL not available"""
         voucher_ref = record.voucher_number or record.name or 'Draft Payment'
-        partner_name = record.partner_id.name if record.partner_id else 'Unknown Partner'
         amount_str = f"{record.amount:.2f} {record.currency_id.name if record.currency_id else 'USD'}"
-        date_str = record.date.strftime('%Y-%m-%d') if record.date else 'Draft'
-        
-        return f"""PAYMENT VERIFICATION
-Voucher: {voucher_ref}
-Amount: {amount_str}
-Partner: {partner_name}
-Date: {date_str}
-Status: {record.approval_state.upper() if hasattr(record, 'approval_state') else record.verification_status.upper()}
-Company: {record.company_id.name}"""
+        partner_name = record.partner_id.display_name if record.partner_id else 'Unknown'
+        date_str = record.date.strftime('%Y-%m-%d') if hasattr(record, 'date') and record.date else 'Draft'
+        status = record.approval_state.upper() if hasattr(record, 'approval_state') else record.verification_status.upper()
+        return f"PAYMENT VERIFICATION\nAmount: {amount_str}\nPartner: {partner_name}\nDate: {date_str}\nStatus: {status}"
 
     # ============================================================================
     # CORE BUSINESS METHODS
     # ============================================================================
 
-    @api.model
     def create(self, vals):
         """Enhanced create method with voucher number generation and workflow setup"""
         # Generate voucher number immediately
