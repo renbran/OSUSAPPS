@@ -79,14 +79,6 @@ class ResConfigSettings(models.TransientModel):
         help="Globally enable payment verification via QR codes"
     )
     
-    default_journal_for_payments = fields.Many2one(
-        'account.journal',
-        string="Default Journal for Payments",
-        related='company_id.default_journal_for_payments',
-        readonly=False,
-        domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
-        help="Default journal for new payments"
-    )
     
     auto_post_approved_payments = fields.Boolean(
         related='company_id.auto_post_approved_payments',
