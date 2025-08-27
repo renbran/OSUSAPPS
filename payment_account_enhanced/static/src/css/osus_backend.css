@@ -1,18 +1,23 @@
 /* OSUS Brand Variables */
+/* Odoo 17 CSS custom properties for theming */
 :root {
     --osus-burgundy: #8B1538;
     --osus-burgundy-light: #A41E3A;
     --osus-gold: #D4AF37;
     --osus-gold-light: #F5E67B;
     --osus-cream: #FAF8F3;
+    --osus-radius-md: 8px;
+    --osus-radius-lg: 12px;
+    --osus-shadow-md: 0 4px 15px rgba(139, 21, 56, 0.15);
+    --osus-shadow-lg: 0 8px 25px rgba(139, 21, 56, 0.2);
 }
 
 /* Enhanced Payment Form Styling */
 .o_form_view .o_payment_form_osus {
     background: linear-gradient(135deg, var(--osus-cream) 0%, #ffffff 100%);
-    border-radius: 12px;
+    border-radius: var(--osus-radius-lg);
     padding: 20px;
-    box-shadow: 0 8px 25px rgba(139, 21, 56, 0.1);
+    box-shadow: var(--osus-shadow-lg);
 }
 
 /* OSUS Button Styling */
@@ -24,39 +29,38 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 10px 20px;
-    border-radius: 8px;
+    border-radius: var(--osus-radius-md);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(139, 21, 56, 0.3);
+    box-shadow: var(--osus-shadow-md);
 }
 
 .btn-osus-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 21, 56, 0.4);
+    box-shadow: var(--osus-shadow-lg);
     background: linear-gradient(135deg, var(--osus-burgundy-light) 0%, var(--osus-burgundy) 100%);
 }
 
 .btn-osus-secondary {
-    background: linear-gradient(135deg, var(--osus-gold) 0%, #B8960C 100%);
+    background: linear-gradient(135deg, var(--osus-gold) 0%, var(--osus-gold-light) 100%);
     border: none;
     color: white;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 10px 20px;
-    border-radius: 8px;
+    border-radius: var(--osus-radius-md);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    box-shadow: var(--osus-shadow-md);
 }
 
 .btn-osus-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    box-shadow: var(--osus-shadow-lg);
 }
 
 /* Enhanced Status Badges */
-.o_payment_status_badge {
     padding: 5px 12px;
-    border-radius: 20px;
+    border-radius: var(--osus-radius-lg);
     font-weight: 600;
     font-size: 11px;
     text-transform: uppercase;

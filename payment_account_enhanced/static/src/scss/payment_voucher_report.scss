@@ -1,18 +1,24 @@
-// payment_voucher_report.scss
-// Odoo 17-compliant, print-optimized, and responsive SCSS for Payment Voucher Report
+// SCSS Variables for Odoo 17 compatibility
+$osus-burgundy: #8b1538;
+$osus-burgundy-light: #a41e3a;
+$osus-gold: #d4af37;
+$osus-gold-light: #f5e67b;
+$osus-cream: #faf8f3;
+$osus-shadow-md: 0 4px 15px rgba(139, 21, 56, 0.15);
+$osus-shadow-lg: 0 8px 25px rgba(139, 21, 56, 0.2);
+$osus-radius-md: 8px;
+$osus-radius-lg: 12px;
 
-.o_payment_account_enhanced_voucher_container {
-  background: #fff;
-  color: #222;
-  font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
-  width: 100%;
-  min-height: 297mm;
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  page-break-after: always;
+.o_payment_account_enhanced_voucher_header {
+  background: linear-gradient(
+    135deg,
+    $osus-burgundy 0%,
+    $osus-burgundy-light 100%
+  );
+  color: #fff;
+  border-radius: 0 0 $osus-radius-lg $osus-radius-lg;
+  margin-bottom: 18px;
+  box-shadow: $osus-shadow-md;
 }
 
 .o_payment_account_enhanced_voucher_header {
@@ -91,13 +97,8 @@
 .o_payment_account_enhanced_voucher_amount {
   background: linear-gradient(135deg, #bfa46f 0%, #d4c195 50%, #bfa46f 100%);
   color: #fff;
-  padding: 18px 0;
   border-radius: 8px;
-  text-align: center;
-  font-size: 1.3em;
-  font-weight: 700;
-  margin: 18px 0 24px 0;
-  box-shadow: 0 4px 16px rgba(191, 164, 111, 0.13);
+
 }
 
 .o_payment_account_enhanced_voucher_signatures {
@@ -157,14 +158,11 @@
 }
 
 .o_payment_account_enhanced_voucher_footer {
-  background: linear-gradient(135deg, #7c2439 0%, #8b2a47 100%);
+  background: linear-gradient(135deg, $osus-burgundy 0%, $osus-burgundy-light 100%);
   color: #fff;
-  width: 100%;
-  padding: 14px 32px;
-  border-radius: 12px 12px 0 0;
-  text-align: center;
-  font-size: 1em;
-  margin-top: auto;
+  border-radius: $osus-radius-lg $osus-radius-lg 0 0;
+  box-shadow: $osus-shadow-md;
+}
   .o_payment_account_enhanced_voucher_footer_note {
     font-size: 0.95em;
     color: rgba(255, 255, 255, 0.85);

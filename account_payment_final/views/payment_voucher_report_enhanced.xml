@@ -12,7 +12,76 @@
                     <t t-foreach="docs" t-as="doc">
                         <t t-set="report_data" t-value="doc.get_report_data()"/>
 
-                        <div class="page" style="font-family: 'Helvetica', 'Arial', sans-serif; color: #333; margin: 0; padding: 20px;">
+                        <div class="page" style="font-family: 'Helvetica', 'Arial', sans-serif; color: var(--voucher-header-color, #333); margin: 0; padding: 20px;">
+                            <style type="text/css">
+                                :root {
+                                    --voucher-bg: #f8f9fa;
+                                    --voucher-title-color: #004080;
+                                    --voucher-header-color: #333;
+                                    --voucher-radius: 6px;
+                                    --voucher-shadow: 0 2px 4px rgba(0,0,0,0.08);
+                                    --voucher-padding: 12px 24px;
+                                    --voucher-table-header-bg: #e9ecef;
+                                    --voucher-table-header-color: #222;
+                                    --voucher-table-cell-bg: #fff;
+                                    --voucher-table-cell-color: #222;
+                                    --voucher-qr-border: #3498db;
+                                    --voucher-qr-radius: 8px;
+                                    --voucher-qr-shadow: 0 2px 8px rgba(52,152,219,0.15);
+                                    --voucher-qr-size: 120px;
+                                    --voucher-footer-color: #888;
+                                }
+                                .voucher-header {
+                                    background: var(--voucher-bg);
+                                    color: var(--voucher-header-color);
+                                    border-radius: var(--voucher-radius);
+                                    box-shadow: var(--voucher-shadow);
+                                    padding: var(--voucher-padding);
+                                    margin-bottom: 16px;
+                                }
+                                .voucher-title {
+                                    font-size: 1.3em;
+                                    font-weight: 600;
+                                    color: var(--voucher-title-color);
+                                }
+                                .voucher-table th {
+                                    background: var(--voucher-table-header-bg);
+                                    color: var(--voucher-table-header-color);
+                                    font-weight: 500;
+                                }
+                                .voucher-table td {
+                                    background: var(--voucher-table-cell-bg);
+                                    color: var(--voucher-table-cell-color);
+                                }
+                                .voucher-qr {
+                                    text-align: center;
+                                    padding: 8px;
+                                }
+                                .voucher-qr img {
+                                    border: 2px solid var(--voucher-qr-border);
+                                    border-radius: var(--voucher-qr-radius);
+                                    box-shadow: var(--voucher-qr-shadow);
+                                    width: var(--voucher-qr-size);
+                                    height: var(--voucher-qr-size);
+                                }
+                                .voucher-footer {
+                                    font-size: 0.95em;
+                                    color: var(--voucher-footer-color);
+                                    margin-top: 24px;
+                                }
+                                @media (prefers-color-scheme: dark) {
+                                    :root {
+                                        --voucher-bg: #23272b;
+                                        --voucher-title-color: #e9ecef;
+                                        --voucher-header-color: #e9ecef;
+                                        --voucher-table-header-bg: #343a40;
+                                        --voucher-table-header-color: #e9ecef;
+                                        --voucher-table-cell-bg: #23272b;
+                                        --voucher-table-cell-color: #e9ecef;
+                                        --voucher-footer-color: #bbb;
+                                    }
+                                }
+                            </style>
                             <!-- Header Section -->
                             <div class="header" style="text-align: center; border-bottom: 3px solid #004080; padding-bottom: 20px; margin-bottom: 30px;">
                                 <h1 style="color: #004080; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 1px;">
@@ -57,8 +126,8 @@
                                         </td>
                                         <td style="width: 30%; text-align: center; vertical-align: top; padding-left: 20px;">
                                             <div t-if="report_data['show_qr_code'] and report_data['qr_code_url']" style="text-align: center;">
-                                                <div style="border: 2px solid #ddd; padding: 10px; border-radius: 8px; background: white;">
-                                                    <img t-att-src="report_data['qr_code_url']" style="width: 120px; height: 120px;" alt="QR Code"/>
+                                                <div class="voucher-qr">
+                                                    <img t-att-src="report_data['qr_code_url']" alt="QR Code"/>
                                                     <div style="font-size: 11px; color: #666; margin-top: 5px;">Scan to Verify</div>
                                                 </div>
                                             </div>
