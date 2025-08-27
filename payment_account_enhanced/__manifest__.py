@@ -55,6 +55,7 @@
         'views/payment_workflow_stage_views.xml',
         'views/res_config_settings_views.xml',
         'views/website_verification_templates.xml',
+        'views/payment_dashboard_views.xml',
         'reports/payment_voucher_template_fixed.xml',
         
         # Reports

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Top Level Menu: Payment Management -->
+    <menuitem 
+        id="menu_payment_management_root"
+        name="Payment Management"
+        sequence="10"
+        parent=""
+        action=""
+        groups="account.group_account_user"/>
+
+    <!-- Dashboard Menu -->
+    <menuitem 
+        id="menu_payment_dashboard"
+        name="Dashboard"
+        parent="menu_payment_management_root"
+        sequence="20"
+        action="payment_account_enhanced.action_payment_dashboard"
+        groups="account.group_account_user"/>
+
+    <!-- Payments Submenu -->
+    <menuitem 
+        id="menu_payment_management_payments"
+        name="Payments"
+        parent="menu_payment_management_root"
+        sequence="30"
+        action="payment_account_enhanced.action_account_payment_tree"
+        groups="account.group_account_user"/>
+
+    <!-- Approval History Submenu -->
+    <menuitem 
+        id="menu_payment_management_approval_history"
+        name="Approval History"
+        parent="menu_payment_management_root"
+        sequence="40"
+        action="payment_account_enhanced.action_payment_approval_history_tree"
+        groups="account.group_account_user"/>
+
+    <!-- QR Verification Submenu -->
+    <menuitem 
+        id="menu_payment_management_qr_verification"
+        name="QR Verification"
+        parent="menu_payment_management_root"
+        sequence="50"
+        action="payment_account_enhanced.action_payment_qr_verification_tree"
+        groups="account.group_account_user"/>
+</odoo>
