@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="osus_main_menu" name="OSUS Enterprise"/>
+    <menuitem id="osus_main_model_menu" name="Main Model" parent="osus_main_menu" action="osus_main_model_action"/>
+</odoo>

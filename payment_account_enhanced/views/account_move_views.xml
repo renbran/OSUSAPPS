@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Minimal Safe Invoice/Bill Form View -->
+        <record id="view_move_form_enhanced" model="ir.ui.view">
+            <field name="name">account.move.form.enhanced</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Add required move_type field for conditions -->
+                <xpath expr="//sheet" position="before">
+                    <field name="move_type" invisible="1"/>
+                </xpath>
+
+                <!-- Add basic workflow buttons only for invoices/bills -->
+                <xpath expr="//header" position="inside">
+                    <button name="action_submit_for_review" string="Submit for Review" type="object" class="btn-primary" invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')"/>
+
+                    <button name="action_review_approve" string="Review &amp; Approve" type="object" class="btn-success" groups="group_payment_reviewer" invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')"/>
+
+                    <button name="action_final_approve" string="Final Approve" type="object" class="btn-success" groups="group_payment_approver" invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')"/>
+
+                    <button name="action_reject_invoice_bill" string="Reject" type="object" class="btn-danger" groups="group_payment_approver" invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')" confirm="Are you sure you want to reject this document?"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Minimal Safe Invoice/Bill Tree View -->
+        <record id="view_invoice_tree_enhanced" model="ir.ui.view">
+            <field name="name">account.move.tree.enhanced</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_tree"/>
+            <field name="arch" type="xml">
+
+                <!-- Add the js_class for bulk printing -->
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="js_class">osus_bulk_print_list</attribute>
+                </xpath>
+
+                <!-- Declare required fields -->
+                <xpath expr="//field[@name='name']" position="before">
+                    <field name="move_type" column_invisible="1"/>
+                    <field name="company_currency_id" column_invisible="1"/>
+                    <field name="made_sequence_hole" column_invisible="1"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

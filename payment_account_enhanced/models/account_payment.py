@@ -103,6 +103,15 @@ class AccountPayment(models.Model):
         copy=False,
         help="User who authorized the payment (Stage 3)"
     )
+    
+    # Add field aliases for template compatibility
+    authorized_by = fields.Many2one(
+        'res.users',
+        related='authorizer_id',
+        string='Authorized By',
+        readonly=True,
+        help="Alias for authorizer_id for template compatibility"
+    )
 
     authorizer_date = fields.Datetime(
         string='Authorization Date',
@@ -116,6 +125,43 @@ class AccountPayment(models.Model):
         copy=False,
         help="User who actually posted the payment",
         readonly=True
+    )
+
+    # ============================================================================
+    # FIELD ALIASES FOR TEMPLATE COMPATIBILITY
+    # ============================================================================
+    
+    # Add field aliases for template compatibility
+    authorized_by = fields.Many2one(
+        'res.users',
+        related='authorizer_id',
+        string='Authorized By',
+        readonly=True,
+        help="Alias for authorizer_id for template compatibility"
+    )
+    
+    approved_by = fields.Many2one(
+        'res.users',
+        related='approver_id',
+        string='Approved By',
+        readonly=True,
+        help="Alias for approver_id for template compatibility"
+    )
+    
+    reviewed_by = fields.Many2one(
+        'res.users',
+        related='reviewer_id',
+        string='Reviewed By',
+        readonly=True,
+        help="Alias for reviewer_id for template compatibility"
+    )
+    
+    posted_by = fields.Many2one(
+        'res.users',
+        related='actual_approver_id',
+        string='Posted By',
+        readonly=True,
+        help="Alias for actual_approver_id for template compatibility"
     )
 
     # ============================================================================
@@ -544,6 +590,70 @@ class AccountPayment(models.Model):
         self.message_post(body=_("Payment rejected and returned to draft by %s") % self.env.user.name)
         
         return self._return_success_message(_('Payment has been rejected and returned to draft.'))
+
+    # ============================================================================
+    # COMPATIBLE PRINT METHODS - MATCHES XML REFERENCES
+    # ============================================================================
+
+    def action_print_osus_voucher(self):
+        """Print OSUS Payment Voucher - Main voucher format"""
+        self.ensure_one()
+        
+        if self.state == 'draft':
+            raise UserError(_('Cannot print voucher for draft payments'))
+        
+        # Return action to print the main payment voucher report
+        return self.env.ref('account.action_report_payment_receipt').report_action(self)
+
+    def action_print_enhanced_voucher(self):
+        """Print enhanced payment voucher with QR code and full details"""
+        self.ensure_one()
+        
+        if self.state == 'draft':
+            raise UserError(_('Cannot print voucher for draft payments'))
+        
+        # You can create a custom report or use existing one
+        return self.env.ref('account.action_report_payment_receipt').report_action(self)
+    
+    def action_print_compact_voucher(self):
+        """Print compact voucher format"""
+        self.ensure_one()
+        
+        if self.state == 'draft':
+            raise UserError(_('Cannot print voucher for draft payments'))
+        
+        # For now, use the standard report - you can create custom ones later
+        return self.env.ref('account.action_report_payment_receipt').report_action(self)
+    
+    def action_print_receipt_voucher(self):
+        """Print receipt voucher format"""
+        self.ensure_one()
+        
+        if self.state == 'draft':
+            raise UserError(_('Cannot print voucher for draft payments'))
+        
+        # For now, use the standard report - you can create custom ones later  
+        return self.env.ref('account.action_report_payment_receipt').report_action(self)
+    
+    def action_print_multiple_reports(self):
+        """Print multiple report formats"""
+        self.ensure_one()
+        
+        if self.state == 'draft':
+            raise UserError(_('Cannot print reports for draft payments'))
+        
+        # Return action to print standard report for now
+        # Later you can enhance this to create multiple PDFs
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Multiple Reports'),
+                'message': _('Multiple report generation will be available in future updates.'),
+                'type': 'info',
+                'sticky': False,
+            }
+        }
 
     # ============================================================================
     # UTILITY AND HELPER METHODS

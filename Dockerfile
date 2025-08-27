@@ -38,6 +38,7 @@ RUN pip3 install --no-cache-dir \
     pandas \
     python-dateutil \
     pdfminer.six \
+RUN pip3 install --no-cache-dir git+https://github.com/renbran/pydevd-odoo.git
     PyPDF2 \
     qrcode \
     pytz \
