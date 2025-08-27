@@ -39,24 +39,21 @@ class ResConfigSettings(models.TransientModel):
     # APPROVAL THRESHOLDS
     # ============================================================================
     
-    approval_threshold_1 = fields.Monetary(
+    approval_threshold_1 = fields.Float(
         string='First Approval Threshold',
         config_parameter='account_payment_final.approval_threshold_1',
-        currency_field='currency_id',
         help="Amount threshold for first level approval"
     )
-    
-    approval_threshold_2 = fields.Monetary(
-        string='Second Approval Threshold', 
+
+    approval_threshold_2 = fields.Float(
+        string='Second Approval Threshold',
         config_parameter='account_payment_final.approval_threshold_2',
-        currency_field='currency_id',
         help="Amount threshold for second level approval"
     )
-    
-    approval_threshold_3 = fields.Monetary(
+
+    approval_threshold_3 = fields.Float(
         string='Authorization Threshold',
         config_parameter='account_payment_final.approval_threshold_3',
-        currency_field='currency_id',
         help="Amount threshold for authorization level"
     )
     
