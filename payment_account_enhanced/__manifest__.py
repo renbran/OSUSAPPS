@@ -67,12 +67,19 @@
     'demo': [],
     'assets': {
         'web.assets_backend': [
-
-            'account_payment_final/static/src/css/payment_workflow.css',
+            'payment_account_enhanced/static/src/css/osus_backend.css',
+            'payment_account_enhanced/static/src/css/osus_report.css',
+            'payment_account_enhanced/static/src/css/payment_voucher_style.css',
+            'payment_account_enhanced/static/src/scss/payment_voucher_report.scss',
+            # Add JS widgets/components if present
+            # 'payment_account_enhanced/static/src/js/payment_widget.js',
         ],
         'web.assets_frontend': [
-            'account_payment_final/static/src/css/verification_portal.css',
+            # Add portal/website CSS/SCSS if present
+            # 'payment_account_enhanced/static/src/css/verification_portal.css',
         ],
+        # QWeb templates (if any)
+        # 'payment_account_enhanced/static/src/xml/payment_templates.xml',
     },
     'installable': True,
     'application': True,
