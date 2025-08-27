@@ -1,4 +1,3 @@
-/* Import Montserrat Font for Reports */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 
 /* Header Section for Reports */
@@ -154,14 +153,12 @@
 
 .osus-bg-burgundy { 
     background: linear-gradient(135deg, #8B1538 0%, #A41E3A 100%) !important; 
-    -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+    print-color-adjust: exact;
 }
 
 .osus-bg-gold { 
     background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%) !important; 
-    -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+    print-color-adjust: exact;
 }
 
 /* Grid System for Reports */
@@ -213,6 +210,7 @@
     print-color-adjust: exact;
 }
     .osus-bg-burgundy, .osus-bg-gold {
+
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
