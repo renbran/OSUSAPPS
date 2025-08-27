@@ -10,7 +10,7 @@
             <field name="arch" type="xml">
 
                 <!-- Add fields at the end of the sheet, which is always safe -->
-                <xpath expr="//sheet" position="inside">
+                <xpath expr="//form" position="inside">
                     <group string="Payment Voucher Options" name="voucher_options">
                         <field name="remarks" string="Payment Remarks" placeholder="Enter additional remarks for the payment voucher..."/>
                         <field name="qr_in_report" string="Include QR Code in Voucher Report"/>
