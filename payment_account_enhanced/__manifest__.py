@@ -44,7 +44,7 @@
         'security/ir.model.access.csv',
         
         # Data
-        'data/payment_sequence.xml',
+        'data/sequence.xml',
         'data/mail_template_data.xml',
         
         # Views
@@ -55,12 +55,15 @@
         'views/payment_workflow_stage_views.xml',
         'views/res_config_settings_views.xml',
         'views/website_verification_templates.xml',
+        'reports/payment_voucher_template_fixed.xml',
         
         # Reports
         'reports/payment_voucher_report.xml',
+        'reports/payment_voucher_template.xml',
+        
         
         # Wizards
-        'wizard/payment_register_views.xml',
+        'wizards/register_payment.xml',
     ],
     'demo': [],
     'assets': {

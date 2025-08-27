@@ -52,9 +52,9 @@
                             </group>
                         </group>
 
-                        <group string="Additional Information" attrs="{'invisible': [('comments', '=', False), ('ip_address', '=', False)]}">
-                            <field name="comments" nolabel="1" attrs="{'invisible': [('comments', '=', False)]}"/>
-                            <field name="ip_address" attrs="{'invisible': [('ip_address', '=', False)]}"/>
+                        <group string="Additional Information" options="{'invisible': [('comments', '=', False), ('ip_address', '=', False)]}">
+                            <field name="comments" nolabel="1" options="{'invisible': [('comments', '=', False)]}"/>
+                            <field name="ip_address" options="{'invisible': [('ip_address', '=', False)]}"/>
                         </group>
 
                         <div class="oe_clear"/>

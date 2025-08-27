@@ -51,9 +51,9 @@
                             </group>
                         </group>
 
-                        <group string="Technical Information" attrs="{'invisible': [('verifier_user_agent', '=', False), ('additional_data', '=', False)]}">
-                            <field name="verifier_user_agent" attrs="{'invisible': [('verifier_user_agent', '=', False)]}"/>
-                            <field name="additional_data" attrs="{'invisible': [('additional_data', '=', False)]}"/>
+                        <group string="Technical Information" options="{'invisible': [('verifier_user_agent', '=', False), ('additional_data', '=', False)]}">
+                            <field name="verifier_user_agent" options="{'invisible': [('verifier_user_agent', '=', False)]}"/>
+                            <field name="additional_data" options="{'invisible': [('additional_data', '=', False)]}"/>
                         </group>
 
                         <div class="oe_clear"/>

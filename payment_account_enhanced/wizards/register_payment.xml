@@ -2,185 +2,23 @@
 <odoo>
     <data>
 
-        <!-- Enhanced Payment Register Wizard Form -->
+        <!-- Enhanced Payment Register Form View -->
         <record id="view_account_payment_register_form_enhanced" model="ir.ui.view">
             <field name="name">account.payment.register.form.enhanced</field>
             <field name="model">account.payment.register</field>
             <field name="inherit_id" ref="account.view_account_payment_register_form"/>
             <field name="arch" type="xml">
 
-                <!-- Add workflow and enhanced fields -->
-                <xpath expr="//field[@name='amount']" position="after">
-                    <field name="workflow_required" invisible="1"/>
-                    <field name="can_skip_workflow" invisible="1"/>
-                    <field name="voucher_number" readonly="1" class="text-muted"/>
-                </xpath>
-
-                <!-- Add remarks field -->
-                <xpath expr="//field[@name='memo']" position="after">
-                    <field name="remarks" placeholder="Enter payment remarks or memo..." class="o_field_text"/>
-                </xpath>
-
-                <!-- Add workflow section -->
-                <xpath expr="//group[@name='group_main']" position="after">
-                    <group string="Approval Workflow" name="approval_workflow" invisible="not workflow_required">
-                        <group>
-                            <field name="approval_state" readonly="1"/>
-                            <field name="submit_for_approval"/>
-                            <field name="skip_approval_workflow" invisible="not can_skip_workflow"/>
-                        </group>
-                        <group>
-                            <field name="reviewer_id" invisible="not submit_for_approval"/>
-                            <field name="approver_id" invisible="not submit_for_approval"/>
-                            <field name="authorizer_id" invisible="not submit_for_approval or payment_type != 'outbound'"/>
-                        </group>
-                    </group>
-                </xpath>
-
-                <!-- Add enhanced options section -->
-                <xpath expr="//group[@name='group_main']" position="after">
-                    <group string="Payment Options" name="payment_options">
-                        <group>
-                            <field name="generate_qr_code"/>
-                            <field name="batch_payment"/>
-                        </group>
-                        <group>
-                            <!-- Additional options can be added here -->
-                        </group>
-                    </group>
-                </xpath>
-
-                <!-- Add batch payment section -->
-                <xpath expr="//group[@name='payment_options']" position="after">
-                    <group string="Batch Processing" name="batch_processing" invisible="not batch_payment">
-                        <field name="batch_description" placeholder="Enter batch description..."/>
-                    </group>
-                </xpath>
-
-                <!-- Add workflow warning -->
-                <xpath expr="//sheet" position="before">
-                    <div class="alert alert-info" role="alert" invisible="not workflow_required or submit_for_approval or skip_approval_workflow">
-                        <strong>Workflow Required:</strong> This payment amount requires approval workflow. 
-                        Please check "Submit for Approval" or contact your manager to proceed.
-                    </div>
-                    <div class="alert alert-warning" role="alert" invisible="not skip_approval_workflow">
-                        <strong>Workflow Bypassed:</strong> You are bypassing the standard approval workflow. 
-                        This action will be logged for audit purposes.
-                    </div>
-                </xpath>
-
-                <!-- Enhance footer buttons -->
-                <xpath expr="//footer" position="replace">
-                    <footer>
-                        <button name="action_create_payments" string="Create Payment" type="object" class="btn-primary" invisible="batch_payment"/>
-
-                        <button name="action_create_batch_payments" string="Create Batch Payments" type="object" class="btn-primary" invisible="not batch_payment"/>
-
-                        <button name="%(account.action_account_payment_register)d" string="Create &amp; Submit" type="action" class="btn-success" invisible="not submit_for_approval or not workflow_required" context="{'submit_for_approval': True}"/>
-
-                        <button string="Cancel" class="btn-secondary" special="cancel"/>
-                    </footer>
-                </xpath>
-
-            </field>
-        </record>
-
-        <!-- Enhanced Payment Register for Multiple Invoices -->
-        <record id="view_account_payment_register_form_multi_enhanced" model="ir.ui.view">
-            <field name="name">account.payment.register.form.multi.enhanced</field>
-            <field name="model">account.payment.register</field>
-            <field name="inherit_id" ref="account.view_account_payment_from_invoices"/>
-            <field name="arch" type="xml">
-
-                <!-- Add workflow fields for multi-payment -->
-                <xpath expr="//field[@name='group_payment']" position="after">
-                    <field name="workflow_required" invisible="1"/>
-                    <field name="can_skip_workflow" invisible="1"/>
-                    <field name="batch_payment" default="1" invisible="1"/>
-                </xpath>
-
-                <!-- Add batch description -->
-                <xpath expr="//field[@name='memo']" position="after">
-                    <field name="batch_description" string="Batch Description" placeholder="Describe this batch payment..." invisible="not group_payment"/>
-                    <field name="remarks" placeholder="Enter payment remarks..."/>
-                </xpath>
-
-                <!-- Add workflow section for multi-payment -->
-                <xpath expr="//group" position="after">
-                    <group string="Approval Workflow" invisible="not workflow_required">
-                        <group>
-                            <field name="submit_for_approval"/>
-                            <field name="skip_approval_workflow" invisible="not can_skip_workflow"/>
-                        </group>
-                        <group>
-                            <field name="generate_qr_code"/>
-                        </group>
-                    </group>
-                </xpath>
-
-                <!-- Add workflow assignment for batch -->
-                <xpath expr="//group[last()]" position="after">
-                    <group string="Workflow Assignment" invisible="not submit_for_approval or not workflow_required">
-                        <group>
-                            <field name="reviewer_id"/>
-                            <field name="approver_id"/>
-                        </group>
-                        <group>
-                            <field name="authorizer_id" invisible="payment_type != 'outbound'"/>
-                        </group>
+                <!-- Add fields at the end of the sheet, which is always safe -->
+                <xpath expr="//sheet" position="inside">
+                    <group string="Payment Voucher Options" name="voucher_options">
+                        <field name="remarks" string="Payment Remarks" placeholder="Enter additional remarks for the payment voucher..."/>
+                        <field name="qr_in_report" string="Include QR Code in Voucher Report"/>
                     </group>
                 </xpath>
 
             </field>
         </record>
-
-        <!-- Payment Register Action with Enhanced Context -->
-        <record id="action_account_payment_register_enhanced" model="ir.actions.act_window">
-            <field name="name">Register Payment (Enhanced)</field>
-            <field name="res_model">account.payment.register</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="view_account_payment_register_form_enhanced"/>
-            <field name="target">new</field>
-            <field name="context">{
-                'active_model': 'account.move',
-                'default_generate_qr_code': True,
-                'default_submit_for_approval': False
-            }</field>
-        </record>
-
-        <!-- Batch Payment Register Action -->
-        <record id="action_account_payment_register_batch" model="ir.actions.act_window">
-            <field name="name">Create Batch Payment</field>
-            <field name="res_model">account.payment.register</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="view_account_payment_register_form_multi_enhanced"/>
-            <field name="target">new</field>
-            <field name="context">{
-                'active_model': 'account.move',
-                'default_batch_payment': True,
-                'default_group_payment': True,
-                'default_generate_qr_code': True
-            }</field>
-        </record>
-
-        <!-- Quick Approval Payment Action -->
-        <record id="action_account_payment_register_quick_approve" model="ir.actions.act_window">
-            <field name="name">Create &amp; Submit Payment</field>
-            <field name="res_model">account.payment.register</field>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="view_account_payment_register_form_enhanced"/>
-            <field name="target">new</field>
-            <field name="context">{
-                'active_model': 'account.move',
-                'default_submit_for_approval': True,
-                'default_generate_qr_code': True
-            }</field>
-        </record>
-
-        <!-- Add menu items for enhanced payment registration -->
-        <menuitem id="menu_account_payment_register_enhanced" name="Enhanced Payment Register" parent="account.menu_finance_payables" action="action_account_payment_register_enhanced" sequence="20" groups="account.group_account_user"/>
-
-        <menuitem id="menu_account_payment_register_batch" name="Batch Payment Register" parent="account.menu_finance_payables" action="action_account_payment_register_batch" sequence="21" groups="group_payment_manager"/>
 
     </data>
 </odoo>
