@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
 from odoo.exceptions import UserError, ValidationError
 import logging
 
@@ -8,7 +7,6 @@ _logger = logging.getLogger(__name__)
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
-    # Commission-related fields for purchase orders
     description = fields.Text(
         string="Description",
         help="Additional description for the purchase order"
@@ -35,77 +33,62 @@ class PurchaseOrder(models.Model):
         'res.partner',
         string="Agent 1",
         compute="_compute_commission_fields",
-        store=True,  # CRITICAL FIX: Changed to True for email template access
+        store=True,
         help="Agent 1 from the origin sale order"
     )
     agent2_partner_id = fields.Many2one(
         'res.partner',
         string="Agent 2", 
         compute="_compute_commission_fields",
-        store=True,  # CRITICAL FIX: Changed to True for email template access
+        store=True,
         help="Agent 2 from the origin sale order"
     )
     project_id = fields.Many2one(
         'project.project',
         string="Project",
         compute="_compute_commission_fields",
-        store=True,  # CRITICAL FIX: Changed to True for email template access
+        store=True,
         help="Project from the origin sale order"
     )
     unit_id = fields.Many2one(
         'product.product',
         string="Unit",
         compute="_compute_commission_fields", 
-        store=True,  # CRITICAL FIX: Changed to True for email template access
+        store=True,
         help="Unit from the origin sale order"
     )
 
     @api.depends('origin_so_id')
     def _compute_is_commission_po(self):
-        """Compute if this is a commission purchase order."""
         for po in self:
             po.is_commission_po = bool(po.origin_so_id)
     
-    @api.depends('origin_so_id', 'origin_so_id.agent1_partner_id', 'origin_so_id.agent2_partner_id')
+    @api.depends('origin_so_id')
     def _compute_commission_fields(self):
-        """Compute commission-related fields from origin sale order."""
         for po in self:
-            if po.origin_so_id:
-                # Safe field access with hasattr checks
-                po.agent1_partner_id = po.origin_so_id.agent1_partner_id if hasattr(po.origin_so_id, 'agent1_partner_id') else False
-                po.agent2_partner_id = po.origin_so_id.agent2_partner_id if hasattr(po.origin_so_id, 'agent2_partner_id') else False
-                # project_id and unit_id might not exist in all sale.order implementations
-                po.project_id = po.origin_so_id.project_id if hasattr(po.origin_so_id, 'project_id') else False
-                po.unit_id = po.origin_so_id.unit_id if hasattr(po.origin_so_id, 'unit_id') else False
+            so = po.origin_so_id
+            if so:
+                po.agent1_partner_id = so.agent1_partner_id
+                po.agent2_partner_id = so.agent2_partner_id
+                po.project_id = so.project_id
+                po.unit_id = so.unit_id
             else:
                 po.agent1_partner_id = False
-                po.agent2_partner_id = False
-                po.project_id = False
-                po.unit_id = False
                 po.agent2_partner_id = False
                 po.project_id = False
                 po.unit_id = False
 
     @api.model_create_multi
     def create(self, vals_list):
-        """Override create to handle commission purchase orders."""
         for vals in vals_list:
-            # If this is a commission PO with an origin sale order
             if vals.get('origin_so_id'):
                 sale_order = self.env['sale.order'].browse(vals['origin_so_id'])
                 if sale_order.exists():
-                    _logger.info(
-                        f"Creating commission PO from SO: {sale_order.name}"
-                    )
+                    _logger.info(f"Creating commission PO from SO: {sale_order.name}")
         
-        return super(PurchaseOrder, self).create(vals_list)
-
-    def write(self, vals):
-        """Override write to handle commission purchase order updates."""
-        return super(PurchaseOrder, self).write(vals)
+        return super().create(vals_list)
 
     def action_view_origin_sale_order(self):
-        """Action to view the origin sale order."""
         self.ensure_one()
         if not self.origin_so_id:
             raise UserError("No origin sale order found for this purchase order.")
@@ -121,10 +104,8 @@ class PurchaseOrder(models.Model):
 
     @api.constrains('origin_so_id', 'partner_id')
     def _check_commission_partner(self):
-        """Validate that commission partner is valid for the origin sale order."""
         for po in self:
             if po.origin_so_id and po.partner_id:
-                # Get all commission partners from the origin sale order
                 commission_partners = po.origin_so_id._get_all_commission_partners()
                 if po.partner_id.id not in commission_partners:
                     raise ValidationError(
@@ -133,16 +114,13 @@ class PurchaseOrder(models.Model):
                     )
 
     def _get_commission_info(self):
-        """Get commission information for this purchase order."""
         self.ensure_one()
         if not self.origin_so_id:
             return {}
         
-        # Find which commission type this PO represents
         commission_info = {}
         sale_order = self.origin_so_id
         
-        # Check all commission partners to find which one matches this PO
         commission_mappings = {
             'consultant': sale_order.consultant_id,
             'manager': sale_order.manager_id,
@@ -171,7 +149,6 @@ class PurchaseOrder(models.Model):
         return commission_info
 
     def unlink(self):
-        """Override unlink to handle commission status updates."""
         for po in self:
             if po.origin_so_id and po.state not in ['draft', 'cancel']:
                 raise UserError(
@@ -179,4 +156,4 @@ class PurchaseOrder(models.Model):
                     f"Please cancel it first."
                 )
         
-        return super(PurchaseOrder, self).unlink()
+        return super().unlink()

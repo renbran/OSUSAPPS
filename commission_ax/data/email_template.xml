@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<odoo>
+    <data noupdate="1">
+        <record id="commission_payout_notification_template" model="mail.template">
+            <field name="name">Commission Payout Notification</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="subject">Commission Payout Notification - Order ${object.origin_so_id.name or object.name}</field>
+            <field name="email_from">${(user.email or 'finance@osusproperties.com')|safe}</field>
+            <field name="email_to">${object.partner_id.email or ''}</field>
+            <field name="body_html"><![CDATA[
+                <!-- Email template content from original module -->
+            ]]></field>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+        
+        <record id="ir_cron_check_commission_purchase_orders" model="ir.cron">
+            <field name="name">Check and Post Commission Purchase Orders</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">model._check_commission_purchase_orders()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">hours</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+        </record>
+    </data>
+</odoo>

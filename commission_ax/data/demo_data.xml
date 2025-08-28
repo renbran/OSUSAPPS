@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0"?>
 <odoo>
     <data noupdate="1">
         <!-- Demo Commission Partners -->
@@ -32,13 +32,13 @@
 
         <!-- Demo Customer -->
         <record id="demo_customer" model="res.partner">
-            <field name="name">Demo Customer with Reference</field>
+            <field name="name">Demo Customer</field>
             <field name="email">customer@demo.com</field>
             <field name="is_company">True</field>
             <field name="customer_rank">1</field>
         </record>
 
-        <!-- Commission Product for Purchase Orders -->
+        <!-- Commission Product -->
         <record id="commission_service_product" model="product.product">
             <field name="name">Commission Service</field>
             <field name="detailed_type">service</field>
@@ -47,7 +47,6 @@
             <field name="standard_price">0.0</field>
             <field name="sale_ok">False</field>
             <field name="purchase_ok">True</field>
-            <field name="description_sale">Service product for commission payments</field>
         </record>
     </data>
 </odoo>

@@ -1,5 +1,4 @@
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 import logging
 
@@ -10,23 +9,43 @@ class SaleOrder(models.Model):
 
     # Commission fields
     consultant_id = fields.Many2one('res.partner', string="Consultant")
+    consultant_commission_type = fields.Selection([
+        ('fixed', 'Fixed'),
+        ('percent_unit_price', 'Percentage of Unit Price'),
+        ('percent_untaxed_total', 'Percentage of Untaxed Total')
+    ], string="Consultant Commission Type", default='percent_untaxed_total')
     consultant_comm_percentage = fields.Float(string="Consultant Commission (%)", default=0.0)
     salesperson_commission = fields.Monetary(string="Consultant Commission Amount", compute="_compute_commissions", store=True)
 
     manager_id = fields.Many2one('res.partner', string="Manager")
+    manager_commission_type = fields.Selection([
+        ('fixed', 'Fixed'),
+        ('percent_unit_price', 'Percentage of Unit Price'),
+        ('percent_untaxed_total', 'Percentage of Untaxed Total')
+    ], string="Manager Commission Type", default='percent_untaxed_total')
     manager_comm_percentage = fields.Float(string="Manager Commission (%)", default=0.0)
     manager_commission = fields.Monetary(string="Manager Commission Amount", compute="_compute_commissions", store=True)
 
     director_id = fields.Many2one('res.partner', string="Director")
+    director_commission_type = fields.Selection([
+        ('fixed', 'Fixed'),
+        ('percent_unit_price', 'Percentage of Unit Price'),
+        ('percent_untaxed_total', 'Percentage of Untaxed Total')
+    ], string="Director Commission Type", default='percent_untaxed_total')
     director_comm_percentage = fields.Float(string="Director Commission (%)", default=3.0)
     director_commission = fields.Monetary(string="Director Commission Amount", compute="_compute_commissions", store=True)
 
     # Second Agent fields
     second_agent_id = fields.Many2one('res.partner', string="Second Agent")
+    second_agent_commission_type = fields.Selection([
+        ('fixed', 'Fixed'),
+        ('percent_unit_price', 'Percentage of Unit Price'),
+        ('percent_untaxed_total', 'Percentage of Untaxed Total')
+    ], string="Second Agent Commission Type", default='percent_untaxed_total')
     second_agent_comm_percentage = fields.Float(string="Second Agent Commission (%)", default=0.0)
     second_agent_commission = fields.Monetary(string="Second Agent Commission Amount", compute="_compute_commissions", store=True)
 
-    # Extended Commission Structure - External Commissions
+    # Extended Commission Structure
     broker_partner_id = fields.Many2one('res.partner', string="Broker")
     broker_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
@@ -63,7 +82,7 @@ class SaleOrder(models.Model):
     other_external_rate = fields.Float(string="Other External Rate")
     other_external_amount = fields.Monetary(string="Other External Commission", compute="_compute_commissions", store=True)
 
-    # Extended Commission Structure - Internal Commissions
+    # Internal Commissions
     agent1_partner_id = fields.Many2one('res.partner', string="Agent 1")
     agent1_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
@@ -109,14 +128,14 @@ class SaleOrder(models.Model):
     company_share = fields.Monetary(string="Company Share", compute="_compute_commissions", store=True)
     net_company_share = fields.Monetary(string="Net Company Share", compute="_compute_commissions", store=True)
 
-    # Sales Value field for commission computation
-    sales_value = fields.Monetary(string="Sales Value", compute="_compute_sales_value", store=True)
-
     # Related fields
     purchase_order_ids = fields.One2many('purchase.order', 'origin_so_id', string="Generated Purchase Orders")
     purchase_order_count = fields.Integer(string="PO Count", compute="_compute_purchase_order_count")
-    purchase_order_total_amount = fields.Monetary(string="Total PO Amount", compute="_compute_purchase_order_count", 
-                                                 help="Total amount of all commission purchase orders")
+    purchase_order_total_amount = fields.Monetary(
+        string="Total PO Amount", 
+        compute="_compute_purchase_order_count", 
+        help="Total amount of all commission purchase orders"
+    )
     commission_processed = fields.Boolean(string="Commissions Processed", default=False)
     commission_status = fields.Selection([
         ('draft', 'Draft'),
@@ -128,7 +147,6 @@ class SaleOrder(models.Model):
     def _compute_purchase_order_count(self):
         for order in self:
             order.purchase_order_count = len(order.purchase_order_ids)
-            # Calculate total amount of commission purchase orders
             order.purchase_order_total_amount = sum(
                 po.amount_total for po in order.purchase_order_ids if po.state != 'cancel'
             )
@@ -140,7 +158,6 @@ class SaleOrder(models.Model):
                 raise ValidationError("Only one order line is allowed per sale order for commission clarity.")
 
     def _check_partner_po_cancellation_required(self, partner_id):
-        """Check if partner has existing POs that need cancellation before new commission calculation."""
         if not partner_id:
             return True
         
@@ -151,7 +168,6 @@ class SaleOrder(models.Model):
         ])
         
         if existing_pos:
-            # Check if there are any cancelled POs for this partner (allowing update)
             cancelled_pos = self.env['purchase.order'].search([
                 ('partner_id', '=', partner_id.id),
                 ('origin_so_id', '=', self.id),
@@ -168,41 +184,20 @@ class SaleOrder(models.Model):
         return True
 
     def _check_po_creation_constraints(self):
-        """Check if new PO creation is allowed based on cancellation logic."""
         self.ensure_one()
-        
-        # Get all commission partners
         commission_partners = []
         
-        # External partners
-        if self.broker_partner_id:
-            commission_partners.append(self.broker_partner_id)
-        if self.referrer_partner_id:
-            commission_partners.append(self.referrer_partner_id)
-        if self.cashback_partner_id:
-            commission_partners.append(self.cashback_partner_id)
-        if self.other_external_partner_id:
-            commission_partners.append(self.other_external_partner_id)
+        # Collect all commission partners
+        partner_fields = [
+            'broker_partner_id', 'referrer_partner_id', 'cashback_partner_id', 'other_external_partner_id',
+            'agent1_partner_id', 'agent2_partner_id', 'manager_partner_id', 'director_partner_id',
+            'consultant_id', 'manager_id', 'director_id', 'second_agent_id'
+        ]
         
-        # Internal partners
-        if self.agent1_partner_id:
-            commission_partners.append(self.agent1_partner_id)
-        if self.agent2_partner_id:
-            commission_partners.append(self.agent2_partner_id)
-        if self.manager_partner_id:
-            commission_partners.append(self.manager_partner_id)
-        if self.director_partner_id:
-            commission_partners.append(self.director_partner_id)
-        
-        # Legacy partners
-        if self.consultant_id:
-            commission_partners.append(self.consultant_id)
-        if self.manager_id:
-            commission_partners.append(self.manager_id)
-        if self.director_id:
-            commission_partners.append(self.director_id)
-        if self.second_agent_id:
-            commission_partners.append(self.second_agent_id)
+        for field in partner_fields:
+            partner = getattr(self, field)
+            if partner and partner not in commission_partners:
+                commission_partners.append(partner)
         
         # Check each partner for existing POs
         for partner in commission_partners:
@@ -213,7 +208,6 @@ class SaleOrder(models.Model):
             ])
             
             if existing_pos and not self.commission_processed:
-                # Allow creation only if there are cancelled POs (indicating updates are allowed)
                 cancelled_pos = self.env['purchase.order'].search([
                     ('partner_id', '=', partner.id),
                     ('origin_so_id', '=', self.id),
@@ -229,62 +223,82 @@ class SaleOrder(models.Model):
         
         return True
 
-    def _calculate_commission_amount(self, rate, commission_type, order):
+    def _calculate_commission_amount(self, rate, commission_type):
         if commission_type == 'fixed':
             return rate
         elif commission_type == 'percent_unit_price':
-            if order.order_line:
-                return (rate / 100.0) * order.order_line[0].price_unit
+            if self.order_line:
+                return (rate / 100.0) * self.order_line[0].price_unit
             return 0.0
         elif commission_type == 'percent_untaxed_total':
-            return (rate / 100.0) * order.amount_untaxed
+            return (rate / 100.0) * self.amount_untaxed
         return 0.0
 
-    @api.depends('amount_total', 'consultant_comm_percentage', 'manager_comm_percentage', 
-                 'director_comm_percentage', 'second_agent_comm_percentage',
-                 'broker_rate', 'broker_commission_type', 'referrer_rate', 'referrer_commission_type',
-                 'cashback_rate', 'cashback_commission_type', 'other_external_rate', 'other_external_commission_type',
-                 'agent1_rate', 'agent1_commission_type', 'agent2_rate', 'agent2_commission_type',
-                 'manager_rate', 'manager_commission_type', 'director_rate', 'director_commission_type',
-                 'order_line.price_unit', 'order_line.price_subtotal', 'amount_untaxed')
+    @api.depends('amount_total', 'amount_untaxed', 'order_line.price_unit', 'order_line.price_subtotal')
     def _compute_commissions(self):
-        """Compute commission amounts and company shares."""
         for order in self:
-            base_amount = order.amount_total
-
-            # Legacy commission calculations (removed default computation to prevent conflicts)
-            # Only calculate if explicitly set by user
-            if order.consultant_id and order.consultant_comm_percentage > 0:
-                order.salesperson_commission = (order.consultant_comm_percentage / 100) * base_amount
-            else:
-                order.salesperson_commission = 0.0
+            # Legacy commission calculations
+            order.salesperson_commission = order._calculate_commission_amount(
+                order.consultant_comm_percentage, 
+                order.consultant_commission_type
+            ) if order.consultant_id else 0.0
                 
-            if order.manager_id and order.manager_comm_percentage > 0:
-                order.manager_commission = (order.manager_comm_percentage / 100) * base_amount
-            else:
-                order.manager_commission = 0.0
+            order.manager_commission = order._calculate_commission_amount(
+                order.manager_comm_percentage, 
+                order.manager_commission_type
+            ) if order.manager_id else 0.0
                 
-            if order.second_agent_id and order.second_agent_comm_percentage > 0:
-                order.second_agent_commission = (order.second_agent_comm_percentage / 100) * base_amount
-            else:
-                order.second_agent_commission = 0.0
+            order.second_agent_commission = order._calculate_commission_amount(
+                order.second_agent_comm_percentage, 
+                order.second_agent_commission_type
+            ) if order.second_agent_id else 0.0
                 
-            if order.director_id and order.director_comm_percentage > 0:
-                order.director_commission = (order.director_comm_percentage / 100) * base_amount
-            else:
-                order.director_commission = 0.0
+            order.director_commission = order._calculate_commission_amount(
+                order.director_comm_percentage, 
+                order.director_commission_type
+            ) if order.director_id else 0.0
 
-            # External commissions (modern structure)
-            order.broker_amount = self._calculate_commission_amount(order.broker_rate, order.broker_commission_type, order)
-            order.referrer_amount = self._calculate_commission_amount(order.referrer_rate, order.referrer_commission_type, order)
-            order.cashback_amount = self._calculate_commission_amount(order.cashback_rate, order.cashback_commission_type, order)
-            order.other_external_amount = self._calculate_commission_amount(order.other_external_rate, order.other_external_commission_type, order)
+            # External commissions
+            order.broker_amount = order._calculate_commission_amount(
+                order.broker_rate, 
+                order.broker_commission_type
+            ) if order.broker_partner_id else 0.0
+            
+            order.referrer_amount = order._calculate_commission_amount(
+                order.referrer_rate, 
+                order.referrer_commission_type
+            ) if order.referrer_partner_id else 0.0
+            
+            order.cashback_amount = order._calculate_commission_amount(
+                order.cashback_rate, 
+                order.cashback_commission_type
+            ) if order.cashback_partner_id else 0.0
+            
+            order.other_external_amount = order._calculate_commission_amount(
+                order.other_external_rate, 
+                order.other_external_commission_type
+            ) if order.other_external_partner_id else 0.0
 
-            # Internal commissions (modern structure)
-            order.agent1_amount = self._calculate_commission_amount(order.agent1_rate, order.agent1_commission_type, order)
-            order.agent2_amount = self._calculate_commission_amount(order.agent2_rate, order.agent2_commission_type, order)
-            order.manager_amount = self._calculate_commission_amount(order.manager_rate, order.manager_commission_type, order)
-            order.director_amount = self._calculate_commission_amount(order.director_rate, order.director_commission_type, order)
+            # Internal commissions
+            order.agent1_amount = order._calculate_commission_amount(
+                order.agent1_rate, 
+                order.agent1_commission_type
+            ) if order.agent1_partner_id else 0.0
+            
+            order.agent2_amount = order._calculate_commission_amount(
+                order.agent2_rate, 
+                order.agent2_commission_type
+            ) if order.agent2_partner_id else 0.0
+            
+            order.manager_amount = order._calculate_commission_amount(
+                order.manager_rate, 
+                order.manager_commission_type
+            ) if order.manager_partner_id else 0.0
+            
+            order.director_amount = order._calculate_commission_amount(
+                order.director_rate, 
+                order.director_commission_type
+            ) if order.director_partner_id else 0.0
 
             # Calculate totals
             order.total_external_commission_amount = (
@@ -304,35 +318,33 @@ class SaleOrder(models.Model):
             )
 
             # Company share calculations
-            order.company_share = base_amount - order.total_commission_amount
+            order.company_share = order.amount_total - order.total_commission_amount
             order.net_company_share = order.company_share
 
-    @api.depends('amount_total')
-    def _compute_sales_value(self):
-        for order in self:
-            order.sales_value = order.amount_total
-
-    @api.constrains('consultant_comm_percentage', 'manager_comm_percentage', 
-                    'second_agent_comm_percentage', 'director_comm_percentage')
+    @api.constrains(
+        'consultant_comm_percentage', 'manager_comm_percentage', 
+        'second_agent_comm_percentage', 'director_comm_percentage'
+    )
     def _check_commission_percentages(self):
-        """Validate commission percentages."""
         for order in self:
-            # Check legacy percentages
-            total_percentage = (order.consultant_comm_percentage + 
-                              order.manager_comm_percentage + 
-                              order.second_agent_comm_percentage + 
-                              order.director_comm_percentage)
+            total_percentage = (
+                order.consultant_comm_percentage + 
+                order.manager_comm_percentage + 
+                order.second_agent_comm_percentage + 
+                order.director_comm_percentage
+            )
             
             if total_percentage > 100:
                 raise ValidationError("Total commission percentages cannot exceed 100%")
             
-            for percentage in [order.consultant_comm_percentage, order.manager_comm_percentage,
-                             order.second_agent_comm_percentage, order.director_comm_percentage]:
+            for percentage in [
+                order.consultant_comm_percentage, order.manager_comm_percentage,
+                order.second_agent_comm_percentage, order.director_comm_percentage
+            ]:
                 if percentage < 0:
                     raise ValidationError("Commission percentages cannot be negative")
 
     def _get_or_create_commission_product(self, commission_type="Sales Commission"):
-        """Get or create commission product."""
         product = self.env['product.product'].search([
             ('name', '=', commission_type),
             ('type', '=', 'service')
@@ -354,14 +366,12 @@ class SaleOrder(models.Model):
         return product
 
     def _prepare_purchase_order_vals(self, partner, product, amount, description):
-        """Prepare values for purchase order creation."""
         if not partner:
             raise UserError("Partner is required for purchase order creation")
         
         if amount <= 0:
             raise UserError("Commission amount must be greater than zero")
         
-        # Prepare base values
         vals = {
             'partner_id': partner.id,
             'date_order': fields.Date.today(),
@@ -381,17 +391,12 @@ class SaleOrder(models.Model):
             })]
         }
         
-        # Add vendor reference from customer reference if available
         if self.client_order_ref:
             vals['partner_ref'] = self.client_order_ref
-            _logger.info(
-                f"Adding vendor reference '{self.client_order_ref}' to commission PO for {partner.name}"
-            )
         
         return vals
 
     def _get_all_commission_partners(self):
-        """Get all commission partner IDs from this sale order."""
         self.ensure_one()
         partner_ids = []
         
@@ -425,10 +430,9 @@ class SaleOrder(models.Model):
         if self.director_partner_id:
             partner_ids.append(self.director_partner_id.id)
         
-        return list(set(partner_ids))  # Remove duplicates
+        return list(set(partner_ids))
 
     def action_view_commission_pos(self):
-        """Action to view commission purchase orders."""
         self.ensure_one()
         action = self.env.ref('purchase.purchase_form_action').read()[0]
         
@@ -443,13 +447,12 @@ class SaleOrder(models.Model):
             }
         
         action['context'].update({
-            'create': False,  # Don't allow creating POs from this view
+            'create': False,
         })
         
         return action
 
     def _get_commission_entries(self):
-        """Get all commission entries that need purchase orders."""
         self.ensure_one()
         commissions = []
 
@@ -543,7 +546,6 @@ class SaleOrder(models.Model):
         return commissions
 
     def _create_commission_purchase_orders(self):
-        """Create purchase orders for all applicable commissions."""
         self.ensure_one()
         
         if self.commission_processed:
@@ -552,21 +554,17 @@ class SaleOrder(models.Model):
         if self.amount_total <= 0:
             raise UserError("Cannot process commissions for orders with zero or negative amounts.")
         
-        # Check PO creation constraints (cancellation logic)
+        # Check PO creation constraints
         self._check_po_creation_constraints()
         
         # Update status
         self.commission_status = 'calculated'
         
         try:
-            # Get commission product
             commission_product = self._get_or_create_commission_product()
             created_pos = []
-
-            # Get all commission entries
             commissions = self._get_commission_entries()
 
-            # Create purchase orders
             for commission in commissions:
                 po_vals = self._prepare_purchase_order_vals(
                     partner=commission['partner'],
@@ -582,7 +580,7 @@ class SaleOrder(models.Model):
             self.commission_processed = True
             
             if created_pos:
-                message = f"Successfully created {len(created_pos)} commission purchase orders with total amount {sum(po.amount_total for po in created_pos)}"
+                message = f"Successfully created {len(created_pos)} commission purchase orders"
                 self.message_post(body=message)
                 return {
                     'type': 'ir.actions.client',
@@ -604,13 +602,11 @@ class SaleOrder(models.Model):
             raise UserError(f"Failed to process commissions: {str(e)}")
 
     def action_process_commissions(self):
-        """Manual action to process commissions."""
         for order in self:
             order._create_commission_purchase_orders()
         return True
 
     def action_confirm_commissions(self):
-        """Confirm commissions: set status to 'confirmed' if commissions are processed."""
         for order in self:
             if not order.commission_processed:
                 raise UserError("You must calculate/process commissions before confirming.")
@@ -619,9 +615,7 @@ class SaleOrder(models.Model):
         return True
 
     def action_reset_commissions(self):
-        """Reset commission status to draft and allow recalculation."""
         for order in self:
-            # Check if any POs are already confirmed
             confirmed_pos = order.purchase_order_ids.filtered(
                 lambda po: po.state not in ['draft', 'cancel']
             )
@@ -631,7 +625,6 @@ class SaleOrder(models.Model):
                     f"{', '.join(confirmed_pos.mapped('name'))}"
                 )
             
-            # Cancel and delete draft POs
             draft_pos = order.purchase_order_ids.filtered(lambda po: po.state == 'draft')
             if draft_pos:
                 draft_pos.button_cancel()
@@ -643,7 +636,6 @@ class SaleOrder(models.Model):
         return True
 
     def action_cancel_partner_pos(self, partner_id):
-        """Cancel all purchase orders for a specific partner (used for commission updates)."""
         self.ensure_one()
         if not partner_id:
             raise UserError("Partner ID is required to cancel purchase orders.")
@@ -653,9 +645,8 @@ class SaleOrder(models.Model):
         )
         
         if not partner_pos:
-            return True  # No POs to cancel
+            return True
         
-        # Check if any are already confirmed
         confirmed_pos = partner_pos.filtered(lambda po: po.state not in ['draft', 'sent'])
         if confirmed_pos:
             raise UserError(
@@ -664,23 +655,19 @@ class SaleOrder(models.Model):
                 f"Please handle these manually through the Purchase module."
             )
         
-        # Cancel draft/sent POs
         cancelable_pos = partner_pos.filtered(lambda po: po.state in ['draft', 'sent'])
         if cancelable_pos:
             cancelable_pos.button_cancel()
             self.message_post(
                 body=f"Cancelled {len(cancelable_pos)} purchase orders for partner "
-                     f"{self.env['res.partner'].browse(partner_id).name}: "
-                     f"{', '.join(cancelable_pos.mapped('name'))}"
+                     f"{self.env['res.partner'].browse(partner_id).name}"
             )
         
         return True
 
     def action_confirm(self):
-        """Override Sale Order confirmation."""
-        result = super(SaleOrder, self).action_confirm()
+        result = super().action_confirm()
         
-        # Auto-process commissions on confirmation if configured
         auto_process = self.env['ir.config_parameter'].sudo().get_param(
             'commission_ax.auto_process_on_confirm', default=False
         )
@@ -696,8 +683,6 @@ class SaleOrder(models.Model):
         return result
 
     def write(self, vals):
-        """Override write to recompute commissions when relevant fields change."""
-        # Check partner PO cancellation requirements before updating commission fields
         commission_partner_fields = [
             'broker_partner_id', 'referrer_partner_id', 'cashback_partner_id', 
             'other_external_partner_id', 'agent1_partner_id', 'agent2_partner_id',
@@ -705,7 +690,6 @@ class SaleOrder(models.Model):
             'consultant_id', 'manager_id', 'director_id', 'second_agent_id'
         ]
         
-        # Check if any commission partner fields are being changed
         if any(field in vals for field in commission_partner_fields):
             for order in self:
                 for field in commission_partner_fields:
@@ -713,19 +697,17 @@ class SaleOrder(models.Model):
                         old_partner_id = getattr(order, field, False)
                         new_partner_id = vals.get(field)
                         
-                        # If partner is changing and there are existing POs, check cancellation requirement
                         if old_partner_id and old_partner_id != new_partner_id:
                             old_partner = self.env['res.partner'].browse(old_partner_id)
                             order._check_partner_po_cancellation_required(old_partner)
         
-        result = super(SaleOrder, self).write(vals)
+        result = super().write(vals)
         
-        # Reset commission processing if commission-related fields are changed
         commission_fields = [
-            'consultant_id', 'consultant_comm_percentage',
-            'manager_id', 'manager_comm_percentage',
-            'second_agent_id', 'second_agent_comm_percentage',
-            'director_id', 'director_comm_percentage',
+            'consultant_id', 'consultant_comm_percentage', 'consultant_commission_type',
+            'manager_id', 'manager_comm_percentage', 'manager_commission_type',
+            'second_agent_id', 'second_agent_comm_percentage', 'second_agent_commission_type',
+            'director_id', 'director_comm_percentage', 'director_commission_type',
             'broker_partner_id', 'broker_rate', 'broker_commission_type',
             'referrer_partner_id', 'referrer_rate', 'referrer_commission_type',
             'cashback_partner_id', 'cashback_rate', 'cashback_commission_type',
@@ -744,15 +726,13 @@ class SaleOrder(models.Model):
                         'commission_status': 'draft'
                     })
                     order.message_post(
-                        body="Commission settings changed. Please recalculate commissions. "
-                             "Note: If you changed partner assignments, ensure related POs are cancelled first."
+                        body="Commission settings changed. Please recalculate commissions."
                     )
         
         return result
 
     @api.model
     def _cron_auto_process_commissions(self):
-        """Scheduled action to auto-process commissions for invoiced orders."""
         orders = self.search([
             ('state', 'in', ['sale', 'done']),
             ('commission_processed', '=', False),
@@ -769,7 +749,6 @@ class SaleOrder(models.Model):
                     _logger.error(f"Failed to auto-process commissions for {order.name}: {str(e)}")
 
     def unlink(self):
-        """Override unlink to handle related purchase orders."""
         for order in self:
             if order.purchase_order_ids:
                 confirmed_pos = order.purchase_order_ids.filtered(
@@ -783,4 +762,4 @@ class SaleOrder(models.Model):
                 draft_pos = order.purchase_order_ids.filtered(lambda po: po.state == 'draft')
                 draft_pos.button_cancel()
         
-        return super(SaleOrder, self).unlink()
+        return super().unlink()

@@ -415,6 +415,19 @@
                                     </div>
                                     <div class="osus-logo-section">
                                         <img src="https://osusproperties.com/wp-content/uploads/2025/02/OSUS-logotype-2.png" alt="OSUS Properties" class="osus-logo"/>
+                                        <t t-if="doc.qr_code">
+                                            <div style="margin-top:12px;text-align:center;">
+                                                <img t-att-src="'data:image/png;base64,' + doc.qr_code.decode('utf-8')" style="width:70px;height:70px;border:2px solid #8B1538;border-radius:6px;"/>
+                                                <div style="font-size:10px;color:#8B1538;margin-top:4px;">Scan to verify</div>
+                                            </div>
+                                        </t>
+                                        <t t-if="doc.qr_code">
+                                            <div style="font-size:9px;color:#666;text-align:center;margin-top:2px;word-break:break-all;">
+                                                <span>Verification URL:</span>
+                                                <t t-set="base_url" t-value="ir_config_parameter.sudo().get_param('web.base.url', '')"/>
+                                                <span t-esc="base_url + '/payment/verify/' + str(doc.id)"/>
+                                            </div>
+                                        </t>
                                     </div>
                                 </div>
                             </div>

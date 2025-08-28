@@ -250,10 +250,13 @@ class AccountPayment(models.Model):
             if record.qr_in_report and record.id:
                 try:
                     base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-                    if base_url:
+                    if base_url and record.id:
                         qr_data = f"{base_url}/payment/verify/{record.id}"
-                    else:
+                    elif record.id:
                         qr_data = f"Payment:{record.id}"
+                    else:
+                        record.qr_code = False
+                        continue
                     record.qr_code = record._generate_qr_image(qr_data)
                 except Exception as e:
                     _logger.error("Error generating QR code for payment %s: %s", record.voucher_number or 'Draft', e)

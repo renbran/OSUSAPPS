@@ -163,6 +163,8 @@ class AccountMove(models.Model):
 
     def generate_qr_code_invoice(self):
         """Generate QR code for invoice/bill verification"""
+        if not self.id:
+            return False
         try:
             # Create comprehensive verification data
             qr_data = {
@@ -252,7 +254,7 @@ class AccountMove(models.Model):
     def _compute_qr_code_invoice(self):
         """Compute QR code for invoice/bill"""
         for record in self:
-            if record.move_type in ['in_invoice', 'in_refund', 'out_invoice', 'out_refund'] and record.name:
+            if record.move_type in ['in_invoice', 'in_refund', 'out_invoice', 'out_refund'] and record.name and record.id:
                 record.qr_code_invoice = record.generate_qr_code_invoice()
             else:
                 record.qr_code_invoice = False
