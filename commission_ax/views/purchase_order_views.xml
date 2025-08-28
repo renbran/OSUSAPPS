@@ -8,23 +8,23 @@
         <field name="arch" type="xml">
             <!-- Add commission fields in the main form -->
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="description" string="Commission Description"
-                       invisible="not is_commission_po"/>
-                <field name="origin_so_id" readonly="1" 
-                       invisible="not is_commission_po"
-                       options="{'no_create': True, 'no_open': True}"/>
-                <field name="commission_posted" readonly="1"
-                       invisible="not is_commission_po"/>
-                <field name="is_commission_po" invisible="1"/>
+          <field name="description" string="Commission Description"
+              invisible="['|', ('is_commission_po', '=', False), ('is_commission_po', '=', '')]"/>
+          <field name="origin_so_id" readonly="1" 
+              invisible="['|', ('is_commission_po', '=', False), ('is_commission_po', '=', '')]"
+              options="{'no_create': True, 'no_open': True}"/>
+          <field name="commission_posted" readonly="1"
+              invisible="['|', ('is_commission_po', '=', False), ('is_commission_po', '=', '')]"/>
+          <field name="is_commission_po" invisible="1"/>
             </xpath>
             
             <!-- Add button to view origin sale order -->
             <xpath expr="//div[@name='button_box']" position="inside">
-                <button type="object" 
-                        name="action_view_origin_sale_order"
-                        class="oe_stat_button" 
-                        icon="fa-shopping-cart"
-                        invisible="not origin_so_id">
+        <button type="object" 
+            name="action_view_origin_sale_order"
+            class="oe_stat_button" 
+            icon="fa-shopping-cart"
+            invisible="['|', ('origin_so_id', '=', False), ('origin_so_id', '=', '')]">
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_text">Origin</span>
                         <span class="o_stat_text">Sale Order</span>
