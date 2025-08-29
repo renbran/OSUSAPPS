@@ -49,6 +49,17 @@ class SaleOrder(models.Model):
         }
     _inherit = 'sale.order'
 
+    project_id = fields.Many2one(
+        'project.project',
+        string='Project',
+        help='Related project for this sale order',
+    )
+
+    unit_id = fields.Many2one(
+        'project.unit',
+        string='Unit',
+        help='Related unit for this sale order',
+    )
     # [Previous fields remain the same - keeping all existing fields]
     # Legacy Commission fields with enhanced commission type logic
     consultant_id = fields.Many2one('res.partner', string="Consultant")

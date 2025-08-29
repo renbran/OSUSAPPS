@@ -8,6 +8,17 @@ class PurchaseOrder(models.Model):
     is_commission_po = fields.Boolean(string="Is Commission Purchase Order", default=False)
     _inherit = 'purchase.order'
 
+    project_id = fields.Many2one(
+        'project.project',
+        string='Project',
+        help='Related project for this purchase order',
+    )
+
+    unit_id = fields.Many2one(
+        'project.unit',
+        string='Unit',
+        help='Related unit for this purchase order',
+    )
     description = fields.Char(string="Description")
     origin_so_id = fields.Many2one('sale.order', string="Source Sale Order", readonly=True)
     commission_posted = fields.Boolean(string="Commission Posted", default=False)
