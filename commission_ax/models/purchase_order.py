@@ -5,6 +5,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class PurchaseOrder(models.Model):
+    is_commission_po = fields.Boolean(string="Is Commission Purchase Order", default=False)
     _inherit = 'purchase.order'
 
     description = fields.Char(string="Description")

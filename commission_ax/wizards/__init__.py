@@ -1,1 +1,1 @@
-from . import commission_wizards
+from . import commission_report_wizard

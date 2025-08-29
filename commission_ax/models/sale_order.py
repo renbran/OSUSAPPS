@@ -1,10 +1,52 @@
 from odoo import models, fields, api
-from odoo.exceptions import UserError, ValidationError, Warning
+from odoo.exceptions import UserError, ValidationError
 import logging
 
-_logger = logging.getLogger(__name__)
-
 class SaleOrder(models.Model):
+    project_id = fields.Many2one('project.project', string='Project')
+    purchase_order_total_amount = fields.Monetary(
+        string="Total Purchase Order Amount",
+        compute="_compute_purchase_order_total_amount",
+        store=True,
+        currency_field='currency_id'
+    )
+
+    def _compute_purchase_order_total_amount(self):
+        for order in self:
+            total = sum(order.purchase_order_ids.mapped('amount_total'))
+            order.purchase_order_total_amount = total
+    def action_confirm_commissions(self):
+        """Confirm calculated commissions."""
+        # Implement your business logic here
+        self.commission_status = 'confirmed'
+        self.message_post(body="Commissions confirmed.")
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Commissions Confirmed',
+                'message': 'Commissions have been confirmed.',
+                'type': 'success',
+            }
+        }
+
+    def action_reset_commissions(self):
+        """Reset commission status to draft and cancel related purchase orders."""
+        self.commission_status = 'draft'
+        # Cancel related draft purchase orders
+        draft_pos = self.purchase_order_ids.filtered(lambda po: po.state == 'draft')
+        for po in draft_pos:
+            po.button_cancel()
+        self.message_post(body="Commission status reset to draft. Related draft purchase orders cancelled.")
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Reset to Draft',
+                'message': 'Commission status reset to draft. Related draft purchase orders cancelled.',
+                'type': 'success',
+            }
+        }
     _inherit = 'sale.order'
 
     # [Previous fields remain the same - keeping all existing fields]

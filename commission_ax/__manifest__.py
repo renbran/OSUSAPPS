@@ -47,13 +47,12 @@ Technical Features:
     'data': [
         'security/ir.model.access.csv',
         'data/cron_data.xml',
+    'data/commission_report_wizard_action.xml',
+    'data/commission_purchase_orders_action.xml',
         'views/sale_order.xml',
         'views/purchase_order.xml',
         'views/commission_wizard_views.xml',
     ],
-    'external_dependencies': {
-        'python': ['reportlab'],
-    },
     'demo': [],
     'installable': True,
     'auto_install': False,
