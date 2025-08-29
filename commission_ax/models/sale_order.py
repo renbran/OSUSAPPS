@@ -1,3 +1,8 @@
+# Add logger import at the top of the file
+import logging
+
+# Define logger for this module
+_logger = logging.getLogger(__name__)
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 import logging

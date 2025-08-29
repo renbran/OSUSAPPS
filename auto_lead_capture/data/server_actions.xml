@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Auto-assign Social Media Leads -->
+        <record id="action_auto_assign_social_leads" model="ir.actions.server">
+            <field name="name">Auto-assign Social Media Leads</field>
+            <field name="model_id" ref="model_crm_lead"/>
+            <field name="binding_model_id" ref="model_crm_lead"/>
+            <field name="state">code</field>
+            <field name="code">
+# Auto-assign leads based on social platform
+if record.social_platform and not record.user_id:
+    # Get configuration for the platform
+    config = env['social.config'].search([('platform_name', '=', record.social_platform)], limit=1)
+    if config and config.default_user_id:
+        record.user_id = config.default_user_id
+    else:
+        # Round-robin assignment to sales team
+        sales_team = env['crm.team'].search([('member_ids', '!=', False)], limit=1)
+        if sales_team and sales_team.member_ids:
+            # Simple round-robin based on lead count
+            members = sales_team.member_ids
+            lead_counts = [(member, env['crm.lead'].search_count([('user_id', '=', member.id)])) for member in members]
+            assigned_user = min(lead_counts, key=lambda x: x[1])[0]
+            record.user_id = assigned_user
+            </field>
+        </record>
+
+        <!-- Create Activity for New Social Lead -->
+        <record id="action_create_activity_social_lead" model="ir.actions.server">
+            <field name="name">Create Activity for Social Lead</field>
+            <field name="model_id" ref="model_crm_lead"/>
+            <field name="binding_model_id" ref="model_crm_lead"/>
+            <field name="state">code</field>
+            <field name="code">
+# Create follow-up activity for social media leads
+if record.social_platform and record.user_id:
+    activity_type_map = {
+        'whatsapp': env.ref('social_lead_capture.mail_activity_type_whatsapp'),
+        'facebook': env.ref('social_lead_capture.mail_activity_type_facebook'),
+        'instagram': env.ref('social_lead_capture.mail_activity_type_instagram'),
+        'telegram': env.ref('social_lead_capture.mail_activity_type_telegram'),
+    }
+    
+    activity_type = activity_type_map.get(record.social_platform)
+    if activity_type:
+        env['mail.activity'].create({
+            'activity_type_id': activity_type.id,
+            'res_id': record.id,
+            'res_model_id': env.ref('model_crm_lead').id,
+            'user_id': record.user_id.id,
+            'summary': f'Follow up on {record.social_platform.title()} lead',
+            'note': f'New lead received via {record.social_platform.title()}. Initial message: {record.description[:100]}...',
+        })
+            </field>
+        </record>
+
+        <!-- Automated Rules -->
+        <record id="rule_auto_assign_social_leads" model="base.automation">
+            <field name="name">Auto-assign Social Media Leads</field>
+            <field name="model_id" ref="model_crm_lead"/>
+            <field name="trigger">on_create</field>
+            <field name="filter_domain">[('social_platform', '!=', False), ('user_id', '=', False)]</field>
+            <field name="action_server_ids" eval="[(6, 0, [ref('action_auto_assign_social_leads')])]"/>
+        </record>
+
+        <record id="rule_create_activity_social_leads" model="base.automation">
+            <field name="name">Create Activity for Social Leads</field>
+            <field name="model_id" ref="model_crm_lead"/>
+            <field name="trigger">on_create</field>
+            <field name="filter_domain">[('social_platform', '!=', False)]</field>
+            <field name="action_server_ids" eval="[(6, 0, [ref('action_create_activity_social_lead')])]"/>
+        </record>
+    </data>
+</odoo>

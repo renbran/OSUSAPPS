@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Social Lead Dashboard View -->
+        <record id="view_social_lead_dashboard" model="ir.ui.view">
+            <field name="name">social.lead.dashboard</field>
+            <field name="model">crm.lead</field>
+            <field name="arch" type="xml">
+                <kanban class="o_social_lead_dashboard">
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="o_social_lead_card">
+                                <field name="name"/>
+                                <field name="social_platform"/>
+                                <field name="social_engagement_score"/>
+                                <field name="platform_followers"/>
+                                <field name="last_message_date"/>
+                                <field name="social_messages_count"/>
+                                <div>
+                                    <t t-if="record.social_engagement_score.raw_value &gt; 50">
+                                        <span class="badge badge-success">High Engagement</span>
+                                    </t>
+                                    <t t-elif="record.social_engagement_score.raw_value &gt; 20">
+                                        <span class="badge badge-warning">Medium Engagement</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="badge badge-secondary">Low Engagement</span>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+    </data>
+</odoo>

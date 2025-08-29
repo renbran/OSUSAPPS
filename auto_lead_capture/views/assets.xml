@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_backend" inherit_id="web.assets_backend">
+        <link rel="stylesheet" type="text/scss" href="/auto_lead_capture/static/src/scss/variables.scss"/>
+        <link rel="stylesheet" type="text/scss" href="/auto_lead_capture/static/src/scss/components/lead_capture_widget.scss"/>
+        <script type="text/javascript" src="/auto_lead_capture/static/src/js/components/lead_capture_widget.js"/>
+    </template>
+    <template id="assets_frontend" inherit_id="web.assets_frontend">
+        <link rel="stylesheet" type="text/scss" href="/auto_lead_capture/static/src/scss/frontend.scss"/>
+        <script type="text/javascript" src="/auto_lead_capture/static/src/js/frontend.js"/>
+    </template>
+</odoo>

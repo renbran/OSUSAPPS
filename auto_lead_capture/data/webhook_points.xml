@@ -1,0 +1,24 @@
+<odoo>
+    <data noupdate="1">
+        <!-- System Parameters for Webhook Configuration -->
+        <record id="param_webhook_secret_key" model="ir.config_parameter">
+            <field name="key">social.webhook.secret_key</field>
+            <field name="value">your-secret-webhook-key-change-this</field>
+        </record>
+
+        <record id="param_webhook_timeout" model="ir.config_parameter">
+            <field name="key">social.webhook.timeout</field>
+            <field name="value">30</field>
+        </record>
+
+        <record id="param_auto_response_delay" model="ir.config_parameter">
+            <field name="key">social.auto_response.delay</field>
+            <field name="value">60</field>
+        </record>
+
+        <record id="param_lead_scoring_enabled" model="ir.config_parameter">
+            <field name="key">social.lead_scoring.enabled</field>
+            <field name="value">True</field>
+        </record>
+    </data>
+</odoo>
