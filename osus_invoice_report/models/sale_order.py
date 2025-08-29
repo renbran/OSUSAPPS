@@ -30,13 +30,3 @@ class SaleOrder(models.Model):
         string='Buyer',
         tracking=True,
     )
-    project_id = fields.Many2one(
-        'product.template',
-        string='Project Name',
-        tracking=True,
-    )
-    unit_id = fields.Many2one(
-        'product.product',
-        string='Unit',
-        tracking=True,
-    )

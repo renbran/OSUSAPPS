@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_sale_order_commission,access_sale_order_commission,sale.model_sale_order,base.group_user,1,1,1,1
-access_purchase_order_commission,access_purchase_order_commission,purchase.model_purchase_order,base.group_user,1,1,1,1
+access_commission_report_generator,Commission Report Generator,model_commission_report_generator,base.group_user,1,1,1,1
+access_commission_report_wizard,Commission Report Wizard,model_commission_report_wizard,base.group_user,1,1,1,1
+access_commission_cancel_wizard,Commission Cancel Wizard,model_commission_cancel_wizard,base.group_user,1,1,1,1
+access_commission_draft_wizard,Commission Draft Wizard,model_commission_draft_wizard,base.group_user,1,1,1,1
