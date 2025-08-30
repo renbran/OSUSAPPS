@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="model_social_config" model="ir.model">
+        <field name="name">social.config</field>
+        <field name="model">social.config</field>
+        <field name="state">manual</field>
+    </record>
+    <record id="model_social_message_log" model="ir.model">
+        <field name="name">social.message.log</field>
+        <field name="model">social.message.log</field>
+        <field name="state">manual</field>
+    </record>
+    <record id="model_social_setup_wizard" model="ir.model">
+        <field name="name">social.setup.wizard</field>
+        <field name="model">social.setup.wizard</field>
+        <field name="state">manual</field>
+    </record>
+</odoo>

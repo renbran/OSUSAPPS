@@ -1,3 +1,5 @@
+from odoo import models, fields, api, _
+from odoo import SUPERUSER_ID
 from odoo import models, fields, api
 import requests
 import json

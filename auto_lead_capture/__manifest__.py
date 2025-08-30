@@ -24,6 +24,7 @@
     'website': 'https://yourcompany.com',
     'depends': ['base', 'crm', 'mail', 'website', 'utm'],
     'data': [
+        'data/models.xml',
         'security/ir.model.access.csv',
         'data/lead_sources.xml',
         'data/activity_types.xml',
