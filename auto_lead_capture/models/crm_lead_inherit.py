@@ -2,61 +2,55 @@ from odoo import models, fields, api
 
 class CrmLeadInherit(models.Model):
     _inherit = 'crm.lead'
-
-    # Social media specific fields
+    
+    # Social media fields
     social_platform = fields.Selection([
         ('whatsapp', 'WhatsApp'),
         ('facebook', 'Facebook'),
         ('instagram', 'Instagram'),
         ('telegram', 'Telegram'),
-        ('linkedin', 'LinkedIn'),
-        ('twitter', 'Twitter/X'),
     ], string='Social Platform')
     
-    social_username = fields.Char(string='Social Media Username')
-    message_thread_id = fields.Char(string='Message Thread ID')
-    social_profile_url = fields.Char(string='Social Profile URL')
+    social_message_ids = fields.One2many('social.message.log', 'lead_id', string='Social Messages')
+    social_message_count = fields.Integer(string='Messages Count', compute='_compute_social_message_count')
+    social_engagement_score = fields.Float(string='Social Engagement Score', default=0.0)
     
-    # Engagement tracking
-    social_messages_count = fields.Integer(string='Messages Count', compute='_compute_social_stats')
-    last_message_date = fields.Datetime(string='Last Message', compute='_compute_social_stats')
-    response_time_avg = fields.Float(string='Avg Response Time (hours)', compute='_compute_social_stats')
-    
-    # Lead scoring from social interactions
-    social_engagement_score = fields.Integer(string='Social Engagement Score', default=0)
-    platform_followers = fields.Integer(string='Followers Count')
-    
-    @api.depends('message_ids')
-    def _compute_social_stats(self):
+    @api.depends('social_message_ids')
+    def _compute_social_message_count(self):
         for lead in self:
-            social_messages = self.env['social.message.log'].search([('lead_id', '=', lead.id)])
-            lead.social_messages_count = len(social_messages)
-            lead.last_message_date = social_messages[0].create_date if social_messages else False
-            
-            # Calculate average response time
-            if social_messages:
-                # Logic for response time calculation
-                pass
-
+            lead.social_message_count = len(lead.social_message_ids)
+    
     def action_view_social_messages(self):
-        """Open social messages related to this lead"""
+        """Open social messages for this lead"""
         return {
-            'type': 'ir.actions.act_window',
             'name': 'Social Messages',
+            'type': 'ir.actions.act_window',
             'res_model': 'social.message.log',
             'view_mode': 'tree,form',
             'domain': [('lead_id', '=', self.id)],
-            'context': {'default_lead_id': self.id}
+            'context': {'default_lead_id': self.id},
         }
     
-    def send_whatsapp_message(self, message):
-        """Send WhatsApp message to lead"""
-        if not self.phone or self.social_platform != 'whatsapp':
-            return False
+    @api.model
+    def update_social_engagement_scores(self):
+        """Update engagement scores for all social leads (called by cron)"""
+        social_leads = self.search([('social_platform', '!=', False)])
+        for lead in social_leads:
+            # Simple scoring based on message count and recency
+            message_count = len(lead.social_message_ids)
+            recent_messages = lead.social_message_ids.filtered(
+                lambda m: (fields.Datetime.now() - m.create_date).days <= 7
+            )
             
-        config = self.env['social.config'].search([('platform_name', '=', 'whatsapp')], limit=1)
-        if not config:
-            return False
+            # Base score from message count
+            score = message_count * 10
             
-        # WhatsApp API call logic here
-        return self._send_whatsapp_via_api(config, message)
+            # Bonus for recent activity
+            score += len(recent_messages) * 20
+            
+            # Bonus for response speed (if any outgoing messages)
+            outgoing_messages = lead.social_message_ids.filtered(lambda m: m.message_type == 'outgoing')
+            if outgoing_messages:
+                score += 50
+            
+            lead.social_engagement_score = score

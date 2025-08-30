@@ -1,1 +1,2 @@
-# Init file for auto_lead_capture module
+from . import models
+from . import controllers
