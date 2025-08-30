@@ -2,8 +2,6 @@ from odoo import models, fields, api
 import json
 import logging
 
-_logger = logging.getLogger(__name__)
-
 class SocialMessageLog(models.Model):
     _name = 'social.message.log'
     _description = 'Social Media Message Log'

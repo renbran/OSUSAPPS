@@ -1,3 +1,5 @@
+from odoo import models, fields, api
+
 class SocialIntegration(models.Model):
     _name = 'social.integration'
     _description = 'Third-party Social Integrations'
