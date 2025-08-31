@@ -11,7 +11,7 @@
     Module complémentaire    """,
     'author': 'Odoo Tips',
     "website": "https://www.facebook.com/OdooTips/",
-    'depends': ['base', 'sale', 'purchase', 'stock'],
+    'depends': ['base', 'sale', 'purchase',],
     'images': ['images/main_screenshot.png'],
     'data': [],
     'installable': True,
