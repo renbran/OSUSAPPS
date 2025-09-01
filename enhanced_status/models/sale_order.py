@@ -4,32 +4,20 @@ from odoo.exceptions import AccessError, ValidationError
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    # Override the default state field behavior
-    state = fields.Selection([
+    # Custom stage field (separate from standard state)
+    custom_state = fields.Selection([
         ('draft', 'Draft'),
         ('documentation', 'Documentation'),
         ('calculation', 'Calculation'),
         ('approved', 'Approved'),
         ('completed', 'Completed'),
-        ('cancel', 'Cancelled'),
-    ], string='Status', readonly=True, copy=False, index=True,
-       tracking=True, default='draft')
+    ], string='Process Status', default='draft', tracking=True)
 
     # Stage management
     stage_id = fields.Many2one('sale.order.stage', string='Stage', 
                                tracking=True, index=True,
                                group_expand='_read_group_stage_ids',
                                default=lambda self: self._get_default_stage())
-    
-    # Responsible persons
-    stage_responsible_user_id = fields.Many2one('res.users', 
-                                                string='Stage Responsible User',
-                                                related='stage_id.responsible_user_id',
-                                                readonly=True)
-    stage_responsible_group_id = fields.Many2one('res.groups', 
-                                                 string='Stage Responsible Group',
-                                                 related='stage_id.responsible_group_id',
-                                                 readonly=True)
 
     # Billing and Payment Status
     billing_status = fields.Selection([
@@ -67,40 +55,49 @@ class SaleOrder(models.Model):
     can_unlock = fields.Boolean(compute='_compute_can_unlock')
     
     # Button visibility fields
-    show_confirm_button = fields.Boolean(compute='_compute_button_visibility')
     show_documentation_button = fields.Boolean(compute='_compute_button_visibility')
     show_calculation_button = fields.Boolean(compute='_compute_button_visibility')
     show_approve_button = fields.Boolean(compute='_compute_button_visibility')
     show_complete_button = fields.Boolean(compute='_compute_button_visibility')
     show_unlock_button = fields.Boolean(compute='_compute_button_visibility')
+    show_emergency_buttons = fields.Boolean(compute='_compute_button_visibility')
 
     @api.model
     def _get_default_stage(self):
         """Get default draft stage"""
         return self.env['sale.order.stage'].search([('stage_code', '=', 'draft')], limit=1)
 
-    @api.depends('state')
+    @api.depends('custom_state')
     def _compute_is_locked(self):
         """Compute if order is locked (completed state)"""
         for order in self:
-            order.is_locked = order.state == 'completed'
+            order.is_locked = order.custom_state == 'completed'
 
     @api.depends('is_locked')
     def _compute_can_unlock(self):
         """Check if current user can unlock completed orders"""
         for order in self:
-            order.can_unlock = self.env.user.has_group('sale_enhanced_status.group_sale_order_unlock')
+            order.can_unlock = self.env.user.has_group('sales_team.group_sale_manager')
 
-    @api.depends('state', 'is_locked', 'can_unlock')
+    @api.depends('custom_state', 'is_locked', 'can_unlock', 'state')
     def _compute_button_visibility(self):
         """Compute button visibility based on current state"""
         for order in self:
-            order.show_confirm_button = order.state == 'draft'
-            order.show_documentation_button = order.state == 'draft'
-            order.show_calculation_button = order.state == 'documentation'
-            order.show_approve_button = order.state == 'calculation'
-            order.show_complete_button = order.state == 'approved'
+            # Only show custom buttons for quotations and sales orders
+            show_custom_buttons = order.state in ['draft', 'sent', 'sale']
+            
+            order.show_documentation_button = show_custom_buttons and order.custom_state == 'draft'
+            order.show_calculation_button = show_custom_buttons and order.custom_state == 'documentation'
+            order.show_approve_button = show_custom_buttons and order.custom_state == 'calculation'
+            order.show_complete_button = show_custom_buttons and order.custom_state == 'approved'
             order.show_unlock_button = order.is_locked and order.can_unlock
+            
+            # Emergency buttons (always available for admins on sale orders)
+            order.show_emergency_buttons = (
+                order.can_unlock and 
+                order.state == 'sale' and 
+                order.custom_state in ['approved', 'completed']
+            )
 
     @api.depends('invoice_ids', 'invoice_ids.amount_total', 'invoice_ids.state',
                  'invoice_ids.payment_state', 'invoice_ids.amount_residual')
@@ -124,7 +121,7 @@ class SaleOrder(models.Model):
 
     @api.depends('amount_total', 'invoiced_amount', 'paid_amount')
     def _compute_billing_payment_status(self):
-        """Compute billing and payment status"""
+        """Compute billing and payment status and auto-complete finished orders"""
         for order in self:
             total_amount = order.amount_total
             invoiced_amount = order.invoiced_amount
@@ -145,6 +142,9 @@ class SaleOrder(models.Model):
                 order.payment_status = 'fully_paid'
             else:
                 order.payment_status = 'partially_paid'
+            
+            # Auto-complete orders that are fully processed
+            self._auto_complete_finished_orders()
 
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
@@ -154,14 +154,14 @@ class SaleOrder(models.Model):
 
     @api.onchange('stage_id')
     def _onchange_stage_id(self):
-        """Update state when stage changes"""
+        """Update custom_state when stage changes"""
         if self.stage_id and self.stage_id.stage_code:
-            self.state = self.stage_id.stage_code
+            self.custom_state = self.stage_id.stage_code
 
     def write(self, vals):
-        """Override write to prevent editing locked orders"""
+        """Override write to prevent editing locked orders and send notifications"""
         # Fields that can always be updated
-        allowed_fields = {'reconciliation_notes', 'stage_id', 'state', 'billing_status', 
+        allowed_fields = {'reconciliation_notes', 'stage_id', 'custom_state', 'billing_status', 
                          'payment_status', 'invoiced_amount', 'paid_amount', 'balance_amount'}
         
         for order in self:
@@ -174,49 +174,65 @@ class SaleOrder(models.Model):
                         "Only administrators can modify completed orders."
                     )
         
-        return super(SaleOrder, self).write(vals)
+        result = super(SaleOrder, self).write(vals)
+        
+        # Send notification if stage changed
+        if 'custom_state' in vals or 'stage_id' in vals:
+            self._notify_stage_change()
+            
+        return result
+
+    def _notify_stage_change(self):
+        """Notify followers about stage changes"""
+        for order in self:
+            if order.message_follower_ids:
+                stage_name = dict(order._fields['custom_state'].selection)[order.custom_state]
+                message = f"Sale Order {order.name} has moved to stage: {stage_name}"
+                order.message_post(
+                    body=message,
+                    message_type='notification',
+                    subtype_xmlid='mail.mt_note'
+                )
 
     def action_move_to_documentation(self):
         """Move to documentation stage"""
         self.ensure_one()
         documentation_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'documentation')], limit=1)
         if documentation_stage:
-            self.stage_id = documentation_stage
-            self.state = 'documentation'
+            self.write({
+                'stage_id': documentation_stage.id,
+                'custom_state': 'documentation'
+            })
 
     def action_move_to_calculation(self):
         """Move to calculation stage"""
         self.ensure_one()
         calculation_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'calculation')], limit=1)
         if calculation_stage:
-            self.stage_id = calculation_stage
-            self.state = 'calculation'
+            self.write({
+                'stage_id': calculation_stage.id,
+                'custom_state': 'calculation'
+            })
 
     def action_move_to_approved(self):
         """Move to approved stage"""
         self.ensure_one()
         approved_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
         if approved_stage:
-            self.stage_id = approved_stage
-            self.state = 'approved'
-
-    def action_confirm(self):
-        """Override confirm to set appropriate stage"""
-        result = super(SaleOrder, self).action_confirm()
-        # Move to approved stage when confirmed
-        approved_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
-        if approved_stage:
-            self.stage_id = approved_stage
-            self.state = 'approved'
-        return result
+            self.write({
+                'stage_id': approved_stage.id,
+                'custom_state': 'approved'
+            })
 
     def action_complete_order(self):
         """Mark order as completed"""
         self.ensure_one()
         completed_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'completed')], limit=1)
         if completed_stage:
-            self.stage_id = completed_stage
-            self.state = 'completed'
+            self.write({
+                'stage_id': completed_stage.id,
+                'custom_state': 'completed'
+            })
 
     def action_unlock_order(self):
         """Unlock completed order (admin only)"""
@@ -226,8 +242,10 @@ class SaleOrder(models.Model):
         # Move back to approved stage
         approved_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
         if approved_stage:
-            self.stage_id = approved_stage
-            self.state = 'approved'
+            self.write({
+                'stage_id': approved_stage.id,
+                'custom_state': 'approved'
+            })
 
     @api.model
     def _cron_update_billing_payment_status(self):

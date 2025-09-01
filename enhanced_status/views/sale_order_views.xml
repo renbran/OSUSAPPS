@@ -16,6 +16,8 @@
                 <field name="stage_id" options="{'no_create': True, 'no_open': True}"/>
                 <field name="stage_responsible_user_id" readonly="1" invisible="not stage_responsible_user_id"/>
                 <field name="stage_responsible_group_id" readonly="1" invisible="not stage_responsible_group_id"/>
+                <field name="is_locked" invisible="1"/>
+                <field name="can_unlock" invisible="1"/>
             </field>
 
             <!-- Financial Tracking Fields -->
