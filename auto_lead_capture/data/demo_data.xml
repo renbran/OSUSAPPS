@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="auto_lead_capture_demo_lead_1" model="auto.lead.capture">
+        <field name="name">Demo Lead 1</field>
+        <field name="source">web</field>
+        <field name="state">new</field>
+    </record>
+</odoo>

@@ -92,8 +92,8 @@ class AccountMove(models.Model):
         help="The buyer of the property"
     )
     project_id = fields.Many2one(
-        'product.template',
-        string='Project Name',
+        'project.project',
+        string='Project',
         tracking=True,
         help="The real estate project this deal belongs to"
     )

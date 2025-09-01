@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Social Config Form View -->
+        <record id="view_social_config_form" model="ir.ui.view">
+            <field name="name">social.config.form</field>
+            <field name="model">social.config</field>
+            <field name="arch" type="xml">
+                <form string="Social Platform Configuration">
+                    <header>
+                        <button name="test_connection" string="Test Connection" type="object" class="btn-primary"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="platform_name" readonly="1"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group name="api_config" string="API Configuration">
+                                <field name="api_token" password="True"/>
+                                <field name="instance_id" invisible="platform_name not in ['whatsapp', 'telegram']"/>
+                                <field name="webhook_secret" password="True"/>
+                                <field name="phone_number" invisible="platform_name != 'whatsapp'"/>
+                            </group>
+
+                            <group name="facebook_config" string="Facebook Configuration" attrs="{'invisible': [('platform_name', '!=', 'facebook')]}">
+                                <field name="page_id"/>
+                                <field name="app_id"/>
+                                <field name="app_secret" password="True"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Webhook Settings">
+                                <group>
+                                    <field name="webhook_url" readonly="1" widget="url"/>
+                                </group>
+                            </page>
+
+                            <page string="Lead Generation">
+                                <group>
+                                    <group>
+                                        <field name="auto_create_lead"/>
+                                        <field name="lead_source_id"/>
+                                        <field name="default_user_id"/>
+                                    </group>
+                                    <group>
+                                        <field name="lead_scoring_enabled"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Auto Response">
+                                <group>
+                                    <field name="auto_response_enabled"/>
+                                    <field name="response_delay" invisible="not auto_response_enabled"/>
+                                </group>
+                                <field name="welcome_message" invisible="not auto_response_enabled"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Social Config Tree View -->
+        <record id="view_social_config_tree" model="ir.ui.view">
+            <field name="name">social.config.tree</field>
+            <field name="model">social.config</field>
+            <field name="arch" type="xml">
+                <tree string="Social Platform Configurations">
+                    <field name="platform_name"/>
+                    <field name="active" widget="boolean_toggle"/>
+                    <field name="auto_create_lead" widget="boolean_toggle"/>
+                    <field name="auto_response_enabled" widget="boolean_toggle"/>
+                    <field name="default_user_id"/>
+                    <button name="test_connection" string="Test" type="object" icon="fa-plug"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Social Config Action -->
+        <record id="action_social_config" model="ir.actions.act_window">
+            <field name="name">Social Platform Configuration</field>
+            <field name="res_model">social.config</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Configure your social media platforms!
+                </p>
+                <p>
+                    Set up WhatsApp, Facebook, Instagram, Telegram and other platforms 
+                    to automatically capture leads from your social media interactions.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

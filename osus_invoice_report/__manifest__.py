@@ -16,7 +16,7 @@
     'category': 'Accounting/Accounting',
     'author': 'OSUS Real Estate',
     'website': 'https://www.osus.ae',
-    'depends': ['account', 'base', 'sale', 'portal'],
+    'depends': ['account', 'base', 'sale', 'portal', 'project_unit_management'],
     'external_dependencies': {
         'python': ['qrcode', 'num2words'],
     },

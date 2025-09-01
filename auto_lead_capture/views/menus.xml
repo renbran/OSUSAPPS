@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Main Menu -->
+        <menuitem id="menu_social_lead_main" name="Social Lead Capture" web_icon="social_lead_capture,static/description/icon.png" sequence="65"/>
+
+        <!-- Configuration Menu -->
+        <menuitem id="menu_social_config" name="Configuration" parent="menu_social_lead_main" sequence="10"/>
+
+        <menuitem id="menu_social_platforms" name="Platforms" parent="menu_social_config" action="action_social_config" sequence="10"/>
+
+        <!-- Messages & Logs Menu -->
+        <menuitem id="menu_social_messages" name="Messages" parent="menu_social_lead_main" action="action_social_message_log" sequence="20"/>
+
+        <!-- Dashboard Menu -->
+        <menuitem id="menu_social_dashboard" name="Dashboard" parent="menu_social_lead_main" action="action_social_dashboard" sequence="30"/>
+    </data>
+</odoo>

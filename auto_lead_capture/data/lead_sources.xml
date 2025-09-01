@@ -1,0 +1,42 @@
+<odoo>
+    <data noupdate="1">
+        <!-- UTM Sources for Social Media -->
+        <record id="utm_source_whatsapp" model="utm.source">
+            <field name="name">WhatsApp Business</field>
+        </record>
+
+        <record id="utm_source_facebook" model="utm.source">
+            <field name="name">Facebook</field>
+        </record>
+
+        <record id="utm_source_instagram" model="utm.source">
+            <field name="name">Instagram</field>
+        </record>
+
+        <record id="utm_source_telegram" model="utm.source">
+            <field name="name">Telegram</field>
+        </record>
+
+        <record id="utm_source_linkedin" model="utm.source">
+            <field name="name">LinkedIn</field>
+        </record>
+
+        <record id="utm_source_twitter" model="utm.source">
+            <field name="name">Twitter/X</field>
+        </record>
+
+        <!-- UTM Medium for Social Media -->
+        <record id="utm_medium_social_message" model="utm.medium">
+            <field name="name">Social Message</field>
+        </record>
+
+        <record id="utm_medium_social_post" model="utm.medium">
+            <field name="name">Social Post</field>
+        </record>
+
+        <!-- UTM Campaigns for Social Media -->
+        <record id="utm_campaign_social_lead_gen" model="utm.campaign">
+            <field name="name">Social Media Lead Generation</field>
+        </record>
+    </data>
+</odoo>

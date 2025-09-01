@@ -1,182 +1,245 @@
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 import logging
 
 _logger = logging.getLogger(__name__)
 
 class PurchaseOrder(models.Model):
+    is_commission_po = fields.Boolean(string="Is Commission Purchase Order", default=False)
     _inherit = 'purchase.order'
 
-    # Commission-related fields for purchase orders
-    description = fields.Text(
-        string="Description",
-        help="Additional description for the purchase order"
-    )
-    origin_so_id = fields.Many2one(
-        'sale.order', 
-        string="Origin Sale Order",
-        help="The sale order that generated this commission purchase order"
-    )
-    commission_posted = fields.Boolean(
-        string="Commission Posted", 
-        default=False,
-        help="Indicates if this commission purchase order has been posted"
-    )
-    is_commission_po = fields.Boolean(
-        string="Is Commission PO",
-        compute="_compute_is_commission_po",
-        store=True,
-        help="Indicates if this is a commission-related purchase order"
-    )
-    
-    # Commission-related computed fields from origin sale order
-    agent1_partner_id = fields.Many2one(
-        'res.partner',
-        string="Agent 1",
-        compute="_compute_commission_fields",
-        store=True,  # CRITICAL FIX: Changed to True for email template access
-        help="Agent 1 from the origin sale order"
-    )
-    agent2_partner_id = fields.Many2one(
-        'res.partner',
-        string="Agent 2", 
-        compute="_compute_commission_fields",
-        store=True,  # CRITICAL FIX: Changed to True for email template access
-        help="Agent 2 from the origin sale order"
-    )
     project_id = fields.Many2one(
         'project.project',
-        string="Project",
-        compute="_compute_commission_fields",
-        store=True,  # CRITICAL FIX: Changed to True for email template access
-        help="Project from the origin sale order"
+        string='Project',
+        help='Related project for this purchase order',
     )
+
     unit_id = fields.Many2one(
-        'product.product',
-        string="Unit",
-        compute="_compute_commission_fields", 
-        store=True,  # CRITICAL FIX: Changed to True for email template access
-        help="Unit from the origin sale order"
+        'project.unit',
+        string='Unit',
+        help='Related unit for this purchase order',
     )
+    description = fields.Char(string="Description")
+    origin_so_id = fields.Many2one('sale.order', string="Source Sale Order", readonly=True)
+    commission_posted = fields.Boolean(string="Commission Posted", default=False)
 
     @api.depends('origin_so_id')
-    def _compute_is_commission_po(self):
-        """Compute if this is a commission purchase order."""
-        for po in self:
-            po.is_commission_po = bool(po.origin_so_id)
-    
-    @api.depends('origin_so_id', 'origin_so_id.agent1_partner_id', 'origin_so_id.agent2_partner_id')
-    def _compute_commission_fields(self):
-        """Compute commission-related fields from origin sale order."""
+    def _compute_display_name(self):
+        """Override display name for commission purchase orders."""
+        super(PurchaseOrder, self)._compute_display_name()
         for po in self:
             if po.origin_so_id:
-                # Safe field access with hasattr checks
-                po.agent1_partner_id = po.origin_so_id.agent1_partner_id if hasattr(po.origin_so_id, 'agent1_partner_id') else False
-                po.agent2_partner_id = po.origin_so_id.agent2_partner_id if hasattr(po.origin_so_id, 'agent2_partner_id') else False
-                # project_id and unit_id might not exist in all sale.order implementations
-                po.project_id = po.origin_so_id.project_id if hasattr(po.origin_so_id, 'project_id') else False
-                po.unit_id = po.origin_so_id.unit_id if hasattr(po.origin_so_id, 'unit_id') else False
-            else:
-                po.agent1_partner_id = False
-                po.agent2_partner_id = False
-                po.project_id = False
-                po.unit_id = False
-                po.agent2_partner_id = False
-                po.project_id = False
-                po.unit_id = False
+                po.display_name = f"{po.name} (Commission from {po.origin_so_id.name})"
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        """Override create to handle commission purchase orders."""
-        for vals in vals_list:
-            # If this is a commission PO with an origin sale order
-            if vals.get('origin_so_id'):
-                sale_order = self.env['sale.order'].browse(vals['origin_so_id'])
-                if sale_order.exists():
-                    _logger.info(
-                        f"Creating commission PO from SO: {sale_order.name}"
+    def _prepare_account_move_line(self, line, move):
+        """Override to add commission-specific account configuration."""
+        result = super(PurchaseOrder, self)._prepare_account_move_line(line, move)
+        
+        # If this is a commission PO, we might want to use specific accounts
+        if self.origin_so_id:
+            # You can customize the account used for commission expenses here
+            commission_account = self.env['ir.config_parameter'].sudo().get_param(
+                'commission_ax.commission_expense_account_id'
+            )
+            if commission_account:
+                try:
+                    account = self.env['account.account'].browse(int(commission_account))
+                    if account.exists():
+                        result['account_id'] = account.id
+                except (ValueError, TypeError):
+                    _logger.warning("Invalid commission expense account configuration")
+        
+        return result
+
+    def _post_commission_on_receipt_validation(self):
+        """Post commission when receipt is validated."""
+        for order in self:
+            if order.origin_so_id and not order.commission_posted:
+                # Check if all receipts are done
+                all_receipts_done = all(
+                    picking.state == 'done' for picking in order.picking_ids
+                )
+                
+                if all_receipts_done and order.picking_ids:
+                    try:
+                        if order.state == 'draft':
+                            order.button_confirm()
+                        order.commission_posted = True
+                        
+                        # Log the posting
+                        _logger.info(f"Commission posted for PO {order.name} from SO {order.origin_so_id.name}")
+                        
+                        # Add message to the sale order
+                        order.origin_so_id.message_post(
+                            body=f"Commission purchase order {order.name} has been automatically posted due to receipt validation."
+                        )
+                        
+                    except Exception as e:
+                        _logger.error(f"Error posting commission PO {order.name}: {str(e)}")
+                        # Don't raise the error to avoid blocking other operations
+
+    def _post_commission_on_payment(self):
+        """Post commission when payment is recorded."""
+        for order in self:
+            if order.origin_so_id and not order.commission_posted:
+                # Check if there are any payments for this PO
+                invoice_lines = self.env['account.move.line'].search([
+                    ('purchase_line_id', 'in', order.order_line.ids)
+                ])
+                
+                if invoice_lines:
+                    invoices = invoice_lines.mapped('move_id').filtered(
+                        lambda inv: inv.move_type == 'in_invoice' and inv.state == 'posted'
                     )
-        
-        return super(PurchaseOrder, self).create(vals_list)
-
-    def write(self, vals):
-        """Override write to handle commission purchase order updates."""
-        return super(PurchaseOrder, self).write(vals)
-
-    def action_view_origin_sale_order(self):
-        """Action to view the origin sale order."""
-        self.ensure_one()
-        if not self.origin_so_id:
-            raise UserError("No origin sale order found for this purchase order.")
-        
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Origin Sale Order',
-            'res_model': 'sale.order',
-            'res_id': self.origin_so_id.id,
-            'view_mode': 'form',
-            'target': 'current',
-        }
-
-    @api.constrains('origin_so_id', 'partner_id')
-    def _check_commission_partner(self):
-        """Validate that commission partner is valid for the origin sale order."""
-        for po in self:
-            if po.origin_so_id and po.partner_id:
-                # Get all commission partners from the origin sale order
-                commission_partners = po.origin_so_id._get_all_commission_partners()
-                if po.partner_id.id not in commission_partners:
-                    raise ValidationError(
-                        f"Partner '{po.partner_id.name}' is not configured as a commission "
-                        f"partner in the origin sale order '{po.origin_so_id.name}'"
+                    
+                    # Check if any invoice has payments
+                    paid_invoices = invoices.filtered(
+                        lambda inv: inv.payment_state in ['in_payment', 'paid']
                     )
+                    
+                    if paid_invoices:
+                        try:
+                            if order.state == 'draft':
+                                order.button_confirm()
+                            order.commission_posted = True
+                            
+                            _logger.info(f"Commission posted for PO {order.name} due to payment")
+                            
+                            order.origin_so_id.message_post(
+                                body=f"Commission purchase order {order.name} has been automatically posted due to payment."
+                            )
+                            
+                        except Exception as e:
+                            _logger.error(f"Error posting commission PO on payment {order.name}: {str(e)}")
 
-    def _get_commission_info(self):
-        """Get commission information for this purchase order."""
-        self.ensure_one()
-        if not self.origin_so_id:
-            return {}
+    def action_view_picking(self):
+        """Override to trigger commission posting check."""
+        result = super(PurchaseOrder, self).action_view_picking()
+        self._post_commission_on_receipt_validation()
+        return result
+
+    def action_force_post(self):
+        """Manual action to force post the purchase order."""
+        for order in self:
+            if not order.commission_posted:
+                try:
+                    if order.state == 'draft':
+                        order.button_confirm()
+                    order.commission_posted = True
+                    
+                    # Add message
+                    if order.origin_so_id:
+                        order.origin_so_id.message_post(
+                            body=f"Commission purchase order {order.name} has been manually forced to post."
+                        )
+                    
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'title': 'Success',
+                            'message': f'Commission purchase order {order.name} has been posted.',
+                            'type': 'success',
+                        }
+                    }
+                except Exception as e:
+                    raise UserError(f"Failed to post commission: {str(e)}")
         
-        # Find which commission type this PO represents
-        commission_info = {}
-        sale_order = self.origin_so_id
+        return True
+
+    def button_confirm(self):
+        """Override confirm to add commission-specific logic."""
+        result = super(PurchaseOrder, self).button_confirm()
         
-        # Check all commission partners to find which one matches this PO
-        commission_mappings = {
-            'consultant': sale_order.consultant_id,
-            'manager': sale_order.manager_id,
-            'director': sale_order.director_id,
-            'second_agent': sale_order.second_agent_id,
-            'broker': sale_order.broker_partner_id,
-            'referrer': sale_order.referrer_partner_id,
-            'cashback': sale_order.cashback_partner_id,
-            'other_external': sale_order.other_external_partner_id,
-            'agent1': sale_order.agent1_partner_id,
-            'agent2': sale_order.agent2_partner_id,
-            'manager_partner': sale_order.manager_partner_id,
-            'director_partner': sale_order.director_partner_id,
-        }
+        # For commission POs, we might want to auto-create receipts or handle differently
+        for order in self.filtered('origin_so_id'):
+            order.message_post(
+                body=f"Commission purchase order confirmed for sale order {order.origin_so_id.name}"
+            )
         
-        for commission_type, partner in commission_mappings.items():
-            if partner and partner.id == self.partner_id.id:
-                commission_info = {
-                    'type': commission_type,
-                    'partner': partner,
-                    'sale_order': sale_order,
-                    'customer_reference': sale_order.client_order_ref,
-                }
-                break
+        return result
+
+    def button_cancel(self):
+        """Override cancel to handle commission-specific logic."""
+        for order in self.filtered('origin_so_id'):
+            if order.commission_posted:
+                raise UserError(
+                    f"Cannot cancel commission purchase order {order.name} "
+                    "because it has already been posted."
+                )
         
-        return commission_info
+        result = super(PurchaseOrder, self).button_cancel()
+        
+        # Reset commission status on source sale order if needed
+        for order in self.filtered('origin_so_id'):
+            if order.origin_so_id:
+                order.origin_so_id.message_post(
+                    body=f"Commission purchase order {order.name} has been cancelled."
+                )
+        
+        return result
 
     def unlink(self):
-        """Override unlink to handle commission status updates."""
-        for po in self:
-            if po.origin_so_id and po.state not in ['draft', 'cancel']:
+        """Override unlink to prevent deletion of posted commission POs."""
+        for order in self:
+            if order.origin_so_id and order.commission_posted:
                 raise UserError(
-                    f"Cannot delete confirmed commission purchase order {po.name}. "
-                    f"Please cancel it first."
+                    f"Cannot delete commission purchase order {order.name} "
+                    "because it has been posted."
                 )
         
         return super(PurchaseOrder, self).unlink()
+
+    @api.model
+    def _cron_check_commission_purchase_orders(self):
+        """
+        Scheduled action to check and post commission purchase orders 
+        when their receipts are validated or payments are made.
+        """
+        # Find unposted commission purchase orders
+        unposted_commission_pos = self.search([
+            ('commission_posted', '=', False),
+            ('origin_so_id', '!=', False),
+            ('state', 'in', ['purchase', 'done'])
+        ])
+        
+        _logger.info(f"Checking {len(unposted_commission_pos)} unposted commission POs")
+        
+        for purchase_order in unposted_commission_pos:
+            try:
+                # Check receipt validation
+                purchase_order._post_commission_on_receipt_validation()
+                
+                # If still not posted, check payments
+                if not purchase_order.commission_posted:
+                    purchase_order._post_commission_on_payment()
+                    
+            except Exception as e:
+                _logger.error(f"Error in cron job for PO {purchase_order.name}: {str(e)}")
+
+    def write(self, vals):
+        """Override write to track important changes."""
+        result = super(PurchaseOrder, self).write(vals)
+        
+        # Track state changes for commission POs
+        if 'state' in vals:
+            for order in self.filtered('origin_so_id'):
+                if order.origin_so_id:
+                    order.origin_so_id.message_post(
+                        body=f"Commission purchase order {order.name} state changed to {order.state}"
+                    )
+        
+        return result
+
+    @api.model
+    def create(self, vals):
+        """Override create to add commission-specific setup."""
+        order = super(PurchaseOrder, self).create(vals)
+        
+        # Add message to source sale order if this is a commission PO
+        if order.origin_so_id:
+            order.origin_so_id.message_post(
+                body=f"Commission purchase order {order.name} has been created for {order.partner_id.name}"
+            )
+        
+        return order

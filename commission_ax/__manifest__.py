@@ -1,38 +1,64 @@
 {
-    'name': 'Enhanced Commission Management System',
-    'version': '17.0.2.0.0',
-    'summary': 'Advanced commission calculation with dual-group structure and flexible calculation methods',
-    'description': '''
-        Enhanced Commission Management System for Odoo 17
-        
-        Features:
-        - Dual Commission Groups: External (Broker, Referrer, Cashback, Others) and Internal (Agent 1, Agent 2, Manager, Director)
-        - Multiple Calculation Methods: Price Unit, Untaxed Total, Fixed Amount
-        - Auto-calculation with rate/amount conversion
-        - Smart buttons and reference management
-        - Commission workflow with status tracking
-        - Automated purchase order generation for commission payments
-        - Enhanced reporting and analysis views
-        - Proper field grouping and sorting
-        
-        This module provides a comprehensive solution for managing complex commission structures
-        with both external and internal stakeholders.
-    ''',
-    'category': 'Sales/Commission',
-    'author': 'Enhanced Commission Team',
+    'name': 'Advanced Commission Management',
+    'version': '17.0.1.0.0',
+    'category': 'Sales',
+    'summary': 'Advanced commission management with business logic constraints and professional reporting',
+    'description': """
+Advanced Commission Management System
+====================================
+
+This module provides comprehensive commission management for sales orders with:
+
+Business Logic Features:
+- Commission processing only allowed for fully invoiced orders
+- Automatic cascade cancellation of commission POs when sales orders are cancelled
+- User confirmation dialogs for destructive operations
+- Prerequisites validation before commission processing
+
+Commission Features:
+- Multiple commission types (External and Internal)
+- Flexible commission calculation methods (Fixed, Percentage of Unit Price, Percentage of Total)
+- Legacy commission support for backward compatibility
+- Commission purchase order generation
+- Commission status tracking (Draft → Calculated → Confirmed)
+
+Reporting Features:
+- Professional commission reports with clear formatting
+- Export to PDF functionality matching company branding
+- Comprehensive commission breakdowns
+- VAT calculations and net company share
+
+Technical Features:
+- Robust error handling and logging
+- Scheduled actions for commission monitoring
+- Enhanced UI with status indicators
+- Search filters for commission-related records
+- Cascade operations with user confirmations
+    """,
+    'author': 'Your Company',
     'website': 'https://www.yourcompany.com',
-    'depends': ['sale', 'purchase', 'account'],
+    'depends': [
+        'base',
+        'sale',
+        'purchase', 
+        'account',
+        'stock',
+    ],
     'data': [
         'security/ir.model.access.csv',
-        'data/commission_demo_data.xml',
-        'data/commission_email_templates.xml',
+        'data/cron_data.xml',
         'views/sale_order.xml',
-        'views/purchase_order_views.xml',
+        'views/purchase_order.xml',
+        'views/commission_wizard_views.xml',
+        'data/commission_report_wizard_action.xml',
+        'data/commission_purchase_orders_action.xml',
+    'report/commission_report.xml',
+    'report/commission_report_template.xml',
     ],
     'demo': [],
     'installable': True,
-    'application': False,
     'auto_install': False,
+    'application': True,
     'license': 'LGPL-3',
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/icon.png'],
 }
