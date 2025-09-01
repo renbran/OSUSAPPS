@@ -1,180 +1,416 @@
+# __manifest__.py
+{
+    'name': 'Enhanced Status',
+    'version': '17.0.1.0.0',
+    'summary': 'Enhanced sale order status workflow with comprehensive financial tracking',
+    'description': '''
+        This module extends the sale order workflow with:
+        - Custom status: Draft, Documentation, Calculation, Approved, Completed
+        - Responsible person/group for each stage
+        - Billing status tracking (Fully Invoiced, Unraised, Partially Invoiced)
+        - Payment status tracking (Fully Paid, Partially Paid, Unpaid)
+        - Invoiced, Paid amounts and Balance tracking
+        - Stage-responsive button visibility
+        - Field locking in completed state (admin override)
+    ''',
+    'category': 'Sales',
+    'author': 'Your Company',
+    'website': 'https://www.yourcompany.com',
+    'depends': ['sale', 'account'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'data/sale_order_stages.xml',
+        'views/sale_order_stage_views.xml',
+        'views/sale_order_views.xml',
+        'data/ir_cron_data.xml',
+    ],
+    'installable': True,
+    'application': False,
+    'auto_install': False,
+}
+
+# __init__.py
+from . import models
+
+# models/__init__.py
+from . import sale_order_stage
+from . import sale_order
+
+# models/sale_order_stage.py
+from odoo import models, fields, api
+
+class SaleOrderStage(models.Model):
+    _name = 'sale.order.stage'
+    _description = 'Sale Order Stages'
+    _order = 'sequence, name'
+
+    name = fields.Char('Stage Name', required=True)
+    sequence = fields.Integer('Sequence', default=10)
+    description = fields.Text('Description')
+    responsible_user_id = fields.Many2one('res.users', string='Responsible User')
+    responsible_group_id = fields.Many2one('res.groups', string='Responsible Group')
+    fold = fields.Boolean('Folded in Kanban')
+    stage_code = fields.Selection([
+        ('draft', 'Draft'),
+        ('documentation', 'Documentation'),
+        ('calculation', 'Calculation'),
+        ('approved', 'Approved'),
+        ('completed', 'Completed'),
+    ], string='Stage Code', required=True)
+    
+    @api.model
+    def _get_default_stages(self):
+        """Return default stages for sale orders"""
+        return [
+            {'name': 'Draft', 'sequence': 1, 'stage_code': 'draft'},
+            {'name': 'Documentation', 'sequence': 2, 'stage_code': 'documentation'},
+            {'name': 'Calculation', 'sequence': 3, 'stage_code': 'calculation'},
+            {'name': 'Approved', 'sequence': 4, 'stage_code': 'approved'},
+            {'name': 'Completed', 'sequence': 5, 'stage_code': 'completed'},
+        ]
+
+# models/sale_order.py
+from odoo import models, fields, api
+from odoo.exceptions import AccessError, ValidationError
+
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+
+    # Override the default state field behavior
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('documentation', 'Documentation'),
+        ('calculation', 'Calculation'),
+        ('approved', 'Approved'),
+        ('completed', 'Completed'),
+        ('cancel', 'Cancelled'),
+    ], string='Status', readonly=True, copy=False, index=True, tracking=True, default='draft')
+
+    # Stage management
+    stage_id = fields.Many2one('sale.order.stage', string='Stage', tracking=True, index=True, group_expand='_read_group_stage_ids', default=lambda self: self._get_default_stage())
+    
+    # Responsible persons
+    stage_responsible_user_id = fields.Many2one('res.users', string='Stage Responsible User', related='stage_id.responsible_user_id', readonly=True)
+    stage_responsible_group_id = fields.Many2one('res.groups', string='Stage Responsible Group', related='stage_id.responsible_group_id', readonly=True)
+
+    # Billing and Payment Status
+    billing_status = fields.Selection([
+        ('unraised', 'Unraised'),
+        ('partially_invoiced', 'Partially Invoiced'),
+        ('fully_invoiced', 'Fully Invoiced'),
+    ], string='Billing Status', default='unraised', tracking=True, compute='_compute_billing_payment_status', store=True)
+
+    payment_status = fields.Selection([
+        ('unpaid', 'Unpaid'),
+        ('partially_paid', 'Partially Paid'),
+        ('fully_paid', 'Fully Paid'),
+    ], string='Payment Status', default='unpaid', tracking=True, compute='_compute_billing_payment_status', store=True)
+
+    # Financial tracking fields
+    invoiced_amount = fields.Monetary(string='Invoiced Amount', compute='_compute_financial_amounts', store=True)
+    
+    paid_amount = fields.Monetary(string='Paid Amount', compute='_compute_financial_amounts', store=True)
+    
+    balance_amount = fields.Monetary(string='Balance', compute='_compute_financial_amounts', store=True)
+
+    # Reconciliation field
+    reconciliation_notes = fields.Text(string='Reconciliation Notes')
+
+    # Computed fields for workflow control
+    is_locked = fields.Boolean(compute='_compute_is_locked', store=True)
+    can_unlock = fields.Boolean(compute='_compute_can_unlock')
+    
+    # Button visibility fields
+    show_confirm_button = fields.Boolean(compute='_compute_button_visibility')
+    show_documentation_button = fields.Boolean(compute='_compute_button_visibility')
+    show_calculation_button = fields.Boolean(compute='_compute_button_visibility')
+    show_approve_button = fields.Boolean(compute='_compute_button_visibility')
+    show_complete_button = fields.Boolean(compute='_compute_button_visibility')
+    show_unlock_button = fields.Boolean(compute='_compute_button_visibility')
+
+    @api.model
+    def _get_default_stage(self):
+        """Get default draft stage"""
+        return self.env['sale.order.stage'].search([('stage_code', '=', 'draft')], limit=1)
+
+    @api.depends('state')
+    def _compute_is_locked(self):
+        """Compute if order is locked (completed state)"""
+        for order in self:
+            order.is_locked = order.state == 'completed'
+
+    @api.depends('is_locked')
+    def _compute_can_unlock(self):
+        """Check if current user can unlock completed orders"""
+        for order in self:
+            order.can_unlock = self.env.user.has_group('enhanced_status.group_sale_order_unlock')
+
+    @api.depends('state', 'is_locked', 'can_unlock')
+    def _compute_button_visibility(self):
+        """Compute button visibility based on current state"""
+        for order in self:
+            order.show_confirm_button = order.state == 'draft'
+            order.show_documentation_button = order.state == 'draft'
+            order.show_calculation_button = order.state == 'documentation'
+            order.show_approve_button = order.state == 'calculation'
+            order.show_complete_button = order.state == 'approved'
+            order.show_unlock_button = order.is_locked and order.can_unlock
+
+    @api.depends('invoice_ids', 'invoice_ids.amount_total', 'invoice_ids.state',
+                 'invoice_ids.payment_state', 'invoice_ids.amount_residual')
+    def _compute_financial_amounts(self):
+        """Compute invoiced amount, paid amount, and balance"""
+        for order in self:
+            invoiced_amount = 0.0
+            paid_amount = 0.0
+            
+            for invoice in order.invoice_ids.filtered(lambda inv: inv.state == 'posted'):
+                if invoice.move_type == 'out_invoice':
+                    invoiced_amount += invoice.amount_total
+                    paid_amount += (invoice.amount_total - invoice.amount_residual)
+                elif invoice.move_type == 'out_refund':
+                    invoiced_amount -= invoice.amount_total
+                    paid_amount -= (invoice.amount_total - invoice.amount_residual)
+            
+            order.invoiced_amount = invoiced_amount
+            order.paid_amount = paid_amount
+            order.balance_amount = invoiced_amount - paid_amount
+
+    @api.depends('amount_total', 'invoiced_amount', 'paid_amount')
+    def _compute_billing_payment_status(self):
+        """Compute billing and payment status"""
+        for order in self:
+            total_amount = order.amount_total
+            invoiced_amount = order.invoiced_amount
+            paid_amount = order.paid_amount
+            
+            # Billing Status
+            if invoiced_amount == 0:
+                order.billing_status = 'unraised'
+            elif invoiced_amount >= total_amount:
+                order.billing_status = 'fully_invoiced'
+            else:
+                order.billing_status = 'partially_invoiced'
+            
+            # Payment Status
+            if paid_amount == 0:
+                order.payment_status = 'unpaid'
+            elif paid_amount >= invoiced_amount:
+                order.payment_status = 'fully_paid'
+            else:
+                order.payment_status = 'partially_paid'
+
+    @api.model
+    def _read_group_stage_ids(self, stages, domain, order):
+        """Return all stages for kanban view"""
+        stage_ids = self.env['sale.order.stage'].search([])
+        return stage_ids
+
+    @api.onchange('stage_id')
+    def _onchange_stage_id(self):
+        """Update state when stage changes"""
+        if self.stage_id and self.stage_id.stage_code:
+            self.state = self.stage_id.stage_code
+
+    def write(self, vals):
+        """Override write to prevent editing locked orders"""
+        # Fields that can always be updated
+        allowed_fields = {'reconciliation_notes', 'stage_id', 'state', 'billing_status', 
+                         'payment_status', 'invoiced_amount', 'paid_amount', 'balance_amount'}
+        
+        for order in self:
+            if order.is_locked and not order.can_unlock:
+                # Check if trying to update restricted fields
+                restricted_fields = set(vals.keys()) - allowed_fields
+                if restricted_fields:
+                    raise AccessError(
+                        "This sale order is completed and locked. "
+                        "Only administrators can modify completed orders."
+                    )
+        
+        return super(SaleOrder, self).write(vals)
+
+    def action_move_to_documentation(self):
+        """Move to documentation stage"""
+        self.ensure_one()
+        documentation_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'documentation')], limit=1)
+        if documentation_stage:
+            self.stage_id = documentation_stage
+            self.state = 'documentation'
+
+    def action_move_to_calculation(self):
+        """Move to calculation stage"""
+        self.ensure_one()
+        calculation_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'calculation')], limit=1)
+        if calculation_stage:
+            self.stage_id = calculation_stage
+            self.state = 'calculation'
+
+    def action_move_to_approved(self):
+        """Move to approved stage"""
+        self.ensure_one()
+        approved_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
+        if approved_stage:
+            self.stage_id = approved_stage
+            self.state = 'approved'
+
+    def action_confirm(self):
+        """Override confirm to set appropriate stage"""
+        result = super(SaleOrder, self).action_confirm()
+        # Move to approved stage when confirmed
+        approved_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
+        if approved_stage:
+            self.stage_id = approved_stage
+            self.state = 'approved'
+        return result
+
+    def action_complete_order(self):
+        """Mark order as completed"""
+        self.ensure_one()
+        completed_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'completed')], limit=1)
+        if completed_stage:
+            self.stage_id = completed_stage
+            self.state = 'completed'
+
+    def action_unlock_order(self):
+        """Unlock completed order (admin only)"""
+        self.ensure_one()
+        if not self.can_unlock:
+            raise AccessError("You don't have permission to unlock completed orders.")
+        # Move back to approved stage
+        approved_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
+        if approved_stage:
+            self.stage_id = approved_stage
+            self.state = 'approved'
+
+    @api.model
+    def _cron_update_billing_payment_status(self):
+        """Cron job to update billing and payment status"""
+        orders = self.search([('state', 'not in', ['draft', 'cancel'])])
+        orders._compute_financial_amounts()
+        orders._compute_billing_payment_status()
+
+# security/security.xml
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Sale Order Form View -->
-    <record id="view_order_form_enhanced" model="ir.ui.view">
-        <field name="name">sale.order.form.enhanced</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
+    <record id="group_sale_order_unlock" model="res.groups">
+        <field name="name">Unlock Completed Sale Orders</field>
+        <field name="category_id" ref="base.module_category_sales_sales"/>
+        <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_manager'))]"/>
+    </record>
+</odoo>
+
+# security/ir.model.access.csv
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sale_order_stage_user,Sale Order Stage User,model_sale_order_stage,base.group_user,1,0,0,0
+access_sale_order_stage_sales_user,Sale Order Stage Sales User,model_sale_order_stage,sales_team.group_sale_salesman,1,1,1,0
+access_sale_order_stage_sales_manager,Sale Order Stage Sales Manager,model_sale_order_stage,sales_team.group_sale_manager,1,1,1,1
+
+# data/sale_order_stages.xml
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default Sale Order Stages -->
+        <record id="stage_draft" model="sale.order.stage">
+            <field name="name">Draft</field>
+            <field name="stage_code">draft</field>
+            <field name="sequence">1</field>
+            <field name="description">Initial stage for new quotations and drafts</field>
+        </record>
+
+        <record id="stage_documentation" model="sale.order.stage">
+            <field name="name">Documentation</field>
+            <field name="stage_code">documentation</field>
+            <field name="sequence">2</field>
+            <field name="description">Documentation and requirements gathering stage</field>
+        </record>
+
+        <record id="stage_calculation" model="sale.order.stage">
+            <field name="name">Calculation</field>
+            <field name="stage_code">calculation</field>
+            <field name="sequence">3</field>
+            <field name="description">Pricing and calculation stage</field>
+        </record>
+
+        <record id="stage_approved" model="sale.order.stage">
+            <field name="name">Approved</field>
+            <field name="stage_code">approved</field>
+            <field name="sequence">4</field>
+            <field name="description">Approved and confirmed orders</field>
+        </record>
+
+        <record id="stage_completed" model="sale.order.stage">
+            <field name="name">Completed</field>
+            <field name="stage_code">completed</field>
+            <field name="sequence">5</field>
+            <field name="description">Fully completed orders - all processes finished</field>
+            <field name="fold">1</field>
+        </record>
+    </data>
+</odoo>
+
+# views/sale_order_stage_views.xml
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Stage Configuration Form View -->
+    <record id="view_sale_order_stage_form" model="ir.ui.view">
+        <field name="name">sale.order.stage.form</field>
+        <field name="model">sale.order.stage</field>
         <field name="arch" type="xml">
-            <!-- Replace status bar -->
-            <field name="state" position="replace">
-                <field name="state" widget="statusbar" statusbar_visible="draft,documentation,calculation,approved,completed"/>
-            </field>
-
-            <!-- Add stage and responsible fields -->
-            <field name="partner_id" position="after">
-                <field name="stage_id" options="{'no_create': True, 'no_open': True}"/>
-                <field name="stage_responsible_user_id" readonly="1" invisible="not stage_responsible_user_id"/>
-                <field name="stage_responsible_group_id" readonly="1" invisible="not stage_responsible_group_id"/>
-            </field>
-
-            <!-- Add financial tracking fields -->
-            <group name="sale_info_left" position="inside">
-                <field name="billing_status" widget="badge"/>
-                <field name="payment_status" widget="badge"/>
-            </group>
-
-            <group name="sale_info_right" position="inside">
-                <field name="invoiced_amount"/>
-                <field name="paid_amount"/>
-                <field name="balance_amount"/>
-            </group>
-
-            <!-- Add reconciliation notes -->
-            <field name="note" position="after">
-                <separator string="Reconciliation" invisible="state in ['draft', 'documentation']"/>
-                <field name="reconciliation_notes" placeholder="Add reconciliation notes here..." invisible="state in ['draft', 'documentation']"/>
-            </field>
-
-            <!-- Add invisible fields for button visibility -->
-            <field name="state" position="after">
-                <field name="show_confirm_button" invisible="1"/>
-                <field name="show_documentation_button" invisible="1"/>
-                <field name="show_calculation_button" invisible="1"/>
-                <field name="show_approve_button" invisible="1"/>
-                <field name="show_complete_button" invisible="1"/>
-                <field name="show_unlock_button" invisible="1"/>
-                <field name="is_locked" invisible="1"/>
-                <field name="can_unlock" invisible="1"/>
-            </field>
-
-            <!-- Stage-specific buttons -->
-            <button name="action_confirm" position="before">
-                <!-- Documentation Button -->
-                <button name="action_move_to_documentation" type="object" string="Move to Documentation" class="btn-primary" invisible="not show_documentation_button"/>
-
-                <!-- Calculation Button -->
-                <button name="action_move_to_calculation" type="object" string="Move to Calculation" class="btn-primary" invisible="not show_calculation_button"/>
-
-                <!-- Approve Button -->
-                <button name="action_move_to_approved" type="object" string="Approve" class="btn-success" invisible="not show_approve_button"/>
-            </button>
-
-            <!-- Confirm button visibility -->
-            <button name="action_confirm" position="attributes">
-                <attribute name="invisible">not show_confirm_button</attribute>
-            </button>
-
-            <!-- Additional buttons after confirm -->
-            <button name="action_confirm" position="after">
-                <!-- Complete Order Button -->
-                <button name="action_complete_order" type="object" string="Mark as Completed" class="btn-success" invisible="not show_complete_button"/>
-
-                <!-- Unlock Button -->
-                <button name="action_unlock_order" type="object" string="Unlock Order" class="btn-warning" invisible="not show_unlock_button"/>
-            </button>
-
-            <!-- Make fields readonly when locked -->
-            <field name="partner_id" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </field>
-            <field name="order_line" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </field>
-            <field name="payment_term_id" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </field>
-            <field name="pricelist_id" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </field>
+            <form string="Sale Order Stage">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="stage_code"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="responsible_user_id"/>
+                            <field name="responsible_group_id"/>
+                            <field name="fold"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="Description of this stage and its requirements..."/>
+                    </group>
+                </sheet>
+            </form>
         </field>
     </record>
 
-    <!-- Sale Order Tree View -->
-    <record id="view_quotation_tree_enhanced" model="ir.ui.view">
-        <field name="name">sale.order.tree.enhanced</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+    <!-- Stage Configuration Tree View -->
+    <record id="view_sale_order_stage_tree" model="ir.ui.view">
+        <field name="name">sale.order.stage.tree</field>
+        <field name="model">sale.order.stage</field>
         <field name="arch" type="xml">
-            <field name="amount_total" position="after">
-                <field name="billing_status" widget="badge"/>
-                <field name="payment_status" widget="badge"/>
-                <field name="invoiced_amount" sum="Total Invoiced"/>
-                <field name="paid_amount" sum="Total Paid"/>
-                <field name="balance_amount" sum="Total Balance"/>
-                <field name="stage_responsible_user_id" widget="many2one_avatar_user"/>
-            </field>
+            <tree string="Sale Order Stages" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="stage_code"/>
+                <field name="responsible_user_id" widget="many2one_avatar_user"/>
+                <field name="responsible_group_id"/>
+                <field name="fold"/>
+            </tree>
         </field>
     </record>
 
-    <!-- Enhanced Kanban View -->
-    <record id="view_sale_order_kanban_enhanced" model="ir.ui.view">
-        <field name="name">sale.order.kanban.enhanced</field>
-        <field name="model">sale.order</field>
-        <field name="arch" type="xml">
-            <kanban default_group_by="stage_id" class="o_kanban_small_column" quick_create="false">
-                <field name="stage_id"/>
-                <field name="billing_status"/>
-                <field name="payment_status"/>
-                <field name="amount_total"/>
-                <field name="invoiced_amount"/>
-                <field name="paid_amount"/>
-                <field name="balance_amount"/>
-                <field name="stage_responsible_user_id"/>
-                <field name="state"/>
-                <templates>
-                    <t t-name="kanban-box">
-                        <div class="oe_kanban_card oe_kanban_global_click">
-                            <div class="oe_kanban_content">
-                                <div class="o_kanban_record_title">
-                                    <strong>
-                                        <field name="name"/>
-                                    </strong>
-                                </div>
-                                <div class="o_kanban_record_subtitle">
-                                    <field name="partner_id"/>
-                                </div>
-                                <div class="oe_kanban_details">
-                                    <div>
-                                        <span class="o_field_badge o_badge_sm">
-                                            <field name="billing_status"/>
-                                        </span>
-                                        <span class="o_field_badge o_badge_sm">
-                                            <field name="payment_status"/>
-                                        </span>
-                                    </div>
-                                    <div class="mt-2">
-                                        <strong>Total: </strong>
-                                        <field name="amount_total" widget="monetary"/>
-                                    </div>
-                                    <div>
-                                        <strong>Invoiced: </strong>
-                                        <field name="invoiced_amount" widget="monetary"/>
-                                    </div>
-                                    <div>
-                                        <strong>Paid: </strong>
-                                        <field name="paid_amount" widget="monetary"/>
-                                    </div>
-                                    <div t-if="record.balance_amount.raw_value != 0">
-                                        <strong>Balance: </strong>
-                                        <field name="balance_amount" widget="monetary"/>
-                                    </div>
-                                </div>
-                                <div class="oe_kanban_footer">
-                                    <div class="oe_kanban_footer_left">
-                                        <span class="o_field_badge">
-                                            <field name="state"/>
-                                        </span>
-                                    </div>
-                                    <div class="oe_kanban_footer_right">
-                                        <field name="stage_responsible_user_id" widget="many2one_avatar_user"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
+    <!-- Menu Action for Stage Configuration -->
+    <record id="action_sale_order_stage" model="ir.actions.act_window">
+        <field name="name">Sale Order Stages</field>
+        <field name="res_model">sale.order.stage</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure Sale Order Stages
+            </p>
+            <p>
+                Set up the stages for your sale order workflow, assign responsible users or groups for each stage.
+            </p>
         </field>
     </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_sale_order_stages" name="Sale Order Stages" parent="sale.sale_menu_root" action="action_sale_order_stage" sequence="99"/>
 </odoo>

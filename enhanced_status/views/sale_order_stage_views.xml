@@ -1,63 +1,181 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Stage Configuration Form View -->
-    <record id="view_sale_order_stage_form" model="ir.ui.view">
-        <field name="name">sale.order.stage.form</field>
-        <field name="model">sale.order.stage</field>
+    <!-- Sale Order Form View -->
+    <record id="view_order_form_enhanced" model="ir.ui.view">
+        <field name="name">sale.order.form.enhanced</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <form string="Sale Order Stage">
-                <sheet>
-                    <group>
-                        <group>
-                            <field name="name"/>
-                            <field name="stage_code"/>
-                            <field name="sequence"/>
-                        </group>
-                        <group>
-                            <field name="responsible_user_id"/>
-                            <field name="responsible_group_id"/>
-                            <field name="fold"/>
-                        </group>
-                    </group>
-                    <group>
-                        <field name="description" placeholder="Description of this stage and its requirements..."/>
-                    </group>
-                </sheet>
-            </form>
+            <!-- Replace status bar -->
+            <field name="state" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="draft,documentation,calculation,approved,completed"/>
+            </field>
+
+            <!-- Add invisible fields for button visibility -->
+            <field name="state" position="after">
+                <field name="show_confirm_button" invisible="1"/>
+                <field name="show_documentation_button" invisible="1"/>
+                <field name="show_calculation_button" invisible="1"/>
+                <field name="show_approve_button" invisible="1"/>
+                <field name="show_complete_button" invisible="1"/>
+                <field name="show_unlock_button" invisible="1"/>
+                <field name="is_locked" invisible="1"/>
+                <field name="can_unlock" invisible="1"/>
+            </field>
+
+            <!-- Add stage and responsible fields after partner_id -->
+            <field name="partner_id" position="after">
+                <field name="stage_id" options="{'no_create': True, 'no_open': True}"/>
+                <field name="stage_responsible_user_id" readonly="1" invisible="not stage_responsible_user_id"/>
+                <field name="stage_responsible_group_id" readonly="1" invisible="not stage_responsible_group_id"/>
+            </field>
+
+            <!-- Add financial tracking fields using XPath -->
+            <xpath expr="//field[@name='client_order_ref']" position="after">
+                <field name="billing_status" widget="badge"/>
+                <field name="payment_status" widget="badge"/>
+                <field name="invoiced_amount"/>
+                <field name="paid_amount"/>
+                <field name="balance_amount"/>
+            </xpath>
+
+            <!-- Add reconciliation notes after note field -->
+            <xpath expr="//field[@name='note']" position="after">
+                <separator string="Reconciliation" invisible="state in ['draft', 'documentation']"/>
+                <field name="reconciliation_notes" placeholder="Add reconciliation notes here..." invisible="state in ['draft', 'documentation']"/>
+            </xpath>
+
+            <!-- Stage-specific buttons before confirm button -->
+            <xpath expr="//button[@name='action_confirm']" position="before">
+                <!-- Documentation Button -->
+                <button name="action_move_to_documentation" type="object" string="Move to Documentation" class="btn-primary" invisible="not show_documentation_button"/>
+
+                <!-- Calculation Button -->
+                <button name="action_move_to_calculation" type="object" string="Move to Calculation" class="btn-primary" invisible="not show_calculation_button"/>
+
+                <!-- Approve Button -->
+                <button name="action_move_to_approved" type="object" string="Approve" class="btn-success" invisible="not show_approve_button"/>
+            </xpath>
+
+            <!-- Modify confirm button visibility -->
+            <xpath expr="//button[@name='action_confirm']" position="attributes">
+                <attribute name="invisible">not show_confirm_button</attribute>
+            </xpath>
+
+            <!-- Additional buttons after confirm -->
+            <xpath expr="//button[@name='action_confirm']" position="after">
+                <!-- Complete Order Button -->
+                <button name="action_complete_order" type="object" string="Mark as Completed" class="btn-success" invisible="not show_complete_button"/>
+
+                <!-- Unlock Button -->
+                <button name="action_unlock_order" type="object" string="Unlock Order" class="btn-warning" invisible="not show_unlock_button"/>
+            </xpath>
+
+            <!-- Make fields readonly when locked -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="readonly">is_locked and not can_unlock</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']" position="attributes">
+                <attribute name="readonly">is_locked and not can_unlock</attribute>
+            </xpath>
+
+            <!-- Lock payment and price fields if they exist -->
+            <xpath expr="//field[@name='payment_term_id']" position="attributes">
+                <attribute name="readonly">is_locked and not can_unlock</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='pricelist_id']" position="attributes">
+                <attribute name="readonly">is_locked and not can_unlock</attribute>
+            </xpath>
         </field>
     </record>
 
-    <!-- Stage Configuration Tree View -->
-    <record id="view_sale_order_stage_tree" model="ir.ui.view">
-        <field name="name">sale.order.stage.tree</field>
-        <field name="model">sale.order.stage</field>
+    <!-- Sale Order Tree View -->
+    <record id="view_quotation_tree_enhanced" model="ir.ui.view">
+        <field name="name">sale.order.tree.enhanced</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
         <field name="arch" type="xml">
-            <tree string="Sale Order Stages" editable="bottom">
-                <field name="sequence" widget="handle"/>
-                <field name="name"/>
-                <field name="stage_code"/>
-                <field name="responsible_user_id" widget="many2one_avatar_user"/>
-                <field name="responsible_group_id"/>
-                <field name="fold"/>
-            </tree>
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="billing_status" widget="badge"/>
+                <field name="payment_status" widget="badge"/>
+                <field name="invoiced_amount" sum="Total Invoiced"/>
+                <field name="paid_amount" sum="Total Paid"/>
+                <field name="balance_amount" sum="Total Balance"/>
+                <field name="stage_responsible_user_id" widget="many2one_avatar_user"/>
+            </xpath>
         </field>
     </record>
 
-    <!-- Menu Action for Stage Configuration -->
-    <record id="action_sale_order_stage" model="ir.actions.act_window">
-        <field name="name">Sale Order Stages</field>
-        <field name="res_model">sale.order.stage</field>
-        <field name="view_mode">tree,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Configure Sale Order Stages
-            </p>
-            <p>
-                Set up the stages for your sale order workflow, assign responsible users or groups for each stage.
-            </p>
+    <!-- Enhanced Kanban View -->
+    <record id="view_sale_order_kanban_enhanced" model="ir.ui.view">
+        <field name="name">sale.order.kanban.enhanced</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column" quick_create="false">
+                <field name="stage_id"/>
+                <field name="billing_status"/>
+                <field name="payment_status"/>
+                <field name="amount_total"/>
+                <field name="invoiced_amount"/>
+                <field name="paid_amount"/>
+                <field name="balance_amount"/>
+                <field name="stage_responsible_user_id"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_title">
+                                    <strong>
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                                <div class="o_kanban_record_subtitle">
+                                    <field name="partner_id"/>
+                                </div>
+                                <div class="oe_kanban_details">
+                                    <div>
+                                        <span class="o_field_badge o_badge_sm">
+                                            <field name="billing_status"/>
+                                        </span>
+                                        <span class="o_field_badge o_badge_sm">
+                                            <field name="payment_status"/>
+                                        </span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <strong>Total: </strong>
+                                        <field name="amount_total" widget="monetary"/>
+                                    </div>
+                                    <div>
+                                        <strong>Invoiced: </strong>
+                                        <field name="invoiced_amount" widget="monetary"/>
+                                    </div>
+                                    <div>
+                                        <strong>Paid: </strong>
+                                        <field name="paid_amount" widget="monetary"/>
+                                    </div>
+                                    <div t-if="record.balance_amount.raw_value != 0">
+                                        <strong>Balance: </strong>
+                                        <field name="balance_amount" widget="monetary"/>
+                                    </div>
+                                </div>
+                                <div class="oe_kanban_footer">
+                                    <div class="oe_kanban_footer_left">
+                                        <span class="o_field_badge">
+                                            <field name="state"/>
+                                        </span>
+                                    </div>
+                                    <div class="oe_kanban_footer_right">
+                                        <field name="stage_responsible_user_id" widget="many2one_avatar_user"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
         </field>
     </record>
-
-    <!-- Menu Item -->
-    <menuitem id="menu_sale_order_stages" name="Sale Order Stages" parent="sale.sale_menu_root" action="action_sale_order_stage" sequence="99"/>
 </odoo>
