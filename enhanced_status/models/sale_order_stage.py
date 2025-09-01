@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields
 
 class SaleOrderStage(models.Model):
     _name = 'sale.order.stage'
@@ -8,7 +8,7 @@ class SaleOrderStage(models.Model):
     name = fields.Char('Stage Name', required=True)
     sequence = fields.Integer('Sequence', default=10)
     description = fields.Text('Description')
-    fold = fields.Boolean('Folded in Kanban')
+    fold = fields.Boolean('Folded in Kanban', default=False)
     stage_code = fields.Selection([
         ('draft', 'Draft'),
         ('documentation', 'Documentation'),

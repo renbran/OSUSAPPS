@@ -17,10 +17,8 @@
     'website': 'https://www.yourcompany.com',
     'depends': ['sale', 'account'],
     'data': [
-        'security/security.xml',
         'security/ir.model.access.csv',
-        'data/sale_order_stages.xml',
-        'views/sale_order_stage_views.xml',
+        'data/sale_order_stage_views.xml',
         'views/sale_order_views.xml',
         'data/ir_cron_data.xml',
     ],
