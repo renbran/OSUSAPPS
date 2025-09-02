@@ -2,6 +2,7 @@ from odoo import models, fields, api
 from odoo.exceptions import AccessError
 
 class SaleOrder(models.Model):
+    picking_ids = fields.One2many('stock.picking', 'sale_id', string='Pickings')
     _inherit = 'sale.order'
 
     # Custom workflow fields
