@@ -3,6 +3,95 @@ from odoo.exceptions import UserError, ValidationError
 import logging
 
 class SaleOrder(models.Model):
+    commission_statement_count = fields.Integer(
+        string='Commission Statement Count',
+        compute='_compute_commission_statement_count',
+        help="Number of commission partners eligible for statements"
+    )
+
+    @api.depends('agent1_partner_id', 'agent2_partner_id', 'broker_partner_id', 
+                 'referrer_partner_id', 'cashback_partner_id', 'other_external_partner_id',
+                 'consultant_id', 'manager_id', 'second_agent_id', 'director_id',
+                 'manager_partner_id', 'director_partner_id')
+    def _compute_commission_statement_count(self):
+        """Compute number of commission partners for this order."""
+        for order in self:
+            partners = set()
+            commission_partners = [
+                order.agent1_partner_id,
+                order.agent2_partner_id,
+                order.broker_partner_id,
+                order.referrer_partner_id,
+                order.cashback_partner_id,
+                order.other_external_partner_id,
+                order.consultant_id,
+                order.manager_id,
+                order.second_agent_id,
+                order.director_id,
+                order.manager_partner_id,
+                order.director_partner_id,
+            ]
+            for partner in commission_partners:
+                if partner:
+                    partners.add(partner.id)
+            order.commission_statement_count = len(partners)
+
+    def action_view_commission_statement(self):
+        """Open commission statement wizard for this order."""
+        self.ensure_one()
+        if not self.env.user.has_group('base.group_user'):
+            from odoo.exceptions import AccessError
+            raise AccessError("You don't have permission to view commission statements.")
+        commission_partners = self._get_commission_partners()
+        if not commission_partners:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'No Commission Partners',
+                    'message': 'This sale order has no commission partners defined.',
+                    'type': 'warning',
+                }
+            }
+        context = {
+            'default_sale_order_id': self.id,
+            'default_date_from': self.date_order.date() if self.date_order else fields.Date.today(),
+            'default_date_to': fields.Date.today(),
+        }
+        if len(commission_partners) == 1:
+            context['default_partner_id'] = commission_partners[0].id
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Commission Statement',
+            'res_model': 'commission.statement.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': context,
+        }
+
+    def _get_commission_partners(self):
+        """Get all partners with commissions on this order."""
+        partners = []
+        commission_partner_fields = [
+            'agent1_partner_id',
+            'agent2_partner_id', 
+            'broker_partner_id',
+            'referrer_partner_id',
+            'cashback_partner_id',
+            'other_external_partner_id',
+            'consultant_id',
+            'manager_id',
+            'second_agent_id',
+            'director_id',
+            'manager_partner_id',
+            'director_partner_id',
+        ]
+        for field_name in commission_partner_fields:
+            if hasattr(self, field_name):
+                partner = getattr(self, field_name)
+                if partner and partner not in partners:
+                    partners.append(partner)
+        return partners
     def action_open_commission_report_wizard(self):
         """Open the commission report wizard for this sale order."""
         self.ensure_one()
