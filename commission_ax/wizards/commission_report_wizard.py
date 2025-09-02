@@ -5,6 +5,15 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 class CommissionReportWizard(models.TransientModel):
+    include_notes = fields.Boolean(
+        'Include Commission Notes',
+        default=True,
+        help="Include commission notes and blocked reasons if any"
+    )
+    report_type = fields.Selection([
+        ('detailed', 'Detailed Commission Report'),
+        ('summary', 'Summary Report')
+    ], default='detailed', string='Report Type', required=True)
     """Wizard to generate commission reports."""
     
     _name = 'commission.report.wizard'
