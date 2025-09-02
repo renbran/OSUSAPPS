@@ -3,6 +3,19 @@ from odoo.exceptions import UserError, ValidationError
 import logging
 
 class SaleOrder(models.Model):
+    def action_open_commission_report_wizard(self):
+        """Open the commission report wizard for this sale order."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Commission Report Wizard',
+            'res_model': 'commission.report.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_sale_order_id': self.id,
+            }
+        }
     project_id = fields.Many2one('project.project', string='Project')
     purchase_order_total_amount = fields.Monetary(
         string="Total Purchase Order Amount",
