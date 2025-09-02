@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<data noupdate="1">
+
+    <record model="ir.module.category" id="bhs_access_category">
+        <field name="name">BHS Access</field>
+        <field name="description">BHS Access rights</field>
+        <field name="sequence">66</field>
+    </record>
+
+    <record id="bhs_ml" model="res.groups">
+        <field name="name"><![CDATA[BHS-5-M&L]]></field>
+        <field name="category_id" ref="bhs_access.bhs_access_category"/>
+    </record>
+</data>
+
+</odoo>
