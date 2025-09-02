@@ -2,25 +2,44 @@
 <odoo>
     <data>
  by <span t-field="o.create_uid.name"/>
-        <!-- QWeb Template for Professional Commission Report -->
-        <template id="commission_payout_report_template_professional" name="Professional Commission Report">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="o">
+    <!-- QWeb Template for Professional Commission Report -->
+    <template id="commission_payout_report_template_professional" name="Professional Commission Report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
                     ...existing code...
-                </t>
-            </t>
-        </template>
-
-        <!-- Report Action -->
-        <record id="action_report_commission_payout_professional" model="ir.actions.report">
-            <field name="name">Professional Commission Report</field>
-            <field name="model">sale.order</field>
-            <field name="report_type">qweb-pdf</field>
-            <field name="report_name">commission_ax.commission_payout_report_template_professional</field>
-            <field name="file">commission_payout_report_template_professional</field>
-            <field name="print_report_name">'Commission Report - %s' % (object.name)</field>
-            <field name="binding_model_id" eval="ref('sale.model_sale_order')"/>
-            <field name="binding_type">report</field>
-        </record>
-</data>
-</odoo>
+                                <?xml version="1.0" encoding="utf-8"?>
+                <odoo>
+                    <data>
+                        <!-- QWeb Template for Professional Commission Report -->
+                        <template id="commission_payout_report_template_professional" name="Professional Commission Report">
+                            <t t-call="web.html_container">
+                                <t t-foreach="docs" t-as="o">
+                                    <!-- Helpers -->
+                                    <t t-set="external_total" t-value="(o.broker_amount or 0) + (o.referrer_amount or 0) + (o.cashback_amount or 0) + (o.other_external_amount or 0)"/>
+                                    <t t-set="internal_total" t-value="(o.agent1_amount or 0) + (o.agent2_amount or 0) + (o.manager_amount or 0) + (o.director_amount or 0)"/>
+                                    <t t-set="total_commission" t-value="external_total + internal_total"/>
+                                    <t t-set="net_before_vat" t-value="(o.amount_total or 0) - total_commission"/>
+                                    <t t-set="vat_rate" t-value="0.05"/>
+                                    <t t-set="vat_amount" t-value="net_before_vat * vat_rate"/>
+                                    <t t-set="net_commission" t-value="net_before_vat - vat_amount"/>
+                                    <t t-call="web.external_layout">
+                                        <div class="page">
+                                            ...existing code...
+                                        </div>
+                                    </t>
+                                </t>
+                            </t>
+                        </template>
+                        <!-- Report Action -->
+                        <record id="action_report_commission_payout_professional" model="ir.actions.report">
+                            <field name="name">Professional Commission Report</field>
+                            <field name="model">sale.order</field>
+                            <field name="report_type">qweb-pdf</field>
+                            <field name="report_name">commission_ax.commission_payout_report_template_professional</field>
+                            <field name="file">commission_payout_report_template_professional</field>
+                            <field name="print_report_name">'Commission Report - %s' % (object.name)</field>
+                            <field name="binding_model_id" eval="ref('sale.model_sale_order')"/>
+                            <field name="binding_type">report</field>
+                        </record>
+                    </data>
+                </odoo>
