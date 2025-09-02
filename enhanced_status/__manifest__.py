@@ -19,9 +19,8 @@
     'data': [
         'security/ir.model.access.csv',
         'security/security.xml',
+        'data/sale_order_stage_views.xml',
         'views/sale_order_views.xml',
-        'views/sale_order_stage_views.xml',
-        'data/sale_order_stages.xml',
         'data/ir_cron_data.xml',
     ],
     'installable': True,

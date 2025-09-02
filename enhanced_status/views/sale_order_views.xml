@@ -1,109 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Sale Order Form View -->
+    <!-- Enhanced Sale Order Form View -->
     <record id="view_order_form_enhanced" model="ir.ui.view">
         <field name="name">sale.order.form.enhanced</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Replace status bar -->
-            <field name="state" position="replace">
-                <field name="state" widget="statusbar" statusbar_visible="draft,documentation,calculation,approved,completed"/>
-            </field>
 
-            <!-- Add stage and responsible fields -->
-            <field name="partner_id" position="after">
-                <field name="stage_id" options="{'no_create': True, 'no_open': True}"/>
-                <field name="stage_responsible_user_id" readonly="1" invisible="not stage_responsible_user_id"/>
-                <field name="stage_responsible_group_id" readonly="1" invisible="not stage_responsible_group_id"/>
-            </field>
+            <!-- Add custom status bar -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="custom_state" widget="statusbar" statusbar_visible="draft,documentation,calculation,approved,completed" invisible="state not in ['draft', 'sent', 'sale']"/>
+            </xpath>
 
-            <!-- Add financial tracking fields -->
-            <group name="sale_info_left" position="inside">
-                <field name="billing_status" widget="badge"/>
-                <field name="payment_status" widget="badge"/>
-            </group>
-
-            <group name="sale_info_right" position="inside">
-                <field name="invoiced_amount"/>
-                <field name="paid_amount"/>
-                <field name="balance_amount"/>
-            </group>
-
-            <!-- Add reconciliation notes -->
-            <field name="note" position="after">
-                <separator string="Reconciliation" invisible="state in ['draft', 'documentation']"/>
-                <field name="reconciliation_notes" placeholder="Add reconciliation notes here..." invisible="state in ['draft', 'documentation']"/>
-            </field>
-
-            <!-- Add invisible fields for button visibility -->
-            <field name="state" position="after">
-                <field name="show_confirm_button" invisible="1"/>
-                <field name="show_documentation_button" invisible="1"/>
-                <field name="show_calculation_button" invisible="1"/>
-                <field name="show_approve_button" invisible="1"/>
-                <field name="show_complete_button" invisible="1"/>
-                <field name="show_unlock_button" invisible="1"/>
+            <!-- Add stage and control fields -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="stage_id" options="{'no_create': True, 'no_open': True}" invisible="state not in ['draft', 'sent', 'sale']"/>
                 <field name="is_locked" invisible="1"/>
                 <field name="can_unlock" invisible="1"/>
-            </field>
+            </xpath>
 
-            <!-- Stage-specific buttons -->
-            <button name="action_confirm" position="before">
-                <!-- Documentation Button -->
-                <button name="action_move_to_documentation" type="object" string="Move to Documentation" class="btn-primary" invisible="not show_documentation_button"/>
+            <!-- Add financial tracking fields -->
+            <xpath expr="//field[@name='client_order_ref']" position="after">
+                <field name="billing_status" widget="badge" invisible="state == 'draft'"/>
+                <field name="payment_status" widget="badge" invisible="state == 'draft'"/>
+                <field name="invoiced_amount" invisible="state == 'draft'"/>
+                <field name="paid_amount" invisible="state == 'draft'"/>
+                <field name="balance_amount" invisible="state == 'draft'"/>
+            </xpath>
 
-                <!-- Calculation Button -->
-                <button name="action_move_to_calculation" type="object" string="Move to Calculation" class="btn-primary" invisible="not show_calculation_button"/>
+            <!-- Add reconciliation notes -->
+            <xpath expr="//field[@name='note']" position="after">
+                <separator string="Reconciliation" invisible="custom_state in ['draft', 'documentation']"/>
+                <field name="reconciliation_notes" placeholder="Add reconciliation notes..." invisible="custom_state in ['draft', 'documentation']"/>
+            </xpath>
 
-                <!-- Approve Button -->
-                <button name="action_move_to_approved" type="object" string="Approve" class="btn-success" invisible="not show_approve_button"/>
-            </button>
+            <!-- Add workflow buttons -->
+            <xpath expr="//button[@name='action_quotation_send']" position="after">
 
-            <!-- Confirm button visibility -->
-            <button name="action_confirm" position="attributes">
-                <attribute name="invisible">not show_confirm_button</attribute>
-            </button>
+                <!-- Normal workflow buttons -->
+                <button name="action_move_to_documentation" type="object" string="Move to Documentation" class="btn-primary" invisible="custom_state != 'draft' or state not in ['draft', 'sent']"/>
 
-            <!-- Additional buttons after confirm -->
-            <button name="action_confirm" position="after">
-                <!-- Complete Order Button -->
-                <button name="action_complete_order" type="object" string="Mark as Completed" class="btn-success" invisible="not show_complete_button"/>
+                <button name="action_move_to_calculation" type="object" string="Move to Calculation" class="btn-primary" invisible="custom_state != 'documentation' or state not in ['draft', 'sent', 'sale']"/>
 
-                <!-- Unlock Button -->
-                <button name="action_unlock_order" type="object" string="Unlock Order" class="btn-warning" invisible="not show_unlock_button"/>
-            </button>
+                <button name="action_move_to_approved" type="object" string="Approve" class="btn-success" invisible="custom_state != 'calculation' or state not in ['draft', 'sent', 'sale']"/>
 
-            <!-- Make fields readonly when locked -->
-            <field name="partner_id" position="attributes">
+                <button name="action_complete_order" type="object" string="Mark Completed" class="btn-success" invisible="custom_state != 'approved' or state != 'sale'"/>
+
+                <button name="action_unlock_order" type="object" string="Unlock Order" class="btn-warning" invisible="not is_locked or not can_unlock"/>
+
+                <!-- Emergency override buttons -->
+                <button name="action_emergency_complete" type="object" string="🚨 Emergency Complete" class="btn-danger" invisible="custom_state == 'completed' or state != 'sale' or not can_unlock" confirm="Emergency override - force complete this order?"/>
+
+                <button name="action_emergency_reset" type="object" string="🔄 Emergency Reset" class="btn-warning" invisible="custom_state != 'completed' or not can_unlock" confirm="Reset completed order to approved?"/>
+
+            </xpath>
+
+            <!-- Lock fields when completed -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
                 <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </field>
-            <field name="order_line" position="attributes">
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']" position="attributes">
                 <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </field>
-            <field name="payment_term_id" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </field>
-            <field name="pricelist_id" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </field>
+            </xpath>
+
         </field>
     </record>
 
-    <!-- Sale Order Tree View -->
+    <!-- Enhanced Tree View -->
     <record id="view_quotation_tree_enhanced" model="ir.ui.view">
         <field name="name">sale.order.tree.enhanced</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_quotation_tree"/>
         <field name="arch" type="xml">
-            <field name="amount_total" position="after">
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="custom_state" widget="badge"/>
                 <field name="billing_status" widget="badge"/>
                 <field name="payment_status" widget="badge"/>
                 <field name="invoiced_amount" sum="Total Invoiced"/>
                 <field name="paid_amount" sum="Total Paid"/>
-                <field name="balance_amount" sum="Total Balance"/>
-                <field name="stage_responsible_user_id" widget="many2one_avatar_user"/>
-            </field>
+                <field name="balance_amount" sum="Balance"/>
+            </xpath>
         </field>
     </record>
 
@@ -114,14 +91,15 @@
         <field name="arch" type="xml">
             <kanban default_group_by="stage_id" class="o_kanban_small_column" quick_create="false">
                 <field name="stage_id"/>
+                <field name="custom_state"/>
                 <field name="billing_status"/>
                 <field name="payment_status"/>
                 <field name="amount_total"/>
                 <field name="invoiced_amount"/>
                 <field name="paid_amount"/>
                 <field name="balance_amount"/>
-                <field name="stage_responsible_user_id"/>
-                <field name="state"/>
+                <field name="partner_id"/>
+                <field name="name"/>
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click">
@@ -136,38 +114,27 @@
                                 </div>
                                 <div class="oe_kanban_details">
                                     <div>
-                                        <span class="o_field_badge o_badge_sm">
+                                        <span class="o_field_badge">
+                                            <field name="custom_state"/>
+                                        </span>
+                                        <span class="o_field_badge">
                                             <field name="billing_status"/>
                                         </span>
-                                        <span class="o_field_badge o_badge_sm">
+                                        <span class="o_field_badge">
                                             <field name="payment_status"/>
                                         </span>
                                     </div>
-                                    <div class="mt-2">
+                                    <div>
                                         <strong>Total: </strong>
                                         <field name="amount_total" widget="monetary"/>
                                     </div>
-                                    <div>
+                                    <div t-if="record.invoiced_amount.raw_value > 0">
                                         <strong>Invoiced: </strong>
                                         <field name="invoiced_amount" widget="monetary"/>
                                     </div>
-                                    <div>
+                                    <div t-if="record.paid_amount.raw_value > 0">
                                         <strong>Paid: </strong>
                                         <field name="paid_amount" widget="monetary"/>
-                                    </div>
-                                    <div t-if="record.balance_amount.raw_value != 0">
-                                        <strong>Balance: </strong>
-                                        <field name="balance_amount" widget="monetary"/>
-                                    </div>
-                                </div>
-                                <div class="oe_kanban_footer">
-                                    <div class="oe_kanban_footer_left">
-                                        <span class="o_field_badge">
-                                            <field name="state"/>
-                                        </span>
-                                    </div>
-                                    <div class="oe_kanban_footer_right">
-                                        <field name="stage_responsible_user_id" widget="many2one_avatar_user"/>
                                     </div>
                                 </div>
                             </div>
