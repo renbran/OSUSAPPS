@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sale_order,sale.order,model_sale_order,,1,1,1,1
 access_purchase_order,purchase.order,model_purchase_order,,1,1,1,1
+access_commission_partner_statement_wizard,commission.partner.statement.wizard,model_commission_partner_statement_wizard,base.group_user,1,0,0,0
