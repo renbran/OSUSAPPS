@@ -1,7 +1,3 @@
-# wizards/__init__.py
-# -*- coding: utf-8 -*-
-"""Commission wizards initialization."""
-
 from . import commission_cancel_wizard
 from . import commission_draft_wizard
 from . import commission_report_wizard

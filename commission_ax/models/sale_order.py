@@ -1,8 +1,3 @@
-# Add logger import at the top of the file
-import logging
-
-# Define logger for this module
-_logger = logging.getLogger(__name__)
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 import logging
@@ -35,19 +30,6 @@ class SaleOrder(models.Model):
             }
         }
 
-    def action_open_commission_report_wizard(self):
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Commission Report Wizard'),
-            'res_model': 'commission.partner.statement.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_sale_order_id': self.id,
-            },
-        }
-
     def action_reset_commissions(self):
         """Reset commission status to draft and cancel related purchase orders."""
         self.commission_status = 'draft'
@@ -67,17 +49,6 @@ class SaleOrder(models.Model):
         }
     _inherit = 'sale.order'
 
-    project_id = fields.Many2one(
-        'project.project',
-        string='Project',
-        help='Related project for this sale order',
-    )
-
-    unit_id = fields.Many2one(
-        'project.unit',
-        string='Unit',
-        help='Related unit for this sale order',
-    )
     # [Previous fields remain the same - keeping all existing fields]
     # Legacy Commission fields with enhanced commission type logic
     consultant_id = fields.Many2one('res.partner', string="Consultant")
@@ -89,23 +60,23 @@ class SaleOrder(models.Model):
     consultant_comm_percentage = fields.Float(string="Consultant Rate", default=0.0)
     salesperson_commission = fields.Monetary(string="Consultant Commission Amount", compute="_compute_commissions", store=True)
 
-    SM_ID = fields.Many2one('res.partner', string="Senior Manager", help="Senior Manager for this deal")
+    manager_id = fields.Many2one('res.partner', string="Manager")
     manager_legacy_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
         ('percent_untaxed_total', 'Percentage of Untaxed Total')
-    ], string="Senior Manager Commission Type", default='percent_untaxed_total')
-    manager_comm_percentage = fields.Float(string="Senior Manager Rate", default=0.0)
-    manager_commission = fields.Monetary(string="Senior Manager Commission Amount", compute="_compute_commissions", store=True)
+    ], string="Manager Commission Type", default='percent_untaxed_total')
+    manager_comm_percentage = fields.Float(string="Manager Rate", default=0.0)
+    manager_commission = fields.Monetary(string="Manager Commission Amount", compute="_compute_commissions", store=True)
 
-    CXO_ID = fields.Many2one('res.partner', string="Management", help="Management (CXO/Director) for this deal")
+    director_id = fields.Many2one('res.partner', string="Director")
     director_legacy_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
         ('percent_untaxed_total', 'Percentage of Untaxed Total')
-    ], string="Management Commission Type", default='percent_untaxed_total')
-    director_comm_percentage = fields.Float(string="Management Rate", default=3.0)
-    director_commission = fields.Monetary(string="Management Commission Amount", compute="_compute_commissions", store=True)
+    ], string="Director Commission Type", default='percent_untaxed_total')
+    director_comm_percentage = fields.Float(string="Director Rate", default=3.0)
+    director_commission = fields.Monetary(string="Director Commission Amount", compute="_compute_commissions", store=True)
 
     # Second Agent fields
     second_agent_id = fields.Many2one('res.partner', string="Second Agent")
@@ -548,11 +519,11 @@ class SaleOrder(models.Model):
                 'description': f"Consultant Commission for SO: {self.name}"
             })
 
-        if self.SM_ID and self.manager_commission > 0:
+        if self.manager_id and self.manager_commission > 0:
             commissions.append({
-                'partner': self.SM_ID,
+                'partner': self.manager_id,
                 'amount': self.manager_commission,
-                'description': f"Senior Manager Commission for SO: {self.name}"
+                'description': f"Manager Commission for SO: {self.name}"
             })
 
         if self.second_agent_id and self.second_agent_commission > 0:
@@ -562,11 +533,11 @@ class SaleOrder(models.Model):
                 'description': f"Second Agent Commission for SO: {self.name}"
             })
 
-        if self.CXO_ID and self.director_commission > 0:
+        if self.director_id and self.director_commission > 0:
             commissions.append({
-                'partner': self.CXO_ID,
+                'partner': self.director_id,
                 'amount': self.director_commission,
-                'description': f"Management Commission for SO: {self.name}"
+                'description': f"Director Commission for SO: {self.name}"
             })
 
         # External commissions
