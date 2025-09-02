@@ -58,32 +58,31 @@
             <field name="arch" type="xml">
                 <form string="Generate Commission Report">
                     <sheet>
-                        <group invisible="context.get('report_generated', False)">
-                            <field name="sale_order_id" readonly="context.get('default_sale_order_id', False)"/>
+                        <group modifiers="{'invisible': [('report_generated', '=', True)]}">
+                            <field name="sale_order_id" modifiers="{'readonly': [('report_generated', '=', True)]}"/>
                         </group>
-                        
-                        <group invisible="not context.get('report_generated', False)">
+
+                        <group modifiers="{'invisible': [('report_generated', '=', False)]}">
                             <div class="alert alert-success" role="alert">
                                 <h4><i class="fa fa-check-circle"/> Report Generated Successfully</h4>
                                 <p>Your commission report has been generated and is ready for download.</p>
                             </div>
-                            
                             <field name="report_filename" readonly="1"/>
-                            <field name="report_data" invisible="1"/>
+                            <field name="report_data" modifiers="{'invisible': [('report_generated', '=', False)]}"/>
                         </group>
                     </sheet>
                     
                     <footer>
-                        <button name="action_generate_report" 
-                                string="Generate Report" 
-                                type="object" 
-                                class="btn-primary"
-                                invisible="context.get('report_generated', False)"/>
-                        <button name="action_download_report" 
-                                string="Download Report" 
-                                type="object" 
-                                class="btn-primary"
-                                invisible="not context.get('report_generated', False)"/>
+            <button name="action_generate_report" 
+                string="Generate Report" 
+                type="object" 
+                class="btn-primary"
+                modifiers="{'invisible': [('report_generated', '=', True)]}"/>
+            <button name="action_download_report" 
+                string="Download Report" 
+                type="object" 
+                class="btn-primary"
+                modifiers="{'invisible': [('report_generated', '=', False)]}"/>
                         <button string="Close" 
                                 special="cancel" 
                                 class="btn-secondary"/>
