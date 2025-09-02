@@ -18,6 +18,7 @@
     'depends': ['sale', 'account'],
     'data': [
         'security/ir.model.access.csv',
+        'security/security.xml',
         'data/sale_order_stage_views.xml',
         'views/sale_order_views.xml',
         'data/ir_cron_data.xml',
