@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_sale_order_stage_tree" model="ir.ui.view">
+        <field name="name">sale.order.stage.tree</field>
+        <field name="model">sale.order.stage</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="sequence"/>
+                <field name="is_active"/>
+                <field name="responsible_id"/>
+                <field name="show_in_kanban"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_sale_order_stage_form" model="ir.ui.view">
+        <field name="name">sale.order.stage.form</field>
+        <field name="model">sale.order.stage</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="is_active"/>
+                        <field name="responsible_id"/>
+                        <field name="show_in_kanban"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="stage_draft" model="sale.order.stage">
+        <field name="name">Draft</field>
+        <field name="sequence">1</field>
+        <field name="is_active">True</field>
+        <field name="show_in_kanban">True</field>
+    </record>
+    <record id="stage_documentation" model="sale.order.stage">
+        <field name="name">Documentation</field>
+        <field name="sequence">2</field>
+        <field name="is_active">True</field>
+        <field name="show_in_kanban">True</field>
+    </record>
+    <record id="stage_calculation" model="sale.order.stage">
+        <field name="name">Calculation</field>
+        <field name="sequence">3</field>
+        <field name="is_active">True</field>
+        <field name="show_in_kanban">True</field>
+    </record>
+    <record id="stage_approved" model="sale.order.stage">
+        <field name="name">Approved</field>
+        <field name="sequence">4</field>
+        <field name="is_active">True</field>
+        <field name="show_in_kanban">True</field>
+    </record>
+    <record id="stage_completed" model="sale.order.stage">
+        <field name="name">Completed</field>
+        <field name="sequence">5</field>
+        <field name="is_active">True</field>
+        <field name="show_in_kanban">True</field>
+    </record>
+</odoo>

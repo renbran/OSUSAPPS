@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_sale_order_form_enhanced" model="ir.ui.view">
+        <field name="name">sale.order.form.enhanced.status</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="replace">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,documentation,calculation,approved,completed"/>
+                    <button name="action_set_documentation" type="object" string="Set Documentation" attrs="{'invisible': [('state', '!=', 'draft')]}" class="btn-primary"/>
+                    <button name="action_set_calculation" type="object" string="Set Calculation" attrs="{'invisible': [('state', '!=', 'documentation')]}" class="btn-info"/>
+                    <button name="action_set_approved" type="object" string="Approve" attrs="{'invisible': [('state', '!=', 'calculation')]}" class="btn-success"/>
+                    <button name="action_set_completed" type="object" string="Complete" attrs="{'invisible': [('state', '!=', 'approved')]}" class="btn-secondary"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+</odoo>
