@@ -1,8 +1,8 @@
 {
     'name': 'Advanced Commission Management',
-    'version': '17.0.1.0.0',
+    'version': '17.0.2.0.0',
     'category': 'Sales',
-    'summary': 'Advanced commission management with business logic constraints and professional reporting',
+    'summary': 'Advanced commission management with business logic constraints, professional reporting and commission statements',
     'description': """
 Advanced Commission Management System
 ====================================
@@ -27,6 +27,15 @@ Reporting Features:
 - Export to PDF functionality matching company branding
 - Comprehensive commission breakdowns
 - VAT calculations and net company share
+- **NEW: Commission Statement Reports per agent & deal (PDF/XLSX)**
+
+Commission Statement Features:
+- Generate detailed commission statements for individual agents
+- Professional PDF reports with company branding
+- Excel export for further analysis
+- Multi-deal summaries with filtering options
+- Access control for agents, sales managers, and accounting
+- One-click access from sale order forms
 
 Technical Features:
 - Robust error handling and logging
@@ -34,6 +43,7 @@ Technical Features:
 - Enhanced UI with status indicators
 - Search filters for commission-related records
 - Cascade operations with user confirmations
+- Performance optimized for large datasets
     """,
     'author': 'Your Company',
     'website': 'https://www.yourcompany.com',
@@ -43,6 +53,7 @@ Technical Features:
         'purchase', 
         'account',
         'stock',
+        'portal',
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -50,21 +61,15 @@ Technical Features:
         'views/sale_order.xml',
         'views/purchase_order.xml',
         'views/commission_wizard_views.xml',
-        'views/commission_partner_statement_wizard.xml',
+        'views/commission_statement_wizard_views.xml',
+        'views/sale_order_statement_views.xml',
         'data/commission_report_wizard_action.xml',
         'data/commission_purchase_orders_action.xml',
         'report/commission_report.xml',
         'report/commission_report_template.xml',
         'report/commission_calculation_report.xml',
+        'report/commission_statement_report.xml',
         'report/template_report.xml',
-        'wizards/commission_cancel_wizard.py',
-        'wizards/commission_draft_wizard.py',
-        'wizards/commission_partner_statement_wizard.py',
-        'wizards/commission_report_wizard.py',
-        'models/purchase_order.py',
-        'models/sale_order.py',
-        'reports/commission_report.py',
-        'reports/__init__.py',
     ],
     'demo': [],
     'installable': True,
@@ -72,4 +77,7 @@ Technical Features:
     'application': True,
     'license': 'LGPL-3',
     'images': ['static/description/icon.png'],
+    'external_dependencies': {
+        'python': ['xlsxwriter'],
+    },
 }

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Commission Statement Wizard Form View -->
+        <record id="view_commission_statement_wizard_form" model="ir.ui.view">
+            <field name="name">commission.statement.wizard.form</field>
+            <field name="model">commission.statement.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Commission Statement">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>Commission Statement Generator</h1>
+                            <p>Generate professional commission statements for agents</p>
+                        </div>
+
+                        <group>
+                            <group name="selection_criteria">
+                                <field name="partner_id" options="{'no_create': True, 'no_edit': True}" required="1"/>
+                                <field name="sale_order_id" options="{'no_create': True, 'no_edit': True}" domain="[('id', 'in', [])]" context="{'search_default_partner_id': partner_id}"/>
+                                <field name="output_format"/>
+                            </group>
+                            <group name="date_range">
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                            </group>
+                        </group>
+
+                        <!-- Report Generation Section -->
+                        <group string="Generated Reports" attrs="{'invisible': [('report_generated', '=', False)]}">
+                            <group>
+                                <field name="pdf_filename" attrs="{'invisible': [('pdf_data', '=', False)]}"/>
+                                <field name="xlsx_filename" attrs="{'invisible': [('xlsx_data', '=', False)]}"/>
+                            </group>
+                            <group>
+                                <field name="report_generated" invisible="1"/>
+                                <field name="pdf_data" invisible="1"/>
+                                <field name="xlsx_data" invisible="1"/>
+                            </group>
+                        </group>
+
+                        <!-- Statement Lines -->
+                        <notebook attrs="{'invisible': [('report_generated', '=', False)]}">
+                            <page string="Commission Details" name="commission_details">
+                                <field name="statement_line_ids" readonly="1">
+                                    <tree decoration-success="status == 'Confirmed'" decoration-warning="status == 'Calculated'" decoration-muted="status == 'Draft'">
+                                        <field name="deal_date"/>
+                                        <field name="commission_type"/>
+                                        <field name="rate" widget="percentage"/>
+                                        <field name="property_price" widget="monetary"/>
+                                        <field name="gross_commission" widget="monetary"/>
+                                        <field name="vat_rate" widget="percentage"/>
+                                        <field name="net_commission" widget="monetary"/>
+                                        <field name="status"/>
+                                        <field name="po_number"/>
+                                        <field name="remarks"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                    <footer>
+                        <button name="action_generate_statement" string="Generate Statement" type="object" class="btn-primary" attrs="{'invisible': [('report_generated', '=', True)]}"/>
+
+                        <button name="action_download_pdf" string="Download PDF" type="object" class="btn-secondary" attrs="{'invisible': ['|', ('report_generated', '=', False), ('pdf_data', '=', False)]}"/>
+
+                        <button name="action_download_xlsx" string="Download Excel" type="object" class="btn-secondary" attrs="{'invisible': ['|', ('report_generated', '=', False), ('xlsx_data', '=', False)]}"/>
+
+                        <button string="Close" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Commission Statement Wizard Action -->
+        <record id="action_commission_statement_wizard" model="ir.actions.act_window">
+            <field name="name">Commission Statement</field>
+            <field name="res_model">commission.statement.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- Menu Item -->
+        <menuitem id="menu_commission_statement_wizard" name="Commission Statements" parent="sale.sale_menu_root" action="action_commission_statement_wizard" sequence="30"/>
+    </data>
+</odoo>

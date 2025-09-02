@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Commission Statement Report Template -->
+        <template id="commission_statement_report_template" name="Commission Statement Report">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <style>
+                                @page {
+                                    margin: 8mm;
+                                    size: A4 landscape;
+                                }
+                                
+                                body {
+                                    font-family: 'Segoe UI', Arial, sans-serif;
+                                    font-size: 11px;
+                                    line-height: 1.3;
+                                    color: #333;
+                                }
+                                
+                                .statement-header {
+                                    background: linear-gradient(135deg, #800020, #a0002a);
+                                    color: white;
+                                    padding: 15px 20px;
+                                    margin: -8mm -8mm 15px -8mm;
+                                    border-radius: 0 0 8px 8px;
+                                    text-align: center;
+                                }
+                                
+                                .statement-title {
+                                    font-size: 22px;
+                                    font-weight: bold;
+                                    margin: 0;
+                                    text-transform: uppercase;
+                                    letter-spacing: 1.5px;
+                                }
+                                
+                                .statement-subtitle {
+                                    font-size: 14px;
+                                    margin: 8px 0 0 0;
+                                    color: #ffd700;
+                                    font-weight: 500;
+                                }
+                                
+                                .agent-info {
+                                    display: grid;
+                                    grid-template-columns: 1fr 1fr 1fr;
+                                    gap: 15px;
+                                    margin: 15px 0 20px 0;
+                                    background: #f8f9fa;
+                                    padding: 12px;
+                                    border-radius: 6px;
+                                    border-left: 4px solid #800020;
+                                }
+                                
+                                .info-block {
+                                    text-align: center;
+                                }
+                                
+                                .info-label {
+                                    color: #800020;
+                                    font-weight: bold;
+                                    font-size: 10px;
+                                    text-transform: uppercase;
+                                    margin-bottom: 3px;
+                                }
+                                
+                                .info-value {
+                                    font-size: 13px;
+                                    font-weight: 600;
+                                    color: #333;
+                                }
+                                
+                                .statement-table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin: 20px 0;
+                                    font-size: 10px;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                }
+                                
+                                .statement-table th {
+                                    background: linear-gradient(135deg, #800020, #a0002a);
+                                    color: #ffd700;
+                                    padding: 10px 8px;
+                                    text-align: center;
+                                    font-weight: bold;
+                                    text-transform: uppercase;
+                                    font-size: 9px;
+                                    border: 1px solid #600015;
+                                    vertical-align: middle;
+                                }
+                                
+                                .statement-table td {
+                                    padding: 8px;
+                                    border: 1px solid #ddd;
+                                    text-align: center;
+                                    vertical-align: middle;
+                                }
+                                
+                                .statement-table tbody tr:nth-child(even) {
+                                    background-color: #f8f9fa;
+                                }
+                                
+                                .statement-table tbody tr:hover {
+                                    background-color: #e9ecef;
+                                }
+                                
+                                .amount-cell {
+                                    text-align: right;
+                                    font-weight: 600;
+                                    font-family: 'Courier New', monospace;
+                                }
+                                
+                                .rate-cell {
+                                    text-align: center;
+                                    font-weight: 600;
+                                }
+                                
+                                .status-cell {
+                                    font-weight: 600;
+                                }
+                                
+                                .status-confirmed {
+                                    color: #28a745;
+                                }
+                                
+                                .status-calculated {
+                                    color: #ffc107;
+                                }
+                                
+                                .status-draft {
+                                    color: #6c757d;
+                                }
+                                
+                                .total-row {
+                                    background: linear-gradient(135deg, #ffd700, #ffed4e) !important;
+                                    font-weight: bold;
+                                    color: #800020;
+                                }
+                                
+                                .total-row td {
+                                    border-top: 2px solid #800020;
+                                    padding: 12px 8px;
+                                    font-size: 11px;
+                                }
+                                
+                                .summary-section {
+                                    margin: 25px 0;
+                                    background: white;
+                                    border: 2px solid #800020;
+                                    border-radius: 6px;
+                                    overflow: hidden;
+                                }
+                                
+                                .summary-header {
+                                    background: linear-gradient(135deg, #800020, #a0002a);
+                                    color: #ffd700;
+                                    padding: 10px;
+                                    font-weight: bold;
+                                    text-align: center;
+                                    text-transform: uppercase;
+                                    font-size: 12px;
+                                }
+                                
+                                .summary-content {
+                                    padding: 15px;
+                                    display: grid;
+                                    grid-template-columns: 1fr 1fr;
+                                    gap: 20px;
+                                }
+                                
+                                .summary-item {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    padding: 5px 0;
+                                    border-bottom: 1px dotted #ccc;
+                                    font-size: 11px;
+                                }
+                                
+                                .summary-item:last-child {
+                                    border-bottom: none;
+                                    font-weight: bold;
+                                    font-size: 12px;
+                                }
+                                
+                                .footer-info {
+                                    margin-top: 20px;
+                                    text-align: center;
+                                    font-size: 9px;
+                                    color: #666;
+                                    border-top: 1px solid #ddd;
+                                    padding-top: 10px;
+                                }
+                                
+                                .no-data {
+                                    text-align: center;
+                                    padding: 40px;
+                                    color: #6c757d;
+                                    font-style: italic;
+                                    font-size: 14px;
+                                }
+                                
+                                /* Print optimizations */
+                                @media print {
+                                    .page {
+                                        margin: 0;
+                                        padding: 5mm;
+                                    }
+                                    
+                                    .statement-header {
+                                        margin: -5mm -5mm 10mm -5mm;
+                                    }
+                                }
+                            </style>
+
+                            <!-- Header -->
+                            <div class="statement-header">
+                                <h1 class="statement-title">Commission Statement</h1>
+                                <div class="statement-subtitle">
+                                    Agent Performance Report
+                                    <t t-if="o.sale_order_id">
+                                        - Order <span t-field="o.sale_order_id.name"/>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Agent Information -->
+                            <div class="agent-info">
+                                <div class="info-block">
+                                    <div class="info-label">Agent Name</div>
+                                    <div class="info-value">
+                                        <span t-field="o.partner_id.name"/>
+                                    </div>
+                                </div>
+                                <div class="info-block">
+                                    <div class="info-label">Report Period</div>
+                                    <div class="info-value">
+                                        <span t-field="o.date_from" t-options="{'widget': 'date'}"/>
+ - 
+                                        <span t-field="o.date_to" t-options="{'widget': 'date'}"/>
+                                    </div>
+                                </div>
+                                <div class="info-block">
+                                    <div class="info-label">Total Commissions</div>
+                                    <div class="info-value">
+                                        <t t-set="total_gross" t-value="sum(o.statement_line_ids.mapped('gross_commission'))"/>
+                                        <span t-esc="'{:,.2f}'.format(total_gross)"/>
+                                        <span t-field="o.statement_line_ids[0].currency_id.symbol" t-if="o.statement_line_ids"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Commission Statement Table -->
+                            <t t-if="o.statement_line_ids">
+                                <table class="statement-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 12%;">Agent Name</th>
+                                            <th style="width: 10%;">Deal Date</th>
+                                            <th style="width: 15%;">Commission Type</th>
+                                            <th style="width: 8%;">Rate</th>
+                                            <th style="width: 12%;">Property Price</th>
+                                            <th style="width: 12%;">Gross Commission</th>
+                                            <th style="width: 8%;">VAT</th>
+                                            <th style="width: 12%;">Net Commission</th>
+                                            <th style="width: 8%;">Status</th>
+                                            <th style="width: 10%;">PO Number</th>
+                                            <th style="width: 13%;">Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-set="total_gross_commission" t-value="0"/>
+                                        <t t-set="total_net_commission" t-value="0"/>
+                                        <t t-set="currency_symbol" t-value=""/>
+
+                                        <t t-foreach="o.statement_line_ids" t-as="line">
+                                            <t t-set="total_gross_commission" t-value="total_gross_commission + line.gross_commission"/>
+                                            <t t-set="total_net_commission" t-value="total_net_commission + line.net_commission"/>
+                                            <t t-set="currency_symbol" t-value="line.currency_id.symbol"/>
+
+                                            <tr>
+                                                <td>
+                                                    <span t-field="line.agent_name"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.deal_date" t-options="{'widget': 'date'}"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.commission_type"/>
+                                                </td>
+                                                <td class="rate-cell">
+                                                    <span t-esc="'{:.1f}%'.format(line.rate)"/>
+                                                </td>
+                                                <td class="amount-cell">
+                                                    <span t-esc="'{:,.2f}'.format(line.property_price)"/>
+                                                </td>
+                                                <td class="amount-cell">
+                                                    <span t-esc="'{:,.2f}'.format(line.gross_commission)"/>
+                                                </td>
+                                                <td class="rate-cell">
+                                                    <span t-esc="'{:.1f}%'.format(line.vat_rate)"/>
+                                                </td>
+                                                <td class="amount-cell">
+                                                    <span t-esc="'{:,.2f}'.format(line.net_commission)"/>
+                                                </td>
+                                                <td class="status-cell">
+                                                    <span t-field="line.status" t-attf-class="status-#{line.status.lower().replace(' ', '-')}"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.po_number"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.remarks"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <!-- Total Row -->
+                                        <tr class="total-row">
+                                            <td colspan="5" style="text-align: right; font-weight: bold;">
+                                                TOTAL COMMISSIONS:
+                                            </td>
+                                            <td class="amount-cell">
+                                                <span t-esc="'{:,.2f}'.format(total_gross_commission)"/>
+                                            </td>
+                                            <td></td>
+                                            <td class="amount-cell">
+                                                <span t-esc="'{:,.2f}'.format(total_net_commission)"/>
+                                            </td>
+                                            <td colspan="3"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+
+                            <!-- No Data Message -->
+                            <t t-if="not o.statement_line_ids">
+                                <div class="no-data">
+                                    <h3>No Commission Data Found</h3>
+                                    <p>No commission entries were found for the selected criteria.</p>
+                                    <p>Agent: <strong>
+                                        <span t-field="o.partner_id.name"/>
+                                    </strong>
+                                </p>
+                                <p>Period: <span t-field="o.date_from" t-options="{'widget': 'date'}"/>
+ -                                <span t-field="o.date_to" t-options="{'widget': 'date'}"/>
+                            </p>
+                        </div>
+                    </t>
+
+                    <!-- Summary Section -->
+                    <t t-if="o.statement_line_ids">
+                        <div class="summary-section">
+                            <div class="summary-header">Commission Summary</div>
+                            <div class="summary-content">
+                                <div class="summary-column">
+                                    <div class="summary-item">
+                                        <span>Number of Deals:</span>
+                                        <span t-esc="len(o.statement_line_ids)"/>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Total Property Value:</span>
+                                        <span>
+                                            <t t-set="total_property_value" t-value="sum(o.statement_line_ids.mapped('property_price'))"/>
+                                            <span t-esc="currency_symbol"/>
+                                            <span t-esc="'{:,.2f}'.format(total_property_value)"/>
+                                        </span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Average Commission Rate:</span>
+                                        <span>
+                                            <t t-set="avg_rate" t-value="sum(o.statement_line_ids.mapped('rate')) / len(o.statement_line_ids) if o.statement_line_ids else 0"/>
+                                            <span t-esc="'{:.2f}%'.format(avg_rate)"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="summary-column">
+                                    <div class="summary-item">
+                                        <span>Gross Commission:</span>
+                                        <span>
+                                            <span t-esc="currency_symbol"/>
+                                            <span t-esc="'{:,.2f}'.format(total_gross_commission)"/>
+                                        </span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>VAT Amount:</span>
+                                        <span>
+                                            <t t-set="total_vat" t-value="sum(o.statement_line_ids.mapped('vat_amount'))"/>
+                                            <span t-esc="currency_symbol"/>
+                                            <span t-esc="'{:,.2f}'.format(total_vat)"/>
+                                        </span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Net Commission:</span>
+                                        <span>
+                                            <span t-esc="currency_symbol"/>
+                                            <span t-esc="'{:,.2f}'.format(total_net_commission)"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Footer -->
+                    <div class="footer-info">
+                        <div>
+                            <strong>Commission Statement Report</strong> - Generated on 
+                            <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')"/>
+ UTC
+                        </div>
+                        <div>
+                            <span t-field="o.env.company.name"/>
+ - Confidential Document
+                        </div>
+                        <div style="margin-top: 5px; font-size: 8px;">
+                                    This statement is for informational purposes only. All amounts are subject to final verification and approval.
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </t>
+</template>
+
+<!-- Report Action -->
+<record id="action_report_commission_statement" model="ir.actions.report">
+    <field name="name">Commission Statement</field>
+    <field name="model">commission.statement.wizard</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">commission_ax.commission_statement_report_template</field>
+    <field name="report_file">commission_statement_report_template</field>
+    <field name="print_report_name">'Commission Statement - %s' % (object.partner_id.name)</field>
+    <field name="paperformat_id" ref="base.paperformat_euro"/>
+</record>
+</data>
+</odoo>
