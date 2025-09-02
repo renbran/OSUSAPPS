@@ -35,6 +35,19 @@ class SaleOrder(models.Model):
             }
         }
 
+    def action_open_commission_report_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Commission Report Wizard'),
+            'res_model': 'commission.partner.statement.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_sale_order_id': self.id,
+            },
+        }
+
     def action_reset_commissions(self):
         """Reset commission status to draft and cancel related purchase orders."""
         self.commission_status = 'draft'
