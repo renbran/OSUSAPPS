@@ -2,8 +2,6 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 import logging
 
-_logger = logging.getLogger(__name__)
-
 class CommissionCancelWizard(models.TransientModel):
     _name = 'commission.cancel.wizard'
     _description = 'Commission Cancel Confirmation Wizard'

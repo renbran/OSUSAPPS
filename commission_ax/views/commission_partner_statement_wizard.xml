@@ -1,0 +1,46 @@
+<odoo>
+    <data>
+        <!-- Menu for Partner Commission Statement -->
+        <!-- Root menu for Commission Reports if not present -->
+        <record id="menu_commission_reports_root" model="ir.ui.menu">
+            <field name="name">Commission Reports</field>
+            <field name="sequence" eval="100"/>
+        </record>
+
+        <!-- Menu for Partner Commission Statement -->
+        <record id="menu_commission_partner_statement" model="ir.ui.menu">
+            <field name="name">Partner Commission Statement</field>
+            <field name="parent_id" ref="menu_commission_reports_root"/>
+            <field name="action" ref="action_commission_partner_statement_wizard"/>
+            <field name="sequence" eval="110"/>
+        </record>
+
+        <!-- Action for wizard -->
+        <record id="action_commission_partner_statement_wizard" model="ir.actions.act_window">
+            <field name="name">Partner Commission Statement</field>
+            <field name="res_model">commission.partner.statement.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- Wizard view -->
+        <record id="view_commission_partner_statement_wizard_form" model="ir.ui.view">
+            <field name="name">commission.partner.statement.wizard.form</field>
+            <field name="model">commission.partner.statement.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Partner Commission Statement">
+                    <group>
+                        <field name="partner_id" required="1"/>
+                    </group>
+                    <footer>
+                        <button name="action_generate_report" type="object" string="Download Statement" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                    <field name="file_data" invisible="1"/>
+                    <field name="file_name" invisible="1"/>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
