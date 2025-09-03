@@ -1,0 +1,42 @@
+{
+  // Copilot Core Settings
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": true,
+    "markdown": true,
+    "python": true,
+    "xml": true,
+    "javascript": true,
+    "css": true,
+    "sql": true
+  },
+  
+  // Copilot Chat Settings
+  "github.copilot.chat.enabled": true,
+  "github.copilot.chat.welcomeMessage": "always",
+  "github.copilot.chat.localeOverride": "en",
+  
+  // Enhanced Suggestions
+  "github.copilot.advanced": {
+    "secret_key": "default",
+    "length": 500,
+    "temperature": 0.1,
+    "top_p": 1,
+    "stops": {
+      "*": ["\n\n\n"]
+    }
+  },
+  
+  // Editor Settings for Better Copilot Integration
+  "editor.inlineSuggest.enabled": true,
+  "editor.inlineSuggest.showToolbar": "always",
+  "editor.suggestSelection": "first",
+  "editor.tabCompletion": "on",
+  "editor.wordBasedSuggestions": "matchingDocuments",
+  "editor.semanticHighlighting.enabled": true,
+  
+  // Copilot Keybindings
+  "editor.action.inlineSuggest.trigger": "Tab",
+  "github.copilot.keybindings": "default"
+}

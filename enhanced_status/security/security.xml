@@ -1,5 +1,15 @@
+<<<<<<< Updated upstream
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <!-- Minimal security file for enhanced_status module -->
     <!-- Add groups/rules here as needed -->
+=======
+
+<odoo>
+	<!-- Example group for Sale Order Stage management -->
+	<record id="group_sale_order_stage_manager" model="res.groups">
+		<field name="name">Sale Order Stage Manager</field>
+		<field name="category_id" ref="base.module_category_sales_management"/>
+	</record>
+>>>>>>> Stashed changes
 </odoo>

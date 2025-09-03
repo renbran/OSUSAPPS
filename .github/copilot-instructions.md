@@ -364,39 +364,29 @@ QUnit.module("Custom Module", (hooks) => {
 - ✅ Write maintainable, modular code
 
 ## Project Conventions & Patterns
-+ **Module structure**: Each module has `__manifest__.py`, `models/`, `views/`, `security/`, `data/`, `static/`, `reports/`, `wizards/`, and optionally `tests/`.
-+ **Naming**: Use snake_case for modules/models. Prefix custom models with module name (e.g. `payment_account_enhanced.payment_qr_verification`).
-+ **Security**: Always define `ir.model.access.csv` and `security.xml` for each module. See `payment_account_enhanced/security/` for multi-level group and record rule patterns.
-+ **Testing**: Use Odoo's `TransactionCase` in `tests/` (see `tk_sale_split_invoice/tests/test_sale_split_invoice.py`).
-+ **External dependencies**: Declare all Python packages in both `__manifest__.py` and Dockerfile. Example: `qrcode`, `Pillow` for QR features.
-+ **Model extension**: Use `_inherit` for extension, `_inherits` for delegation. Example: `payment_account_enhanced/models/account_payment.py`.
-+ **State machines**: Use Selection fields and statusbar in form views (see `account_payment_final/models/account_payment.py`).
-+ **API endpoints**: Use `@http.route` with proper auth/CSRF (see `payment_account_enhanced/controllers/main.py`).
-+ **Reports**: Use QWeb XML for PDF, controllers for Excel/CSV. See `payment_account_enhanced/reports/` for QWeb and CSS theming patterns.
-+ **Config/settings**: Use `res.config.settings` and `ir.config_parameter` for settings (see `payment_account_enhanced/models/res_config_settings.py`).
-+ **Error handling**: Use `ValidationError` for constraints, `UserError` for user-facing errors.
-+ **Frontend**: Use Chart.js for dashboards (see `custom_sales/`).
-+ **Report theming**: For report styling, see `report_font_enhancement/` (uses CSS variables, high-contrast, print optimizations).
-+ **Voucher templates**: See `payment_account_enhanced/reports/payment_voucher_template_fixed.xml` and related CSS for production-ready, branded layouts.
-+ **Audit trails**: Use `payment_account_enhanced/models/payment_approval_history.py` for comprehensive approval history.
+- **Module structure**: Always include `__manifest__.py`, `models/`, `views/`, `security/`, `data/`, `static/`, `reports/`, `wizards/`, and optionally `tests/`.
+- **Naming**: Use snake_case for modules/models. Prefix custom models with module name (e.g. `payment_account_enhanced.payment_qr_verification`).
+- **Security**: Always define `ir.model.access.csv` and `security.xml` for each module.
+- **Testing**: Use Odoo's `TransactionCase` in `tests/`.
+- **External dependencies**: Declare all Python packages in both `__manifest__.py` and Dockerfile (e.g. `qrcode`, `Pillow`).
+- **Model extension**: Use `_inherit` for extension, `_inherits` for delegation.
+- **State machines**: Use Selection fields and statusbar in form views.
+- **API endpoints**: Use `@http.route` with proper auth/CSRF.
+- **Reports**: Use QWeb XML for PDF, controllers for Excel/CSV. See `report_font_enhancement/` for CSS theming.
+- **Config/settings**: Use `res.config.settings` and `ir.config_parameter`.
+- **Error handling**: Use `ValidationError` for constraints, `UserError` for user-facing errors.
+- **Frontend**: Use Chart.js for dashboards (`custom_sales/`), OWL for widgets.
+- **Report theming**: See `report_font_enhancement/README.md` and `payment_account_enhanced/static/src/css/payment_voucher_style.css`.
+- **Audit trails**: Use `payment_account_enhanced/models/payment_approval_history.py`.
 
 ## Integration & Cross-Component Patterns
-+ **Excel export**: Use `report_xlsx` if available, but degrade gracefully if not (see `account_statement/`).
-+ **Multi-app integration**: Some modules (e.g. `account_statement/`) add features to both Contacts and Accounting apps.
-+ **Security**: Multi-level permissions and record rules (see `payment_account_enhanced/security/`, `account_statement/security/`).
-+ **REST API**: Some modules expose REST endpoints (see `payment_account_enhanced/controllers/main.py`, `custom_sales/api/`).
-+ **Mobile/responsive**: Dashboards and reports are designed for mobile (see `custom_sales/`).
-+ **Email notifications**: Use Odoo mail templates for workflow events (see `payment_account_enhanced/data/mail_template_data.xml`).
-+ **QR code verification**: Use public and JSON endpoints for payment verification (see `payment_account_enhanced/controllers/main.py`).
-
-## Examples & References
-+ **Module structure**: `payment_account_enhanced/`, `account_payment_final/`, `custom_sales/`, `account_statement/`
-+ **API endpoint**: `payment_account_enhanced/controllers/main.py`, `custom_sales/api/`
-+ **Form view**: `payment_account_enhanced/views/account_payment_views.xml`
-+ **Testing**: `tk_sale_split_invoice/tests/test_sale_split_invoice.py`
-+ **Report theming**: `report_font_enhancement/README.md`, `payment_account_enhanced/static/src/css/payment_voucher_style.css`
-+ **Approval history**: `payment_account_enhanced/models/payment_approval_history.py`
-+ **Mail templates**: `payment_account_enhanced/data/mail_template_data.xml`
+- **Excel export**: Use `report_xlsx` if available, degrade gracefully if not.
+- **Multi-app integration**: Some modules add features to both Contacts and Accounting apps.
+- **Security**: Multi-level permissions and record rules.
+- **REST API**: Some modules expose endpoints (see `payment_account_enhanced/controllers/main.py`).
+- **Mobile/responsive**: Dashboards and reports are designed for mobile.
+- **Email notifications**: Use Odoo mail templates for workflow events.
+- **QR code verification**: Use public and JSON endpoints for payment verification.
 
 ## Common Issues & Troubleshooting
 + **DB errors**: If cron jobs fail, check `fix_cron_in_odoo.py`.
