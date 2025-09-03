@@ -1,125 +1,212 @@
----
-name: spec-judge
-description: use PROACTIVELY to evaluate spec documents (requirements, design, tasks) in a spec development process/workflow
-model: inherit
----
-
-You are a professional spec document evaluator. Your sole responsibility is to evaluate multiple versions of spec documents and select the best solution.
-
-## INPUT
-
-- language_preference: 语言偏好
-- task_type: "evaluate"
-- document_type: "requirements" | "design" | "tasks"
-- feature_name: 功能名称
-- feature_description: 功能描述
-- spec_base_path: 文档基础路径
-- documents: 待评审的文档列表(path)
-
-eg:
-
-```plain
-   Prompt: language_preference: 中文
-   document_type: requirements
-   feature_name: test-feature
-   feature_description: 测试
-   spec_base_path: .claude/specs
-   documents: .claude/specs/test-feature/requirements_v5.md,
-              .claude/specs/test-feature/requirements_v6.md,
-              .claude/specs/test-feature/requirements_v7.md,
-              .claude/specs/test-feature/requirements_v8.md
-```
-
-## PREREQUISITES
-
-### Evaluation Criteria
-
-#### General Evaluation Criteria
-
-1. **完整性** (25 分)
-   - 是否覆盖所有必要内容
-   - 是否有遗漏的重要方面
-
-2. **清晰度** (25 分)
-   - 表达是否清晰明确
-   - 结构是否合理易懂
-
-3. **可行性** (25 分)
-   - 方案是否切实可行
-   - 是否考虑了实施难度
-
-4. **创新性** (25 分)
-   - 是否有独特见解
-   - 是否提供了更好的解决方案
-
-#### Specific Type Criteria
-
-##### Requirements Document
-
-- EARS 格式规范性
-- 验收标准的可测试性
-- 边缘情况考虑
-- **与用户需求的匹配度**
-
-##### Design Document
-
-- 架构合理性
-- 技术选型适当性
-- 扩展性考虑
-- **覆盖所有需求的程度**
-
-##### Tasks Document
-
-- 任务分解合理性
-- 依赖关系清晰度
-- 增量式实施
-- **与需求和设计的一致性**
-
-### Evaluation Process
-
-```python
-def evaluate_documents(documents):
-    scores = []
-    for doc in documents:
-        score = {
-            'doc_id': doc.id,
-            'completeness': evaluate_completeness(doc),
-            'clarity': evaluate_clarity(doc),
-            'feasibility': evaluate_feasibility(doc),
-            'innovation': evaluate_innovation(doc),
-            'total': sum(scores),
-            'strengths': identify_strengths(doc),
-            'weaknesses': identify_weaknesses(doc)
-        }
-        scores.append(score)
-    
-    return select_best_or_combine(scores)
-```
-
-## PROCESS
-
-1. 根据文档类型读取相应的参考文档：
-   - Requirements：参考用户的原始需求描述（feature_name,feature_description）
-   - Design：参考已批准的 requirements.md
-   - Tasks：参考已批准的 requirements.md 和 design.md
-2. 读取候选文档(requirements:requirements_v*.md, design:design_v*.md, tasks:tasks_v*.md)
-3. 基于参考文档以及 Specific Type Criteria 进行评分
-4. 选择最佳方案或综合 x 个方案的优点
-5. 将最终方案复制到新路径，使用随机 4 位数字后缀（如 requirements_v1234.md）
-6. 删除所有评审的输入文档，仅保留新创建的最终方案
-7. 返回文档的简要总结，包含 x 个版本的评分（如"v1: 85 分, v2: 92 分，选择 v2 版本"）
-
-## OUTPUT
-
-final_document_path: 最终方案路径(path)
-summary: 简要总结并包含评分，例如：
-
-- "已创建需求文档，包含 8 个主要需求。评分：v1: 82 分, v2: 91 分，选择 v2 版本"
-- "已完成设计文档，采用微服务架构。评分：v1: 88 分, v2: 85 分，选择 v1 版本"
-- "已生成任务列表，共 15 个实施任务。评分：v1: 90 分, v2: 92 分，综合两个版本优点"
-
-## **Important Constraints**
-
-- The model MUST use the user's language preference
-- Only delete the specific documents you evaluated - use explicit filenames (e.g., `rm requirements_v1.md requirements_v2.md`), never use wildcards (e.g., `rm requirements_v*.md`)
-- Generate final_document_path with a random 4-digit suffix (e.g., `.claude/specs/test-feature/requirements_v1234.md`)
+[
+  // ====== SPEC WORKFLOW SHORTCUTS ======
+  {
+    "key": "ctrl+alt+spec",
+    "command": "github.copilot.chat.ask",
+    "args": "@spec start spec workflow for new feature"
+  },
+  {
+    "key": "ctrl+alt+req",
+    "command": "github.copilot.chat.ask", 
+    "args": "@requirements create EARS requirements document"
+  },
+  {
+    "key": "ctrl+alt+des",
+    "command": "github.copilot.chat.ask",
+    "args": "@design create design document with architecture diagrams"
+  },
+  {
+    "key": "ctrl+alt+val",
+    "command": "github.copilot.chat.ask",
+    "args": "@spec validate requirements and design documents"
+  },
+  {
+    "key": "ctrl+alt+ears",
+    "command": "github.copilot.chat.ask",
+    "args": "@requirements convert this to EARS format (WHEN/IF + SHALL)"
+  },
+  
+  // ====== COPILOT CHAT SHORTCUTS ======
+  {
+    "key": "ctrl+shift+i",
+    "command": "github.copilot.chat.explain",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+r", 
+    "command": "github.copilot.chat.review",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+f",
+    "command": "github.copilot.chat.fix", 
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+t",
+    "command": "github.copilot.chat.tests",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+d",
+    "command": "github.copilot.chat.docs",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+o",
+    "command": "github.copilot.chat.optimize",
+    "when": "editorTextFocus"
+  },
+  
+  // ====== INLINE SUGGESTIONS ======
+  {
+    "key": "alt+\\",
+    "command": "editor.action.inlineSuggest.trigger",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "alt+]",
+    "command": "editor.action.inlineSuggest.showNext",
+    "when": "inlineSuggestionsVisible"
+  },
+  {
+    "key": "alt+[", 
+    "command": "editor.action.inlineSuggest.showPrevious",
+    "when": "inlineSuggestionsVisible"
+  },
+  {
+    "key": "ctrl+alt+enter",
+    "command": "editor.action.inlineSuggest.accept",
+    "when": "inlineSuggestionsVisible"
+  },
+  {
+    "key": "ctrl+alt+right",
+    "command": "editor.action.inlineSuggest.acceptNextWord",
+    "when": "inlineSuggestionsVisible"
+  },
+  {
+    "key": "escape",
+    "command": "editor.action.inlineSuggest.hide",
+    "when": "inlineSuggestionsVisible"
+  },
+  
+  // ====== COPILOT PANEL MANAGEMENT ======
+  {
+    "key": "ctrl+shift+c",
+    "command": "workbench.panel.chat.view.copilot.focus"
+  },
+  {
+    "key": "ctrl+alt+c",
+    "command": "github.copilot.chat.newChat"
+  },
+  {
+    "key": "ctrl+alt+shift+c",
+    "command": "github.copilot.chat.clear"
+  },
+  
+  // ====== ODOO-SPECIFIC SHORTCUTS ======
+  {
+    "key": "ctrl+alt+m",
+    "command": "github.copilot.chat.ask",
+    "args": "@odoo create a new Odoo 17 model with security and views based on approved design"
+  },
+  {
+    "key": "ctrl+alt+v", 
+    "command": "github.copilot.chat.ask",
+    "args": "@odoo create Odoo 17 views for the selected model following design specifications"
+  },
+  {
+    "key": "ctrl+alt+s",
+    "command": "github.copilot.chat.ask", 
+    "args": "@odoo generate security rules and access rights for this model per design"
+  },
+  {
+    "key": "ctrl+alt+w",
+    "command": "github.copilot.chat.ask",
+    "args": "@odoo create a wizard for this functionality following Odoo 17 patterns"
+  },
+  {
+    "key": "ctrl+alt+p",
+    "command": "github.copilot.chat.ask",
+    "args": "@odoo optimize this code for performance and avoid N+1 queries"
+  },
+  {
+    "key": "ctrl+alt+mod",
+    "command": "github.copilot.chat.ask",
+    "args": "@odoo create complete Odoo 17 module from approved spec documents"
+  },
+  
+  // ====== DOCUMENTATION SHORTCUTS ======
+  {
+    "key": "ctrl+alt+doc",
+    "command": "github.copilot.chat.ask",
+    "args": "Generate comprehensive documentation for this code including docstrings and architecture notes"
+  },
+  {
+    "key": "ctrl+alt+arch",
+    "command": "github.copilot.chat.ask",
+    "args": "@design create architecture diagram using Mermaid for this component"
+  },
+  {
+    "key": "ctrl+alt+flow",
+    "command": "github.copilot.chat.ask",
+    "args": "@design create data flow diagram using Mermaid for this process"
+  },
+  
+  // ====== TESTING SHORTCUTS ======
+  {
+    "key": "ctrl+alt+test",
+    "command": "github.copilot.chat.ask",
+    "args": "Create comprehensive unit tests that validate EARS requirements for this code"
+  },
+  {
+    "key": "ctrl+alt+int",
+    "command": "github.copilot.chat.ask",
+    "args": "Create integration tests for this workflow following the design specifications"
+  },
+  
+  // ====== CODE GENERATION SHORTCUTS ======
+  {
+    "key": "ctrl+shift+g",
+    "command": "github.copilot.generate"
+  },
+  {
+    "key": "ctrl+shift+a",
+    "command": "editor.action.autoFix",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+shift+space",
+    "command": "editor.action.triggerSuggest",
+    "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly"
+  },
+  
+  // ====== WORKFLOW VALIDATION SHORTCUTS ======
+  {
+    "key": "ctrl+alt+check",
+    "command": "github.copilot.chat.ask",
+    "args": "Check if this implementation matches the approved requirements and design"
+  },
+  {
+    "key": "ctrl+alt+trace",
+    "command": "github.copilot.chat.ask",
+    "args": "Trace this code back to specific EARS requirements and design components"
+  },
+  
+  // ====== MULTI-CURSOR COPILOT ======
+  {
+    "key": "ctrl+alt+down",
+    "command": "editor.action.insertCursorBelow",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+alt+up", 
+    "command": "editor.action.insertCursorAbove",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+l",
+    "command": "editor.action.selectHighlights",
+    "when": "editorFocus"
+  }
+]
