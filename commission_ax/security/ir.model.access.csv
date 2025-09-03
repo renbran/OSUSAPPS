@@ -2,6 +2,5 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_commission_cancel_wizard_user,commission.cancel.wizard.user,model_commission_cancel_wizard,base.group_user,1,1,1,0
 access_commission_draft_wizard_user,commission.draft.wizard.user,model_commission_draft_wizard,base.group_user,1,1,1,0
 access_commission_report_wizard_user,commission.report.wizard.user,model_commission_report_wizard,base.group_user,1,1,1,0
-access_commission_statement_wizard_user,commission.statement.wizard.user,model_commission_statement_wizard,base.group_user,1,1,1,0
 access_commission_statement_wizard_user,commission.statement.wizard.user,model_commission_statement_wizard,sales_team.group_sale_salesman,1,1,1,1
 access_commission_statement_line_user,commission.statement.line.user,model_commission_statement_line,sales_team.group_sale_salesman,1,1,1,1
