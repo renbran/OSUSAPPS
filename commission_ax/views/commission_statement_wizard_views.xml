@@ -26,15 +26,15 @@
                         </group>
 
                         <!-- Report Generation Section -->
-                        <group string="Generated Reports" attrs="{'invisible': [('report_generated', '=', False)]}">
+                        <group string="Generated Reports" modifiers="{'invisible': [('report_generated', '=', False)]}">
                             <group>
-                                <field name="pdf_filename" attrs="{'invisible': [('pdf_data', '=', False)]}"/>
-                                <field name="xlsx_filename" attrs="{'invisible': [('xlsx_data', '=', False)]}"/>
+                                <field name="pdf_filename" modifiers="{'invisible': [('pdf_data', '=', False)]}"/>
+                                <field name="xlsx_filename" modifiers="{'invisible': [('xlsx_data', '=', False)]}"/>
                             </group>
                             <group>
-                                <field name="report_generated" invisible="1"/>
-                                <field name="pdf_data" invisible="1"/>
-                                <field name="xlsx_data" invisible="1"/>
+                                <field name="report_generated" modifiers="{'invisible': True}"/>
+                                <field name="pdf_data" modifiers="{'invisible': True}"/>
+                                <field name="xlsx_data" modifiers="{'invisible': True}"/>
                             </group>
                         </group>
 
