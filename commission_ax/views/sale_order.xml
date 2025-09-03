@@ -180,7 +180,7 @@
                                             <field name="name"/>
                                             <field name="partner_id"/>
                                             <field name="date_order"/>
-                                            <field name="amount_total" widget="monetary"/>
+                                            <!-- Removed amount_total field: not present on purchase.order model -->
                                             <field name="state"/>
                                             <field name="commission_posted"/>
                                             <button name="action_force_post" string="Force Post" type="object" icon="fa-check" invisible="commission_posted == True"/>
