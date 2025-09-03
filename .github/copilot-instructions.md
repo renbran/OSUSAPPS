@@ -774,7 +774,13 @@ self.check_access_rule('write')
 
 ---
 
-**🚀 Remember**: This is an Odoo 17 production environment. Always use modern syntax, follow security best practices, and maintain compatibility with the existing OSUSAPPS ecosystem. When in doubt, reference the existing high-quality modules like `account_payment_final/`, `payment_account_enhanced/`, and `custom_sales/` for proven patterns.
+## 📚 **Additional Resources**
++ **Syntax Guidelines**: See `ODOO17_SYNTAX_GUIDELINES.md` for detailed migration examples
++ **VS Code Setup**: See `instruction for copilot.md` for development environment configuration
++ **Module Examples**: Reference `account_payment_final/`, `payment_account_enhanced/`, `custom_sales/`
++ **Usage Guide**: See `COPILOT_INSTRUCTIONS_GUIDE.md` for how these instructions work
+
+**🚀 Remember**: This is an Odoo 17 production environment. Always use modern syntax, follow security best practices, and maintain compatibility with the existing OSUSAPPS ecosystem. When in doubt, reference the existing high-quality modules for proven patterns.
 
 ## Developer Workflows
 + **Start/Stop**: Use setup scripts or `docker-compose up -d` / `docker-compose down`.
