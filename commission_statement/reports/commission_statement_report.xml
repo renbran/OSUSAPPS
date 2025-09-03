@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- PDF Report Template -->
+        <template id="commission_statement_pdf_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <!-- Header -->
+                            <div class="row mb-4">
+                                <div class="col-12 text-center">
+                                    <h2 class="mt-0 mb-3">
+                                        <strong>Commission Statement Report</strong>
+                                    </h2>
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">Report Summary</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <p class="mb-1"><strong>Date Range:</strong> <span t-esc="data.get('date_from', '')"/> to <span t-esc="data.get('date_to', '')"/></p>
+                                                    <p class="mb-1"><strong>Partner Filter:</strong> <span t-esc="data.get('partner_filter', 'All Partners')"/></p>
+                                                </div>
+                                                <div class="col-6">
+                                                    <p class="mb-1"><strong>Total Lines:</strong> <span t-esc="data.get('total_lines', 0)"/></p>
+                                                    <p class="mb-1"><strong>Total Amount:</strong> <span t-esc="'{:,.2f}'.format(data.get('total_amount', 0))"/> <span t-esc="doc.env.company.currency_id.symbol"/></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Commission Table -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <table class="table table-bordered table-sm">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th class="text-center" style="width: 20%;">
+                                                    <strong>COMMISSION NAME</strong>
+                                                </th>
+                                                <th class="text-center" style="width: 15%;">
+                                                    <strong>ORDER REF</strong>
+                                                </th>
+                                                <th class="text-center" style="width: 25%;">
+                                                    <strong>CUSTOMER REFERENCE</strong>
+                                                </th>
+                                                <th class="text-center" style="width: 15%;">
+                                                    <strong>COMMISSION TYPE</strong>
+                                                </th>
+                                                <th class="text-center" style="width: 10%;">
+                                                    <strong>RATE</strong>
+                                                </th>
+                                                <th class="text-center" style="width: 15%;">
+                                                    <strong>TOTAL</strong>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-set="current_partner" t-value="None"/>
+                                            <t t-set="partner_total" t-value="0"/>
+                                            <t t-set="grand_total" t-value="0"/>
+                                            
+                                            <t t-foreach="data.get('commission_lines', [])" t-as="line">
+                                                <!-- Group by partner if needed -->
+                                                <t t-if="data.get('group_by_partner') and current_partner != line.get('partner_name')">
+                                                    <!-- Add subtotal for previous partner -->
+                                                    <t t-if="current_partner">
+                                                        <tr class="table-secondary">
+                                                            <td colspan="5" class="text-right">
+                                                                <strong>Subtotal for <span t-esc="current_partner"/>:</strong>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <strong><span t-esc="'{:,.2f}'.format(partner_total)"/> <span t-esc="doc.env.company.currency_id.symbol"/></strong>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                    <t t-set="current_partner" t-value="line.get('partner_name')"/>
+                                                    <t t-set="partner_total" t-value="0"/>
+                                                </t>
+                                                
+                                                <tr>
+                                                    <td><span t-esc="line.get('partner_name', '')"/></td>
+                                                    <td><span t-esc="line.get('order_ref', '')"/></td>
+                                                    <td><span t-esc="line.get('customer_ref', '')"/></td>
+                                                    <td><span t-esc="line.get('commission_type_display', '')"/></td>
+                                                    <td class="text-right">
+                                                        <t t-if="line.get('commission_type') == 'fixed'">
+                                                            Fixed
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span t-esc="'{:.2f}%'.format(line.get('rate', 0))"/>
+                                                        </t>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <span t-esc="'{:,.2f}'.format(line.get('amount', 0))"/> <span t-esc="doc.env.company.currency_id.symbol"/>
+                                                    </td>
+                                                </tr>
+                                                
+                                                <t t-set="partner_total" t-value="partner_total + line.get('amount', 0)"/>
+                                                <t t-set="grand_total" t-value="grand_total + line.get('amount', 0)"/>
+                                            </t>
+                                            
+                                            <!-- Final subtotal for last partner -->
+                                            <t t-if="data.get('group_by_partner') and current_partner and data.get('commission_lines')">
+                                                <tr class="table-secondary">
+                                                    <td colspan="5" class="text-right">
+                                                        <strong>Subtotal for <span t-esc="current_partner"/>:</strong>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <strong><span t-esc="'{:,.2f}'.format(partner_total)"/> <span t-esc="doc.env.company.currency_id.symbol"/></strong>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            
+                                            <!-- Grand Total -->
+                                            <t t-if="data.get('commission_lines')">
+                                                <tr class="table-dark">
+                                                    <td colspan="5" class="text-right">
+                                                        <strong>GRAND TOTAL:</strong>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <strong><span t-esc="'{:,.2f}'.format(grand_total)"/> <span t-esc="doc.env.company.currency_id.symbol"/></strong>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            
+                                            <!-- Empty state -->
+                                            <t t-if="not data.get('commission_lines')">
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted">
+                                                        <em>No commission data found for the selected criteria</em>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Summary Section -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Commission Summary</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <p class="mb-1"><strong>Total External Commissions:</strong></p>
+                                                    <p class="h5"><span t-esc="'{:,.2f}'.format(data.get('total_external', 0))"/> <span t-esc="doc.env.company.currency_id.symbol"/></p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <p class="mb-1"><strong>Total Internal Commissions:</strong></p>
+                                                    <p class="h5"><span t-esc="'{:,.2f}'.format(data.get('total_internal', 0))"/> <span t-esc="doc.env.company.currency_id.symbol"/></p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <p class="mb-1"><strong>Grand Total:</strong></p>
+                                                    <p class="h5 text-primary"><span t-esc="'{:,.2f}'.format(data.get('total_amount', 0))"/> <span t-esc="doc.env.company.currency_id.symbol"/></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="row mt-4">
+                                <div class="col-12 text-center">
+                                    <p class="text-muted small">
+                                        This report was generated automatically by the Commission Management System.
+                                        <br/>
+                                        For questions or discrepancies, please contact the Sales Administration team.
+                                        <br/>
+                                        <em>Report generated on: <span t-esc="data.get('report_generated_date', '')"/></em>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <!-- Report Action -->
+        <record id="action_commission_statement_pdf" model="ir.actions.report">
+            <field name="name">Commission Statement Report</field>
+            <field name="model">commission.statement.wizard</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">commission_ax.commission_statement_pdf_template</field>
+            <field name="report_file">commission_statement_report</field>
+            <field name="binding_model_id" ref="commission_ax.model_commission_statement_wizard"/>
+            <field name="paperformat_id" ref="base.paperformat_euro"/>
+        </record>
+    </data>
+</odoo>
