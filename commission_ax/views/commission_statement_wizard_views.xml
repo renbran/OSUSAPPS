@@ -1,72 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Commission Statement Wizard Form View -->
+        <!-- Enhanced Commission Statement Wizard Form View -->
         <record id="view_commission_statement_wizard_form" model="ir.ui.view">
             <field name="name">commission.statement.wizard.form</field>
             <field name="model">commission.statement.wizard</field>
             <field name="arch" type="xml">
-                <form string="Commission Statement">
+                <form string="Commission Statement Report">
                     <sheet>
                         <div class="oe_title">
-                            <h1>Commission Statement Generator</h1>
-                            <p>Generate professional commission statements for agents</p>
+                            <h1>Commission Statement Report Generator</h1>
+                            <p class="text-muted">Generate comprehensive commission reports for all agents</p>
                         </div>
 
                         <group>
-                            <group name="selection_criteria">
-                                <field name="partner_id" options="{'no_create': True, 'no_edit': True}" required="1"/>
-                                <field name="sale_order_id" options="{'no_create': True, 'no_edit': True}" domain="[('id', 'in', [])]" context="{'search_default_partner_id': partner_id}"/>
-                                <field name="output_format"/>
-                            </group>
-                            <group name="date_range">
+                            <group name="filters" string="Report Filters">
+                                <field name="partner_id" 
+                                       options="{'no_create': True, 'no_edit': True}" 
+                                       placeholder="All Agents"/>
                                 <field name="date_from"/>
                                 <field name="date_to"/>
+                                <field name="include_draft"/>
+                            </group>
+                            <group name="options" string="Output Options">
+                                <field name="output_format" widget="radio"/>
                             </group>
                         </group>
 
-                        <!-- Report Generation Section -->
-                        <group string="Generated Reports" modifiers="{'invisible': [('report_generated', '=', False)]}">
-                            <group>
-                                <field name="pdf_filename" modifiers="{'invisible': [('pdf_data', '=', False)]}"/>
-                                <field name="xlsx_filename" modifiers="{'invisible': [('xlsx_data', '=', False)]}"/>
-                            </group>
-                            <group>
-                                <field name="report_generated" modifiers="{'invisible': True}"/>
-                                <field name="pdf_data" modifiers="{'invisible': True}"/>
-                                <field name="xlsx_data" modifiers="{'invisible': True}"/>
-                            </group>
-                        </group>
-
-                        <!-- Statement Lines -->
+                        <!-- Statement Lines Preview -->
                         <notebook attrs="{'invisible': [('report_generated', '=', False)]}">
                             <page string="Commission Details" name="commission_details">
                                 <field name="statement_line_ids" readonly="1">
-                                    <tree decoration-success="status == 'Confirmed'" decoration-warning="status == 'Calculated'" decoration-muted="status == 'Draft'">
-                                        <field name="deal_date"/>
+                                    <tree decoration-success="total > 10000" 
+                                          decoration-warning="total > 5000" 
+                                          decoration-info="total > 0">
+                                        <field name="commission_name"/>
+                                        <field name="order_ref"/>
+                                        <field name="customer_reference"/>
                                         <field name="commission_type"/>
                                         <field name="rate" widget="percentage"/>
-                                        <field name="property_price" widget="monetary"/>
-                                        <field name="gross_commission" widget="monetary"/>
-                                        <field name="vat_rate" widget="percentage"/>
-                                        <field name="net_commission" widget="monetary"/>
-                                        <field name="status"/>
-                                        <field name="po_number"/>
-                                        <field name="remarks"/>
+                                        <field name="total" widget="monetary"/>
                                         <field name="currency_id" invisible="1"/>
                                     </tree>
                                 </field>
+                                
+                                <!-- Summary -->
+                                <group class="oe_subtotal_footer oe_right" 
+                                       attrs="{'invisible': [('statement_line_ids', '=', [])]}">
+                                    <div class="oe_subtotal_footer_separator">
+                                        <label for="statement_line_ids"/>
+                                        <button name="action_download_pdf" 
+                                                string="Download PDF" 
+                                                type="object" 
+                                                class="btn-secondary"
+                                                attrs="{'invisible': ['|', ('pdf_data', '=', False), ('report_generated', '=', False)]}"
+                                                icon="fa-file-pdf-o"/>
+                                        <button name="action_download_xlsx" 
+                                                string="Download Excel" 
+                                                type="object" 
+                                                class="btn-secondary"
+                                                attrs="{'invisible': ['|', ('xlsx_data', '=', False), ('report_generated', '=', False)]}"
+                                                icon="fa-file-excel-o"/>
+                                    </div>
+                                </group>
+                            </page>
+                            
+                            <page string="Report Files" name="report_files">
+                                <group>
+                                    <field name="pdf_filename" attrs="{'invisible': [('pdf_data', '=', False)]}"/>
+                                    <field name="xlsx_filename" attrs="{'invisible': [('xlsx_data', '=', False)]}"/>
+                                </group>
                             </page>
                         </notebook>
+
+                        <!-- Hidden fields -->
+                        <group invisible="1">
+                            <field name="report_generated"/>
+                            <field name="pdf_data"/>
+                            <field name="xlsx_data"/>
+                        </group>
                     </sheet>
 
                     <footer>
-                        <button name="action_generate_statement" string="Generate Statement" type="object" class="btn-primary" attrs="{'invisible': [('report_generated', '=', True)]}"/>
-
-                        <button name="action_download_pdf" string="Download PDF" type="object" class="btn-secondary" attrs="{'invisible': ['|', ('report_generated', '=', False), ('pdf_data', '=', False)]}"/>
-
-                        <button name="action_download_xlsx" string="Download Excel" type="object" class="btn-secondary" attrs="{'invisible': ['|', ('report_generated', '=', False), ('xlsx_data', '=', False)]}"/>
-
+                        <button name="action_generate_statement" 
+                                string="Generate Report" 
+                                type="object" 
+                                class="btn-primary"
+                                attrs="{'invisible': [('report_generated', '=', True)]}"/>
+                        
+                        <button name="action_download_pdf" 
+                                string="Download PDF" 
+                                type="object" 
+                                class="btn-success"
+                                attrs="{'invisible': ['|', ('report_generated', '=', False), ('pdf_data', '=', False)]}"
+                                icon="fa-download"/>
+                        
+                        <button name="action_download_xlsx" 
+                                string="Download Excel" 
+                                type="object" 
+                                class="btn-success"
+                                attrs="{'invisible': ['|', ('report_generated', '=', False), ('xlsx_data', '=', False)]}"
+                                icon="fa-download"/>
+                        
                         <button string="Close" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
@@ -74,15 +109,20 @@
         </record>
 
         <!-- Commission Statement Wizard Action -->
-        <record id="action_commission_statement_wizard" model="ir.actions.act_window">
-            <field name="name">Commission Statement</field>
+        <record id="action_commission_statement_report" model="ir.actions.act_window">
+            <field name="name">Commission Statement Report</field>
             <field name="res_model">commission.statement.wizard</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
             <field name="context">{}</field>
         </record>
 
-        <!-- Menu Item -->
-        <menuitem id="menu_commission_statement_wizard" name="Commission Statements" parent="sale.sale_menu_root" action="action_commission_statement_wizard" sequence="30"/>
+        <!-- Menu Item under Sales -->
+        <menuitem id="menu_commission_statement_report" 
+                  name="Commission Statement Report" 
+                  parent="sale.sale_menu_root" 
+                  action="action_commission_statement_report" 
+                  sequence="25"
+                  groups="sales_team.group_sale_salesman"/>
     </data>
 </odoo>

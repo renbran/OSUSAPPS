@@ -1,14 +1,14 @@
 import base64
 import io
 import logging
-from datetime import date, timedelta
+from datetime import date
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import formatLang
 
+_logger = logging.getLogger(__name__)
 
 class CommissionStatementWizard(models.TransientModel):
-    """Wizard to generate commission statement reports."""
+    """Enhanced wizard to generate commission statement reports."""
     
     _name = 'commission.statement.wizard'
     _description = 'Commission Statement Wizard'
@@ -16,16 +16,9 @@ class CommissionStatementWizard(models.TransientModel):
     
     partner_id = fields.Many2one(
         'res.partner',
-        string='Agent',
-        required=True,
+        string='Commission Agent',
         domain=[('is_company', '=', False)],
-        help="Agent for statement generation"
-    )
-    
-    sale_order_id = fields.Many2one(
-        'sale.order',
-        string='Sale Order',
-        help="Specific sale order for statement (leave empty for all orders)"
+        help="Select specific agent or leave empty for all agents"
     )
     
     date_from = fields.Date(
@@ -46,35 +39,20 @@ class CommissionStatementWizard(models.TransientModel):
         ('pdf', 'PDF Report'),
         ('xlsx', 'Excel Report'),
         ('both', 'Both PDF and Excel')
-    ], string='Output Format', default='pdf', required=True)
+    ], string='Output Format', default='both', required=True)
+    
+    include_draft = fields.Boolean(
+        string='Include Draft Orders',
+        default=False,
+        help="Include draft sale orders in the report"
+    )
     
     # Results
-    pdf_data = fields.Binary(
-        string='PDF Report',
-        readonly=True,
-        attachment=False
-    )
-    
-    pdf_filename = fields.Char(
-        string='PDF Filename',
-        readonly=True
-    )
-    
-    xlsx_data = fields.Binary(
-        string='Excel Report',
-        readonly=True,
-        attachment=False
-    )
-    
-    xlsx_filename = fields.Char(
-        string='Excel Filename',
-        readonly=True
-    )
-    
-    report_generated = fields.Boolean(
-        string='Report Generated',
-        default=False
-    )
+    pdf_data = fields.Binary(string='PDF Report', readonly=True, attachment=False)
+    pdf_filename = fields.Char(string='PDF Filename', readonly=True)
+    xlsx_data = fields.Binary(string='Excel Report', readonly=True, attachment=False)
+    xlsx_filename = fields.Char(string='Excel Filename', readonly=True)
+    report_generated = fields.Boolean(string='Report Generated', default=False)
     
     statement_line_ids = fields.One2many(
         'commission.statement.line',
@@ -83,78 +61,30 @@ class CommissionStatementWizard(models.TransientModel):
         readonly=True
     )
     
-    @api.constrains('date_from', 'date_to')
-    def _check_dates(self):
-        """Validate date range."""
-        for wizard in self:
-            if wizard.date_from > wizard.date_to:
-                raise UserError(_("Date From must be before Date To"))
-    
-    @api.onchange('partner_id', 'date_from', 'date_to')
-    def _onchange_dates_partner(self):
-        """Update available sale orders when dates or partner changes."""
-        if self.partner_id:
-            domain = self._get_sale_order_domain()
-            available_orders = self.env['sale.order'].search(domain)
-            if len(available_orders) == 1:
-                self.sale_order_id = available_orders.id
-    
-    def _get_sale_order_domain(self):
-        """Get domain for sale orders with commissions for this partner."""
-        if not self.partner_id:
-            return [('id', '=', False)]
-        
-        domain = [
-            ('date_order', '>=', self.date_from),
-            ('date_order', '<=', self.date_to),
-            ('state', 'in', ['sale', 'done']),
-            '|', '|', '|', '|', '|', '|', '|', '|', '|', '|',
-            ('agent1_partner_id', '=', self.partner_id.id),
-            ('agent2_partner_id', '=', self.partner_id.id),
-            ('broker_partner_id', '=', self.partner_id.id),
-            ('referrer_partner_id', '=', self.partner_id.id),
-            ('cashback_partner_id', '=', self.partner_id.id),
-            ('other_external_partner_id', '=', self.partner_id.id),
-            ('consultant_id', '=', self.partner_id.id),
-            ('manager_id', '=', self.partner_id.id),
-            ('second_agent_id', '=', self.partner_id.id),
-            ('director_id', '=', self.partner_id.id),
-            ('manager_partner_id', '=', self.partner_id.id),
-            ('director_partner_id', '=', self.partner_id.id),
-        ]
-        
-        if self.sale_order_id:
-            domain.append(('id', '=', self.sale_order_id.id))
-        
-        return domain
-    
     def action_generate_statement(self):
-        """Generate commission statement."""
+        """Generate commission statement with enhanced structure."""
         self.ensure_one()
         
-        if not self.partner_id:
-            raise UserError(_("Please select an agent"))
-        
-        _logger.info("Generating commission statement for partner %s", self.partner_id.name)
+        _logger.info("Generating commission statement report")
         
         # Clear previous data
         self.statement_line_ids.unlink()
         
         # Generate statement lines
-        self._generate_statement_lines()
+        self._generate_enhanced_statement_lines()
         
         # Generate reports based on format
         if self.output_format in ['pdf', 'both']:
-            self._generate_pdf_report()
+            self._generate_enhanced_pdf_report()
         
         if self.output_format in ['xlsx', 'both']:
-            self._generate_xlsx_report()
+            self._generate_enhanced_xlsx_report()
         
         self.report_generated = True
         
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Commission Statement Generated'),
+            'name': _('Commission Statement Report'),
             'res_model': 'commission.statement.wizard',
             'view_mode': 'form',
             'target': 'new',
@@ -162,253 +92,410 @@ class CommissionStatementWizard(models.TransientModel):
             'context': dict(self.env.context, report_generated=True)
         }
     
-    def _generate_statement_lines(self):
-        """Generate statement lines from sale orders."""
-        domain = self._get_sale_order_domain()
+    def _generate_enhanced_statement_lines(self):
+        """Generate statement lines with required columns."""
+        # Build domain for sale orders
+        domain = [
+            ('date_order', '>=', fields.Datetime.combine(self.date_from, fields.Datetime.min.time())),
+            ('date_order', '<=', fields.Datetime.combine(self.date_to, fields.Datetime.max.time())),
+        ]
+        
+        if not self.include_draft:
+            domain.append(('state', 'in', ['sale', 'done']))
+        
+        # If specific partner selected, filter by that partner
+        if self.partner_id:
+            partner_domain = [
+                '|', '|', '|', '|', '|', '|', '|', '|', '|', '|', '|',
+                ('agent1_partner_id', '=', self.partner_id.id),
+                ('agent2_partner_id', '=', self.partner_id.id),
+                ('broker_partner_id', '=', self.partner_id.id),
+                ('referrer_partner_id', '=', self.partner_id.id),
+                ('cashback_partner_id', '=', self.partner_id.id),
+                ('other_external_partner_id', '=', self.partner_id.id),
+                ('consultant_id', '=', self.partner_id.id),
+                ('manager_id', '=', self.partner_id.id),
+                ('second_agent_id', '=', self.partner_id.id),
+                ('director_id', '=', self.partner_id.id),
+                ('manager_partner_id', '=', self.partner_id.id),
+                ('director_partner_id', '=', self.partner_id.id),
+            ]
+            domain.extend(partner_domain)
+        
         sale_orders = self.env['sale.order'].search(domain, order='date_order desc')
         
         lines_data = []
         for order in sale_orders:
-            # Get all commission entries for this partner from this order
-            commission_entries = self._get_commission_entries_for_partner(order)
+            # Get all commission entries from this order
+            commission_entries = self._extract_all_commissions(order)
             
             for entry in commission_entries:
-                # Find related purchase order
-                po = self._find_related_purchase_order(order, entry)
+                # Skip if specific partner selected and doesn't match
+                if self.partner_id and entry['partner_id'] != self.partner_id.id:
+                    continue
                 
                 lines_data.append({
                     'wizard_id': self.id,
-                    'sale_order_id': order.id,
-                    'purchase_order_id': po.id if po else False,
-                    'agent_name': self.partner_id.name,
-                    'deal_date': order.date_order.date() if order.date_order else date.today(),
-                    'commission_type': entry['type'],
+                    'commission_name': entry['partner_name'],
+                    'order_ref': order.name,
+                    'customer_reference': self._get_customer_reference(order),
+                    'commission_type': entry['commission_type'],
                     'rate': entry['rate'],
-                    'property_price': order.amount_total,
-                    'gross_commission': entry['amount'],
-                    'vat_rate': self._get_vat_rate(),
-                    'vat_amount': entry['amount'] * self._get_vat_rate() / 100,
-                    'net_commission': entry['amount'] * (1 - self._get_vat_rate() / 100),
-                    'status': self._get_commission_status(order, entry),
-                    'po_number': po.name if po else '',
-                    'remarks': self._get_remarks(order, po),
+                    'total': entry['amount'],
+                    'currency_id': order.currency_id.id,
+                    'sale_order_id': order.id,
+                    'partner_id': entry['partner_id'],
                 })
         
         # Create statement lines
-        self.env['commission.statement.line'].create(lines_data)
+        if lines_data:
+            self.env['commission.statement.line'].create(lines_data)
     
-    def _get_commission_entries_for_partner(self, order):
-        """Get commission entries for specific partner from order."""
-        entries = []
+    def _extract_all_commissions(self, order):
+        """Extract all commission entries from a sale order."""
+        commissions = []
         
-        # Check all commission fields
+        # Mapping of commission fields
         commission_mappings = [
-            ('agent1_partner_id', 'agent1_amount', 'agent1_rate', 'Internal - Agent 1'),
-            ('agent2_partner_id', 'agent2_amount', 'agent2_rate', 'Internal - Agent 2'),
-            ('broker_partner_id', 'broker_amount', 'broker_rate', 'External - Broker'),
-            ('referrer_partner_id', 'referrer_amount', 'referrer_rate', 'External - Referrer'),
-            ('cashback_partner_id', 'cashback_amount', 'cashback_rate', 'External - Cashback'),
-            ('other_external_partner_id', 'other_external_amount', 'other_external_rate', 'External - Other'),
-            ('consultant_id', 'salesperson_commission', 'consultant_comm_percentage', 'Legacy - Consultant'),
-            ('manager_id', 'manager_commission', 'manager_comm_percentage', 'Legacy - Manager'),
-            ('second_agent_id', 'second_agent_commission', 'second_agent_comm_percentage', 'Legacy - Second Agent'),
-            ('director_id', 'director_commission', 'director_comm_percentage', 'Legacy - Director'),
-            ('manager_partner_id', 'manager_amount', 'manager_rate', 'Internal - Manager'),
-            ('director_partner_id', 'director_amount', 'director_rate', 'Internal - Director'),
+            ('agent1_partner_id', 'agent1_amount', 'agent1_rate', 'agent1_commission_type', 'Agent 1'),
+            ('agent2_partner_id', 'agent2_amount', 'agent2_rate', 'agent2_commission_type', 'Agent 2'),
+            ('broker_partner_id', 'broker_amount', 'broker_rate', 'broker_commission_type', 'Broker'),
+            ('referrer_partner_id', 'referrer_amount', 'referrer_rate', 'referrer_commission_type', 'Referrer'),
+            ('cashback_partner_id', 'cashback_amount', 'cashback_rate', 'cashback_commission_type', 'Cashback'),
+            ('other_external_partner_id', 'other_external_amount', 'other_external_rate', 'other_external_commission_type', 'Other External'),
+            ('consultant_id', 'salesperson_commission', 'consultant_comm_percentage', 'consultant_commission_type', 'Consultant'),
+            ('manager_id', 'manager_commission', 'manager_comm_percentage', 'manager_legacy_commission_type', 'Manager'),
+            ('second_agent_id', 'second_agent_commission', 'second_agent_comm_percentage', 'second_agent_commission_type', 'Second Agent'),
+            ('director_id', 'director_commission', 'director_comm_percentage', 'director_legacy_commission_type', 'Director'),
+            ('manager_partner_id', 'manager_amount', 'manager_rate', 'manager_commission_type', 'Manager Partner'),
+            ('director_partner_id', 'director_amount', 'director_rate', 'director_commission_type', 'Director Partner'),
         ]
         
-        for partner_field, amount_field, rate_field, commission_type in commission_mappings:
-            if (hasattr(order, partner_field) and 
-                getattr(order, partner_field) == self.partner_id and
-                hasattr(order, amount_field) and
-                getattr(order, amount_field, 0) > 0):
-                
-                entries.append({
-                    'type': commission_type,
-                    'amount': getattr(order, amount_field, 0),
-                    'rate': getattr(order, rate_field, 0),
-                    'partner_field': partner_field,
-                })
+        for partner_field, amount_field, rate_field, type_field, label in commission_mappings:
+            partner = getattr(order, partner_field, False)
+            if partner:
+                amount = getattr(order, amount_field, 0)
+                if amount > 0:
+                    rate = getattr(order, rate_field, 0)
+                    commission_type = getattr(order, type_field, 'percent_unit_price')
+                    
+                    # Format commission type
+                    type_display = self._format_commission_type(commission_type)
+                    
+                    commissions.append({
+                        'partner_id': partner.id,
+                        'partner_name': partner.name,
+                        'amount': amount,
+                        'rate': rate,
+                        'commission_type': type_display,
+                        'label': label,
+                    })
         
-        return entries
+        return commissions
     
-    def _find_related_purchase_order(self, sale_order, commission_entry):
-        """Find related purchase order for commission entry."""
-        # Look for purchase orders linked to this sale order
-        pos = self.env['purchase.order'].search([
-            ('origin_so_id', '=', sale_order.id),
-            ('partner_id', '=', self.partner_id.id),
-        ], limit=1)
+    def _format_commission_type(self, commission_type):
+        """Format commission type for display."""
+        type_mapping = {
+            'fixed': 'Fixed',
+            'percent_unit_price': 'Unit Price',
+            'percent_untaxed_total': 'Untaxed Total',
+        }
+        return type_mapping.get(commission_type, commission_type)
+    
+    def _get_customer_reference(self, order):
+        """Get customer reference from order."""
+        references = []
         
-        return pos
+        # Add project name if available
+        if order.project_id:
+            references.append(order.project_id.name)
+        
+        # Add unit if available
+        if hasattr(order, 'unit_id') and order.unit_id:
+            references.append(order.unit_id.name)
+        
+        # Add partner name
+        if order.partner_id:
+            references.append(order.partner_id.name)
+        
+        return ' - '.join(references) if references else order.name
     
-    def _get_vat_rate(self):
-        """Get VAT rate from company settings."""
+    def _generate_enhanced_pdf_report(self):
+        """Generate enhanced PDF report."""
+        try:
+            from reportlab.lib.pagesizes import A4, landscape
+            from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib import colors
+            from reportlab.lib.units import inch
+            from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+        except ImportError:
+            raise UserError(_("reportlab library is required for PDF export. Please install it with: pip install reportlab"))
+        
+        output = io.BytesIO()
+        doc = SimpleDocTemplate(output, pagesize=landscape(A4), 
+                               topMargin=0.5*inch, bottomMargin=0.5*inch,
+                               leftMargin=0.5*inch, rightMargin=0.5*inch)
+        
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        # Custom styles
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=18,
+            textColor=colors.HexColor('#800020'),
+            spaceAfter=20,
+            alignment=TA_CENTER
+        )
+        
+        header_style = ParagraphStyle(
+            'HeaderStyle',
+            parent=styles['Normal'],
+            fontSize=10,
+            spaceAfter=12
+        )
+        
+        # Company info
         company = self.env.company
-        # Default to 5% VAT for UAE, can be configured
-        return getattr(company, 'default_vat_rate', 5.0)
-    
-    def _get_commission_status(self, order, entry):
-        """Get commission status."""
-        if order.commission_processed:
-            return 'Confirmed'
-        elif order.commission_status == 'calculated':
-            return 'Calculated'
+        elements.append(Paragraph(f"<b>{company.name}</b>", title_style))
+        elements.append(Paragraph("COMMISSION STATEMENT REPORT", title_style))
+        
+        # Report info
+        period_text = f"Period: {self.date_from.strftime('%d/%m/%Y')} - {self.date_to.strftime('%d/%m/%Y')}"
+        elements.append(Paragraph(period_text, header_style))
+        
+        if self.partner_id:
+            elements.append(Paragraph(f"Agent: {self.partner_id.name}", header_style))
         else:
-            return 'Draft'
-    
-    def _get_remarks(self, order, po):
-        """Get remarks for commission entry."""
-        remarks = []
+            elements.append(Paragraph("All Agents", header_style))
         
-        if po:
-            if po.commission_posted:
-                remarks.append('Posted')
-            if po.state == 'purchase':
-                remarks.append('Confirmed')
-            elif po.state == 'done':
-                remarks.append('Received')
-            elif po.state == 'cancel':
-                remarks.append('Cancelled')
-        else:
-            remarks.append('No PO Created')
+        elements.append(Spacer(1, 20))
         
-        if order.invoice_status == 'invoiced':
-            remarks.append('Invoiced')
+        # Table data
+        table_data = [[
+            'COMMISSION NAME',
+            'ORDER REF',
+            'CUSTOMER REFERENCE',
+            'COMMISSION TYPE',
+            'RATE',
+            'TOTAL'
+        ]]
         
-        return ', '.join(remarks) if remarks else 'Pending'
-    
-    def _generate_pdf_report(self):
-        """Generate PDF report."""
-        try:
-            report = self.env.ref('commission_ax.action_report_commission_statement')
-            pdf_content, _ = report._render_qweb_pdf(self.ids)
+        total_amount = 0.0
+        currency_symbol = self.env.company.currency_id.symbol or ''
+        
+        for line in self.statement_line_ids:
+            rate_display = f"{line.rate:.2f}%" if line.rate else "Fixed"
+            total_display = f"{currency_symbol}{line.total:,.2f}"
             
-            filename = self._get_filename('pdf')
+            table_data.append([
+                line.commission_name or '',
+                line.order_ref or '',
+                line.customer_reference or '',
+                line.commission_type or '',
+                rate_display,
+                total_display
+            ])
             
-            self.write({
-                'pdf_data': base64.b64encode(pdf_content),
-                'pdf_filename': filename,
-            })
-            
-        except Exception as e:
-            _logger.error("PDF generation failed: %s", str(e))
-            raise UserError(_("Failed to generate PDF report: %s") % str(e))
-    
-    def _generate_xlsx_report(self):
-        """Generate Excel report."""
-        try:
-            output = io.BytesIO()
-            
-            try:
-                import xlsxwriter
-            except ImportError:
-                raise UserError(_("xlsxwriter library is required for Excel export"))
-            
-            workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-            worksheet = workbook.add_worksheet('Commission Statement')
-            
-            # Formats
-            header_format = workbook.add_format({
-                'bold': True,
-                'bg_color': '#800020',
-                'font_color': 'white',
-                'align': 'center',
-                'valign': 'vcenter',
-                'border': 1,
-            })
-            
-            money_format = workbook.add_format({
-                'num_format': '#,##0.00',
-                'align': 'right',
-            })
-            
-            date_format = workbook.add_format({
-                'num_format': 'yyyy-mm-dd',
-                'align': 'center',
-            })
-            
-            percent_format = workbook.add_format({
-                'num_format': '0.00%',
-                'align': 'center',
-            })
-            
-            # Title and header info
-            worksheet.merge_range('A1:K1', 'Commission Statement', header_format)
-            worksheet.write('A2', 'Agent:', workbook.add_format({'bold': True}))
-            worksheet.write('B2', self.partner_id.name)
-            worksheet.write('A3', 'Period:', workbook.add_format({'bold': True}))
-            worksheet.write('B3', f'{self.date_from} to {self.date_to}')
-            
-            # Column headers
-            headers = [
-                'Agent Name', 'Deal Date', 'Commission Type', 'Rate (%)',
-                'Property Price', 'Gross Commission', 'VAT (%)', 'Net Commission',
-                'Status', 'PO Number', 'Remarks'
-            ]
-            
-            for col, header in enumerate(headers):
-                worksheet.write(5, col, header, header_format)
+            total_amount += line.total
+        
+        # Add total row
+        table_data.append([
+            '', '', '', '', 'TOTAL:',
+            f"{currency_symbol}{total_amount:,.2f}"
+        ])
+        
+        # Create table
+        col_widths = [1.8*inch, 1.2*inch, 2.5*inch, 1.5*inch, 0.8*inch, 1.2*inch]
+        table = Table(table_data, colWidths=col_widths)
+        
+        # Table style
+        table_style = TableStyle([
+            # Header row
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#800020')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
             
             # Data rows
-            row = 6
-            total_gross = 0.0
-            total_net = 0.0
-            
-            for line in self.statement_line_ids:
-                worksheet.write(row, 0, line.agent_name)
-                worksheet.write(row, 1, line.deal_date, date_format)
-                worksheet.write(row, 2, line.commission_type)
-                worksheet.write(row, 3, line.rate / 100, percent_format)
-                worksheet.write(row, 4, line.property_price, money_format)
-                worksheet.write(row, 5, line.gross_commission, money_format)
-                worksheet.write(row, 6, line.vat_rate / 100, percent_format)
-                worksheet.write(row, 7, line.net_commission, money_format)
-                worksheet.write(row, 8, line.status)
-                worksheet.write(row, 9, line.po_number)
-                worksheet.write(row, 10, line.remarks)
-                
-                total_gross += line.gross_commission
-                total_net += line.net_commission
-                row += 1
+            ('BACKGROUND', (0, 1), (-1, -2), colors.beige),
+            ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
+            ('ALIGN', (4, 1), (5, -1), 'RIGHT'),  # Align rate and total columns
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -2), 1, colors.black),
             
             # Total row
-            if self.statement_line_ids:
-                worksheet.write(row + 1, 4, 'TOTAL:', workbook.add_format({'bold': True}))
-                worksheet.write(row + 1, 5, total_gross, workbook.add_format({'bold': True, 'num_format': '#,##0.00'}))
-                worksheet.write(row + 1, 7, total_net, workbook.add_format({'bold': True, 'num_format': '#,##0.00'}))
-            
-            # Adjust column widths
-            widths = [15, 12, 18, 10, 15, 15, 10, 15, 12, 15, 20]
-            for i, width in enumerate(widths):
-                worksheet.set_column(i, i, width)
-            
-            workbook.close()
-            output.seek(0)
-            
-            filename = self._get_filename('xlsx')
-            
-            self.write({
-                'xlsx_data': base64.b64encode(output.read()),
-                'xlsx_filename': filename,
-            })
-            
-        except Exception as e:
-            _logger.error("Excel generation failed: %s", str(e))
-            raise UserError(_("Failed to generate Excel report: %s") % str(e))
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#800020')),
+            ('TEXTCOLOR', (0, -1), (-1, -1), colors.whitesmoke),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('ALIGN', (4, -1), (5, -1), 'RIGHT'),
+        ])
+        
+        table.setStyle(table_style)
+        elements.append(table)
+        
+        # Footer
+        elements.append(Spacer(1, 30))
+        footer_text = f"Generated on: {fields.Datetime.now().strftime('%d/%m/%Y %H:%M')}"
+        elements.append(Paragraph(footer_text, styles['Normal']))
+        
+        # Build PDF
+        doc.build(elements)
+        output.seek(0)
+        
+        filename = f"Commission_Statement_{self.date_from.strftime('%Y%m%d')}_{self.date_to.strftime('%Y%m%d')}.pdf"
+        
+        self.write({
+            'pdf_data': base64.b64encode(output.read()),
+            'pdf_filename': filename,
+        })
     
-    def _get_filename(self, format_type):
-        """Get filename for report."""
-        safe_agent_name = self.partner_id.name.replace(' ', '_').replace('/', '_')
+    def _generate_enhanced_xlsx_report(self):
+        """Generate enhanced Excel report."""
+        try:
+            import xlsxwriter
+        except ImportError:
+            raise UserError(_("xlsxwriter library is required for Excel export. Please install it with: pip install xlsxwriter"))
         
-        if self.sale_order_id:
-            safe_so_name = self.sale_order_id.name.replace('/', '_')
-            base_name = f'Commission_Statement_{safe_so_name}_{safe_agent_name}'
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        worksheet = workbook.add_worksheet('Commission Statement')
+        
+        # Formats
+        title_format = workbook.add_format({
+            'bold': True,
+            'font_size': 16,
+            'font_color': '#800020',
+            'align': 'center',
+            'valign': 'vcenter',
+        })
+        
+        header_format = workbook.add_format({
+            'bold': True,
+            'bg_color': '#800020',
+            'font_color': 'white',
+            'align': 'center',
+            'valign': 'vcenter',
+            'border': 1,
+        })
+        
+        data_format = workbook.add_format({
+            'align': 'left',
+            'valign': 'vcenter',
+            'border': 1,
+        })
+        
+        money_format = workbook.add_format({
+            'num_format': '#,##0.00',
+            'align': 'right',
+            'valign': 'vcenter',
+            'border': 1,
+        })
+        
+        percent_format = workbook.add_format({
+            'num_format': '0.00%',
+            'align': 'center',
+            'valign': 'vcenter',
+            'border': 1,
+        })
+        
+        total_label_format = workbook.add_format({
+            'bold': True,
+            'bg_color': '#800020',
+            'font_color': 'white',
+            'align': 'right',
+            'valign': 'vcenter',
+            'border': 1,
+        })
+        
+        total_value_format = workbook.add_format({
+            'bold': True,
+            'bg_color': '#800020',
+            'font_color': 'white',
+            'num_format': '#,##0.00',
+            'align': 'right',
+            'valign': 'vcenter',
+            'border': 1,
+        })
+        
+        # Title
+        worksheet.merge_range('A1:F1', f"{self.env.company.name}", title_format)
+        worksheet.merge_range('A2:F2', "COMMISSION STATEMENT REPORT", title_format)
+        
+        # Period info
+        period_text = f"Period: {self.date_from.strftime('%d/%m/%Y')} - {self.date_to.strftime('%d/%m/%Y')}"
+        worksheet.merge_range('A3:F3', period_text, workbook.add_format({'align': 'center'}))
+        
+        if self.partner_id:
+            worksheet.merge_range('A4:F4', f"Agent: {self.partner_id.name}", workbook.add_format({'align': 'center'}))
+            start_row = 6
         else:
-            date_str = self.date_from.strftime('%Y%m%d')
-            base_name = f'Commission_Statement_{safe_agent_name}_{date_str}'
+            worksheet.merge_range('A4:F4', "All Agents", workbook.add_format({'align': 'center'}))
+            start_row = 6
         
-        return f'{base_name}.{format_type}'
+        # Headers
+        headers = [
+            'COMMISSION NAME',
+            'ORDER REF',
+            'CUSTOMER REFERENCE',
+            'COMMISSION TYPE',
+            'RATE',
+            'TOTAL'
+        ]
+        
+        for col, header in enumerate(headers):
+            worksheet.write(start_row, col, header, header_format)
+        
+        # Data rows
+        row = start_row + 1
+        total_amount = 0.0
+        
+        for line in self.statement_line_ids:
+            worksheet.write(row, 0, line.commission_name or '', data_format)
+            worksheet.write(row, 1, line.order_ref or '', data_format)
+            worksheet.write(row, 2, line.customer_reference or '', data_format)
+            worksheet.write(row, 3, line.commission_type or '', data_format)
+            
+            if line.rate:
+                worksheet.write(row, 4, line.rate / 100, percent_format)
+            else:
+                worksheet.write(row, 4, 'Fixed', data_format)
+            
+            worksheet.write(row, 5, line.total, money_format)
+            
+            total_amount += line.total
+            row += 1
+        
+        # Total row
+        worksheet.merge_range(row, 0, row, 4, 'TOTAL:', total_label_format)
+        worksheet.write(row, 5, total_amount, total_value_format)
+        
+        # Column widths
+        worksheet.set_column('A:A', 20)  # Commission Name
+        worksheet.set_column('B:B', 15)  # Order Ref
+        worksheet.set_column('C:C', 30)  # Customer Reference
+        worksheet.set_column('D:D', 18)  # Commission Type
+        worksheet.set_column('E:E', 10)  # Rate
+        worksheet.set_column('F:F', 15)  # Total
+        
+        # Footer
+        row += 2
+        worksheet.write(row, 0, f"Generated on: {fields.Datetime.now().strftime('%d/%m/%Y %H:%M')}")
+        
+        workbook.close()
+        output.seek(0)
+        
+        filename = f"Commission_Statement_{self.date_from.strftime('%Y%m%d')}_{self.date_to.strftime('%Y%m%d')}.xlsx"
+        
+        self.write({
+            'xlsx_data': base64.b64encode(output.read()),
+            'xlsx_filename': filename,
+        })
     
     def action_download_pdf(self):
         """Download PDF report."""
@@ -436,11 +523,11 @@ class CommissionStatementWizard(models.TransientModel):
 
 
 class CommissionStatementLine(models.TransientModel):
-    """Commission statement line for display."""
+    """Enhanced commission statement line model."""
     
     _name = 'commission.statement.line'
     _description = 'Commission Statement Line'
-    _order = 'deal_date desc'
+    _order = 'order_ref desc'
     
     wizard_id = fields.Many2one(
         'commission.statement.wizard',
@@ -449,32 +536,15 @@ class CommissionStatementLine(models.TransientModel):
         ondelete='cascade'
     )
     
-    sale_order_id = fields.Many2one(
-        'sale.order',
-        string='Sale Order',
-        required=True
-    )
-    
-    purchase_order_id = fields.Many2one(
-        'purchase.order',
-        string='Purchase Order'
-    )
-    
-    agent_name = fields.Char(string='Agent Name', required=True)
-    deal_date = fields.Date(string='Deal Date', required=True)
+    # Main columns as requested
+    commission_name = fields.Char(string='Commission Name', required=True)
+    order_ref = fields.Char(string='Order Ref', required=True)
+    customer_reference = fields.Char(string='Customer Reference', required=True)
     commission_type = fields.Char(string='Commission Type', required=True)
-    rate = fields.Float(string='Rate (%)', digits=(5, 2))
-    property_price = fields.Monetary(string='Property Price', currency_field='currency_id')
-    gross_commission = fields.Monetary(string='Gross Commission', currency_field='currency_id')
-    vat_rate = fields.Float(string='VAT Rate (%)', digits=(5, 2))
-    vat_amount = fields.Monetary(string='VAT Amount', currency_field='currency_id')
-    net_commission = fields.Monetary(string='Net Commission', currency_field='currency_id')
-    status = fields.Char(string='Status')
-    po_number = fields.Char(string='PO Number')
-    remarks = fields.Char(string='Remarks')
+    rate = fields.Float(string='Rate', digits=(5, 2))
+    total = fields.Monetary(string='Total', currency_field='currency_id', required=True)
     
-    currency_id = fields.Many2one(
-        'res.currency',
-        string='Currency',
-        related='sale_order_id.currency_id'
-    )
+    # Additional fields for reference
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order')
+    partner_id = fields.Many2one('res.partner', string='Partner')
+    currency_id = fields.Many2one('res.currency', string='Currency', required=True)
