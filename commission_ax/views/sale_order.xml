@@ -1,197 +1,522 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Sale Order Form View Enhancement with Commission Statement -->
-        <record id="view_order_form_commission_statement" model="ir.ui.view">
-            <field name="name">sale.order.form.commission.statement</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_order_form"/>
-            <field name="arch" type="xml">
-                <!-- Add Commission Statement smart button -->
-                <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-                    <button name="action_view_commission_statement" type="object" class="oe_stat_button" icon="fa-file-text-o" groups="base.group_user,sales_team.group_sale_salesman"
-                        modifiers="{'invisible': [['commission_statement_count', '=', 0]]}">
-                        <div class="o_stat_info">
-                            <field name="commission_statement_count" widget="statinfo" string="Commission Statement"/>
+        <template id="enhanced_commission_report_with_legacy" name="Commission Report with Legacy Group">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <!-- Calculated Values -->
+                    <t t-set="external_total" t-value="(o.broker_amount or 0) + (o.referrer_amount or 0) + (o.cashback_amount or 0) + (o.other_external_amount or 0)"/>
+                    <t t-set="legacy_total" t-value="(o.salesperson_commission or 0) + (o.manager_commission or 0) + (o.second_agent_commission or 0) + (o.director_commission or 0)"/>
+                    <t t-set="internal_total" t-value="(o.agent1_amount or 0) + (o.agent2_amount or 0) + (o.manager_amount or 0) + (o.director_amount or 0)"/>
+                    <t t-set="total_commission" t-value="external_total + legacy_total + internal_total"/>
+                    <t t-set="net_before_vat" t-value="(o.amount_total or 0) - total_commission"/>
+                    <t t-set="vat_rate" t-value="0.05"/>
+                    <t t-set="vat_amount" t-value="net_before_vat * vat_rate"/>
+                    <t t-set="net_commission" t-value="net_before_vat - vat_amount"/>
+
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <style>
+                                @page { 
+                                    margin: 6mm; 
+                                    size: A4; 
+                                }
+                                
+                                body { 
+                                    font-family: 'Segoe UI', Arial, sans-serif; 
+                                    font-size: 9px; 
+                                    line-height: 1.1; 
+                                    color: #000; 
+                                }
+                                
+                                .header { 
+                                    background: linear-gradient(135deg, #6b0632, #8b0d42); 
+                                    color: #fff; 
+                                    padding: 8px 10px; 
+                                    margin: -6mm -6mm 6px -6mm; 
+                                    border-radius: 4px; 
+                                    display: flex; 
+                                    justify-content: space-between; 
+                                    align-items: center; 
+                                }
+                                
+                                .header h1 { 
+                                    margin: 0; 
+                                    font-size: 16px; 
+                                    font-weight: bold; 
+                                    color: #fff; 
+                                }
+                                
+                                .header .sub { 
+                                    font-size: 8px; 
+                                    opacity: .9; 
+                                }
+                                
+                                .header .company { 
+                                    font-size: 7px; 
+                                    text-align: right; 
+                                }
+                                
+                                .section { 
+                                    background: #6b0632; 
+                                    color: #fff; 
+                                    font-size: 10px; 
+                                    font-weight: bold; 
+                                    padding: 3px 6px; 
+                                    margin: 4px 0 2px 0; 
+                                    border-radius: 2px; 
+                                    text-transform: uppercase; 
+                                }
+
+                                .section.legacy {
+                                    background: #2d3748;
+                                    color: #fff;
+                                }
+                                
+                                .team-leader {
+                                    background: #8b0d42;
+                                    color: #fff;
+                                    font-size: 9px;
+                                    font-weight: bold;
+                                    padding: 2px 6px;
+                                    margin: 2px 0 1px 0;
+                                    border-radius: 2px;
+                                }
+
+                                .team-leader.legacy {
+                                    background: #4a5568;
+                                }
+                                
+                                table { 
+                                    width: 100%; 
+                                    border-collapse: collapse; 
+                                    font-size: 8px; 
+                                    margin-bottom: 3px;
+                                }
+                                
+                                th { 
+                                    background: #f5f1f3; 
+                                    color: #6b0632; 
+                                    padding: 2px 4px; 
+                                    text-align: left;
+                                    font-weight: bold;
+                                    font-size: 8px;
+                                }
+                                
+                                td { 
+                                    padding: 2px 4px; 
+                                    border-bottom: 1px solid #e6e6e6; 
+                                    font-size: 8px;
+                                }
+                                
+                                .right { 
+                                    text-align: right; 
+                                }
+                                
+                                .center {
+                                    text-align: center;
+                                }
+                                
+                                .highlight { 
+                                    font-weight: 700; 
+                                    color: #6b0632; 
+                                }
+                                
+                                .row { 
+                                    display: flex; 
+                                    justify-content: space-between; 
+                                    padding: 1px 0; 
+                                    border-bottom: 1px dotted #ccc; 
+                                    font-size: 8px;
+                                }
+                                
+                                .row:last-child { 
+                                    border-bottom: none; 
+                                    font-weight: bold; 
+                                }
+                                
+                                .footer { 
+                                    margin-top: 4px; 
+                                    font-size: 6px; 
+                                    color: #555; 
+                                    text-align: center; 
+                                    border-top: 1px solid #ccc;
+                                    padding-top: 2px;
+                                }
+                                
+                                .team-member {
+                                    font-weight: bold;
+                                    color: #6b0632;
+                                }
+
+                                .legacy-member {
+                                    font-weight: bold;
+                                    color: #2d3748;
+                                }
+                            </style>
+
+                            <!-- HEADER -->
+                            <div class="header">
+                                <div>
+                                    <h1>Commission Report</h1>
+                                    <div class="sub">
+                                        Order: <span t-field="o.name"/>
+ | Date: <span t-field="o.booking_date" t-options="{'widget': 'date'}"/>
+                                </div>
+                            </div>
+                            <div class="company">
+                                    OSUS Real Estate<br/>
+                                    Business Bay, Dubai<br/>
+                                    +971-4-366-4500
                         </div>
-                    </button>
-                </xpath>
+                    </div>
 
-                <!-- Add invisible fields for commission statement functionality -->
-                <field name="amount_total" position="after">
-                    <field name="commission_statement_count" modifiers="{'invisible': true}"/>
-                </field>
-            </field>
-        </record>
+                    <!-- DEAL INFO -->
+                    <div class="section">Deal Information</div>
+                    <div class="row">
+                        <div>Customer:</div>
+                        <div>
+                            <span t-field="o.partner_id.name"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>Project:</div>
+                        <div>
+                            <span t-field="o.project_id.name"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>Unit:</div>
+                        <div>
+                            <span t-field="o.unit_id.name"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>Order Total (AED):</div>
+                        <div class="highlight">
+                            <span t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
+                        </div>
+                    </div>
 
-        <!-- Enhanced Commission Management Tab -->
-        <record id="view_order_form_commission_enhanced" model="ir.ui.view">
-            <field name="name">sale.order.form.commission.enhanced</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_order_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//notebook" position="inside">
-                    <page string="Commission Management" name="commission_management">
-                        <!-- Commission Status -->
-                        <group name="commission_status_group">
-                            <group string="Commission Status">
-                                <field name="commission_status"/>
-                                <field name="commission_processed"/>
-                                <field name="commission_blocked_reason" modifiers="{'invisible': [['commission_blocked_reason', '=', False]]}"/>
-                            </group>
-                            <group string="Commission Totals">
-                                <field name="total_commission_amount" widget="monetary"/>
-                                <field name="total_external_commission_amount" widget="monetary"/>
-                                <field name="total_internal_commission_amount" widget="monetary"/>
-                                <field name="company_share" widget="monetary"/>
-                                <field name="net_company_share" widget="monetary"/>
-                            </group>
-                        </group>
+                    <!-- LEGACY GROUP SECTION -->
+                    <t t-if="legacy_total > 0">
+                        <div class="section legacy">🏛️ LEGACY GROUP</div>
+                        <div class="team-leader legacy">Legacy Commission Structure</div>
 
-                        <!-- Legacy Commission Section -->
-                        <group string="Legacy Commission Structure" name="legacy_commission">
-                            <group string="Consultant">
-                                <field name="consultant_id"/>
-                                <field name="consultant_commission_type"/>
-                                <field name="consultant_comm_percentage" modifiers="{'invisible': [['consultant_commission_type', '=', 'fixed']]}"/>
-                                <field name="salesperson_commission" widget="monetary"/>
-                            </group>
-                            <group string="Management">
-                                <field name="manager_id"/>
-                                <field name="manager_legacy_commission_type"/>
-                                <field name="manager_comm_percentage" modifiers="{'invisible': [['manager_legacy_commission_type', '=', 'fixed']]}"/>
-                                <field name="manager_commission" widget="monetary"/>
-                            </group>
-                            <group string="Additional Agents">
-                                <field name="second_agent_id"/>
-                                <field name="second_agent_commission_type"/>
-                                <field name="second_agent_comm_percentage" modifiers="{'invisible': [['second_agent_commission_type', '=', 'fixed']]}"/>
-                                <field name="second_agent_commission" widget="monetary"/>
-                            </group>
-                            <group string="Director">
-                                <field name="director_id"/>
-                                <field name="director_legacy_commission_type"/>
-                                <field name="director_comm_percentage" modifiers="{'invisible': [['director_legacy_commission_type', '=', 'fixed']]}"/>
-                                <field name="director_commission" widget="monetary"/>
-                            </group>
-                        </group>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th>Partner</th>
+                                    <th>Rate (%)</th>
+                                    <th>Amount (AED)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.salesperson_commission and o.salesperson_commission > 0">
+                                    <tr>
+                                        <td>Consultant</td>
+                                        <td class="legacy-member">
+                                            <span t-field="o.consultant_id.name" t-options="{'default': '—'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.consultant_comm_percentage or 0)"/>
+                                        </td>
+                                        <td class="right highlight">
+                                            <span t-esc="'{:,.2f}'.format(o.salesperson_commission)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.manager_commission and o.manager_commission > 0">
+                                    <tr>
+                                        <td>Manager</td>
+                                        <td class="legacy-member">
+                                            <span t-field="o.manager_id.name" t-options="{'default': '—'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.manager_comm_percentage or 0)"/>
+                                        </td>
+                                        <td class="right highlight">
+                                            <span t-esc="'{:,.2f}'.format(o.manager_commission)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.second_agent_commission and o.second_agent_commission > 0">
+                                    <tr>
+                                        <td>Second Agent</td>
+                                        <td class="legacy-member">
+                                            <span t-field="o.second_agent_id.name" t-options="{'default': '—'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.second_agent_comm_percentage or 0)"/>
+                                        </td>
+                                        <td class="right highlight">
+                                            <span t-esc="'{:,.2f}'.format(o.second_agent_commission)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.director_commission and o.director_commission > 0">
+                                    <tr>
+                                        <td>Director</td>
+                                        <td class="legacy-member">
+                                            <span t-field="o.director_id.name" t-options="{'default': '—'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.director_comm_percentage or 0)"/>
+                                        </td>
+                                        <td class="right highlight">
+                                            <span t-esc="'{:,.2f}'.format(o.director_commission)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
 
-                        <!-- External Commission Section -->
-                        <group string="External Commission Structure" name="external_commission">
-                            <group string="Broker">
-                                <field name="broker_partner_id"/>
-                                <field name="broker_commission_type"/>
-                                <field name="broker_rate" modifiers="{'invisible': [['broker_commission_type', '=', 'fixed']]}"/>
-                                <field name="broker_amount" widget="monetary"/>
-                            </group>
-                            <group string="Referrer">
-                                <field name="referrer_partner_id"/>
-                                <field name="referrer_commission_type"/>
-                                <field name="referrer_rate" modifiers="{'invisible': [['referrer_commission_type', '=', 'fixed']]}"/>
-                                <field name="referrer_amount" widget="monetary"/>
-                            </group>
-                            <group string="Cashback">
-                                <field name="cashback_partner_id"/>
-                                <field name="cashback_commission_type"/>
-                                <field name="cashback_rate" modifiers="{'invisible': [['cashback_commission_type', '=', 'fixed']]}"/>
-                                <field name="cashback_amount" widget="monetary"/>
-                            </group>
-                            <group string="Other External">
-                                <field name="other_external_partner_id"/>
-                                <field name="other_external_commission_type"/>
-                                <field name="other_external_rate" modifiers="{'invisible': [['other_external_commission_type', '=', 'fixed']]}"/>
-                                <field name="other_external_amount" widget="monetary"/>
-                            </group>
-                        </group>
+                    <!-- PRIMARY MARKET SECTION -->
+                    <t t-if="(o.manager_amount and o.manager_amount > 0) or (o.director_amount and o.director_amount > 0)">
+                        <div class="section">🏢 PRIMARY MARKET – OSUS EXCLUSIVE</div>
+                        <div class="team-leader">Team Leader: Setareh</div>
 
-                        <!-- Internal Commission Section -->
-                        <group string="Internal Commission Structure" name="internal_commission">
-                            <group string="Agents">
-                                <field name="agent1_partner_id"/>
-                                <field name="agent1_commission_type"/>
-                                <field name="agent1_rate" modifiers="{'invisible': [['agent1_commission_type', '=', 'fixed']]}"/>
-                                <field name="agent1_amount" widget="monetary"/>
-                            </group>
-                            <group string="Agent 2">
-                                <field name="agent2_partner_id"/>
-                                <field name="agent2_commission_type"/>
-                                <field name="agent2_rate" modifiers="{'invisible': [['agent2_commission_type', '=', 'fixed']]}"/>
-                                <field name="agent2_amount" widget="monetary"/>
-                            </group>
-                            <group string="Manager">
-                                <field name="manager_partner_id"/>
-                                <field name="manager_commission_type"/>
-                                <field name="manager_rate" modifiers="{'invisible': [['manager_commission_type', '=', 'fixed']]}"/>
-                                <field name="manager_amount" widget="monetary"/>
-                            </group>
-                            <group string="Director">
-                                <field name="director_partner_id"/>
-                                <field name="director_commission_type"/>
-                                <field name="director_rate" modifiers="{'invisible': [['director_commission_type', '=', 'fixed']]}"/>
-                                <field name="director_amount" widget="monetary"/>
-                            </group>
-                        </group>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th>Partner</th>
+                                    <th>Rate (%)</th>
+                                    <th>Amount (AED)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.manager_amount and o.manager_amount > 0">
+                                    <tr>
+                                        <td>Manager</td>
+                                        <td class="team-member">
+                                            <span t-field="o.manager_partner_id.name" t-options="{'default': 'Setareh'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.manager_rate or 0)"/>
+                                        </td>
+                                        <td class="right highlight">
+                                            <span t-esc="'{:,.2f}'.format(o.manager_amount)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.director_amount and o.director_amount > 0">
+                                    <tr>
+                                        <td>Director</td>
+                                        <td class="team-member">
+                                            <span t-field="o.director_partner_id.name" t-options="{'default': 'Faraz Arif'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.director_rate or 0)"/>
+                                        </td>
+                                        <td class="right highlight">
+                                            <span t-esc="'{:,.2f}'.format(o.director_amount)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
 
-                        <!-- Commission Actions -->
-                        <group string="Commission Actions" name="commission_actions">
-                            <button name="action_process_commissions" string="Process Commissions" type="object" class="btn-primary"
-                                modifiers="{'invisible': [['commission_processed', '=', true]]}"/>
-                            <button name="action_confirm_commissions" string="Confirm Commissions" type="object" class="btn-success"
-                                modifiers="{'invisible': [['commission_status', '!=', 'calculated'], ['commission_processed', '=', false]]}"/>
-                            <button name="action_reset_commissions" string="Reset to Draft" type="object" class="btn-warning"
-                                modifiers="{'invisible': [['commission_status', '=', 'draft']]}"/>
-                        </group>
+                    <!-- SECONDARY MARKET SECTION -->
+                    <t t-if="(o.agent1_amount and o.agent1_amount > 0) or (o.agent2_amount and o.agent2_amount > 0)">
+                        <div class="section">🏢 SECONDARY MARKET</div>
+                        <div class="team-leader">Team Leader: Aboelazayem Khalil</div>
 
-                        <!-- Purchase Orders -->
-                        <group string="Related Purchase Orders" name="related_pos" modifiers="{'invisible': [['purchase_order_count', '=', 0]]}">
-                            <field name="purchase_order_ids" nolabel="1">
-                                <tree decoration-success="state == 'purchase'" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'">
-                                    <field name="name"/>
-                                    <field name="partner_id"/>
-                                    <field name="date_order"/>
-                                    <field name="amount_total" widget="monetary"/>
-                                    <field name="state"/>
-                                    <field name="commission_posted"/>
-                                    <button name="action_force_post" string="Force Post" type="object" icon="fa-check"
-                                        modifiers="{'invisible': [['commission_posted', '=', true]]}"/>
-                                </tree>
-                            </field>
-                        </group>
-                    </page>
-                </xpath>
-            </field>
-        </record>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th>Partner</th>
+                                    <th>Rate (%)</th>
+                                    <th>Amount (AED)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.agent1_amount and o.agent1_amount > 0">
+                                    <tr>
+                                        <td>Agent 1</td>
+                                        <td class="team-member">
+                                            <span t-field="o.agent1_partner_id.name" t-options="{'default': 'Yagmour'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.agent1_rate or 0)"/>
+                                        </td>
+                                        <td class="right highlight">
+                                            <span t-esc="'{:,.2f}'.format(o.agent1_amount)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.agent2_amount and o.agent2_amount > 0">
+                                    <tr>
+                                        <td>Agent 2</td>
+                                        <td class="team-member">
+                                            <span t-field="o.agent2_partner_id.name" t-options="{'default': 'Maikel'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.agent2_rate or 0)"/>
+                                        </td>
+                                        <td class="right highlight">
+                                            <span t-esc="'{:,.2f}'.format(o.agent2_amount)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
 
-        <!-- Sale Order Tree View Enhancement -->
-        <record id="view_quotation_tree_commission" model="ir.ui.view">
-            <field name="name">sale.order.tree.commission</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_quotation_tree"/>
-            <field name="arch" type="xml">
-                <field name="amount_total" position="after">
-                    <field name="commission_status" optional="show"/>
-                    <field name="commission_processed" optional="hide"/>
-                    <field name="total_commission_amount" optional="hide" widget="monetary"/>
-                </field>
-            </field>
-        </record>
+                    <!-- EXTERNAL PARTIES SECTION -->
+                    <t t-if="external_total > 0">
+                        <div class="section">💰 External Parties (Broker, Referrer, Cashback, Other)</div>
 
-        <!-- Sale Order Search View Enhancement -->
-        <record id="view_sales_order_filter_commission" model="ir.ui.view">
-            <field name="name">sale.order.search.commission</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_sales_order_filter"/>
-            <field name="arch" type="xml">
-                <filter name="my_sale_orders_filter" position="after">
-                    <separator/>
-                    <filter string="Commission Processed" name="commission_processed" domain="[('commission_processed', '=', True)]"/>
-                    <filter string="Commission Pending" name="commission_pending" domain="[('commission_processed', '=', False), ('commission_status', '!=', 'draft')]"/>
-                    <filter string="Commission Draft" name="commission_draft" domain="[('commission_status', '=', 'draft')]"/>
-                </filter>
-                <group expand="0" string="Group By" position="inside">
-                    <filter string="Commission Status" name="group_commission_status" domain="[]" context="{'group_by': 'commission_status'}"/>
-                </group>
-            </field>
-        </record>
-    </data>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Party</th>
+                                    <th>Partner</th>
+                                    <th>Rate (%)</th>
+                                    <th>Amount (AED)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="o.broker_amount and o.broker_amount > 0">
+                                    <tr>
+                                        <td>Broker</td>
+                                        <td>
+                                            <span t-field="o.broker_partner_id.name" t-options="{'default': '—'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.broker_rate or 0)"/>
+                                        </td>
+                                        <td class="right">
+                                            <span t-esc="'{:,.2f}'.format(o.broker_amount)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.referrer_amount and o.referrer_amount > 0">
+                                    <tr>
+                                        <td>Referrer</td>
+                                        <td>
+                                            <span t-field="o.referrer_partner_id.name" t-options="{'default': '—'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.referrer_rate or 0)"/>
+                                        </td>
+                                        <td class="right">
+                                            <span t-esc="'{:,.2f}'.format(o.referrer_amount)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.cashback_amount and o.cashback_amount > 0">
+                                    <tr>
+                                        <td>Cashback</td>
+                                        <td>
+                                            <span t-field="o.cashback_partner_id.name" t-options="{'default': '—'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.cashback_rate or 0)"/>
+                                        </td>
+                                        <td class="right">
+                                            <span t-esc="'{:,.2f}'.format(o.cashback_amount)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.other_external_amount and o.other_external_amount > 0">
+                                    <tr>
+                                        <td>Other External</td>
+                                        <td>
+                                            <span t-field="o.other_external_partner_id.name" t-options="{'default': '—'}"/>
+                                        </td>
+                                        <td class="center">
+                                            <span t-esc="'{:.1f}'.format(o.other_external_rate or 0)"/>
+                                        </td>
+                                        <td class="right">
+                                            <span t-esc="'{:,.2f}'.format(o.other_external_amount)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+
+                    <!-- FINANCIAL SUMMARY -->
+                    <div class="section">📈 Financial Summary</div>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td class="right">Order Total (AED):</td>
+                                <td class="right">
+                                    <span t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="right">Legacy Total (AED):</td>
+                                <td class="right">
+                                    <span t-esc="'{:,.2f}'.format(legacy_total)"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="right">External Total (AED):</td>
+                                <td class="right">
+                                    <span t-esc="'{:,.2f}'.format(external_total)"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="right">Internal Total (AED):</td>
+                                <td class="right">
+                                    <span t-esc="'{:,.2f}'.format(internal_total)"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="right">Total Commission (AED):</td>
+                                <td class="right">
+                                    <span t-esc="'{:,.2f}'.format(total_commission)"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="right">VAT 5% (AED):</td>
+                                <td class="right">
+                                    <span t-esc="'{:,.2f}'.format(vat_amount)"/>
+                                </td>
+                            </tr>
+                            <tr style="background: #f5f1f3; font-weight: bold;">
+                                <td class="right">
+                                    <strong>Net Company Share (AED):</strong>
+                                </td>
+                                <td class="right highlight">
+                                    <strong>
+                                        <span t-esc="'{:,.2f}'.format(net_commission)"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- FOOTER -->
+                    <div class="footer">
+                                Generated by: <span t-field="o.create_uid.name"/>
+ on <span t-field="o.create_date" t-options="{'widget': 'datetime'}"/>
+ | Confidential – OSUS Real Estate Brokerage LLC
+                </div>
+            </div>
+        </t>
+    </t>
+</t>
+</template>
+
+<!-- Report Action -->
+<record id="action_report_commission_with_legacy" model="ir.actions.report">
+<field name="name">Commission Report with Legacy</field>
+<field name="model">sale.order</field>
+<field name="report_type">qweb-pdf</field>
+<field name="report_name">enhanced_commission_report_with_legacy</field>
+<field name="report_file">enhanced_commission_report_with_legacy</field>
+<field name="print_report_name">'Commission Report - %s' % object.name</field>
+<field name="binding_model_id" ref="sale.model_sale_order"/>
+<field name="binding_type">report</field>
+<field name="paperformat_id" ref="base.paperformat_euro"/>
+</record>
+</data>
 </odoo>
