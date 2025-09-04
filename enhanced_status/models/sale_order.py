@@ -175,7 +175,7 @@ class SaleOrder(models.Model):
             else:
                 order.payment_status = 'partially_paid'
 
-    @api.depends('billing_status', 'payment_status', 'picking_ids.state')
+    @api.depends('billing_status', 'payment_status')
     def _compute_completion_criteria(self):
         """Check if order meets criteria for automatic completion"""
         for order in self:
