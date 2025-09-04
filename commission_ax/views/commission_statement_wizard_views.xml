@@ -117,7 +117,7 @@
         <menuitem id="menu_commission_statement_report" 
                   name="Commission Statement Report" 
                   parent="menu_commission_reports" 
-                  action="action_commission_statement_wizard" 
+                  action="action_commission_partner_statement_wizard" 
                   sequence="10"/>
 
         <!-- Add smart button to Sale Order for quick access -->
@@ -178,22 +178,5 @@
                   action="action_commission_partners" 
                   sequence="20"/>
 
-        <!-- Security Groups -->
-        <record id="group_commission_manager" model="res.groups">
-            <field name="name">Commission Manager</field>
-            <field name="category_id" ref="base.module_category_sales_management"/>
-            <field name="comment">Can access all commission reports and statements</field>
-        </record>
-
-        <record id="group_commission_user" model="res.groups">
-            <field name="name">Commission User</field>
-            <field name="category_id" ref="base.module_category_sales_management"/>
-            <field name="comment">Can view commission reports for own records</field>
-        </record>
-
-        <!-- Menu Security -->
-        <record id="menu_commission_reports" model="ir.ui.menu">
-            <field name="groups_id" eval="[(4, ref('group_commission_user'))]"/>
-        </record>
     </data>
 </odoo>
