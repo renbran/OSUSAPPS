@@ -1,97 +1,174 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Enhanced Sale Order Form View -->
-    <record id="view_order_form_enhanced" model="ir.ui.view">
-        <field name="name">sale.order.form.enhanced</field>
+    <!-- Override Sale Order Form View with Custom Workflow -->
+    <record id="view_order_form_enhanced_workflow" model="ir.ui.view">
+        <field name="name">sale.order.form.enhanced.workflow</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- Add custom status bar -->
-            <xpath expr="//field[@name='state']" position="after">
-                <field name="custom_state" widget="statusbar" statusbar_visible="draft,documentation,calculation,approved,completed" invisible="state not in ['draft', 'sent', 'sale']"/>
+            <!-- Replace default state statusbar with custom workflow -->
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" 
+                       statusbar_visible="draft,documentation,calculation,approved,sale,completed" 
+                       statusbar_colors='{"completed":"success","approved":"info","calculation":"warning","documentation":"primary"}'/>
             </xpath>
 
-            <!-- Add stage and control fields -->
-            <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="stage_id" options="{'no_create': True, 'no_open': True}" invisible="state not in ['draft', 'sent', 'sale']"/>
+            <!-- Add workflow stage field -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="stage_id" 
+                       options="{'no_create': True, 'no_open': True}" 
+                       invisible="state in ['draft', 'cancel']"
+                       widget="selection"/>
+            </xpath>
+
+            <!-- Add control fields (invisible) -->
+            <xpath expr="//field[@name='stage_id']" position="after">
                 <field name="is_locked" invisible="1"/>
                 <field name="can_unlock" invisible="1"/>
+                <field name="completion_criteria_met" invisible="1"/>
             </xpath>
 
-            <!-- Add financial tracking fields -->
-            <xpath expr="//field[@name='client_order_ref']" position="after">
-                <field name="billing_status" widget="badge" invisible="state == 'draft'"/>
-                <field name="payment_status" widget="badge" invisible="state == 'draft'"/>
-                <field name="invoiced_amount" invisible="state == 'draft'"/>
-                <field name="paid_amount" invisible="state == 'draft'"/>
-                <field name="balance_amount" invisible="state == 'draft'"/>
-            </xpath>
-
-            <!-- Add reconciliation notes -->
-            <xpath expr="//field[@name='note']" position="after">
-                <separator string="Reconciliation" invisible="custom_state in ['draft', 'documentation']"/>
-                <field name="reconciliation_notes" placeholder="Add reconciliation notes..." invisible="custom_state in ['draft', 'documentation']"/>
-            </xpath>
-
-            <!-- Add workflow buttons -->
+            <!-- Replace default buttons with custom workflow buttons -->
             <xpath expr="//button[@name='action_quotation_send']" position="after">
+                
+                <!-- Documentation Stage Button -->
+                <button name="action_move_to_documentation" 
+                        type="object" 
+                        string="Start Documentation" 
+                        class="btn-primary"
+                        invisible="state not in ['draft', 'sent'] or state == 'documentation'"
+                        help="Move to documentation gathering phase"/>
 
-                <!-- Normal workflow buttons -->
-                <button name="action_move_to_documentation" type="object" string="Move to Documentation" class="btn-primary" invisible="custom_state != 'draft' or state not in ['draft', 'sent']"/>
+                <!-- Calculation Stage Button -->
+                <button name="action_move_to_calculation" 
+                        type="object" 
+                        string="Begin Calculation" 
+                        class="btn-primary"
+                        invisible="state != 'documentation'"
+                        help="Move to pricing and calculation phase"/>
 
-                <button name="action_move_to_calculation" type="object" string="Move to Calculation" class="btn-primary" invisible="custom_state != 'documentation' or state not in ['draft', 'sent', 'sale']"/>
+                <!-- Approval Button -->
+                <button name="action_move_to_approved" 
+                        type="object" 
+                        string="Approve Order" 
+                        class="btn-success"
+                        invisible="state != 'calculation'"
+                        help="Approve order for execution"/>
 
-                <button name="action_move_to_approved" type="object" string="Approve" class="btn-success" invisible="custom_state != 'calculation' or state not in ['draft', 'sent', 'sale']"/>
+                <!-- Manual Completion Button -->
+                <button name="action_complete_order" 
+                        type="object" 
+                        string="Mark Complete" 
+                        class="btn-success"
+                        invisible="state not in ['approved', 'sale'] or state == 'completed'"
+                        help="Manually mark order as completed"/>
 
-                <button name="action_complete_order" type="object" string="Mark Completed" class="btn-success" invisible="custom_state != 'approved' or state != 'sale'"/>
-
-                <button name="action_unlock_order" type="object" string="Unlock Order" class="btn-warning" invisible="not is_locked or not can_unlock"/>
-
-                <!-- Emergency override buttons -->
-                <button name="action_emergency_complete" type="object" string="🚨 Emergency Complete" class="btn-danger" invisible="custom_state == 'completed' or state != 'sale' or not can_unlock" confirm="Emergency override - force complete this order?"/>
-
-                <button name="action_emergency_reset" type="object" string="🔄 Emergency Reset" class="btn-warning" invisible="custom_state != 'completed' or not can_unlock" confirm="Reset completed order to approved?"/>
+                <!-- Unlock Button (Admin Only) -->
+                <button name="action_unlock_order" 
+                        type="object" 
+                        string="🔓 Unlock Order" 
+                        class="btn-warning"
+                        invisible="not is_locked or not can_unlock"
+                        confirm="Unlock this completed order for editing?"
+                        help="Unlock completed order (Administrator only)"/>
 
             </xpath>
 
-            <!-- Lock fields when completed -->
-            <xpath expr="//field[@name='partner_id']" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
+            <!-- Replace default confirm button behavior -->
+            <xpath expr="//button[@name='action_confirm']" position="attributes">
+                <attribute name="invisible">state not in ['approved', 'sent'] or state in ['sale', 'done', 'cancel']</attribute>
+                <attribute name="string">Confirm Approved Order</attribute>
+                <attribute name="help">Confirm order after approval process</attribute>
             </xpath>
 
+            <!-- Add financial tracking section -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <group name="workflow_info" string="Workflow Information" 
+                       invisible="state in ['draft', 'cancel']">
+                    <group>
+                        <field name="billing_status" widget="badge"/>
+                        <field name="payment_status" widget="badge"/>
+                    </group>
+                    <group>
+                        <field name="invoiced_amount"/>
+                        <field name="paid_amount"/>
+                        <field name="balance_amount"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Add workflow notes section -->
+            <xpath expr="//field[@name='note']" position="after">
+                <group name="workflow_notes" string="Workflow Notes" 
+                       invisible="state in ['draft', 'cancel']">
+                    <field name="workflow_notes" 
+                           placeholder="Add workflow progression notes..."
+                           nolabel="1"/>
+                    <field name="reconciliation_notes" 
+                           placeholder="Add financial reconciliation notes..."
+                           invisible="state not in ['approved', 'sale', 'completed']"
+                           nolabel="1"/>
+                </group>
+            </xpath>
+
+            <!-- Lock order lines when completed -->
             <xpath expr="//field[@name='order_line']" position="attributes">
                 <attribute name="readonly">is_locked and not can_unlock</attribute>
             </xpath>
 
-        </field>
-    </record>
-
-    <!-- Enhanced Tree View -->
-    <record id="view_quotation_tree_enhanced" model="ir.ui.view">
-        <field name="name">sale.order.tree.enhanced</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_quotation_tree"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='amount_total']" position="after">
-                <field name="custom_state" widget="badge"/>
-                <field name="billing_status" widget="badge"/>
-                <field name="payment_status" widget="badge"/>
-                <field name="invoiced_amount" sum="Total Invoiced"/>
-                <field name="paid_amount" sum="Total Paid"/>
-                <field name="balance_amount" sum="Balance"/>
+            <!-- Lock partner when completed -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="readonly">is_locked and not can_unlock</attribute>
             </xpath>
+
+            <!-- Lock payment terms when completed -->
+            <xpath expr="//field[@name='payment_term_id']" position="attributes">
+                <attribute name="readonly">is_locked and not can_unlock</attribute>
+            </xpath>
+
         </field>
     </record>
 
-    <!-- Enhanced Kanban View -->
-    <record id="view_sale_order_kanban_enhanced" model="ir.ui.view">
-        <field name="name">sale.order.kanban.enhanced</field>
+    <!-- Enhanced Tree View with Workflow Information -->
+    <record id="view_order_tree_enhanced_workflow" model="ir.ui.view">
+        <field name="name">sale.order.tree.enhanced.workflow</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            
+            <!-- Add workflow columns -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="stage_id" optional="show"/>
+                <field name="billing_status" widget="badge" optional="show"/>
+                <field name="payment_status" widget="badge" optional="show"/>
+                <field name="completion_criteria_met" widget="boolean" optional="hide"/>
+            </xpath>
+
+            <!-- Add financial columns -->
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="invoiced_amount" sum="Total Invoiced" optional="show"/>
+                <field name="paid_amount" sum="Total Paid" optional="show"/>
+                <field name="balance_amount" sum="Total Balance" optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Enhanced Kanban View by Stage -->
+    <record id="view_sale_order_kanban_enhanced_workflow" model="ir.ui.view">
+        <field name="name">sale.order.kanban.enhanced.workflow</field>
         <field name="model">sale.order</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="stage_id" class="o_kanban_small_column" quick_create="false">
+            <kanban default_group_by="stage_id" 
+                    class="o_kanban_small_column" 
+                    quick_create="false"
+                    group_create="false"
+                    group_delete="false"
+                    group_edit="false">
+                
                 <field name="stage_id"/>
-                <field name="custom_state"/>
+                <field name="state"/>
                 <field name="billing_status"/>
                 <field name="payment_status"/>
                 <field name="amount_total"/>
@@ -100,43 +177,86 @@
                 <field name="balance_amount"/>
                 <field name="partner_id"/>
                 <field name="name"/>
+                <field name="user_id"/>
+                <field name="date_order"/>
+                <field name="is_locked"/>
+                <field name="completion_criteria_met"/>
+
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click">
                             <div class="oe_kanban_content">
+                                
+                                <!-- Header with order name and lock status -->
                                 <div class="o_kanban_record_title">
                                     <strong>
                                         <field name="name"/>
+                                        <span t-if="record.is_locked.raw_value" class="fa fa-lock text-warning" title="Order is locked"/>
                                     </strong>
                                 </div>
+                                
+                                <!-- Customer -->
                                 <div class="o_kanban_record_subtitle">
                                     <field name="partner_id"/>
                                 </div>
+
+                                <!-- Status badges -->
                                 <div class="oe_kanban_details">
-                                    <div>
-                                        <span class="o_field_badge">
-                                            <field name="custom_state"/>
+                                    <div class="mt8">
+                                        <span class="o_field_badge o_field_badge_pill">
+                                            <field name="state"/>
                                         </span>
-                                        <span class="o_field_badge">
+                                        <span class="o_field_badge o_field_badge_pill" 
+                                              t-if="record.billing_status.raw_value">
                                             <field name="billing_status"/>
                                         </span>
-                                        <span class="o_field_badge">
+                                        <span class="o_field_badge o_field_badge_pill"
+                                              t-if="record.payment_status.raw_value">
                                             <field name="payment_status"/>
                                         </span>
                                     </div>
-                                    <div>
+
+                                    <!-- Financial information -->
+                                    <div class="mt4">
                                         <strong>Total: </strong>
                                         <field name="amount_total" widget="monetary"/>
                                     </div>
-                                    <div t-if="record.invoiced_amount.raw_value > 0">
+                                    
+                                    <div t-if="record.invoiced_amount.raw_value > 0" class="text-muted">
                                         <strong>Invoiced: </strong>
                                         <field name="invoiced_amount" widget="monetary"/>
                                     </div>
-                                    <div t-if="record.paid_amount.raw_value > 0">
+                                    
+                                    <div t-if="record.paid_amount.raw_value > 0" class="text-success">
                                         <strong>Paid: </strong>
                                         <field name="paid_amount" widget="monetary"/>
                                     </div>
+                                    
+                                    <div t-if="record.balance_amount.raw_value > 0" class="text-warning">
+                                        <strong>Balance: </strong>
+                                        <field name="balance_amount" widget="monetary"/>
+                                    </div>
                                 </div>
+
+                                <!-- Footer with date and salesperson -->
+                                <div class="oe_kanban_footer">
+                                    <div class="oe_kanban_footer_left">
+                                        <field name="date_order" widget="date"/>
+                                    </div>
+                                    <div class="oe_kanban_footer_right">
+                                        <img t-att-src="kanban_image('res.users', 'avatar_128', record.user_id.raw_value)"
+                                             t-att-title="record.user_id.value"
+                                             t-att-alt="record.user_id.value"
+                                             class="oe_kanban_avatar o_image_24_cover"/>
+                                    </div>
+                                </div>
+
+                                <!-- Completion indicator -->
+                                <div t-if="record.completion_criteria_met.raw_value" 
+                                     class="ribbon ribbon-top-right">
+                                    <span class="bg-success">Ready</span>
+                                </div>
+
                             </div>
                         </div>
                     </t>
@@ -144,4 +264,74 @@
             </kanban>
         </field>
     </record>
+
+    <!-- Custom Search View with Workflow Filters -->
+    <record id="view_sales_order_filter_enhanced_workflow" model="ir.ui.view">
+        <field name="name">sale.order.search.enhanced.workflow</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            
+            <!-- Add workflow stage filter -->
+            <xpath expr="//filter[@name='my_sale_orders_filter']" position="after">
+                <separator/>
+                <filter string="In Documentation" name="documentation_orders" 
+                        domain="[('state', '=', 'documentation')]"/>
+                <filter string="In Calculation" name="calculation_orders" 
+                        domain="[('state', '=', 'calculation')]"/>
+                <filter string="Approved" name="approved_orders" 
+                        domain="[('state', '=', 'approved')]"/>
+                <filter string="Completed" name="completed_orders" 
+                        domain="[('state', '=', 'completed')]"/>
+                <separator/>
+                <filter string="Ready for Completion" name="ready_completion" 
+                        domain="[('completion_criteria_met', '=', True), ('state', '!=', 'completed')]"/>
+                <filter string="Locked Orders" name="locked_orders" 
+                        domain="[('state', '=', 'completed')]"/>
+            </xpath>
+
+            <!-- Add financial filters -->
+            <xpath expr="//filter[@name='my_sale_orders_filter']" position="after">
+                <separator/>
+                <filter string="Fully Invoiced" name="fully_invoiced" 
+                        domain="[('billing_status', '=', 'fully_invoiced')]"/>
+                <filter string="Fully Paid" name="fully_paid" 
+                        domain="[('payment_status', '=', 'fully_paid')]"/>
+                <filter string="Outstanding Balance" name="has_balance" 
+                        domain="[('balance_amount', '>', 0)]"/>
+            </xpath>
+
+            <!-- Add stage groupby -->
+            <xpath expr="//group[@name='groupby']" position="inside">
+                <filter string="Workflow Stage" name="groupby_stage" 
+                        domain="[]" context="{'group_by': 'stage_id'}"/>
+                <filter string="Billing Status" name="groupby_billing" 
+                        domain="[]" context="{'group_by': 'billing_status'}"/>
+                <filter string="Payment Status" name="groupby_payment" 
+                        domain="[]" context="{'group_by': 'payment_status'}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Add workflow menu items -->
+    <record id="action_orders_by_workflow_stage" model="ir.actions.act_window">
+        <field name="name">Orders by Workflow Stage</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="view_sale_order_kanban_enhanced_workflow"/>
+        <field name="search_view_id" ref="view_sales_order_filter_enhanced_workflow"/>
+        <field name="domain">[]</field>
+        <field name="context">{'group_by': 'stage_id'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first sale order with enhanced workflow!
+            </p>
+            <p>
+                Track orders through Documentation → Calculation → Approved → Completed stages
+                with comprehensive financial monitoring.
+            </p>
+        </field>
+    </record>
+
 </odoo>

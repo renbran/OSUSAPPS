@@ -1,6 +1,3 @@
-access_sale_order_user,Sale Order User,model_sale_order,base.group_user,1,0,0,0
-access_sale_order_sales_user,Sale Order Sales User,model_sale_order,sales_team.group_sale_salesman,1,1,1,0
-access_sale_order_manager,Sale Order Manager,model_sale_order,sales_team.group_sale_manager,1,1,1,1
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sale_order_stage_user,Sale Order Stage User,model_sale_order_stage,base.group_user,1,0,0,0
 access_sale_order_stage_sales_user,Sale Order Stage Sales User,model_sale_order_stage,sales_team.group_sale_salesman,1,1,1,0
