@@ -5,6 +5,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class SaleOrder(models.Model):
+    """Extended Sale Order with comprehensive commission management"""
     _inherit = 'sale.order'  # This MUST be at the top of the class
     
     # Commission Statement fields

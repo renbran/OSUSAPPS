@@ -130,7 +130,7 @@
                             type="object" 
                             class="oe_stat_button" 
                             icon="fa-file-excel-o"
-                            attrs="{'invisible': [('total_commission_amount', '=', 0)]}">
+                            invisible="total_commission_amount == 0">
                         <div class="o_stat_info">
                             <span class="o_stat_text">Commission</span>
                             <span class="o_stat_text">Report</span>

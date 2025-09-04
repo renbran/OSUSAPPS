@@ -14,7 +14,7 @@
                             class="oe_stat_button" 
                             icon="fa-file-text-o" 
                             groups="base.group_user"
-                            attrs="{'invisible': [('commission_statement_count', '=', 0)]}">
+                            invisible="commission_statement_count == 0">
                         <div class="o_stat_info">
                             <field name="commission_statement_count" widget="statinfo" string="Statements"/>
                         </div>
@@ -37,7 +37,7 @@
                 <xpath expr="//form/sheet/notebook" position="inside">
                     <page string="Commission Management" name="commission_management">
                         <!-- Commission Status Header -->
-                        <div class="alert alert-info" role="alert" attrs="{'invisible': [('commission_blocked_reason', '=', False)]}">
+                        <div class="alert alert-info" role="alert" invisible="commission_blocked_reason == False">
                             <strong>Commission Blocked:</strong>
                             <field name="commission_blocked_reason" nolabel="1"/>
                         </div>
@@ -57,21 +57,21 @@
                                             string="Process Commissions" 
                                             type="object" 
                                             class="btn-primary" 
-                                            attrs="{'invisible': [('commission_processed', '=', True)]}"/>
+                                            invisible="commission_processed == True"/>
                                 </div>
                                 <div>
                                     <button name="action_confirm_commissions" 
                                             string="Confirm Commissions" 
                                             type="object" 
                                             class="btn-success" 
-                                            attrs="{'invisible': ['|', ('commission_status', '!=', 'calculated'), ('commission_processed', '=', False)]}"/>
+                                            invisible="commission_status != 'calculated' or commission_processed == False"/>
                                 </div>
                                 <div>
                                     <button name="action_reset_commissions" 
                                             string="Reset to Draft" 
                                             type="object" 
                                             class="btn-warning" 
-                                            attrs="{'invisible': [('commission_status', '=', 'draft')]}"/>
+                                            invisible="commission_status == 'draft'"/>
                                 </div>
                             </group>
                         </group>
@@ -98,13 +98,13 @@
                                     <group string="Consultant">
                                         <field name="consultant_id"/>
                                         <field name="consultant_commission_type"/>
-                                        <field name="consultant_comm_percentage" attrs="{'invisible': [('consultant_commission_type', '=', 'fixed')]}"/>
+                                        <field name="consultant_comm_percentage" invisible="consultant_commission_type == 'fixed'"/>
                                         <field name="salesperson_commission" widget="monetary"/>
                                     </group>
                                     <group string="Manager">
                                         <field name="manager_id"/>
                                         <field name="manager_legacy_commission_type"/>
-                                        <field name="manager_comm_percentage" attrs="{'invisible': [('manager_legacy_commission_type', '=', 'fixed')]}"/>
+                                        <field name="manager_comm_percentage" invisible="manager_legacy_commission_type == 'fixed'"/>
                                         <field name="manager_commission" widget="monetary"/>
                                     </group>
                                 </group>
@@ -112,13 +112,13 @@
                                     <group string="Second Agent">
                                         <field name="second_agent_id"/>
                                         <field name="second_agent_commission_type"/>
-                                        <field name="second_agent_comm_percentage" attrs="{'invisible': [('second_agent_commission_type', '=', 'fixed')]}"/>
+                                        <field name="second_agent_comm_percentage" invisible="second_agent_commission_type == 'fixed'"/>
                                         <field name="second_agent_commission" widget="monetary"/>
                                     </group>
                                     <group string="Director">
                                         <field name="director_id"/>
                                         <field name="director_legacy_commission_type"/>
-                                        <field name="director_comm_percentage" attrs="{'invisible': [('director_legacy_commission_type', '=', 'fixed')]}"/>
+                                        <field name="director_comm_percentage" invisible="director_legacy_commission_type == 'fixed'"/>
                                         <field name="director_commission" widget="monetary"/>
                                     </group>
                                 </group>
@@ -130,13 +130,13 @@
                                     <group string="Broker">
                                         <field name="broker_partner_id"/>
                                         <field name="broker_commission_type"/>
-                                        <field name="broker_rate" attrs="{'invisible': [('broker_commission_type', '=', 'fixed')]}"/>
+                                        <field name="broker_rate" invisible="broker_commission_type == 'fixed'"/>
                                         <field name="broker_amount" widget="monetary"/>
                                     </group>
                                     <group string="Referrer">
                                         <field name="referrer_partner_id"/>
                                         <field name="referrer_commission_type"/>
-                                        <field name="referrer_rate" attrs="{'invisible': [('referrer_commission_type', '=', 'fixed')]}"/>
+                                        <field name="referrer_rate" invisible="referrer_commission_type == 'fixed'"/>
                                         <field name="referrer_amount" widget="monetary"/>
                                     </group>
                                 </group>
@@ -144,13 +144,13 @@
                                     <group string="Cashback">
                                         <field name="cashback_partner_id"/>
                                         <field name="cashback_commission_type"/>
-                                        <field name="cashback_rate" attrs="{'invisible': [('cashback_commission_type', '=', 'fixed')]}"/>
+                                        <field name="cashback_rate" invisible="cashback_commission_type == 'fixed'"/>
                                         <field name="cashback_amount" widget="monetary"/>
                                     </group>
                                     <group string="Other External">
                                         <field name="other_external_partner_id"/>
                                         <field name="other_external_commission_type"/>
-                                        <field name="other_external_rate" attrs="{'invisible': [('other_external_commission_type', '=', 'fixed')]}"/>
+                                        <field name="other_external_rate" invisible="other_external_commission_type == 'fixed'"/>
                                         <field name="other_external_amount" widget="monetary"/>
                                     </group>
                                 </group>
@@ -162,13 +162,13 @@
                                     <group string="Agent 1">
                                         <field name="agent1_partner_id"/>
                                         <field name="agent1_commission_type"/>
-                                        <field name="agent1_rate" attrs="{'invisible': [('agent1_commission_type', '=', 'fixed')]}"/>
+                                        <field name="agent1_rate" invisible="agent1_commission_type == 'fixed'"/>
                                         <field name="agent1_amount" widget="monetary"/>
                                     </group>
                                     <group string="Agent 2">
                                         <field name="agent2_partner_id"/>
                                         <field name="agent2_commission_type"/>
-                                        <field name="agent2_rate" attrs="{'invisible': [('agent2_commission_type', '=', 'fixed')]}"/>
+                                        <field name="agent2_rate" invisible="agent2_commission_type == 'fixed'"/>
                                         <field name="agent2_amount" widget="monetary"/>
                                     </group>
                                 </group>
@@ -176,20 +176,20 @@
                                     <group string="Manager">
                                         <field name="manager_partner_id"/>
                                         <field name="manager_commission_type"/>
-                                        <field name="manager_rate" attrs="{'invisible': [('manager_commission_type', '=', 'fixed')]}"/>
+                                        <field name="manager_rate" invisible="manager_commission_type == 'fixed'"/>
                                         <field name="manager_amount" widget="monetary"/>
                                     </group>
                                     <group string="Director">
                                         <field name="director_partner_id"/>
                                         <field name="director_commission_type"/>
-                                        <field name="director_rate" attrs="{'invisible': [('director_commission_type', '=', 'fixed')]}"/>
+                                        <field name="director_rate" invisible="director_commission_type == 'fixed'"/>
                                         <field name="director_amount" widget="monetary"/>
                                     </group>
                                 </group>
                             </page>
 
                             <!-- Purchase Orders Tab -->
-                            <page string="Commission Purchase Orders" name="commission_pos" attrs="{'invisible': [('purchase_order_count', '=', 0)]}">
+                            <page string="Commission Purchase Orders" name="commission_pos" invisible="purchase_order_count == 0">
                                 <field name="purchase_order_ids" nolabel="1">
                                     <tree decoration-success="state == 'purchase'" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'">
                                         <field name="name"/>
@@ -201,7 +201,7 @@
                                                 string="Force Post" 
                                                 type="object" 
                                                 icon="fa-check" 
-                                                attrs="{'invisible': [('commission_posted', '=', True)]}"/>
+                                                invisible="commission_posted == True"/>
                                     </tree>
                                 </field>
                             </page>

@@ -23,7 +23,7 @@
                             type="object" 
                             class="oe_stat_button" 
                             icon="fa-shopping-cart"
-                            attrs="{'invisible': [('origin_so_id', '=', False)]}">
+                            invisible="origin_so_id == False">
                         <div class="o_stat_info">
                             <span class="o_stat_text">Origin</span>
                             <span class="o_stat_text">Sale Order</span>

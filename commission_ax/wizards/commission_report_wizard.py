@@ -31,6 +31,7 @@ class CommissionReportWizard(models.TransientModel):
     report_generated = fields.Boolean(string='Report Generated', default=False)
 
     def action_generate_report(self):
+        """Generate commission report in PDF or Excel format"""
         self.ensure_one()
         if not self.sale_order_id or not self.agent_id:
             raise UserError(_("Please select both sales order and agent."))
@@ -154,15 +155,12 @@ class CommissionReportWizard(models.TransientModel):
         return currency.symbol + ' ' + format(value, f'.{currency.decimal_places}f') if currency else str(value)
 
     def action_download_report(self):
+        """Download the generated commission report"""
         self.ensure_one()
         if not self.report_data:
             raise UserError(_("No report generated yet"))
         return {
             'type': 'ir.actions.act_url',
-            'url': '/web/content/?model=%s&id=%d&field=report_data&download=true&filename=%s' % (
-                self._name,
-                self.id,
-                self.report_filename
-            ),
+            'url': f'/web/content/?model={self._name}&id={self.id}&field=report_data&download=true&filename={self.report_filename}',
             'target': 'self',
         }

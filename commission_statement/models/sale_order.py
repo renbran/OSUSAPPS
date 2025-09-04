@@ -2,6 +2,7 @@ from odoo import models
 
 
 class SaleOrder(models.Model):
+    """Extended Sale Order with commission statement reporting"""
     _inherit = 'sale.order'
 
     def action_open_commission_report_wizard(self):

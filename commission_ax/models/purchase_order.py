@@ -5,6 +5,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class PurchaseOrder(models.Model):
+    """Extended Purchase Order with commission tracking capabilities"""
     _inherit = 'purchase.order'
 
     # Commission-related fields
