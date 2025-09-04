@@ -103,13 +103,6 @@
                   parent="sale.sale_menu_root" 
                   sequence="50"/>
 
-        <!-- Commission Statement Report Menu -->
-        <menuitem id="menu_commission_statement_report" 
-                  name="Commission Statement Report" 
-                  parent="menu_commission_reports" 
-                  action="action_commission_statement_wizard" 
-                  sequence="10"/>
-
         <!-- Action for Commission Statement Wizard -->
         <record id="action_commission_statement_wizard" model="ir.actions.act_window">
             <field name="name">Commission Statement Report</field>
@@ -119,6 +112,13 @@
             <field name="view_id" ref="view_commission_statement_wizard_form"/>
             <field name="groups_id" eval="[(4, ref('group_commission_user'))]"/>
         </record>
+
+        <!-- Commission Statement Report Menu -->
+        <menuitem id="menu_commission_statement_report" 
+                  name="Commission Statement Report" 
+                  parent="menu_commission_reports" 
+                  action="action_commission_statement_wizard" 
+                  sequence="10"/>
 
         <!-- Add smart button to Sale Order for quick access -->
         <record id="view_order_form_commission_report_button" model="ir.ui.view">
