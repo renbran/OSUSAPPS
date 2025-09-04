@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- SCHOLARIX Consolidated Commission Report Template -->
+    <template id="scholarix_consolidated_commission_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <!-- Custom CSS for SCHOLARIX branding -->
+                    <style>
+                        .scholarix-header {
+                            background: linear-gradient(135deg, #2E86AB 0%, #A23B72 100%);
+                            color: white;
+                            padding: 30px;
+                            margin-bottom: 30px;
+                            border-radius: 10px;
+                            text-align: center;
+                        }
+                        .scholarix-logo {
+                            font-size: 32px;
+                            font-weight: bold;
+                            letter-spacing: 2px;
+                            margin-bottom: 10px;
+                        }
+                        .scholarix-subtitle {
+                            font-size: 18px;
+                            opacity: 0.9;
+                        }
+                        .summary-card {
+                            background: #f8f9fa;
+                            border: 2px solid #2E86AB;
+                            border-radius: 8px;
+                            padding: 20px;
+                            margin-bottom: 20px;
+                        }
+                        .summary-stat {
+                            text-align: center;
+                            padding: 15px;
+                            border-right: 1px solid #dee2e6;
+                        }
+                        .summary-stat:last-child {
+                            border-right: none;
+                        }
+                        .stat-value {
+                            font-size: 24px;
+                            font-weight: bold;
+                            color: #2E86AB;
+                            margin-bottom: 5px;
+                        }
+                        .stat-label {
+                            font-size: 12px;
+                            color: #6c757d;
+                            text-transform: uppercase;
+                        }
+                        .agent-table th {
+                            background: #2E86AB;
+                            color: white;
+                            font-weight: bold;
+                            text-align: center;
+                            padding: 12px 8px;
+                            border: 1px solid #2E86AB;
+                        }
+                        .agent-table td {
+                            padding: 10px 8px;
+                            border: 1px solid #dee2e6;
+                            text-align: center;
+                        }
+                        .agent-name {
+                            text-align: left !important;
+                            font-weight: 600;
+                        }
+                        .commission-breakdown {
+                            background: #f8f9fa;
+                            padding: 15px;
+                            border-radius: 5px;
+                            margin: 20px 0;
+                        }
+                        .status-pending { color: #ffc107; font-weight: bold; }
+                        .status-paid { color: #28a745; font-weight: bold; }
+                        .status-cancelled { color: #dc3545; font-weight: bold; }
+                        .footer-section {
+                            margin-top: 40px;
+                            padding-top: 20px;
+                            border-top: 2px solid #2E86AB;
+                        }
+                        .signature-box {
+                            border: 1px solid #dee2e6;
+                            height: 60px;
+                            margin: 10px 0;
+                        }
+                        @media print {
+                            .scholarix-header {
+                                background: #2E86AB !important;
+                                -webkit-print-color-adjust: exact;
+                                color-adjust: exact;
+                            }
+                            .agent-table th {
+                                background: #2E86AB !important;
+                                color: white !important;
+                                -webkit-print-color-adjust: exact;
+                                color-adjust: exact;
+                            }
+                        }
+                    </style>
+
+                    <!-- Report Header -->
+                    <div class="scholarix-header">
+                        <div class="scholarix-logo">SCHOLARIX</div>
+                        <div class="scholarix-subtitle">Commission Statement Report</div>
+                        <div style="margin-top: 15px; font-size: 14px;">
+                            Period: <strong>
+                            <span t-esc="data['period_start']"/>
+ to <span t-esc="data['period_end']"/>
+                        </strong>
+                    </div>
+                    <div style="font-size: 12px; opacity: 0.8;">
+                            Generated on <span t-esc="data['generation_date'].strftime('%B %d, %Y at %I:%M %p')"/>
+                    </div>
+                </div>
+
+                <!-- Executive Summary -->
+                <t t-if="data.get('include_summary', True)">
+                    <div class="summary-card">
+                        <h3 style="color: #2E86AB; margin-bottom: 20px; text-align: center;">Executive Summary</h3>
+                        <div class="row">
+                            <div class="col-3 summary-stat">
+                                <div class="stat-value">
+                                    <span t-esc="data['total_agents']"/>
+                                </div>
+                                <div class="stat-label">Total Agents</div>
+                            </div>
+                            <div class="col-3 summary-stat">
+                                <div class="stat-value">
+                                    <span t-esc="'{:,.2f}'.format(data['total_sales'])"/>
+                                </div>
+                                <div class="stat-label">Total Sales</div>
+                            </div>
+                            <div class="col-3 summary-stat">
+                                <div class="stat-value">
+                                    <span t-esc="'{:,.2f}'.format(data['total_commission'])"/>
+                                </div>
+                                <div class="stat-label">Total Commission</div>
+                            </div>
+                            <div class="col-3 summary-stat">
+                                <div class="stat-value">
+                                    <span t-esc="'{:,.2f}'.format(data['average_commission_per_agent'])"/>
+                                </div>
+                                <div class="stat-label">Avg Per Agent</div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Agent Summary Table -->
+                <h3 style="color: #2E86AB; margin-bottom: 15px;">Agent Commission Summary</h3>
+                <table class="table table-striped agent-table" style="width: 100%; margin-bottom: 30px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Agent Name</th>
+                            <th style="width: 12%;">Total Sales</th>
+                            <th style="width: 8%;">Rate %</th>
+                            <th style="width: 12%;">Direct Sales</th>
+                            <th style="width: 12%;">Referral</th>
+                            <th style="width: 12%;">Team Override</th>
+                            <th style="width: 12%;">Gross Commission</th>
+                            <th style="width: 12%;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="total_sales_sum" t-value="0"/>
+                        <t t-set="total_commission_sum" t-value="0"/>
+                        <t t-set="total_direct_sum" t-value="0"/>
+                        <t t-set="total_referral_sum" t-value="0"/>
+                        <t t-set="total_team_sum" t-value="0"/>
+
+                        <t t-foreach="data['statements']" t-as="statement">
+                            <t t-set="total_sales_sum" t-value="total_sales_sum + statement.total_sales"/>
+                            <t t-set="total_commission_sum" t-value="total_commission_sum + statement.gross_commission"/>
+                            <t t-set="total_direct_sum" t-value="total_direct_sum + statement.direct_sales_commission"/>
+                            <t t-set="total_referral_sum" t-value="total_referral_sum + statement.referral_bonus"/>
+                            <t t-set="total_team_sum" t-value="total_team_sum + statement.team_override"/>
+
+                            <tr>
+                                <td class="agent-name">
+                                    <strong t-field="statement.agent_id.name"/>
+                                    <br/>
+                                    <small style="color: #6c757d;">
+                                        <t t-if="statement.agent_email">
+                                            <i class="fa fa-envelope"/>
+                                            <span t-field="statement.agent_email"/>
+                                        </t>
+                                    </small>
+                                </td>
+                                <td>
+                                        $                                    <span t-esc="'{:,.2f}'.format(statement.total_sales)"/>
+                                </td>
+                                <td>
+                                    <span t-esc="'{:.2f}'.format(statement.commission_rate)"/>
+%
+                                </td>
+                                <td>
+                                        $                                    <span t-esc="'{:,.2f}'.format(statement.direct_sales_commission)"/>
+                                </td>
+                                <td>
+                                        $                                    <span t-esc="'{:,.2f}'.format(statement.referral_bonus)"/>
+                                </td>
+                                <td>
+                                        $                                    <span t-esc="'{:,.2f}'.format(statement.team_override)"/>
+                                </td>
+                                <td>
+                                    <strong>$                                        <span t-esc="'{:,.2f}'.format(statement.gross_commission)"/>
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span t-att-class="'status-' + statement.payment_status">
+                                        <t t-if="statement.payment_status == 'pending'">
+                                            <i class="fa fa-clock-o"/>
+ Pending
+                                        </t>
+                                        <t t-if="statement.payment_status == 'paid'">
+                                            <i class="fa fa-check"/>
+ Paid
+                                        </t>
+                                        <t t-if="statement.payment_status == 'cancelled'">
+                                            <i class="fa fa-times"/>
+ Cancelled
+                                        </t>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+
+                        <!-- Totals Row -->
+                        <tr style="background: #f8f9fa; font-weight: bold; border-top: 3px solid #2E86AB;">
+                            <td class="agent-name">TOTALS</td>
+                            <td>$                                <span t-esc="'{:,.2f}'.format(total_sales_sum)"/>
+                            </td>
+                            <td>-</td>
+                            <td>$                                <span t-esc="'{:,.2f}'.format(total_direct_sum)"/>
+                            </td>
+                            <td>$                                <span t-esc="'{:,.2f}'.format(total_referral_sum)"/>
+                            </td>
+                            <td>$                                <span t-esc="'{:,.2f}'.format(total_team_sum)"/>
+                            </td>
+                            <td>$                                <span t-esc="'{:,.2f}'.format(total_commission_sum)"/>
+                            </td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Commission Breakdown Chart (Visual Summary) -->
+                <div class="commission-breakdown">
+                    <h4 style="color: #2E86AB; margin-bottom: 15px;">Commission Type Breakdown</h4>
+                    <div class="row">
+                        <div class="col-4 text-center">
+                            <h5 style="color: #28a745;">Direct Sales (5%)</h5>
+                            <div style="font-size: 20px; font-weight: bold;">
+                                    $                                <span t-esc="'{:,.2f}'.format(total_direct_sum)"/>
+                            </div>
+                            <div style="color: #6c757d; font-size: 12px;">
+                                <t t-set="direct_percent" t-value="(total_direct_sum / total_commission_sum * 100) if total_commission_sum > 0 else 0"/>
+                                <span t-esc="'{:.1f}'.format(direct_percent)"/>
+% of total
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <h5 style="color: #ffc107;">Referral Bonus (2%)</h5>
+                            <div style="font-size: 20px; font-weight: bold;">
+                                    $                                <span t-esc="'{:,.2f}'.format(total_referral_sum)"/>
+                            </div>
+                            <div style="color: #6c757d; font-size: 12px;">
+                                <t t-set="referral_percent" t-value="(total_referral_sum / total_commission_sum * 100) if total_commission_sum > 0 else 0"/>
+                                <span t-esc="'{:.1f}'.format(referral_percent)"/>
+% of total
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <h5 style="color: #17a2b8;">Team Override (1%)</h5>
+                            <div style="font-size: 20px; font-weight: bold;">
+                                    $                                <span t-esc="'{:,.2f}'.format(total_team_sum)"/>
+                            </div>
+                            <div style="color: #6c757d; font-size: 12px;">
+                                <t t-set="team_percent" t-value="(total_team_sum / total_commission_sum * 100) if total_commission_sum > 0 else 0"/>
+                                <span t-esc="'{:.1f}'.format(team_percent)"/>
+% of total
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown (Per Agent) -->
+                <t t-if="data.get('include_details', True)">
+                    <div style="page-break-before: always;"/>
+
+                    <h3 style="color: #2E86AB; margin-bottom: 20px;">Detailed Agent Breakdown</h3>
+
+                    <t t-foreach="data['statements']" t-as="statement">
+                        <t t-if="statement.commission_line_ids">
+                            <div style="margin-bottom: 40px; page-break-inside: avoid;">
+                                <h4 style="color: #2E86AB; border-bottom: 2px solid #2E86AB; padding-bottom: 5px;">
+                                    <span t-field="statement.agent_id.name"/>
+                                    <small style="float: right; color: #6c757d; font-weight: normal;">
+                                        <span t-esc="len(statement.commission_line_ids)"/>
+ orders
+                                    </small>
+                                </h4>
+
+                                <!-- Agent Contact Info -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <t t-if="statement.agent_email">
+                                            <i class="fa fa-envelope"/>
+                                            <span t-field="statement.agent_email"/>
+                                            <br/>
+                                        </t>
+                                        <t t-if="statement.agent_phone">
+                                            <i class="fa fa-phone"/>
+                                            <span t-field="statement.agent_phone"/>
+                                        </t>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <strong>Period Commission: $<span t-esc="'{:,.2f}'.format(statement.gross_commission)"/>
+                                        </strong>
+                                        <br/>
+                                        <small>from $<span t-esc="'{:,.2f}'.format(statement.total_sales)"/>
+ in sales</small>
+                                    </div>
+                                </div>
+
+                                <!-- Order Details Table -->
+                                <table class="table table-sm" style="font-size: 11px;">
+                                    <thead style="background: #f8f9fa;">
+                                        <tr>
+                                            <th style="width: 15%;">Order Ref</th>
+                                            <th style="width: 12%;">Date</th>
+                                            <th style="width: 25%;">Customer</th>
+                                            <th style="width: 12%;">Order Amount</th>
+                                            <th style="width: 12%;">Direct Sales</th>
+                                            <th style="width: 12%;">Referral</th>
+                                            <th style="width: 12%;">Team</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="statement.commission_line_ids" t-as="line">
+                                            <tr>
+                                                <td>
+                                                    <span t-field="line.order_reference"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.order_date"/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.customer_id.name"/>
+                                                </td>
+                                                <td>$                                                    <span t-esc="'{:,.2f}'.format(line.order_amount)"/>
+                                                </td>
+                                                <td>$                                                    <span t-esc="'{:,.2f}'.format(line.direct_sales_commission)"/>
+                                                </td>
+                                                <td>$                                                    <span t-esc="'{:,.2f}'.format(line.referral_commission)"/>
+                                                </td>
+                                                <td>$                                                    <span t-esc="'{:,.2f}'.format(line.team_commission)"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+                    </t>
+                </t>
+
+                <!-- Footer Section -->
+                <div class="footer-section">
+                    <div class="row">
+                        <div class="col-6">
+                            <h5>Approval Signatures</h5>
+                            <div>
+                                <strong>Sales Manager:</strong>
+                                <div class="signature-box"></div>
+                                <small>Date: ________________</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div style="margin-top: 30px;">
+                                <strong>Finance Director:</strong>
+                                <div class="signature-box"></div>
+                                <small>Date: ________________</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <h6 style="color: #2E86AB;">Terms and Conditions</h6>
+                        <ul style="font-size: 11px; color: #6c757d; margin: 0;">
+                            <li>Commission payments are subject to customer payment receipt</li>
+                            <li>Disputes must be reported within 30 days of statement date</li>
+                            <li>Commission rates are as per signed agent agreement</li>
+                            <li>Next payment schedule: Monthly on the 15th</li>
+                        </ul>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 10px;">
+                        <strong>SCHOLARIX</strong> | Commission Statement Report | 
+                            Generated <span t-esc="data['generation_date'].strftime('%Y-%m-%d %H:%M')"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </t>
+</template>
+
+</odoo>

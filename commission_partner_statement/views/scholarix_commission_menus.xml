@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- SCHOLARIX Main Menu -->
+    <menuitem id="menu_scholarix_commission" name="SCHOLARIX Commission" parent="sale.sale_menu_root" sequence="20"/>
+
+    <!-- Commission Statements Menu -->
+    <menuitem id="menu_scholarix_commission_statements" name="Commission Statements" parent="menu_scholarix_commission" action="action_scholarix_commission_statements" sequence="10"/>
+
+    <!-- Report Generator Menu -->
+    <menuitem id="menu_scholarix_report_generator" name="Report Generator" parent="menu_scholarix_commission" action="action_scholarix_commission_report_wizard" sequence="20"/>
+
+    <!-- Commission Analytics Menu -->
+    <menuitem id="menu_scholarix_commission_analytics" name="Commission Analytics" parent="menu_scholarix_commission" sequence="30"/>
+
+    <!-- Pivot View for Commission Analysis -->
+    <record id="view_scholarix_commission_statement_pivot" model="ir.ui.view">
+        <field name="name">scholarix.commission.statement.pivot</field>
+        <field name="model">scholarix.commission.statement</field>
+        <field name="arch" type="xml">
+            <pivot string="Commission Analysis">
+                <field name="agent_id" type="row"/>
+                <field name="period_start" type="col"/>
+                <field name="total_sales" type="measure"/>
+                <field name="gross_commission" type="measure"/>
+                <field name="direct_sales_commission" type="measure"/>
+                <field name="referral_bonus" type="measure"/>
+                <field name="team_override" type="measure"/>
+                <field name="order_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View for Commission Analysis -->
+    <record id="view_scholarix_commission_statement_graph" model="ir.ui.view">
+        <field name="name">scholarix.commission.statement.graph</field>
+        <field name="model">scholarix.commission.statement</field>
+        <field name="arch" type="xml">
+            <graph string="Commission Trends" type="line">
+                <field name="period_start"/>
+                <field name="gross_commission" type="measure"/>
+                <field name="total_sales" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Commission Analytics Action -->
+    <record id="action_scholarix_commission_analytics" model="ir.actions.act_window">
+        <field name="name">SCHOLARIX Commission Analytics</field>
+        <field name="res_model">scholarix.commission.statement</field>
+        <field name="view_mode">pivot,graph,tree</field>
+        <field name="view_id" ref="view_scholarix_commission_statement_pivot"/>
+        <field name="search_view_id" ref="view_scholarix_commission_statement_search"/>
+        <field name="context">{
+            'search_default_group_by_agent': 1,
+        }</field>
+    </record>
+
+    <!-- Update Analytics Menu to use the action -->
+    <record id="menu_scholarix_commission_analytics" model="ir.ui.menu">
+        <field name="action" ref="action_scholarix_commission_analytics"/>
+    </record>
+
+    <!-- Dashboard Action -->
+    <record id="action_scholarix_commission_dashboard" model="ir.actions.act_window">
+        <field name="name">SCHOLARIX Commission Dashboard</field>
+        <field name="res_model">scholarix.commission.statement</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_scholarix_commission_statement_search"/>
+        <field name="context">{
+            'search_default_current_month': 1,
+        }</field>
+    </record>
+
+    <!-- Dashboard Menu -->
+    <menuitem id="menu_scholarix_commission_dashboard" name="Dashboard" parent="menu_scholarix_commission" action="action_scholarix_commission_dashboard" sequence="5"/>
+
+    <!-- Kanban View for Dashboard -->
+    <record id="view_scholarix_commission_statement_kanban" model="ir.ui.view">
+        <field name="name">scholarix.commission.statement.kanban</field>
+        <field name="model">scholarix.commission.statement</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="agent_id"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <field name="gross_commission"/>
+                <field name="payment_status"/>
+                <field name="statement_status"/>
+                <field name="order_count"/>
+
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <!-- Agent Avatar and Name -->
+                                <div class="oe_kanban_avatar_and_name">
+                                    <img t-att-src="kanban_image('res.partner', 'avatar_128', record.agent_id.raw_value)" t-att-title="record.agent_id.value" t-att-alt="record.agent_id.value" class="oe_kanban_avatar"/>
+                                    <div class="oe_kanban_name">
+                                        <strong>
+                                            <field name="agent_id"/>
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <!-- Period -->
+                                <div class="oe_kanban_details">
+                                    <div>
+                                        <strong>Period:</strong>
+                                        <field name="period_start"/>
+ to <field name="period_end"/>
+                                    </div>
+                                </div>
+
+                                <!-- Commission Details -->
+                                <div class="oe_kanban_monetary">
+                                    <span class="oe_kanban_monetary_value">
+                                        $                                        <t t-esc="record.gross_commission.value"/>
+                                    </span>
+                                    <span class="oe_kanban_monetary_currency">Commission</span>
+                                </div>
+
+                                <!-- Stats -->
+                                <div class="oe_kanban_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="order_count"/>
+ Orders
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="payment_status" widget="label_selection" options="{'classes': {'paid': 'success', 'pending': 'warning', 'cancelled': 'danger'}}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Commission Lines Menu -->
+    <menuitem id="menu_scholarix_commission_lines" name="Commission Lines" parent="menu_scholarix_commission" sequence="40"/>
+
+    <!-- Commission Lines Action -->
+    <record id="action_scholarix_commission_lines" model="ir.actions.act_window">
+        <field name="name">Commission Lines</field>
+        <field name="res_model">scholarix.commission.line</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_scholarix_commission_line_tree"/>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Update Commission Lines Menu -->
+    <record id="menu_scholarix_commission_lines" model="ir.ui.menu">
+        <field name="action" ref="action_scholarix_commission_lines"/>
+    </record>
+
+</odoo>

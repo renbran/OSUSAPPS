@@ -398,3 +398,56 @@ class Partner(models.Model):
         template = self.env.ref('commission_partner_statement.email_template_commission_statement', False)
         if template:
             template.with_context(commission_data=data).send_mail(self.id, force_send=True)
+
+    # SCHOLARIX-specific methods
+    def action_view_scholarix_statements(self):
+        """View SCHOLARIX commission statements for this partner"""
+        statements = self.env['scholarix.commission.statement'].search([
+            ('agent_id', '=', self.id)
+        ])
+        
+        return {
+            'name': f'SCHOLARIX Statements - {self.name}',
+            'type': 'ir.actions.act_window',
+            'res_model': 'scholarix.commission.statement',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', statements.ids)],
+            'context': {
+                'default_agent_id': self.id,
+                'search_default_group_by_payment_status': 1,
+            }
+        }
+    
+    def action_generate_scholarix_statement(self):
+        """Generate SCHOLARIX statement for this partner"""
+        # Get last month as default period
+        today = date.today()
+        first_day_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+        last_day_last_month = today.replace(day=1) - timedelta(days=1)
+        
+        # Check if statement already exists
+        existing = self.env['scholarix.commission.statement'].search([
+            ('agent_id', '=', self.id),
+            ('period_start', '=', first_day_last_month),
+            ('period_end', '=', last_day_last_month)
+        ], limit=1)
+        
+        if existing:
+            statement = existing
+            statement.generate_commission_data()
+        else:
+            statement = self.env['scholarix.commission.statement'].create({
+                'agent_id': self.id,
+                'period_start': first_day_last_month,
+                'period_end': last_day_last_month,
+            })
+            statement.generate_commission_data()
+        
+        return {
+            'name': f'SCHOLARIX Statement - {self.name}',
+            'type': 'ir.actions.act_window',
+            'res_model': 'scholarix.commission.statement',
+            'res_id': statement.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }

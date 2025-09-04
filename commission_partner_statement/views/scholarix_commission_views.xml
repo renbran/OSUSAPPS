@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- SCHOLARIX Commission Statement Form View -->
+    <record id="view_scholarix_commission_statement_form" model="ir.ui.view">
+        <field name="name">scholarix.commission.statement.form</field>
+        <field name="model">scholarix.commission.statement</field>
+        <field name="arch" type="xml">
+            <form string="SCHOLARIX Commission Statement">
+                <header>
+                    <button name="generate_commission_data" string="Generate Data" type="object" class="btn-primary" invisible="statement_status != 'draft'"/>
+                    <button name="action_confirm_statement" string="Confirm" type="object" class="btn-success" invisible="statement_status != 'draft'"/>
+                    <button name="action_send_statement" string="Send to Agent" type="object" class="btn-info" invisible="statement_status not in ('confirmed', 'sent')"/>
+                    <button name="action_mark_paid" string="Mark as Paid" type="object" class="btn-warning" invisible="payment_status != 'pending'"/>
+                    <field name="statement_status" widget="statusbar" statusbar_visible="draft,confirmed,sent,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Statement Details">
+                            <field name="agent_id" options="{'no_create': True}"/>
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                        <group string="Commission Summary">
+                            <field name="total_sales" widget="monetary"/>
+                            <field name="commission_rate" widget="percentage"/>
+                            <field name="gross_commission" widget="monetary"/>
+                            <field name="deductions" widget="monetary"/>
+                            <field name="net_commission" widget="monetary"/>
+                            <field name="payment_status"/>
+                        </group>
+                    </group>
+
+                    <group string="Commission Type Breakdown">
+                        <group>
+                            <field name="direct_sales_commission" widget="monetary"/>
+                            <field name="referral_bonus" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="team_override" widget="monetary"/>
+                            <field name="order_count" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Commission Lines">
+                            <field name="commission_line_ids" readonly="statement_status != 'draft'">
+                                <tree decoration-success="order_status == 'sale'" decoration-info="order_status == 'draft'" decoration-muted="order_status == 'cancel'">
+                                    <field name="order_reference"/>
+                                    <field name="order_date"/>
+                                    <field name="customer_id"/>
+                                    <field name="order_amount" widget="monetary"/>
+                                    <field name="direct_sales_commission" widget="monetary"/>
+                                    <field name="referral_commission" widget="monetary"/>
+                                    <field name="team_commission" widget="monetary"/>
+                                    <field name="commission_amount" widget="monetary"/>
+                                    <field name="order_status"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Agent Information">
+                            <group>
+                                <group>
+                                    <field name="agent_email" readonly="1"/>
+                                    <field name="agent_phone" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="company_id" readonly="1"/>
+                                    <field name="create_date" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- SCHOLARIX Commission Statement Tree View -->
+    <record id="view_scholarix_commission_statement_tree" model="ir.ui.view">
+        <field name="name">scholarix.commission.statement.tree</field>
+        <field name="model">scholarix.commission.statement</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="payment_status == 'paid'" decoration-warning="payment_status == 'pending'" decoration-danger="payment_status == 'cancelled'">
+                <field name="display_name"/>
+                <field name="agent_id"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+                <field name="total_sales" widget="monetary"/>
+                <field name="gross_commission" widget="monetary"/>
+                <field name="net_commission" widget="monetary"/>
+                <field name="order_count"/>
+                <field name="statement_status"/>
+                <field name="payment_status"/>
+                <field name="currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- SCHOLARIX Commission Statement Search View -->
+    <record id="view_scholarix_commission_statement_search" model="ir.ui.view">
+        <field name="name">scholarix.commission.statement.search</field>
+        <field name="model">scholarix.commission.statement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="agent_id"/>
+                <field name="display_name"/>
+                <field name="period_start"/>
+                <field name="period_end"/>
+
+                <filter name="pending_payments" string="Pending Payments" domain="[('payment_status', '=', 'pending')]"/>
+                <filter name="paid_statements" string="Paid" domain="[('payment_status', '=', 'paid')]"/>
+                <filter name="draft_statements" string="Draft" domain="[('statement_status', '=', 'draft')]"/>
+                <filter name="confirmed_statements" string="Confirmed" domain="[('statement_status', '=', 'confirmed')]"/>
+
+                <separator/>
+                <filter name="current_month" string="Current Month" domain="[('period_start', '&gt;=', datetime.datetime.now().strftime('%Y-%m-01')),
+                                ('period_end', '&lt;=', (datetime.datetime.now().replace(day=1) + relativedelta(months=1) - datetime.timedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="last_month" string="Last Month" domain="[('period_start', '&gt;=', (datetime.datetime.now().replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')),
+                                ('period_end', '&lt;=', (datetime.datetime.now().replace(day=1) - datetime.timedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="high_commission" string="High Commission (&gt;$1000)" domain="[('gross_commission', '&gt;=', 1000)]"/>
+
+                <group expand="1" string="Group By">
+                    <filter name="group_by_agent" string="Agent" context="{'group_by': 'agent_id'}"/>
+                    <filter name="group_by_payment_status" string="Payment Status" context="{'group_by': 'payment_status'}"/>
+                    <filter name="group_by_statement_status" string="Statement Status" context="{'group_by': 'statement_status'}"/>
+                    <filter name="group_by_period_start" string="Period Start" context="{'group_by': 'period_start'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- SCHOLARIX Commission Statement Action -->
+    <record id="action_scholarix_commission_statements" model="ir.actions.act_window">
+        <field name="name">SCHOLARIX Commission Statements</field>
+        <field name="res_model">scholarix.commission.statement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_scholarix_commission_statement_search"/>
+        <field name="context">{
+            'search_default_pending_payments': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first SCHOLARIX commission statement!
+            </p>
+            <p>
+                Commission statements track agent commissions for specific periods.
+                Use the consolidated report wizard for multi-agent reports.
+            </p>
+        </field>
+    </record>
+
+    <!-- SCHOLARIX Report Wizard Form View -->
+    <record id="view_scholarix_commission_report_wizard_form" model="ir.ui.view">
+        <field name="name">scholarix.commission.report.wizard.form</field>
+        <field name="model">scholarix.commission.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="SCHOLARIX Commission Report Generator">
+                <div class="alert alert-info" role="alert">
+                    <h4>
+                        <i class="fa fa-info-circle"/>
+ SCHOLARIX Commission Report Generator</h4>
+                    <p>Generate comprehensive commission reports for multiple agents with advanced filtering and formatting options.</p>
+                </div>
+
+                <group>
+                    <group string="Report Period">
+                        <field name="period_type"/>
+                        <field name="period_start" invisible="period_type != 'custom'"/>
+                        <field name="period_end" invisible="period_type != 'custom'"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <group string="Agent Selection">
+                        <field name="agent_selection"/>
+                        <field name="agent_ids" widget="many2many_tags" invisible="agent_selection != 'specific'" options="{'no_create': True}"/>
+                    </group>
+                </group>
+
+                <group>
+                    <group string="Filtering Options">
+                        <field name="commission_type_filter"/>
+                        <field name="payment_status_filter"/>
+                        <field name="min_commission_amount" widget="monetary"/>
+                    </group>
+                    <group string="Report Options">
+                        <field name="report_format"/>
+                        <field name="include_details"/>
+                        <field name="include_summary"/>
+                    </group>
+                </group>
+
+                <group>
+                    <group string="Sorting &amp; Grouping">
+                        <field name="sort_by"/>
+                        <field name="group_by"/>
+                    </group>
+                    <group string="Company">
+                        <field name="company_id" readonly="1"/>
+                        <field name="company_logo" widget="image" invisible="1"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <button name="action_generate_report" string="Generate Report" type="object" class="btn-primary"/>
+                    <button name="action_preview_report" string="Preview" type="object" class="btn-secondary"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- SCHOLARIX Report Wizard Action -->
+    <record id="action_scholarix_commission_report_wizard" model="ir.actions.act_window">
+        <field name="name">Generate SCHOLARIX Commission Report</field>
+        <field name="res_model">scholarix.commission.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_scholarix_commission_report_wizard_form"/>
+    </record>
+
+    <!-- Commission Line Tree View -->
+    <record id="view_scholarix_commission_line_tree" model="ir.ui.view">
+        <field name="name">scholarix.commission.line.tree</field>
+        <field name="model">scholarix.commission.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="order_reference"/>
+                <field name="order_date"/>
+                <field name="customer_id"/>
+                <field name="order_amount" widget="monetary"/>
+                <field name="direct_sales_commission" widget="monetary"/>
+                <field name="referral_commission" widget="monetary"/>
+                <field name="team_commission" widget="monetary"/>
+                <field name="commission_amount" widget="monetary"/>
+                <field name="order_status"/>
+                <field name="currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Enhanced Partner View with SCHOLARIX Commission -->
+    <record id="view_partner_form_scholarix_commission" model="ir.ui.view">
+        <field name="name">res.partner.form.scholarix.commission</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="commission_partner_statement.view_partner_form_commission_statement"/>
+        <field name="arch" type="xml">
+            <!-- Add SCHOLARIX Commission button to button box -->
+            <div name="button_box" position="inside">
+                <button name="action_view_scholarix_statements" type="object" class="oe_stat_button" icon="fa-line-chart" invisible="commission_order_count == 0">
+                    <div class="o_stat_info">
+                        <field name="commission_order_count" widget="statinfo" string="SCHOLARIX"/>
+                        <span class="o_stat_text">Statements</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Add SCHOLARIX actions to commission tab -->
+            <group string="Commission Statement Reports" position="after">
+                <group string="SCHOLARIX Reports" col="2">
+                    <button name="action_generate_scholarix_statement" string="Generate SCHOLARIX Statement" type="object" class="btn-primary" invisible="commission_order_count == 0"/>
+                    <button name="%(action_scholarix_commission_report_wizard)d" string="Consolidated Report Wizard" type="action" class="btn-success"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+</odoo>

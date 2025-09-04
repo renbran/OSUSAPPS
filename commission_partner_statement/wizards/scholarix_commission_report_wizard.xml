@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- This file contains wizard views for SCHOLARIX Commission Report Wizard -->
+    <!-- Views are defined in scholarix_commission_views.xml -->
+</odoo>
