@@ -19,7 +19,7 @@ class TestCommissionAx(TransactionCase):
         })
 
     def test_commission_statement_wizard(self):
-        wizard = self.env['commission.statement.wizard'].create({
+        wizard = self.env['commission.partner.statement.wizard'].create({
             'partner_id': self.partner.id,
             'sale_order_id': self.sale_order.id,
             'date_from': fields.Date.today(),

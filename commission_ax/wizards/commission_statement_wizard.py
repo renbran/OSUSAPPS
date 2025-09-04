@@ -8,9 +8,9 @@ from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
-class CommissionStatementWizard(models.TransientModel):
-    _name = 'commission.statement.wizard'
-    _description = 'Commission Statement Report Wizard'
+class CommissionPartnerStatementWizard(models.TransientModel):
+    _name = 'commission.partner.statement.wizard'
+    _description = 'Commission Partner Statement Wizard'
 
     # Filter fields
     date_from = fields.Date(string='Date From', required=True, default=fields.Date.today)
