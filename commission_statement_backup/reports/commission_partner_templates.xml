@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Commission Partner Statement Report Template -->
+    <template id="commission_partner_statement_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="partner">
+                <t t-set="data" t-value="partner.commission_statement_query()"/>
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Report Header -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h2 class="text-center">Commission Statement Report</h2>
+                                <hr/>
+                            </div>
+                        </div>
+
+                        <!-- Partner Information -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <strong>Partner Information:</strong>
+                                <br/>
+                                <div style="margin-left: 20px;">
+                                    <strong t-field="partner.name"/>
+                                    <br/>
+                                    <t t-if="partner.street">
+                                        <span t-field="partner.street"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="partner.street2">
+                                        <span t-field="partner.street2"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="partner.city or partner.zip">
+                                        <span t-field="partner.zip"/>
+                                        <span t-field="partner.city"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="partner.country_id">
+                                        <span t-field="partner.country_id.name"/>
+                                        <br/>
+                                    </t>
+                                    <t t-if="partner.email">
+                                        Email: <span t-field="partner.email"/>
+                                    <br/>
+                                </t>
+                                <t t-if="partner.phone">
+                                        Phone: <span t-field="partner.phone"/>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <strong>Report Information:</strong>
+                            <br/>
+                            <div style="margin-left: 20px;">
+                                    Report Date: <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d')"/>
+                            <br/>
+                                    Period: <span t-esc="data['date_from']"/>
+ to <span t-esc="data['date_to']"/>
+                    <br/>
+                                    Total Orders: <strong t-esc="data['orders_count']"/>
+                <br/>
+                                    Total Commission: <strong t-esc="data['total_amount']" t-options="{'widget': 'monetary', 'display_currency': data['currency']}"/>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commission Statement Table -->
+    <table class="table table-sm" style="margin-top: 20px;">
+        <thead style="background-color: #f8f9fa;">
+            <tr>
+                <th class="text-center" style="width: 12%;">
+                    <strong>ORDER REF</strong>
+                </th>
+                <th class="text-center" style="width: 10%;">
+                    <strong>DATE</strong>
+                </th>
+                <th class="text-center" style="width: 20%;">
+                    <strong>CUSTOMER</strong>
+                </th>
+                <th class="text-center" style="width: 12%;">
+                    <strong>TYPE</strong>
+                </th>
+                <th class="text-center" style="width: 12%;">
+                    <strong>CATEGORY</strong>
+                </th>
+                <th class="text-center" style="width: 8%;">
+                    <strong>RATE</strong>
+                </th>
+                <th class="text-center" style="width: 12%;">
+                    <strong>ORDER TOTAL</strong>
+                </th>
+                <th class="text-center" style="width: 14%;">
+                    <strong>COMMISSION</strong>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <t t-set="total_commission" t-value="0"/>
+            <t t-foreach="data['statement_lines']" t-as="line">
+                <tr>
+                    <td class="text-center">
+                        <span t-esc="line['order_ref']"/>
+                    </td>
+                    <td class="text-center">
+                        <span t-esc="line['order_date'].strftime('%Y-%m-%d') if line['order_date'] else ''"/>
+                    </td>
+                    <td>
+                        <span t-esc="line['customer_name']"/>
+                        <t t-if="line['customer_ref']">
+                            <br/>
+                            <small class="text-muted">Ref: <span t-esc="line['customer_ref']"/>
+                            </small>
+                        </t>
+                    </td>
+                    <td class="text-center">
+                        <span t-esc="line['commission_type']"/>
+                    </td>
+                    <td class="text-center">
+                        <span t-esc="line['commission_category']"/>
+                    </td>
+                    <td class="text-center">
+                        <t t-if="line['rate'] > 0">
+                            <span t-esc="'{:.2f}%'.format(line['rate'])"/>
+                        </t>
+                        <t t-else="">
+                                                -
+                        </t>
+                    </td>
+                    <td class="text-right">
+                        <span t-esc="line['order_total']" t-options="{'widget': 'monetary', 'display_currency': data['currency']}"/>
+                    </td>
+                    <td class="text-right">
+                        <strong t-esc="line['amount']" t-options="{'widget': 'monetary', 'display_currency': data['currency']}"/>
+                    </td>
+                </tr>
+                <t t-set="total_commission" t-value="total_commission + line['amount']"/>
+            </t>
+        </tbody>
+        <tfoot style="border-top: 2px solid #000;">
+            <tr>
+                <td colspan="7" class="text-right">
+                    <strong>TOTAL COMMISSION AMOUNT:</strong>
+                </td>
+                <td class="text-right">
+                    <strong t-esc="total_commission" t-options="{'widget': 'monetary', 'display_currency': data['currency']}" style="font-size: 14px;"/>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Footer Notes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <p>
+                <strong>Notes:</strong>
+            </p>
+            <ul>
+                <li>This statement includes all commission orders for the specified period.</li>
+                <li>Commission amounts are calculated based on confirmed sale orders.</li>
+                <li>External commissions include: Broker, Referrer, Cashback, and Other External partners.</li>
+                <li>Internal commissions include: Agent 1, Agent 2, Manager, and Director roles.</li>
+                <li>Legacy commissions include historical commission structures.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Report Generation Info -->
+    <div class="row mt-3">
+        <div class="col-12 text-right">
+            <small class="text-muted">
+                                    Generated on <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')"/>
+ by <span t-esc="env.user.name"/>
+        </small>
+    </div>
+</div>
+</div>
+</t>
+</t>
+</t>
+</template>
+
+</odoo>

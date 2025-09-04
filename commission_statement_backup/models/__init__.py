@@ -1,2 +1,2 @@
-from . import commission_report_wizard
-from . import sale_order
+# -*- coding: utf-8 -*-
+from . import res_partner

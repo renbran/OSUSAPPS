@@ -1,49 +1,64 @@
+# -*- coding: utf-8 -*-
 {
-    'name': 'Commission Statement Reports',
+    'name': 'Commission Partner Statement Report',
     'version': '17.0.1.0.0',
     'category': 'Sales',
-    'summary': 'Generate detailed commission statement reports in PDF and Excel formats',
+    'summary': 'Commission statement reports for partners based on sale orders',
     'description': """
-Commission Statement Reports
-============================
+Commission Partner Statement Report
+===================================
 
-This module extends the existing commission management system to provide comprehensive 
-commission statement reporting capabilities.
+This module extends the partner management system to provide comprehensive 
+commission statement reporting capabilities based on sale order commissions.
 
 Features:
 ---------
-* Generate commission statements in PDF and Excel formats
-* Filter by date range, commission partner, or specific sale orders
-* Support for all commission types (internal, external, legacy)
-* Detailed commission breakdown with partner, order, and customer information
-* Preview functionality before generating reports
-* Smart buttons for quick access from sale orders
-* Security groups for commission users and managers
+* Generate commission statements for partners in PDF and Excel formats
+* Extract commission data from sale orders (External, Internal, Legacy)
+* Filter by date range and partner
+* Automatic monthly statement generation
+* Commission summary and analytics
+* Professional report templates
+
+Integration:
+------------
+* Works with commission_ax module
+* Extends res.partner model
+* Compatible with enhanced_status module
 
 Report Columns:
 ---------------
-* Commission Name - Partner receiving the commission
-* Order Ref - Sale order reference number
-* Customer Reference - Customer name from the sale order
-* Commission Type - Type of commission calculation (Fixed, Unit Price %, Total %)
-* Rate - Commission rate or fixed amount
-* Total - Total commission amount
+* Order Reference - Sale order number
+* Order Date - Date when order was placed
+* Customer - Customer name from sale order
+* Commission Type - Type of commission (External/Internal/Legacy)
+* Commission Category - Specific category (Broker, Agent, etc.)
+* Rate - Commission rate percentage
+* Amount - Commission amount
+* Status - Order and commission status
     """,
-    'author': 'Your Company',
-    'website': 'https://www.yourcompany.com',
+    'author': 'OSUS Properties Development Team',
+    'website': 'https://www.osusproperties.com',
     'depends': [
-        'base',
-        'sale',
-        'purchase',
-        'web',
-        'commission_ax',  # Required for commission fields and data
+        'base', 
+        'sale', 
+        'contacts',
+        'commission_ax',  # Required for commission fields
+        'enhanced_status',  # Required for order status
     ],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
-        'views/commission_statement_views.xml',
-        'reports/commission_statement_report.xml',
+        'data/ir_cron_data.xml',
+        'views/res_partner_views.xml',
+        'reports/commission_partner_reports.xml',
+        'reports/commission_partner_templates.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'commission_partner_statement/static/src/js/action_manager.js',
+        ]
+    },
     'demo': [],
     'images': ['static/description/banner.png'],
     'installable': True,

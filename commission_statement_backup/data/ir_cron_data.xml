@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Cron Job for Monthly Commission Statement Generation -->
+    <record id="ir_cron_monthly_commission_statements" model="ir.cron">
+        <field name="name">Generate Monthly Commission Statements</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="state">object</field>
+        <field name="code">model._cron_generate_monthly_commission_statements()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">months</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="active" eval="True"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).replace(day=1, hour=9, minute=0, second=0)"/>
+    </record>
+
+</odoo>
