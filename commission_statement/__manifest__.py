@@ -36,6 +36,7 @@ Report Columns:
         'sale',
         'purchase',
         'web',
+        'enhanced_status',
         'commission_ax',
     ],
     'data': [

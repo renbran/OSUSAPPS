@@ -54,6 +54,7 @@ Technical Features:
         'account',
         'stock',
         'portal',
+        'enhanced_status',
     ],
     'data': [
         'security/ir.model.access.csv',
