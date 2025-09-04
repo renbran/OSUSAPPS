@@ -96,12 +96,15 @@ class PurchaseOrder(models.Model):
         """Post commission when receipt is validated."""
         for order in self:
             if order.origin_so_id and not order.commission_posted:
-                # Check if all receipts are done
+                # Check if all receipts are done - safely access picking_ids
+                if not hasattr(order, 'picking_ids') or not order.picking_ids:
+                    continue
+                    
                 all_receipts_done = all(
                     picking.state == 'done' for picking in order.picking_ids
                 )
                 
-                if all_receipts_done and order.picking_ids:
+                if all_receipts_done:
                     try:
                         if order.state == 'draft':
                             order.button_confirm()

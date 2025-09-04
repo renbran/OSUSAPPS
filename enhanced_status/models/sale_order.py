@@ -387,6 +387,9 @@ class SaleOrder(models.Model):
     def _check_delivery_completion(self):
         """Check if all deliveries are completed"""
         self.ensure_one()
+        # Safely check for picking_ids field (may not be available during module loading)
+        if not hasattr(self, 'picking_ids'):
+            return True
         if not self.picking_ids:
             return True
         return all(picking.state == 'done' for picking in self.picking_ids)
@@ -564,11 +567,6 @@ class SaleOrder(models.Model):
                 return False
         
         return True
-
-    def _check_delivery_completion(self):
-        if not self.picking_ids:
-            return True
-        return all(picking.state == 'done' for picking in self.picking_ids)
 
     def _auto_complete_order(self):
         completed_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'completed')], limit=1)
