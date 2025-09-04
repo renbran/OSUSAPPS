@@ -100,34 +100,34 @@ class Partner(models.Model):
         commission_amount = 0.0
         
         # External commissions
-        if order.broker_partner_id.id == self.id:
-            commission_amount += order.broker_amount or 0.0
-        if order.referrer_partner_id.id == self.id:
-            commission_amount += order.referrer_amount or 0.0
-        if order.cashback_partner_id.id == self.id:
-            commission_amount += order.cashback_amount or 0.0
-        if order.other_external_partner_id.id == self.id:
-            commission_amount += order.other_external_amount or 0.0
+        if hasattr(order, 'broker_partner_id') and order.broker_partner_id.id == self.id:
+            commission_amount += getattr(order, 'broker_amount', 0.0) or 0.0
+        if hasattr(order, 'referrer_partner_id') and order.referrer_partner_id.id == self.id:
+            commission_amount += getattr(order, 'referrer_amount', 0.0) or 0.0
+        if hasattr(order, 'cashback_partner_id') and order.cashback_partner_id.id == self.id:
+            commission_amount += getattr(order, 'cashback_amount', 0.0) or 0.0
+        if hasattr(order, 'other_external_partner_id') and order.other_external_partner_id.id == self.id:
+            commission_amount += getattr(order, 'other_external_amount', 0.0) or 0.0
             
         # Internal commissions
-        if order.agent1_partner_id.id == self.id:
-            commission_amount += order.agent1_amount or 0.0
-        if order.agent2_partner_id.id == self.id:
-            commission_amount += order.agent2_amount or 0.0
-        if order.manager_partner_id.id == self.id:
-            commission_amount += order.manager_amount or 0.0
-        if order.director_partner_id.id == self.id:
-            commission_amount += order.director_amount or 0.0
+        if hasattr(order, 'agent1_partner_id') and order.agent1_partner_id.id == self.id:
+            commission_amount += getattr(order, 'agent1_amount', 0.0) or 0.0
+        if hasattr(order, 'agent2_partner_id') and order.agent2_partner_id.id == self.id:
+            commission_amount += getattr(order, 'agent2_amount', 0.0) or 0.0
+        if hasattr(order, 'manager_partner_id') and order.manager_partner_id.id == self.id:
+            commission_amount += getattr(order, 'manager_amount', 0.0) or 0.0
+        if hasattr(order, 'director_partner_id') and order.director_partner_id.id == self.id:
+            commission_amount += getattr(order, 'director_amount', 0.0) or 0.0
             
         # Legacy commissions
-        if order.consultant_id.id == self.id:
-            commission_amount += order.salesperson_commission or 0.0
-        if order.manager_id.id == self.id:
-            commission_amount += order.manager_commission or 0.0
-        if order.second_agent_id.id == self.id:
-            commission_amount += order.second_agent_commission or 0.0
-        if order.director_id.id == self.id:
-            commission_amount += order.director_commission or 0.0
+        if hasattr(order, 'consultant_id') and order.consultant_id.id == self.id:
+            commission_amount += getattr(order, 'salesperson_commission', 0.0) or 0.0
+        if hasattr(order, 'manager_id') and order.manager_id.id == self.id:
+            commission_amount += getattr(order, 'manager_commission', 0.0) or 0.0
+        if hasattr(order, 'second_agent_id') and order.second_agent_id.id == self.id:
+            commission_amount += getattr(order, 'second_agent_commission', 0.0) or 0.0
+        if hasattr(order, 'director_id') and order.director_id.id == self.id:
+            commission_amount += getattr(order, 'director_commission', 0.0) or 0.0
             
         return commission_amount
 
@@ -136,105 +136,105 @@ class Partner(models.Model):
         details = []
         
         # External commissions
-        if order.broker_partner_id.id == self.id and order.broker_amount > 0:
+        if hasattr(order, 'broker_partner_id') and order.broker_partner_id.id == self.id and getattr(order, 'broker_amount', 0) > 0:
             details.append({
                 'type': 'External',
                 'category': 'Broker',
-                'rate': order.broker_rate,
-                'commission_type': order.broker_commission_type,
-                'amount': order.broker_amount,
+                'rate': getattr(order, 'broker_rate', 0),
+                'commission_type': getattr(order, 'broker_commission_type', 'fixed'),
+                'amount': getattr(order, 'broker_amount', 0),
             })
-        if order.referrer_partner_id.id == self.id and order.referrer_amount > 0:
+        if hasattr(order, 'referrer_partner_id') and order.referrer_partner_id.id == self.id and getattr(order, 'referrer_amount', 0) > 0:
             details.append({
                 'type': 'External',
                 'category': 'Referrer',
-                'rate': order.referrer_rate,
-                'commission_type': order.referrer_commission_type,
-                'amount': order.referrer_amount,
+                'rate': getattr(order, 'referrer_rate', 0),
+                'commission_type': getattr(order, 'referrer_commission_type', 'fixed'),
+                'amount': getattr(order, 'referrer_amount', 0),
             })
-        if order.cashback_partner_id.id == self.id and order.cashback_amount > 0:
+        if hasattr(order, 'cashback_partner_id') and order.cashback_partner_id.id == self.id and getattr(order, 'cashback_amount', 0) > 0:
             details.append({
                 'type': 'External',
                 'category': 'Cashback',
-                'rate': order.cashback_rate,
-                'commission_type': order.cashback_commission_type,
-                'amount': order.cashback_amount,
+                'rate': getattr(order, 'cashback_rate', 0),
+                'commission_type': getattr(order, 'cashback_commission_type', 'fixed'),
+                'amount': getattr(order, 'cashback_amount', 0),
             })
-        if order.other_external_partner_id.id == self.id and order.other_external_amount > 0:
+        if hasattr(order, 'other_external_partner_id') and order.other_external_partner_id.id == self.id and getattr(order, 'other_external_amount', 0) > 0:
             details.append({
                 'type': 'External',
                 'category': 'Other External',
-                'rate': order.other_external_rate,
-                'commission_type': order.other_external_commission_type,
-                'amount': order.other_external_amount,
+                'rate': getattr(order, 'other_external_rate', 0),
+                'commission_type': getattr(order, 'other_external_commission_type', 'fixed'),
+                'amount': getattr(order, 'other_external_amount', 0),
             })
             
         # Internal commissions
-        if order.agent1_partner_id.id == self.id and order.agent1_amount > 0:
+        if hasattr(order, 'agent1_partner_id') and order.agent1_partner_id.id == self.id and getattr(order, 'agent1_amount', 0) > 0:
             details.append({
                 'type': 'Internal',
                 'category': 'Agent 1',
-                'rate': order.agent1_rate,
-                'commission_type': order.agent1_commission_type,
-                'amount': order.agent1_amount,
+                'rate': getattr(order, 'agent1_rate', 0),
+                'commission_type': getattr(order, 'agent1_commission_type', 'fixed'),
+                'amount': getattr(order, 'agent1_amount', 0),
             })
-        if order.agent2_partner_id.id == self.id and order.agent2_amount > 0:
+        if hasattr(order, 'agent2_partner_id') and order.agent2_partner_id.id == self.id and getattr(order, 'agent2_amount', 0) > 0:
             details.append({
                 'type': 'Internal',
                 'category': 'Agent 2',
-                'rate': order.agent2_rate,
-                'commission_type': order.agent2_commission_type,
-                'amount': order.agent2_amount,
+                'rate': getattr(order, 'agent2_rate', 0),
+                'commission_type': getattr(order, 'agent2_commission_type', 'fixed'),
+                'amount': getattr(order, 'agent2_amount', 0),
             })
-        if order.manager_partner_id.id == self.id and order.manager_amount > 0:
+        if hasattr(order, 'manager_partner_id') and order.manager_partner_id.id == self.id and getattr(order, 'manager_amount', 0) > 0:
             details.append({
                 'type': 'Internal',
                 'category': 'Manager',
-                'rate': order.manager_rate,
-                'commission_type': order.manager_commission_type,
-                'amount': order.manager_amount,
+                'rate': getattr(order, 'manager_rate', 0),
+                'commission_type': getattr(order, 'manager_commission_type', 'fixed'),
+                'amount': getattr(order, 'manager_amount', 0),
             })
-        if order.director_partner_id.id == self.id and order.director_amount > 0:
+        if hasattr(order, 'director_partner_id') and order.director_partner_id.id == self.id and getattr(order, 'director_amount', 0) > 0:
             details.append({
                 'type': 'Internal',
                 'category': 'Director',
-                'rate': order.director_rate,
-                'commission_type': order.director_commission_type,
-                'amount': order.director_amount,
+                'rate': getattr(order, 'director_rate', 0),
+                'commission_type': getattr(order, 'director_commission_type', 'fixed'),
+                'amount': getattr(order, 'director_amount', 0),
             })
             
         # Legacy commissions
-        if order.consultant_id.id == self.id and order.salesperson_commission > 0:
+        if hasattr(order, 'consultant_id') and order.consultant_id.id == self.id and getattr(order, 'salesperson_commission', 0) > 0:
             details.append({
                 'type': 'Legacy',
                 'category': 'Consultant',
-                'rate': order.consultant_comm_percentage,
-                'commission_type': order.consultant_commission_type,
-                'amount': order.salesperson_commission,
+                'rate': getattr(order, 'consultant_comm_percentage', 0),
+                'commission_type': getattr(order, 'consultant_commission_type', 'fixed'),
+                'amount': getattr(order, 'salesperson_commission', 0),
             })
-        if order.manager_id.id == self.id and order.manager_commission > 0:
+        if hasattr(order, 'manager_id') and order.manager_id.id == self.id and getattr(order, 'manager_commission', 0) > 0:
             details.append({
                 'type': 'Legacy',
                 'category': 'Manager',
-                'rate': order.manager_comm_percentage,
-                'commission_type': order.manager_legacy_commission_type,
-                'amount': order.manager_commission,
+                'rate': getattr(order, 'manager_comm_percentage', 0),
+                'commission_type': getattr(order, 'manager_legacy_commission_type', 'fixed'),
+                'amount': getattr(order, 'manager_commission', 0),
             })
-        if order.second_agent_id.id == self.id and order.second_agent_commission > 0:
+        if hasattr(order, 'second_agent_id') and order.second_agent_id.id == self.id and getattr(order, 'second_agent_commission', 0) > 0:
             details.append({
                 'type': 'Legacy',
                 'category': 'Second Agent',
-                'rate': order.second_agent_comm_percentage,
-                'commission_type': order.second_agent_commission_type,
-                'amount': order.second_agent_commission,
+                'rate': getattr(order, 'second_agent_comm_percentage', 0),
+                'commission_type': getattr(order, 'second_agent_commission_type', 'fixed'),
+                'amount': getattr(order, 'second_agent_commission', 0),
             })
-        if order.director_id.id == self.id and order.director_commission > 0:
+        if hasattr(order, 'director_id') and order.director_id.id == self.id and getattr(order, 'director_commission', 0) > 0:
             details.append({
                 'type': 'Legacy',
                 'category': 'Director',
-                'rate': order.director_comm_percentage,
-                'commission_type': order.director_legacy_commission_type,
-                'amount': order.director_commission,
+                'rate': getattr(order, 'director_comm_percentage', 0),
+                'commission_type': getattr(order, 'director_legacy_commission_type', 'fixed'),
+                'amount': getattr(order, 'director_commission', 0),
             })
             
         return details
@@ -281,20 +281,14 @@ class Partner(models.Model):
             commission_details = self._get_partner_commission_details_from_order(order)
             
             for detail in commission_details:
-                # Get commission type display name
-                commission_type_display = dict(order._fields.get(
-                    detail['commission_type'].split('_')[0] + '_commission_type', 
-                    {'selection': []}
-                ).selection).get(detail['commission_type'], detail['commission_type'].title())
-                
                 statement_lines.append({
                     'order_ref': order.name,
                     'order_date': order.date_order,
                     'customer_name': order.partner_id.name,
-                    'customer_ref': order.client_order_ref or '',
+                    'customer_ref': getattr(order, 'client_order_ref', '') or '',
                     'commission_type': detail['type'],
                     'commission_category': detail['category'],
-                    'commission_type_display': commission_type_display,
+                    'commission_type_display': detail['commission_type'].title(),
                     'rate': detail['rate'],
                     'amount': detail['amount'],
                     'order_total': order.amount_total,
@@ -357,9 +351,6 @@ class Partner(models.Model):
         if not self.email:
             raise UserError(_("Partner %s has no email address configured.") % self.name)
             
-        # Generate PDF report
-        pdf_report = self.action_generate_commission_statement_pdf()
-        
         # Create email template context
         template = self.env.ref('commission_partner_statement.email_template_commission_statement', False)
         if template:

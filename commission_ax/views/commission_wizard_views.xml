@@ -54,17 +54,13 @@
                             <h1>Per Sales Order Commission Report</h1>
                             <p class="text-muted">Generate detailed commission report for a specific sales order and agent</p>
                         </div>
-                        
+
                         <field name="report_generated" invisible="1"/>
-                        
+
                         <group invisible="report_generated == True">
                             <group string="Order Selection">
-                                <field name="sale_order_id" readonly="report_generated == True" 
-                                       options="{'no_create': True}"
-                                       placeholder="Select the sales order for commission report"/>
-                                <field name="agent_id" readonly="report_generated == True" 
-                                       options="{'no_create': True}"
-                                       placeholder="Select the commission agent/partner"/>
+                                <field name="sale_order_id" readonly="report_generated == True" options="{'no_create': True}" placeholder="Select the sales order for commission report"/>
+                                <field name="agent_id" readonly="report_generated == True" options="{'no_create': True}" placeholder="Select the commission agent/partner"/>
                             </group>
                             <group string="Report Format">
                                 <field name="output_format" readonly="report_generated == True"/>

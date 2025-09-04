@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
+    
     <!-- Commission Statement User Group -->
     <record id="group_commission_statement_user" model="res.groups">
         <field name="name">Commission Statement User</field>
@@ -24,33 +24,30 @@
         <field name="body_html" type="html">
             <div style="font-family: Arial, sans-serif; margin: 20px;">
                 <h2 style="color: #2E86AB;">Commission Statement</h2>
-
+                
                 <p>Dear ${object.name},</p>
-
+                
                 <p>Please find attached your commission statement for the period.</p>
-
+                
                 <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #2E86AB;">
                     <h4 style="margin: 0 0 10px 0;">Commission Summary:</h4>
                     <ul style="margin: 0;">
-                        <li>
-                            <strong>Total Commission Orders:</strong> ${object.commission_order_count}</li>
-                        <li>
-                            <strong>Total Commission Amount:</strong> ${format_amount(object.total_commission_amount, object.currency_id)}</li>
+                        <li><strong>Total Commission Orders:</strong> ${object.commission_order_count}</li>
+                        <li><strong>Total Commission Amount:</strong> ${format_amount(object.total_commission_amount, object.currency_id)}</li>
                         % if object.last_commission_date:
-                        <li>
-                            <strong>Last Commission Date:</strong> ${object.last_commission_date}</li>
+                        <li><strong>Last Commission Date:</strong> ${object.last_commission_date}</li>
                         % endif
                     </ul>
                 </div>
-
+                
                 <p>If you have any questions regarding this statement, please don't hesitate to contact us.</p>
-
+                
                 <p>Best regards,<br/>
                 ${user.name}<br/>
                 ${user.company_id.name}</p>
-        </div>
-    </field>
-    <field name="auto_delete" eval="True"/>
-</record>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
 
 </odoo>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
+    
     <!-- Partner Form View Extension - Commission Tab -->
     <record id="view_partner_form_commission_statement" model="ir.ui.view">
         <field name="name">res.partner.form.commission.statement</field>
@@ -10,13 +10,24 @@
             <!-- Add Commission Statistics to Header -->
             <div name="button_box" position="inside">
                 <!-- Commission Orders Smart Button -->
-                <button name="action_view_commission_orders" type="object" class="oe_stat_button" icon="fa-money" invisible="commission_order_count == 0">
-                    <field name="commission_order_count" widget="statinfo" string="Orders"/>
+                <button name="action_view_commission_orders" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-money"
+                        invisible="commission_order_count == 0">
+                    <field name="commission_order_count" widget="statinfo" 
+                           string="Orders"/>
                 </button>
-
+                
                 <!-- Total Commission Amount -->
-                <button name="action_generate_commission_statement_pdf" type="object" class="oe_stat_button" icon="fa-dollar" invisible="total_commission_amount == 0">
-                    <field name="total_commission_amount" widget="monetary" options="{'currency_field': 'currency_id'}" string="Total Commission"/>
+                <button name="action_generate_commission_statement_pdf" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-dollar"
+                        invisible="total_commission_amount == 0">
+                    <field name="total_commission_amount" widget="monetary" 
+                           options="{'currency_field': 'currency_id'}"
+                           string="Total Commission"/>
                 </button>
             </div>
 
@@ -34,19 +45,38 @@
                             <field name="enable_auto_commission_statement"/>
                         </group>
                     </group>
-
+                    
                     <!-- Commission Statement Actions -->
                     <group string="Commission Statement Reports" col="4">
-                        <button name="action_generate_commission_statement_pdf" string="Generate PDF Statement" type="object" class="btn-primary" invisible="commission_order_count == 0"/>
-                        <button name="action_generate_commission_statement_excel" string="Download Excel" type="object" class="btn-success" invisible="commission_order_count == 0"/>
-                        <button name="action_share_commission_statement" string="Share Statement" type="object" class="btn-info" invisible="commission_order_count == 0 or not email"/>
-                        <button name="action_view_commission_orders" string="View Commission Orders" type="object" class="btn-secondary" invisible="commission_order_count == 0"/>
+                        <button name="action_generate_commission_statement_pdf" 
+                                string="Generate PDF Statement" 
+                                type="object" 
+                                class="btn-primary"
+                                invisible="commission_order_count == 0"/>
+                        <button name="action_generate_commission_statement_excel" 
+                                string="Download Excel" 
+                                type="object" 
+                                class="btn-success"
+                                invisible="commission_order_count == 0"/>
+                        <button name="action_share_commission_statement" 
+                                string="Share Statement" 
+                                type="object" 
+                                class="btn-info"
+                                invisible="commission_order_count == 0 or not email"/>
+                        <button name="action_view_commission_orders" 
+                                string="View Commission Orders" 
+                                type="object" 
+                                class="btn-secondary"
+                                invisible="commission_order_count == 0"/>
                     </group>
 
                     <!-- Commission Orders List -->
                     <separator string="Recent Commission Orders" invisible="commission_order_count == 0"/>
                     <field name="commission_sale_order_ids" nolabel="1" invisible="commission_order_count == 0">
-                        <tree decoration-success="state == 'sale'" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'" limit="10">
+                        <tree decoration-success="state == 'sale'" 
+                              decoration-info="state == 'draft'" 
+                              decoration-muted="state == 'cancel'"
+                              limit="10">
                             <field name="name"/>
                             <field name="date_order"/>
                             <field name="partner_id"/>
@@ -81,18 +111,27 @@
         <field name="arch" type="xml">
             <filter name="supplier" position="after">
                 <separator/>
-                <filter name="has_commission" string="Has Commission Orders" domain="[('commission_order_count', '>', 0)]"/>
-                <filter name="auto_statement" string="Auto Statement Enabled" domain="[('enable_auto_commission_statement', '=', True)]"/>
+                <filter name="has_commission" 
+                        string="Has Commission Orders" 
+                        domain="[('commission_order_count', '>', 0)]"/>
+                <filter name="auto_statement" 
+                        string="Auto Statement Enabled" 
+                        domain="[('enable_auto_commission_statement', '=', True)]"/>
             </filter>
-
+            
             <group expand="1" string="Group By" position="inside">
-                <filter name="group_by_commission_status" string="Commission Status" context="{'group_by': 'enable_auto_commission_statement'}"/>
+                <filter name="group_by_commission_status" 
+                        string="Commission Status" 
+                        context="{'group_by': 'enable_auto_commission_statement'}"/>
             </group>
         </field>
     </record>
 
     <!-- Commission Statement Menu -->
-    <menuitem id="menu_commission_partner_statement" name="Commission Statements" parent="contacts.menu_contacts" sequence="10"/>
+    <menuitem id="menu_commission_partner_statement" 
+              name="Commission Statements" 
+              parent="contacts.menu_contacts"
+              sequence="10"/>
 
     <!-- Commission Partners Action -->
     <record id="action_commission_partners" model="ir.actions.act_window">
@@ -114,6 +153,10 @@
         </field>
     </record>
 
-    <menuitem id="menu_commission_partners" name="Commission Partners" parent="menu_commission_partner_statement" action="action_commission_partners" sequence="10"/>
+    <menuitem id="menu_commission_partners" 
+              name="Commission Partners" 
+              parent="menu_commission_partner_statement"
+              action="action_commission_partners"
+              sequence="10"/>
 
 </odoo>

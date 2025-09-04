@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-
-    <!-- Commission Partner Statement PDF Report -->
-    <report id="action_commission_partner_statement_pdf" model="res.partner" string="Commission Statement" report_type="qweb-pdf" name="commission_partner_statement.commission_partner_statement_template" file="commission_partner_statement.commission_partner_statement_template" print_report_name="'Commission Statement - %s' % object.name" paperformat="base.paperformat_euro"/>
-
-</odoo>
