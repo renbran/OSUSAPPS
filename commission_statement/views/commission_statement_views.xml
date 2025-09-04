@@ -176,12 +176,12 @@
 
         <!-- Menu Security -->
         <record id="menu_commission_reports" model="ir.ui.menu">
-            <field name="groups_id" eval="[(4, ref('group_commission_user'))]"/>
+            <field name="groups_id" eval="[(4, ref('group_commission_statement_user'))]"/>
         </record>
 
         <!-- Action Security -->
         <record id="action_commission_statement_wizard" model="ir.actions.act_window">
-            <field name="groups_id" eval="[(4, ref('group_commission_user'))]"/>
+            <field name="groups_id" eval="[(4, ref('group_commission_statement_user'))]"/>
         </record>
     </data>
 </odoo>
