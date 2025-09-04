@@ -47,7 +47,7 @@ class CommissionStatementWizard(models.TransientModel):
         if not data['commission_lines']:
             raise UserError("No commission data found for the selected criteria.")
         
-        return self.env.ref('commission_ax.action_commission_statement_pdf').report_action(self, data=data)
+        return self.env.ref('commission_statement.action_commission_statement_pdf').report_action(self, data=data)
 
     def action_generate_excel_report(self):
         """Generate Excel commission statement report"""
@@ -237,6 +237,11 @@ class CommissionStatementWizard(models.TransientModel):
         else:
             commission_lines.sort(key=lambda x: x['order_ref'])
         
+        # Calculate totals by category
+        total_external = sum(line['amount'] for line in commission_lines if line['category'] == 'external')
+        total_internal = sum(line['amount'] for line in commission_lines if line['category'] == 'internal')
+        total_legacy = sum(line['amount'] for line in commission_lines if line['category'] == 'legacy')
+        
         return {
             'commission_lines': commission_lines,
             'date_from': self.date_from,
@@ -244,6 +249,9 @@ class CommissionStatementWizard(models.TransientModel):
             'partner_filter': self.partner_id.name if self.partner_id else 'All Partners',
             'commission_type_filter': dict(self._fields['commission_type_filter'].selection)[self.commission_type_filter],
             'total_amount': sum(line['amount'] for line in commission_lines),
+            'total_external': total_external,
+            'total_internal': total_internal,
+            'total_legacy': total_legacy,
             'total_lines': len(commission_lines),
             'report_generated_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'company_name': self.company_id.name,
@@ -267,6 +275,13 @@ class CommissionStatementWizard(models.TransientModel):
     def _extract_commission_lines(self, order):
         """Extract commission lines from a sale order"""
         lines = []
+        
+        # Validate that commission_ax fields exist
+        required_fields = ['total_commission_amount', 'consultant_id', 'manager_id']
+        missing_fields = [f for f in required_fields if not hasattr(order, f)]
+        if missing_fields:
+            _logger.warning("Missing commission fields on sale.order %s: %s", order.name, missing_fields)
+            return lines
         
         # Helper function to add commission line
         def add_commission_line(partner, amount, comm_type, rate, category, commission_field_name):
@@ -325,12 +340,16 @@ class CommissionStatementWizard(models.TransientModel):
         ]
         
         for partner_field, amount_field, type_field, rate_field, category, field_name in commission_mappings:
+            # Check if all required fields exist before processing
+            if not all(hasattr(order, field) for field in [partner_field, amount_field, type_field, rate_field]):
+                continue
+                
             partner = getattr(order, partner_field, None)
             amount = getattr(order, amount_field, 0)
             comm_type = getattr(order, type_field, None)
             rate = getattr(order, rate_field, 0)
             
-            if partner and hasattr(order, partner_field):
+            if partner:
                 add_commission_line(partner, amount, comm_type, rate, category, field_name)
         
         return lines

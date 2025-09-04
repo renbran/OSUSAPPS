@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
+        <!-- Security Groups -->
+        <record id="group_commission_manager" model="res.groups">
+            <field name="name">Commission Manager</field>
+            <field name="category_id" ref="base.module_category_sales_management"/>
+            <field name="comment">Can access all commission reports and statements</field>
+        </record>
+
+        <record id="group_commission_user" model="res.groups">
+            <field name="name">Commission User</field>
+            <field name="category_id" ref="base.module_category_sales_management"/>
+            <field name="comment">Can view commission reports for own records</field>
+        </record>
+
         <!-- Access Rights for Commission Statement Wizard -->
         <record id="access_commission_statement_wizard_user" model="ir.model.access">
             <field name="name">commission.statement.wizard.user</field>

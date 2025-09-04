@@ -64,7 +64,12 @@ class SaleOrder(models.Model):
     second_agent_commission = fields.Monetary(string="Second Agent Commission Amount", compute="_compute_commissions", store=True)
 
     # Extended Commission Structure - External Commissions
-    broker_partner_id = fields.Many2one('res.partner', string="Broker")
+    broker_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Broker",
+        domain=[('supplier_rank', '>', 0)],
+        help="Partner who will receive broker commission"
+    )
     broker_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -73,7 +78,12 @@ class SaleOrder(models.Model):
     broker_rate = fields.Float(string="Broker Rate")
     broker_amount = fields.Monetary(string="Broker Commission", compute="_compute_commissions", store=True)
 
-    referrer_partner_id = fields.Many2one('res.partner', string="Referrer")
+    referrer_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Referrer",
+        domain=[('supplier_rank', '>', 0)],
+        help="Partner who will receive referrer commission"
+    )
     referrer_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -82,7 +92,12 @@ class SaleOrder(models.Model):
     referrer_rate = fields.Float(string="Referrer Rate")
     referrer_amount = fields.Monetary(string="Referrer Commission", compute="_compute_commissions", store=True)
 
-    cashback_partner_id = fields.Many2one('res.partner', string="Cashback Partner")
+    cashback_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Cashback Partner",
+        domain=[('supplier_rank', '>', 0)],
+        help="Partner who will receive cashback commission"
+    )
     cashback_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -91,7 +106,12 @@ class SaleOrder(models.Model):
     cashback_rate = fields.Float(string="Cashback Rate")
     cashback_amount = fields.Monetary(string="Cashback Amount", compute="_compute_commissions", store=True)
 
-    other_external_partner_id = fields.Many2one('res.partner', string="Other External Partner")
+    other_external_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Other External Partner",
+        domain=[('supplier_rank', '>', 0)],
+        help="Other external partner who will receive commission"
+    )
     other_external_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -101,7 +121,12 @@ class SaleOrder(models.Model):
     other_external_amount = fields.Monetary(string="Other External Commission", compute="_compute_commissions", store=True)
 
     # Extended Commission Structure - Internal Commissions
-    agent1_partner_id = fields.Many2one('res.partner', string="Agent 1")
+    agent1_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Agent 1",
+        domain=[('supplier_rank', '>', 0)],
+        help="Internal agent 1 who will receive commission"
+    )
     agent1_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -110,7 +135,12 @@ class SaleOrder(models.Model):
     agent1_rate = fields.Float(string="Agent 1 Rate")
     agent1_amount = fields.Monetary(string="Agent 1 Commission", compute="_compute_commissions", store=True)
 
-    agent2_partner_id = fields.Many2one('res.partner', string="Agent 2")
+    agent2_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Agent 2",
+        domain=[('supplier_rank', '>', 0)],
+        help="Internal agent 2 who will receive commission"
+    )
     agent2_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -119,7 +149,12 @@ class SaleOrder(models.Model):
     agent2_rate = fields.Float(string="Agent 2 Rate")
     agent2_amount = fields.Monetary(string="Agent 2 Commission", compute="_compute_commissions", store=True)
 
-    manager_partner_id = fields.Many2one('res.partner', string="Manager Partner")
+    manager_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Manager Partner",
+        domain=[('supplier_rank', '>', 0)],
+        help="Internal manager who will receive commission"
+    )
     manager_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -128,7 +163,12 @@ class SaleOrder(models.Model):
     manager_rate = fields.Float(string="Manager Rate")
     manager_amount = fields.Monetary(string="Manager Commission Amount", compute="_compute_commissions", store=True)
 
-    director_partner_id = fields.Many2one('res.partner', string="Director Partner")
+    director_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Director Partner",
+        domain=[('supplier_rank', '>', 0)],
+        help="Internal director who will receive commission"
+    )
     director_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -741,7 +781,7 @@ class SaleOrder(models.Model):
         return product
 
     def _prepare_purchase_order_vals(self, partner, product, amount, description):
-        """Prepare values for purchase order creation."""
+        """Prepare values for purchase order creation with vendor reference auto-population."""
         if not partner:
             raise UserError("Partner is required for purchase order creation")
         
@@ -757,6 +797,7 @@ class SaleOrder(models.Model):
             'description': description,
             'origin_so_id': self.id,
             'commission_posted': False,
+            'partner_ref': self.client_order_ref or '',  # Auto-populate vendor reference from customer reference
             'order_line': [(0, 0, {
                 'product_id': product.id,
                 'name': description,
