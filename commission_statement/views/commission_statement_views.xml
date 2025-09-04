@@ -120,20 +120,20 @@
         </record>
 
         <!-- Add smart button to Sale Order for quick access -->
-        <record id="view_order_form_commission_report_button" model="ir.ui.view">
-            <field name="name">sale.order.form.commission.report.button</field>
+        <record id="view_order_form_commission_statement_report_button" model="ir.ui.view">
+            <field name="name">sale.order.form.commission.statement.report.button</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
-                    <button name="action_open_commission_report_wizard" 
+                    <button name="action_open_commission_statement_report_wizard" 
                             type="object" 
                             class="oe_stat_button" 
                             icon="fa-file-excel-o"
                             invisible="total_commission_amount == 0">
                         <div class="o_stat_info">
                             <span class="o_stat_text">Commission</span>
-                            <span class="o_stat_text">Report</span>
+                            <span class="o_stat_text">Statement</span>
                         </div>
                     </button>
                 </xpath>
@@ -168,14 +168,14 @@
         </record>
 
         <!-- Add Commission Partners menu -->
-        <menuitem id="menu_commission_partners" 
-                  name="Commission Partners" 
-                  parent="menu_commission_reports" 
-                  action="action_commission_partners" 
+        <menuitem id="menu_commission_statement_partners" 
+                  name="Commission Statement Partners" 
+                  parent="menu_commission_statement_reports" 
+                  action="action_commission_statement_partners" 
                   sequence="20"/>
 
         <!-- Menu Security -->
-        <record id="menu_commission_reports" model="ir.ui.menu">
+        <record id="menu_commission_statement_reports" model="ir.ui.menu">
             <field name="groups_id" eval="[(4, ref('group_commission_statement_user'))]"/>
         </record>
 
