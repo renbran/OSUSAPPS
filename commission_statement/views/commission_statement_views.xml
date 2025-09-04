@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Commission Partner Statement Wizard Form View -->
-        <record id="view_commission_partner_statement_wizard_form" model="ir.ui.view">
-            <field name="name">commission.partner.statement.wizard.form</field>
-            <field name="model">commission.partner.statement.wizard</field>
+        <!-- Commission Statement Wizard Form View -->
+        <record id="view_commission_statement_wizard_form" model="ir.ui.view">
+            <field name="name">commission.statement.wizard.form</field>
+            <field name="model">commission.statement.wizard</field>
             <field name="arch" type="xml">
                 <form string="Commission Statement Report">
                     <sheet>
@@ -48,8 +48,8 @@
 
         <!-- Commission Statement Preview Form View -->
         <record id="view_commission_statement_preview_form" model="ir.ui.view">
-            <field name="name">commission.statement.preview.form</field>
-            <field name="model">commission.statement.preview</field>
+            <field name="name">commission.statement.report.preview.form</field>
+            <field name="model">commission.statement.report.preview</field>
             <field name="arch" type="xml">
                 <form string="Commission Statement Preview">
                     <sheet>
@@ -89,37 +89,23 @@
 
         <!-- Menu Items -->
         <!-- Main Commission Reports Menu -->
-        <menuitem id="menu_commission_reports" name="Commission Reports" parent="sale.sale_menu_root" sequence="50"/>
+        <menuitem id="menu_commission_statement_reports" name="Commission Statement Reports" parent="sale.sale_menu_root" sequence="50"/>
 
-        <!-- Action for Commission Partner Statement Wizard -->
-        <record id="action_commission_partner_statement_wizard" model="ir.actions.act_window">
-            <field name="name">Compact Commission Statement</field>
-            <field name="res_model">commission.partner.statement.wizard</field>
+        <!-- Action for Commission Statement Wizard -->
+        <record id="action_commission_statement_wizard" model="ir.actions.act_window">
+            <field name="name">Commission Statement Report</field>
+            <field name="res_model">commission.statement.wizard</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
-            <field name="view_id" ref="view_commission_partner_statement_wizard_form"/>
-            <field name="groups_id" eval="[(4, ref('group_commission_user'))]"/>
+            <field name="view_id" ref="view_commission_statement_wizard_form"/>
         </record>
 
-        <!-- Action for Per Order Commission Report Wizard -->
-        <record id="action_commission_per_order_wizard" model="ir.actions.act_window">
-            <field name="name">Per Sales Order Commission Report</field>
-            <field name="res_model">commission.report.wizard</field>
-            <field name="view_mode">form</field>
-            <field name="target">new</field>
-            <field name="view_id" ref="view_commission_report_wizard_form"/>
-            <field name="groups_id" eval="[(4, ref('group_commission_user'))]"/>
-        </record>
-
-        <!-- Compact Commission Statement Report Menu -->
-        <menuitem id="menu_commission_statement_report" name="Compact Commission Statement" parent="menu_commission_reports" action="action_commission_partner_statement_wizard" sequence="10"/>
-
-        <!-- Per Order Commission Report Menu -->
-        <menuitem id="menu_per_order_commission_report" name="Per Sales Order Commission" parent="menu_commission_reports" action="action_commission_per_order_wizard" sequence="5"/>
+        <!-- Commission Statement Report Menu -->
+        <menuitem id="menu_commission_statement_report" name="Commission Statement Report" parent="menu_commission_statement_reports" action="action_commission_statement_wizard" sequence="10"/>
 
         <!-- Add smart button to Sale Order for quick access -->
-        <record id="view_order_form_commission_report_button" model="ir.ui.view">
-            <field name="name">sale.order.form.commission.report.button</field>
+        <record id="view_order_form_commission_statement_report_button" model="ir.ui.view">
+            <field name="name">sale.order.form.commission.statement.report.button</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
@@ -127,19 +113,16 @@
                     <button name="action_open_commission_report_wizard" type="object" class="oe_stat_button" icon="fa-file-excel-o" invisible="total_commission_amount == 0">
                         <div class="o_stat_info">
                             <span class="o_stat_text">Commission</span>
-                            <span class="o_stat_text">Report</span>
+                            <span class="o_stat_text">Statement</span>
                         </div>
                     </button>
-                </xpath>
-                <xpath expr="//form/sheet" position="inside">
-                    <field name="total_commission_amount" invisible="1"/>
                 </xpath>
             </field>
         </record>
 
         <!-- Commission Partners Filter Action -->
-        <record id="action_commission_partners" model="ir.actions.act_window">
-            <field name="name">Commission Partners</field>
+        <record id="action_commission_statement_partners" model="ir.actions.act_window">
+            <field name="name">Commission Statement Partners</field>
             <field name="res_model">res.partner</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[('id', 'in', [])]</field>
@@ -162,7 +145,16 @@
         </record>
 
         <!-- Add Commission Partners menu -->
-        <menuitem id="menu_commission_partners" name="Commission Partners" parent="menu_commission_reports" action="action_commission_partners" sequence="20"/>
+        <menuitem id="menu_commission_statement_partners" name="Commission Statement Partners" parent="menu_commission_statement_reports" action="action_commission_statement_partners" sequence="20"/>
 
+        <!-- Menu Security -->
+        <record id="menu_commission_statement_reports" model="ir.ui.menu">
+            <field name="groups_id" eval="[(4, ref('group_commission_statement_user'))]"/>
+        </record>
+
+        <!-- Action Security -->
+        <record id="action_commission_statement_wizard" model="ir.actions.act_window">
+            <field name="groups_id" eval="[(4, ref('group_commission_statement_user'))]"/>
+        </record>
     </data>
 </odoo>

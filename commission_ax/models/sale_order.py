@@ -2,156 +2,30 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 import logging
 
+_logger = logging.getLogger(__name__)
+
 class SaleOrder(models.Model):
+    """Extended Sale Order with comprehensive commission management"""
+    _inherit = 'sale.order'  # This MUST be at the top of the class
+    
+    # Commission Statement fields
     commission_statement_count = fields.Integer(
         string='Commission Statement Count',
         compute='_compute_commission_statement_count',
         help="Number of commission partners eligible for statements"
     )
-
-    @api.depends('agent1_partner_id', 'agent2_partner_id', 'broker_partner_id', 
-                 'referrer_partner_id', 'cashback_partner_id', 'other_external_partner_id',
-                 'consultant_id', 'manager_id', 'second_agent_id', 'director_id',
-                 'manager_partner_id', 'director_partner_id')
-    def _compute_commission_statement_count(self):
-        """Compute number of commission partners for this order."""
-        for order in self:
-            partners = set()
-            commission_partners = [
-                order.agent1_partner_id,
-                order.agent2_partner_id,
-                order.broker_partner_id,
-                order.referrer_partner_id,
-                order.cashback_partner_id,
-                order.other_external_partner_id,
-                order.consultant_id,
-                order.manager_id,
-                order.second_agent_id,
-                order.director_id,
-                order.manager_partner_id,
-                order.director_partner_id,
-            ]
-            for partner in commission_partners:
-                if partner:
-                    partners.add(partner.id)
-            order.commission_statement_count = len(partners)
-
-    def action_view_commission_statement(self):
-        """Open commission statement wizard for this order."""
-        self.ensure_one()
-        if not self.env.user.has_group('base.group_user'):
-            from odoo.exceptions import AccessError
-            raise AccessError("You don't have permission to view commission statements.")
-        commission_partners = self._get_commission_partners()
-        if not commission_partners:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'No Commission Partners',
-                    'message': 'This sale order has no commission partners defined.',
-                    'type': 'warning',
-                }
-            }
-        context = {
-            'default_sale_order_id': self.id,
-            'default_date_from': self.date_order.date() if self.date_order else fields.Date.today(),
-            'default_date_to': fields.Date.today(),
-        }
-        if len(commission_partners) == 1:
-            context['default_partner_id'] = commission_partners[0].id
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Commission Statement',
-            'res_model': 'commission.statement.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': context,
-        }
-
-    def _get_commission_partners(self):
-        """Get all partners with commissions on this order."""
-        partners = []
-        commission_partner_fields = [
-            'agent1_partner_id',
-            'agent2_partner_id', 
-            'broker_partner_id',
-            'referrer_partner_id',
-            'cashback_partner_id',
-            'other_external_partner_id',
-            'consultant_id',
-            'manager_id',
-            'second_agent_id',
-            'director_id',
-            'manager_partner_id',
-            'director_partner_id',
-        ]
-        for field_name in commission_partner_fields:
-            if hasattr(self, field_name):
-                partner = getattr(self, field_name)
-                if partner and partner not in partners:
-                    partners.append(partner)
-        return partners
-    def action_open_commission_report_wizard(self):
-        """Open the commission report wizard for this sale order."""
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Commission Report Wizard',
-            'res_model': 'commission.report.wizard',
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {
-                'default_sale_order_id': self.id,
-            }
-        }
+    
+    # Project fields (if project module is installed)
     project_id = fields.Many2one('project.project', string='Project')
+    
+    # Purchase order related fields
     purchase_order_total_amount = fields.Monetary(
         string="Total Purchase Order Amount",
         compute="_compute_purchase_order_total_amount",
         store=True,
         currency_field='currency_id'
     )
-
-    def _compute_purchase_order_total_amount(self):
-        for order in self:
-            total = sum(order.purchase_order_ids.mapped('amount_total'))
-            order.purchase_order_total_amount = total
-    def action_confirm_commissions(self):
-        """Confirm calculated commissions."""
-        # Implement your business logic here
-        self.commission_status = 'confirmed'
-        self.message_post(body="Commissions confirmed.")
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Commissions Confirmed',
-                'message': 'Commissions have been confirmed.',
-                'type': 'success',
-            }
-        }
-
-    def action_reset_commissions(self):
-        """Reset commission status to draft and cancel related purchase orders."""
-        self.commission_status = 'draft'
-        # Cancel related draft purchase orders
-        draft_pos = self.purchase_order_ids.filtered(lambda po: po.state == 'draft')
-        for po in draft_pos:
-            po.button_cancel()
-        self.message_post(body="Commission status reset to draft. Related draft purchase orders cancelled.")
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Reset to Draft',
-                'message': 'Commission status reset to draft. Related draft purchase orders cancelled.',
-                'type': 'success',
-            }
-        }
-    _inherit = 'sale.order'
-
-    # [Previous fields remain the same - keeping all existing fields]
+    
     # Legacy Commission fields with enhanced commission type logic
     consultant_id = fields.Many2one('res.partner', string="Consultant")
     consultant_commission_type = fields.Selection([
@@ -191,7 +65,12 @@ class SaleOrder(models.Model):
     second_agent_commission = fields.Monetary(string="Second Agent Commission Amount", compute="_compute_commissions", store=True)
 
     # Extended Commission Structure - External Commissions
-    broker_partner_id = fields.Many2one('res.partner', string="Broker")
+    broker_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Broker",
+        domain=[('supplier_rank', '>', 0)],
+        help="Partner who will receive broker commission"
+    )
     broker_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -200,7 +79,12 @@ class SaleOrder(models.Model):
     broker_rate = fields.Float(string="Broker Rate")
     broker_amount = fields.Monetary(string="Broker Commission", compute="_compute_commissions", store=True)
 
-    referrer_partner_id = fields.Many2one('res.partner', string="Referrer")
+    referrer_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Referrer",
+        domain=[('supplier_rank', '>', 0)],
+        help="Partner who will receive referrer commission"
+    )
     referrer_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -209,7 +93,12 @@ class SaleOrder(models.Model):
     referrer_rate = fields.Float(string="Referrer Rate")
     referrer_amount = fields.Monetary(string="Referrer Commission", compute="_compute_commissions", store=True)
 
-    cashback_partner_id = fields.Many2one('res.partner', string="Cashback Partner")
+    cashback_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Cashback Partner",
+        domain=[('supplier_rank', '>', 0)],
+        help="Partner who will receive cashback commission"
+    )
     cashback_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -218,7 +107,12 @@ class SaleOrder(models.Model):
     cashback_rate = fields.Float(string="Cashback Rate")
     cashback_amount = fields.Monetary(string="Cashback Amount", compute="_compute_commissions", store=True)
 
-    other_external_partner_id = fields.Many2one('res.partner', string="Other External Partner")
+    other_external_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Other External Partner",
+        domain=[('supplier_rank', '>', 0)],
+        help="Other external partner who will receive commission"
+    )
     other_external_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -228,7 +122,12 @@ class SaleOrder(models.Model):
     other_external_amount = fields.Monetary(string="Other External Commission", compute="_compute_commissions", store=True)
 
     # Extended Commission Structure - Internal Commissions
-    agent1_partner_id = fields.Many2one('res.partner', string="Agent 1")
+    agent1_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Agent 1",
+        domain=[('supplier_rank', '>', 0)],
+        help="Internal agent 1 who will receive commission"
+    )
     agent1_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -237,7 +136,12 @@ class SaleOrder(models.Model):
     agent1_rate = fields.Float(string="Agent 1 Rate")
     agent1_amount = fields.Monetary(string="Agent 1 Commission", compute="_compute_commissions", store=True)
 
-    agent2_partner_id = fields.Many2one('res.partner', string="Agent 2")
+    agent2_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Agent 2",
+        domain=[('supplier_rank', '>', 0)],
+        help="Internal agent 2 who will receive commission"
+    )
     agent2_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -246,7 +150,12 @@ class SaleOrder(models.Model):
     agent2_rate = fields.Float(string="Agent 2 Rate")
     agent2_amount = fields.Monetary(string="Agent 2 Commission", compute="_compute_commissions", store=True)
 
-    manager_partner_id = fields.Many2one('res.partner', string="Manager Partner")
+    manager_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Manager Partner",
+        domain=[('supplier_rank', '>', 0)],
+        help="Internal manager who will receive commission"
+    )
     manager_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -255,7 +164,12 @@ class SaleOrder(models.Model):
     manager_rate = fields.Float(string="Manager Rate")
     manager_amount = fields.Monetary(string="Manager Commission Amount", compute="_compute_commissions", store=True)
 
-    director_partner_id = fields.Many2one('res.partner', string="Director Partner")
+    director_partner_id = fields.Many2one(
+        'res.partner', 
+        string="Director Partner",
+        domain=[('supplier_rank', '>', 0)],
+        help="Internal director who will receive commission"
+    )
     director_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -291,6 +205,41 @@ class SaleOrder(models.Model):
     has_posted_invoices = fields.Boolean(string="Has Posted Invoices", compute="_compute_invoice_status", store=True)
     commission_blocked_reason = fields.Text(string="Commission Blocked Reason", readonly=True)
 
+    # ============== COMPUTE METHODS ==============
+    
+    @api.depends('agent1_partner_id', 'agent2_partner_id', 'broker_partner_id', 
+                 'referrer_partner_id', 'cashback_partner_id', 'other_external_partner_id',
+                 'consultant_id', 'manager_id', 'second_agent_id', 'director_id',
+                 'manager_partner_id', 'director_partner_id')
+    def _compute_commission_statement_count(self):
+        """Compute number of commission partners for this order."""
+        for order in self:
+            partners = set()
+            commission_partners = [
+                order.agent1_partner_id,
+                order.agent2_partner_id,
+                order.broker_partner_id,
+                order.referrer_partner_id,
+                order.cashback_partner_id,
+                order.other_external_partner_id,
+                order.consultant_id,
+                order.manager_id,
+                order.second_agent_id,
+                order.director_id,
+                order.manager_partner_id,
+                order.director_partner_id,
+            ]
+            for partner in commission_partners:
+                if partner:
+                    partners.add(partner.id)
+            order.commission_statement_count = len(partners)
+
+    @api.depends('purchase_order_ids')
+    def _compute_purchase_order_total_amount(self):
+        for order in self:
+            total = sum(order.purchase_order_ids.mapped('amount_total'))
+            order.purchase_order_total_amount = total
+
     @api.depends('invoice_ids', 'invoice_ids.state', 'invoice_status')
     def _compute_invoice_status(self):
         """Compute invoice-related status fields"""
@@ -304,11 +253,320 @@ class SaleOrder(models.Model):
         for order in self:
             order.purchase_order_count = len(order.purchase_order_ids)
 
+    @api.depends('amount_total')
+    def _compute_sales_value(self):
+        for order in self:
+            order.sales_value = order.amount_total
+
+    @api.depends('amount_total', 'consultant_comm_percentage', 'consultant_commission_type',
+                 'manager_comm_percentage', 'manager_legacy_commission_type', 
+                 'director_comm_percentage', 'director_legacy_commission_type', 
+                 'second_agent_comm_percentage', 'second_agent_commission_type',
+                 'broker_rate', 'broker_commission_type', 'referrer_rate', 'referrer_commission_type',
+                 'cashback_rate', 'cashback_commission_type', 'other_external_rate', 'other_external_commission_type',
+                 'agent1_rate', 'agent1_commission_type', 'agent2_rate', 'agent2_commission_type',
+                 'manager_rate', 'manager_commission_type', 'director_rate', 'director_commission_type',
+                 'order_line.price_unit', 'order_line.price_subtotal', 'amount_untaxed')
+    def _compute_commissions(self):
+        """Compute commission amounts and company shares."""
+        for order in self:
+            base_amount = order.amount_total
+
+            # Legacy commission calculations with flexible commission types
+            order.salesperson_commission = self._calculate_commission_amount(
+                order.consultant_comm_percentage, 
+                order.consultant_commission_type, 
+                order
+            )
+            order.manager_commission = self._calculate_commission_amount(
+                order.manager_comm_percentage, 
+                order.manager_legacy_commission_type, 
+                order
+            )
+            order.second_agent_commission = self._calculate_commission_amount(
+                order.second_agent_comm_percentage, 
+                order.second_agent_commission_type, 
+                order
+            )
+            order.director_commission = self._calculate_commission_amount(
+                order.director_comm_percentage, 
+                order.director_legacy_commission_type, 
+                order
+            )
+
+            # External commissions
+            order.broker_amount = self._calculate_commission_amount(order.broker_rate, order.broker_commission_type, order)
+            order.referrer_amount = self._calculate_commission_amount(order.referrer_rate, order.referrer_commission_type, order)
+            order.cashback_amount = self._calculate_commission_amount(order.cashback_rate, order.cashback_commission_type, order)
+            order.other_external_amount = self._calculate_commission_amount(order.other_external_rate, order.other_external_commission_type, order)
+
+            # Internal commissions
+            order.agent1_amount = self._calculate_commission_amount(order.agent1_rate, order.agent1_commission_type, order)
+            order.agent2_amount = self._calculate_commission_amount(order.agent2_rate, order.agent2_commission_type, order)
+            order.manager_amount = self._calculate_commission_amount(order.manager_rate, order.manager_commission_type, order)
+            order.director_amount = self._calculate_commission_amount(order.director_rate, order.director_commission_type, order)
+
+            # Calculate totals
+            order.total_external_commission_amount = (
+                order.broker_amount + order.referrer_amount + 
+                order.cashback_amount + order.other_external_amount
+            )
+
+            order.total_internal_commission_amount = (
+                order.agent1_amount + order.agent2_amount + 
+                order.manager_amount + order.director_amount +
+                order.salesperson_commission + order.manager_commission + 
+                order.second_agent_commission + order.director_commission
+            )
+
+            order.total_commission_amount = (
+                order.total_external_commission_amount + order.total_internal_commission_amount
+            )
+
+            # Company share calculations
+            order.company_share = base_amount - order.total_commission_amount
+            order.net_company_share = order.company_share
+
+    # ============== CONSTRAINT METHODS ==============
+    
     @api.constrains('order_line')
     def _check_single_order_line(self):
         for order in self:
             if len(order.order_line) > 1:
                 raise ValidationError("Only one order line is allowed per sale order for commission clarity.")
+
+    # ============== ACTION METHODS ==============
+    
+    def action_view_commission_statement(self):
+        """Open commission statement wizard for this order."""
+        self.ensure_one()
+        if not self.env.user.has_group('base.group_user'):
+            from odoo.exceptions import AccessError
+            raise AccessError("You don't have permission to view commission statements.")
+        commission_partners = self._get_commission_partners()
+        if not commission_partners:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'No Commission Partners',
+                    'message': 'This sale order has no commission partners defined.',
+                    'type': 'warning',
+                }
+            }
+        context = {
+            'default_sale_order_id': self.id,
+            'default_date_from': self.date_order.date() if self.date_order else fields.Date.today(),
+            'default_date_to': fields.Date.today(),
+        }
+        if len(commission_partners) == 1:
+            context['default_partner_id'] = commission_partners[0].id
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Commission Statement',
+            'res_model': 'commission.partner.statement.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': context,
+        }
+
+    def action_open_commission_report_wizard(self):
+        """Open the commission report wizard for this sale order."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Commission Report Wizard',
+            'res_model': 'commission.report.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_sale_order_id': self.id,
+            }
+        }
+
+    def action_view_commission_details(self):
+        """View commission details for this sale order - compatibility method."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Commission Details',
+                'message': f'Commission details for order {self.name}. Total commission: {self.total_commission_amount}',
+                'type': 'info',
+            }
+        }
+
+    def action_view_commission_report(self):
+        """Alternative method name for commission report access."""
+        return self.action_open_commission_report_wizard()
+
+    def action_commission_details(self):
+        """Another compatibility method for commission details."""
+        return self.action_view_commission_details()
+
+    def action_confirm_commissions(self):
+        """Confirm calculated commissions."""
+        self.commission_status = 'confirmed'
+        self.message_post(body="Commissions confirmed.")
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Commissions Confirmed',
+                'message': 'Commissions have been confirmed.',
+                'type': 'success',
+            }
+        }
+
+    def action_reset_commissions(self):
+        """Reset commission status to draft and cancel related purchase orders."""
+        self.commission_status = 'draft'
+        # Cancel related draft purchase orders
+        draft_pos = self.purchase_order_ids.filtered(lambda po: po.state == 'draft')
+        for po in draft_pos:
+            po.button_cancel()
+        self.message_post(body="Commission status reset to draft. Related draft purchase orders cancelled.")
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Reset to Draft',
+                'message': 'Commission status reset to draft. Related draft purchase orders cancelled.',
+                'type': 'success',
+            }
+        }
+
+    def action_process_commissions(self):
+        """Enhanced commission processing with prerequisite checks"""
+        for order in self:
+            if not order._check_commission_prerequisites():
+                raise UserError(f"Cannot process commissions for {order.name}:\n{order.commission_blocked_reason}")
+            order._create_commission_purchase_orders()
+        return True
+
+    def action_cancel(self):
+        """Override cancel with enhanced cascade logic and user notification"""
+        commission_orders = self.filtered('purchase_order_ids')
+        
+        if commission_orders:
+            # Collect information about what will be cancelled
+            cancel_info = []
+            for order in commission_orders:
+                po_info = []
+                invoice_info = []
+                
+                # Check purchase orders
+                for po in order.purchase_order_ids:
+                    if po.state not in ['cancel', 'draft']:
+                        po_info.append(f"- PO {po.name} (State: {po.state})")
+                
+                # Check related invoices for commission POs
+                for po in order.purchase_order_ids:
+                    for line in po.order_line:
+                        invoice_lines = self.env['account.move.line'].search([
+                            ('purchase_line_id', '=', line.id)
+                        ])
+                        for inv_line in invoice_lines:
+                            if inv_line.move_id.state == 'posted':
+                                invoice_info.append(f"- Invoice {inv_line.move_id.name}")
+                
+                if po_info or invoice_info:
+                    cancel_info.append(f"Sale Order {order.name}:")
+                    if po_info:
+                        cancel_info.extend(["  Commission Purchase Orders:"] + po_info)
+                    if invoice_info:
+                        cancel_info.extend(["  Related Invoices:"] + invoice_info)
+            
+            if cancel_info:
+                message = "The following commission-related documents will be cancelled:\n\n" + "\n".join(cancel_info)
+                
+                # Show confirmation dialog
+                return {
+                    'type': 'ir.actions.act_window',
+                    'name': 'Confirm Cancellation',
+                    'res_model': 'commission.cancel.wizard',
+                    'view_mode': 'form',
+                    'target': 'new',
+                    'context': {
+                        'default_sale_order_ids': [(6, 0, self.ids)],
+                        'default_message': message,
+                    }
+                }
+        
+        # If no commission orders or user confirmed, proceed with cancellation
+        return self._execute_cancellation()
+
+    def action_draft(self):
+        """Override draft action with cascade logic"""
+        for order in self:
+            if order.purchase_order_ids:
+                confirmed_pos = order.purchase_order_ids.filtered(
+                    lambda po: po.state not in ['draft', 'cancel']
+                )
+                
+                if confirmed_pos:
+                    po_names = ", ".join(confirmed_pos.mapped('name'))
+                    return {
+                        'type': 'ir.actions.act_window',
+                        'name': 'Confirm Set to Draft',
+                        'res_model': 'commission.draft.wizard',
+                        'view_mode': 'form',
+                        'target': 'new',
+                        'context': {
+                            'default_sale_order_id': order.id,
+                            'default_message': f"Setting this sale order to draft will cancel the following confirmed commission purchase orders:\n{po_names}\n\nDo you want to continue?",
+                        }
+                    }
+                else:
+                    # Cancel draft POs
+                    draft_pos = order.purchase_order_ids.filtered(lambda po: po.state == 'draft')
+                    draft_pos.button_cancel()
+                    
+                    # Reset commission status
+                    order.commission_status = 'draft'
+                    order.commission_processed = False
+                    order.commission_blocked_reason = False
+        
+        return super(SaleOrder, self).action_draft()
+
+    # ============== HELPER METHODS ==============
+    
+    def _get_commission_partners(self):
+        """Get all partners with commissions on this order."""
+        partners = []
+        commission_partner_fields = [
+            'agent1_partner_id',
+            'agent2_partner_id', 
+            'broker_partner_id',
+            'referrer_partner_id',
+            'cashback_partner_id',
+            'other_external_partner_id',
+            'consultant_id',
+            'manager_id',
+            'second_agent_id',
+            'director_id',
+            'manager_partner_id',
+            'director_partner_id',
+        ]
+        for field_name in commission_partner_fields:
+            if hasattr(self, field_name):
+                partner = getattr(self, field_name)
+                if partner and partner not in partners:
+                    partners.append(partner)
+        return partners
+
+    def _calculate_commission_amount(self, rate, commission_type, order):
+        """Calculate commission amount based on type and rate."""
+        if commission_type == 'fixed':
+            return rate
+        elif commission_type == 'percent_unit_price':
+            if order.order_line:
+                return (rate / 100.0) * order.order_line[0].price_unit
+            return 0.0
+        elif commission_type == 'percent_untaxed_total':
+            return (rate / 100.0) * order.amount_untaxed
+        return 0.0
 
     def _check_commission_prerequisites(self):
         """Check if order meets all prerequisites for commission processing"""
@@ -399,58 +657,6 @@ class SaleOrder(models.Model):
             _logger.error(f"Error creating commission purchase orders: {str(e)}")
             raise UserError(f"Failed to process commissions: {str(e)}")
 
-    def action_cancel(self):
-        """Override cancel with enhanced cascade logic and user notification"""
-        commission_orders = self.filtered('purchase_order_ids')
-        
-        if commission_orders:
-            # Collect information about what will be cancelled
-            cancel_info = []
-            for order in commission_orders:
-                po_info = []
-                invoice_info = []
-                
-                # Check purchase orders
-                for po in order.purchase_order_ids:
-                    if po.state not in ['cancel', 'draft']:
-                        po_info.append(f"- PO {po.name} (State: {po.state})")
-                
-                # Check related invoices for commission POs
-                for po in order.purchase_order_ids:
-                    for line in po.order_line:
-                        invoice_lines = self.env['account.move.line'].search([
-                            ('purchase_line_id', '=', line.id)
-                        ])
-                        for inv_line in invoice_lines:
-                            if inv_line.move_id.state == 'posted':
-                                invoice_info.append(f"- Invoice {inv_line.move_id.name}")
-                
-                if po_info or invoice_info:
-                    cancel_info.append(f"Sale Order {order.name}:")
-                    if po_info:
-                        cancel_info.extend(["  Commission Purchase Orders:"] + po_info)
-                    if invoice_info:
-                        cancel_info.extend(["  Related Invoices:"] + invoice_info)
-            
-            if cancel_info:
-                message = "The following commission-related documents will be cancelled:\n\n" + "\n".join(cancel_info)
-                
-                # Show confirmation dialog
-                return {
-                    'type': 'ir.actions.act_window',
-                    'name': 'Confirm Cancellation',
-                    'res_model': 'commission.cancel.wizard',
-                    'view_mode': 'form',
-                    'target': 'new',
-                    'context': {
-                        'default_sale_order_ids': [(6, 0, self.ids)],
-                        'default_message': message,
-                    }
-                }
-        
-        # If no commission orders or user confirmed, proceed with cancellation
-        return self._execute_cancellation()
-
     def _execute_cancellation(self):
         """Execute the actual cancellation with cascade logic"""
         for order in self:
@@ -479,134 +685,6 @@ class SaleOrder(models.Model):
         
         # Call original cancel method
         return super(SaleOrder, self).action_cancel()
-
-    def action_draft(self):
-        """Override draft action with cascade logic"""
-        for order in self:
-            if order.purchase_order_ids:
-                confirmed_pos = order.purchase_order_ids.filtered(
-                    lambda po: po.state not in ['draft', 'cancel']
-                )
-                
-                if confirmed_pos:
-                    po_names = ", ".join(confirmed_pos.mapped('name'))
-                    return {
-                        'type': 'ir.actions.act_window',
-                        'name': 'Confirm Set to Draft',
-                        'res_model': 'commission.draft.wizard',
-                        'view_mode': 'form',
-                        'target': 'new',
-                        'context': {
-                            'default_sale_order_id': order.id,
-                            'default_message': f"Setting this sale order to draft will cancel the following confirmed commission purchase orders:\n{po_names}\n\nDo you want to continue?",
-                        }
-                    }
-                else:
-                    # Cancel draft POs
-                    draft_pos = order.purchase_order_ids.filtered(lambda po: po.state == 'draft')
-                    draft_pos.button_cancel()
-                    
-                    # Reset commission status
-                    order.commission_status = 'draft'
-                    order.commission_processed = False
-                    order.commission_blocked_reason = False
-        
-        return super(SaleOrder, self).action_draft()
-
-    def action_process_commissions(self):
-        """Enhanced commission processing with prerequisite checks"""
-        for order in self:
-            if not order._check_commission_prerequisites():
-                raise UserError(f"Cannot process commissions for {order.name}:\n{order.commission_blocked_reason}")
-            order._create_commission_purchase_orders()
-        return True
-
-    # [Keep all other existing methods - compute functions, etc.]
-    
-    def _calculate_commission_amount(self, rate, commission_type, order):
-        if commission_type == 'fixed':
-            return rate
-        elif commission_type == 'percent_unit_price':
-            if order.order_line:
-                return (rate / 100.0) * order.order_line[0].price_unit
-            return 0.0
-        elif commission_type == 'percent_untaxed_total':
-            return (rate / 100.0) * order.amount_untaxed
-        return 0.0
-
-    @api.depends('amount_total', 'consultant_comm_percentage', 'consultant_commission_type',
-                 'manager_comm_percentage', 'manager_legacy_commission_type', 
-                 'director_comm_percentage', 'director_legacy_commission_type', 
-                 'second_agent_comm_percentage', 'second_agent_commission_type',
-                 'broker_rate', 'broker_commission_type', 'referrer_rate', 'referrer_commission_type',
-                 'cashback_rate', 'cashback_commission_type', 'other_external_rate', 'other_external_commission_type',
-                 'agent1_rate', 'agent1_commission_type', 'agent2_rate', 'agent2_commission_type',
-                 'manager_rate', 'manager_commission_type', 'director_rate', 'director_commission_type',
-                 'order_line.price_unit', 'order_line.price_subtotal', 'amount_untaxed')
-    def _compute_commissions(self):
-        """Compute commission amounts and company shares."""
-        for order in self:
-            base_amount = order.amount_total
-
-            # Legacy commission calculations with flexible commission types
-            order.salesperson_commission = self._calculate_commission_amount(
-                order.consultant_comm_percentage, 
-                order.consultant_commission_type, 
-                order
-            )
-            order.manager_commission = self._calculate_commission_amount(
-                order.manager_comm_percentage, 
-                order.manager_legacy_commission_type, 
-                order
-            )
-            order.second_agent_commission = self._calculate_commission_amount(
-                order.second_agent_comm_percentage, 
-                order.second_agent_commission_type, 
-                order
-            )
-            order.director_commission = self._calculate_commission_amount(
-                order.director_comm_percentage, 
-                order.director_legacy_commission_type, 
-                order
-            )
-
-            # External commissions
-            order.broker_amount = self._calculate_commission_amount(order.broker_rate, order.broker_commission_type, order)
-            order.referrer_amount = self._calculate_commission_amount(order.referrer_rate, order.referrer_commission_type, order)
-            order.cashback_amount = self._calculate_commission_amount(order.cashback_rate, order.cashback_commission_type, order)
-            order.other_external_amount = self._calculate_commission_amount(order.other_external_rate, order.other_external_commission_type, order)
-
-            # Internal commissions
-            order.agent1_amount = self._calculate_commission_amount(order.agent1_rate, order.agent1_commission_type, order)
-            order.agent2_amount = self._calculate_commission_amount(order.agent2_rate, order.agent2_commission_type, order)
-            order.manager_amount = self._calculate_commission_amount(order.manager_rate, order.manager_commission_type, order)
-            order.director_amount = self._calculate_commission_amount(order.director_rate, order.director_commission_type, order)
-
-            # Calculate totals
-            order.total_external_commission_amount = (
-                order.broker_amount + order.referrer_amount + 
-                order.cashback_amount + order.other_external_amount
-            )
-
-            order.total_internal_commission_amount = (
-                order.agent1_amount + order.agent2_amount + 
-                order.manager_amount + order.director_amount +
-                order.salesperson_commission + order.manager_commission + 
-                order.second_agent_commission + order.director_commission
-            )
-
-            order.total_commission_amount = (
-                order.total_external_commission_amount + order.total_internal_commission_amount
-            )
-
-            # Company share calculations
-            order.company_share = base_amount - order.total_commission_amount
-            order.net_company_share = order.company_share
-
-    @api.depends('amount_total')
-    def _compute_sales_value(self):
-        for order in self:
-            order.sales_value = order.amount_total
 
     def _get_commission_entries(self):
         """Get all commission entries that need purchase orders."""
@@ -725,7 +803,7 @@ class SaleOrder(models.Model):
         return product
 
     def _prepare_purchase_order_vals(self, partner, product, amount, description):
-        """Prepare values for purchase order creation."""
+        """Prepare values for purchase order creation with vendor reference auto-population."""
         if not partner:
             raise UserError("Partner is required for purchase order creation")
         
@@ -741,6 +819,7 @@ class SaleOrder(models.Model):
             'description': description,
             'origin_so_id': self.id,
             'commission_posted': False,
+            'partner_ref': self.client_order_ref or '',  # Auto-populate vendor reference from customer reference
             'order_line': [(0, 0, {
                 'product_id': product.id,
                 'name': description,

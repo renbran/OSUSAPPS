@@ -4,7 +4,7 @@ class CommissionStatementLine(models.TransientModel):
     _name = 'commission.statement.line'
     _description = 'Commission Statement Line'
 
-    wizard_id = fields.Many2one('commission.statement.wizard', string='Wizard', help="Related commission statement wizard", required=True)
+    wizard_id = fields.Many2one('commission.partner.statement.wizard', string='Wizard', help="Related commission statement wizard", required=True)
     agent_name = fields.Char(string='Agent Name', help="Name of the commission agent", tracking=True, required=True)
     deal_date = fields.Date(string='Deal Date', help="Date of the deal", tracking=True, required=True)
     commission_type = fields.Char(string='Commission Type', help="Type of commission", tracking=True)

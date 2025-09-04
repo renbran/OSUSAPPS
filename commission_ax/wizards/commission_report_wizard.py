@@ -31,31 +31,132 @@ class CommissionReportWizard(models.TransientModel):
     report_generated = fields.Boolean(string='Report Generated', default=False)
 
     def action_generate_report(self):
+        """Generate commission report in PDF or Excel format"""
         self.ensure_one()
         if not self.sale_order_id or not self.agent_id:
             raise UserError(_("Please select both sales order and agent."))
 
-        statement_lines = self._get_statement_lines()
-        company = self.env.company
-        currency = self.sale_order_id.currency_id
-        filename = f"Commission_Statement_{self.sale_order_id.name}_{self.agent_id.name}."
+        # For PDF, use the QWeb report template
         if self.output_format == 'pdf':
-            pdf_data = self._generate_pdf(statement_lines, company, currency)
-            self.report_data = base64.b64encode(pdf_data)
-            self.report_filename = filename + 'pdf'
+            # Prepare data for the report
+            data = self._prepare_report_data()
+            if not data['commission_lines']:
+                raise UserError("No commission data found for the selected order and agent.")
+            
+            return self.env.ref('commission_ax.action_report_per_order_commission').report_action(self, data=data)
+        
+        # For Excel, generate XLSX file
         else:
+            statement_lines = self._get_statement_lines()
+            company = self.env.company
+            currency = self.sale_order_id.currency_id
+            filename = f"Commission_Statement_{self.sale_order_id.name}_{self.agent_id.name}.xlsx"
+            
             xlsx_data = self._generate_xlsx(statement_lines, company, currency)
             self.report_data = base64.b64encode(xlsx_data)
-            self.report_filename = filename + 'xlsx'
-        self.report_generated = True
+            self.report_filename = filename
+            self.report_generated = True
+            
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Commission Statement Generated'),
+                'res_model': 'commission.report.wizard',
+                'res_id': self.id,
+                'view_mode': 'form',
+                'target': 'new',
+                'context': {'report_generated': True}
+            }
+
+    def _prepare_report_data(self):
+        """Prepare data for the per-order commission report"""
+        self.ensure_one()
+        
+        # Get commission data from sale order
+        commission_lines = []
+        
+        # Check for commission fields on sale order
+        order = self.sale_order_id
+        
+        # Field-based commissions
+        if hasattr(order, 'internal_commission_partner_id') and order.internal_commission_partner_id:
+            if order.internal_commission_rate > 0 or order.internal_commission_amount > 0:
+                commission_lines.append({
+                    'partner_name': order.internal_commission_partner_id.name,
+                    'order_ref': order.name,
+                    'customer_ref': order.partner_id.name,
+                    'commission_type': 'percentage' if order.internal_commission_rate > 0 else 'fixed',
+                    'commission_type_display': 'Internal Commission',
+                    'rate': order.internal_commission_rate,
+                    'amount': order.internal_commission_amount if order.internal_commission_amount > 0 else (order.amount_total * order.internal_commission_rate / 100),
+                    'category': 'internal',
+                    'base_amount': order.amount_total
+                })
+        
+        if hasattr(order, 'external_commission_partner_id') and order.external_commission_partner_id:
+            if order.external_commission_rate > 0 or order.external_commission_amount > 0:
+                commission_lines.append({
+                    'partner_name': order.external_commission_partner_id.name,
+                    'order_ref': order.name,
+                    'customer_ref': order.partner_id.name,
+                    'commission_type': 'percentage' if order.external_commission_rate > 0 else 'fixed',
+                    'commission_type_display': 'External Commission',
+                    'rate': order.external_commission_rate,
+                    'amount': order.external_commission_amount if order.external_commission_amount > 0 else (order.amount_total * order.external_commission_rate / 100),
+                    'category': 'external',
+                    'base_amount': order.amount_total
+                })
+        
+        if hasattr(order, 'legacy_commission_partner_id') and order.legacy_commission_partner_id:
+            if order.legacy_commission_rate > 0 or order.legacy_commission_amount > 0:
+                commission_lines.append({
+                    'partner_name': order.legacy_commission_partner_id.name,
+                    'order_ref': order.name,
+                    'customer_ref': order.partner_id.name,
+                    'commission_type': 'percentage' if order.legacy_commission_rate > 0 else 'fixed',
+                    'commission_type_display': 'Legacy Commission',
+                    'rate': order.legacy_commission_rate,
+                    'amount': order.legacy_commission_amount if order.legacy_commission_amount > 0 else (order.amount_total * order.legacy_commission_rate / 100),
+                    'category': 'legacy',
+                    'base_amount': order.amount_total
+                })
+        
+        # Product-based commissions from order lines
+        for line in order.order_line:
+            if line.product_id and 'commission' in line.product_id.name.lower():
+                # This is a commission product line
+                commission_lines.append({
+                    'partner_name': self.agent_id.name,  # Use the selected agent
+                    'order_ref': order.name,
+                    'customer_ref': order.partner_id.name,
+                    'commission_type': 'fixed',
+                    'commission_type_display': 'Product Commission',
+                    'rate': 0,
+                    'amount': line.price_subtotal,
+                    'category': 'product',
+                    'product_name': line.product_id.name,
+                    'base_amount': line.price_subtotal
+                })
+        
+        # Filter by selected agent if specific agent is chosen
+        if self.agent_id:
+            commission_lines = [line for line in commission_lines if 
+                              line['partner_name'] == self.agent_id.name or
+                              any(partner_field and partner_field.id == self.agent_id.id 
+                                  for partner_field in [
+                                      getattr(order, 'internal_commission_partner_id', None),
+                                      getattr(order, 'external_commission_partner_id', None),
+                                      getattr(order, 'legacy_commission_partner_id', None)
+                                  ])]
+        
         return {
-            'type': 'ir.actions.act_window',
-            'name': _('Commission Statement Generated'),
-            'res_model': 'commission.report.wizard',
-            'res_id': self.id,
-            'view_mode': 'form',
-            'target': 'new',
-            'context': {'report_generated': True}
+            'commission_lines': commission_lines,
+            'order_ref': order.name,
+            'customer_ref': order.partner_id.name,
+            'order_total': order.amount_total,
+            'total_amount': sum(line['amount'] for line in commission_lines),
+            'date_from': order.date_order.strftime('%Y-%m-%d'),
+            'date_to': order.date_order.strftime('%Y-%m-%d'),
+            'partner_name': self.agent_id.name if self.agent_id else 'All Partners'
         }
 
     def _get_statement_lines(self):
@@ -154,15 +255,12 @@ class CommissionReportWizard(models.TransientModel):
         return currency.symbol + ' ' + format(value, f'.{currency.decimal_places}f') if currency else str(value)
 
     def action_download_report(self):
+        """Download the generated commission report"""
         self.ensure_one()
         if not self.report_data:
             raise UserError(_("No report generated yet"))
         return {
             'type': 'ir.actions.act_url',
-            'url': '/web/content/?model=%s&id=%d&field=report_data&download=true&filename=%s' % (
-                self._name,
-                self.id,
-                self.report_filename
-            ),
+            'url': f'/web/content/?model={self._name}&id={self.id}&field=report_data&download=true&filename={self.report_filename}',
             'target': 'self',
         }
