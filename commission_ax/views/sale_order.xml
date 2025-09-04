@@ -1,162 +1,190 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Sale Order Form View Enhancement with Commission Statement -->
+        <!-- Sale Order Form View - Commission Statement Smart Button -->
         <record id="view_order_form_commission_statement" model="ir.ui.view">
             <field name="name">sale.order.form.commission.statement</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <!-- Add Commission Statement smart button -->
-                <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-                    <button name="action_view_commission_statement" type="object" class="oe_stat_button" icon="fa-file-text-o" groups="base.group_user,sales_team.group_sale_salesman"
-                        modifiers="{'invisible': [['commission_statement_count', '=', 0]]}">
+                <!-- Add Commission Statement smart button to button box -->
+                <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
+                    <button name="action_view_commission_statement" type="object" class="oe_stat_button" icon="fa-file-text-o" groups="base.group_user" invisible="commission_statement_count == 0">
                         <div class="o_stat_info">
-                            <field name="commission_statement_count" widget="statinfo" string="Commission Statement"/>
+                            <field name="commission_statement_count" widget="statinfo" string="Statements"/>
                         </div>
                     </button>
                 </xpath>
 
-                <!-- Add invisible fields for commission statement functionality -->
-                <field name="amount_total" position="after">
-                    <field name="commission_statement_count" modifiers="{'invisible': true}"/>
-                </field>
+                <!-- Add invisible commission statement count field -->
+                <xpath expr="//form/sheet" position="inside">
+                    <field name="commission_statement_count" invisible="1"/>
+                </xpath>
             </field>
         </record>
 
         <!-- Enhanced Commission Management Tab -->
-        <record id="view_order_form_commission_enhanced" model="ir.ui.view">
-            <field name="name">sale.order.form.commission.enhanced</field>
+        <record id="view_order_form_inherit_commission_enhanced_v2" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.commission.enhanced.v2</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//notebook" position="inside">
+                <xpath expr="//form/sheet/notebook" position="inside">
                     <page string="Commission Management" name="commission_management">
-                        <!-- Commission Status -->
-                        <group name="commission_status_group">
+                        <!-- Commission Status Header -->
+                        <div class="alert alert-info" role="alert" invisible="commission_blocked_reason == False">
+                            <strong>Commission Blocked:</strong>
+                            <field name="commission_blocked_reason" nolabel="1"/>
+                        </div>
+
+                        <!-- Commission Status and Actions -->
+                        <group name="commission_header">
                             <group string="Commission Status">
                                 <field name="commission_status"/>
                                 <field name="commission_processed"/>
-                                <field name="commission_blocked_reason" modifiers="{'invisible': [['commission_blocked_reason', '=', False]]}"/>
+                                <field name="is_fully_invoiced"/>
+                                <field name="has_posted_invoices"/>
+                                <field name="purchase_order_count"/>
                             </group>
-                            <group string="Commission Totals">
+                            <group string="Commission Actions">
+                                <div>
+                                    <button name="action_process_commissions" string="Process Commissions" type="object" class="btn-primary" invisible="commission_processed == True"/>
+                                </div>
+                                <div>
+                                    <button name="action_confirm_commissions" string="Confirm Commissions" type="object" class="btn-success" invisible="commission_status != 'calculated' or commission_processed == False"/>
+                                </div>
+                                <div>
+                                    <button name="action_reset_commissions" string="Reset to Draft" type="object" class="btn-warning" invisible="commission_status == 'draft'"/>
+                                </div>
+                            </group>
+                        </group>
+
+                        <!-- Commission Totals -->
+                        <group string="Commission Summary">
+                            <group string="Commission Amounts">
                                 <field name="total_commission_amount" widget="monetary"/>
                                 <field name="total_external_commission_amount" widget="monetary"/>
                                 <field name="total_internal_commission_amount" widget="monetary"/>
+                            </group>
+                            <group string="Company Share">
                                 <field name="company_share" widget="monetary"/>
                                 <field name="net_company_share" widget="monetary"/>
+                                <field name="sales_value" widget="monetary"/>
                             </group>
                         </group>
 
-                        <!-- Legacy Commission Section -->
-                        <group string="Legacy Commission Structure" name="legacy_commission">
-                            <group string="Consultant">
-                                <field name="consultant_id"/>
-                                <field name="consultant_commission_type"/>
-                                <field name="consultant_comm_percentage" modifiers="{'invisible': [['consultant_commission_type', '=', 'fixed']]}"/>
-                                <field name="salesperson_commission" widget="monetary"/>
-                            </group>
-                            <group string="Management">
-                                <field name="manager_id"/>
-                                <field name="manager_legacy_commission_type"/>
-                                <field name="manager_comm_percentage" modifiers="{'invisible': [['manager_legacy_commission_type', '=', 'fixed']]}"/>
-                                <field name="manager_commission" widget="monetary"/>
-                            </group>
-                            <group string="Additional Agents">
-                                <field name="second_agent_id"/>
-                                <field name="second_agent_commission_type"/>
-                                <field name="second_agent_comm_percentage" modifiers="{'invisible': [['second_agent_commission_type', '=', 'fixed']]}"/>
-                                <field name="second_agent_commission" widget="monetary"/>
-                            </group>
-                            <group string="Director">
-                                <field name="director_id"/>
-                                <field name="director_legacy_commission_type"/>
-                                <field name="director_comm_percentage" modifiers="{'invisible': [['director_legacy_commission_type', '=', 'fixed']]}"/>
-                                <field name="director_commission" widget="monetary"/>
-                            </group>
-                        </group>
+                        <!-- Commission Structure -->
+                        <notebook>
+                            <!-- Legacy Commission Tab -->
+                            <page string="Legacy Commission" name="legacy_commission">
+                                <group>
+                                    <group string="Consultant">
+                                        <field name="consultant_id"/>
+                                        <field name="consultant_commission_type"/>
+                                        <field name="consultant_comm_percentage" invisible="consultant_commission_type == 'fixed'"/>
+                                        <field name="salesperson_commission" widget="monetary"/>
+                                    </group>
+                                    <group string="Manager">
+                                        <field name="manager_id"/>
+                                        <field name="manager_legacy_commission_type"/>
+                                        <field name="manager_comm_percentage" invisible="manager_legacy_commission_type == 'fixed'"/>
+                                        <field name="manager_commission" widget="monetary"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Second Agent">
+                                        <field name="second_agent_id"/>
+                                        <field name="second_agent_commission_type"/>
+                                        <field name="second_agent_comm_percentage" invisible="second_agent_commission_type == 'fixed'"/>
+                                        <field name="second_agent_commission" widget="monetary"/>
+                                    </group>
+                                    <group string="Director">
+                                        <field name="director_id"/>
+                                        <field name="director_legacy_commission_type"/>
+                                        <field name="director_comm_percentage" invisible="director_legacy_commission_type == 'fixed'"/>
+                                        <field name="director_commission" widget="monetary"/>
+                                    </group>
+                                </group>
+                            </page>
 
-                        <!-- External Commission Section -->
-                        <group string="External Commission Structure" name="external_commission">
-                            <group string="Broker">
-                                <field name="broker_partner_id"/>
-                                <field name="broker_commission_type"/>
-                                <field name="broker_rate" modifiers="{'invisible': [['broker_commission_type', '=', 'fixed']]}"/>
-                                <field name="broker_amount" widget="monetary"/>
-                            </group>
-                            <group string="Referrer">
-                                <field name="referrer_partner_id"/>
-                                <field name="referrer_commission_type"/>
-                                <field name="referrer_rate" modifiers="{'invisible': [['referrer_commission_type', '=', 'fixed']]}"/>
-                                <field name="referrer_amount" widget="monetary"/>
-                            </group>
-                            <group string="Cashback">
-                                <field name="cashback_partner_id"/>
-                                <field name="cashback_commission_type"/>
-                                <field name="cashback_rate" modifiers="{'invisible': [['cashback_commission_type', '=', 'fixed']]}"/>
-                                <field name="cashback_amount" widget="monetary"/>
-                            </group>
-                            <group string="Other External">
-                                <field name="other_external_partner_id"/>
-                                <field name="other_external_commission_type"/>
-                                <field name="other_external_rate" modifiers="{'invisible': [['other_external_commission_type', '=', 'fixed']]}"/>
-                                <field name="other_external_amount" widget="monetary"/>
-                            </group>
-                        </group>
+                            <!-- External Commission Tab -->
+                            <page string="External Commission" name="external_commission">
+                                <group>
+                                    <group string="Broker">
+                                        <field name="broker_partner_id"/>
+                                        <field name="broker_commission_type"/>
+                                        <field name="broker_rate" invisible="broker_commission_type == 'fixed'"/>
+                                        <field name="broker_amount" widget="monetary"/>
+                                    </group>
+                                    <group string="Referrer">
+                                        <field name="referrer_partner_id"/>
+                                        <field name="referrer_commission_type"/>
+                                        <field name="referrer_rate" invisible="referrer_commission_type == 'fixed'"/>
+                                        <field name="referrer_amount" widget="monetary"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Cashback">
+                                        <field name="cashback_partner_id"/>
+                                        <field name="cashback_commission_type"/>
+                                        <field name="cashback_rate" invisible="cashback_commission_type == 'fixed'"/>
+                                        <field name="cashback_amount" widget="monetary"/>
+                                    </group>
+                                    <group string="Other External">
+                                        <field name="other_external_partner_id"/>
+                                        <field name="other_external_commission_type"/>
+                                        <field name="other_external_rate" invisible="other_external_commission_type == 'fixed'"/>
+                                        <field name="other_external_amount" widget="monetary"/>
+                                    </group>
+                                </group>
+                            </page>
 
-                        <!-- Internal Commission Section -->
-                        <group string="Internal Commission Structure" name="internal_commission">
-                            <group string="Agents">
-                                <field name="agent1_partner_id"/>
-                                <field name="agent1_commission_type"/>
-                                <field name="agent1_rate" modifiers="{'invisible': [['agent1_commission_type', '=', 'fixed']]}"/>
-                                <field name="agent1_amount" widget="monetary"/>
-                            </group>
-                            <group string="Agent 2">
-                                <field name="agent2_partner_id"/>
-                                <field name="agent2_commission_type"/>
-                                <field name="agent2_rate" modifiers="{'invisible': [['agent2_commission_type', '=', 'fixed']]}"/>
-                                <field name="agent2_amount" widget="monetary"/>
-                            </group>
-                            <group string="Manager">
-                                <field name="manager_partner_id"/>
-                                <field name="manager_commission_type"/>
-                                <field name="manager_rate" modifiers="{'invisible': [['manager_commission_type', '=', 'fixed']]}"/>
-                                <field name="manager_amount" widget="monetary"/>
-                            </group>
-                            <group string="Director">
-                                <field name="director_partner_id"/>
-                                <field name="director_commission_type"/>
-                                <field name="director_rate" modifiers="{'invisible': [['director_commission_type', '=', 'fixed']]}"/>
-                                <field name="director_amount" widget="monetary"/>
-                            </group>
-                        </group>
+                            <!-- Internal Commission Tab -->
+                            <page string="Internal Commission" name="internal_commission">
+                                <group>
+                                    <group string="Agent 1">
+                                        <field name="agent1_partner_id"/>
+                                        <field name="agent1_commission_type"/>
+                                        <field name="agent1_rate" invisible="agent1_commission_type == 'fixed'"/>
+                                        <field name="agent1_amount" widget="monetary"/>
+                                    </group>
+                                    <group string="Agent 2">
+                                        <field name="agent2_partner_id"/>
+                                        <field name="agent2_commission_type"/>
+                                        <field name="agent2_rate" invisible="agent2_commission_type == 'fixed'"/>
+                                        <field name="agent2_amount" widget="monetary"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Manager">
+                                        <field name="manager_partner_id"/>
+                                        <field name="manager_commission_type"/>
+                                        <field name="manager_rate" invisible="manager_commission_type == 'fixed'"/>
+                                        <field name="manager_amount" widget="monetary"/>
+                                    </group>
+                                    <group string="Director">
+                                        <field name="director_partner_id"/>
+                                        <field name="director_commission_type"/>
+                                        <field name="director_rate" invisible="director_commission_type == 'fixed'"/>
+                                        <field name="director_amount" widget="monetary"/>
+                                    </group>
+                                </group>
+                            </page>
 
-                        <!-- Commission Actions -->
-                        <group string="Commission Actions" name="commission_actions">
-                            <button name="action_process_commissions" string="Process Commissions" type="object" class="btn-primary"
-                                modifiers="{'invisible': [['commission_processed', '=', true]]}"/>
-                            <button name="action_confirm_commissions" string="Confirm Commissions" type="object" class="btn-success"
-                                modifiers="{'invisible': [['commission_status', '!=', 'calculated'], ['commission_processed', '=', false]]}"/>
-                            <button name="action_reset_commissions" string="Reset to Draft" type="object" class="btn-warning"
-                                modifiers="{'invisible': [['commission_status', '=', 'draft']]}"/>
-                        </group>
-
-                        <!-- Purchase Orders -->
-                        <group string="Related Purchase Orders" name="related_pos" modifiers="{'invisible': [['purchase_order_count', '=', 0]]}">
-                            <field name="purchase_order_ids" nolabel="1">
-                                <tree decoration-success="state == 'purchase'" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'">
-                                    <field name="name"/>
-                                    <field name="partner_id"/>
-                                    <field name="date_order"/>
-                                    <field name="amount_total" widget="monetary"/>
-                                    <field name="state"/>
-                                    <field name="commission_posted"/>
-                                    <button name="action_force_post" string="Force Post" type="object" icon="fa-check"
-                                        modifiers="{'invisible': [['commission_posted', '=', true]]}"/>
-                                </tree>
-                            </field>
-                        </group>
+                            <!-- Purchase Orders Tab -->
+                            <page string="Commission Purchase Orders" name="commission_pos" invisible="purchase_order_count == 0">
+                                <field name="purchase_order_ids" nolabel="1">
+                                    <tree decoration-success="state == 'purchase'" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'">
+                                        <field name="name"/>
+                                        <field name="partner_id"/>
+                                        <field name="date_order"/>
+                                        <field name="state"/>
+                                        <field name="commission_posted"/>
+                                        <button name="action_force_post" string="Force Post" type="object" icon="fa-check" invisible="commission_posted == True"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
                     </page>
                 </xpath>
             </field>
@@ -168,11 +196,11 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_quotation_tree"/>
             <field name="arch" type="xml">
-                <field name="amount_total" position="after">
+                <xpath expr="//field[@name='state']" position="after">
                     <field name="commission_status" optional="show"/>
                     <field name="commission_processed" optional="hide"/>
                     <field name="total_commission_amount" optional="hide" widget="monetary"/>
-                </field>
+                </xpath>
             </field>
         </record>
 
@@ -182,15 +210,15 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_sales_order_filter"/>
             <field name="arch" type="xml">
-                <filter name="my_sale_orders_filter" position="after">
+                <xpath expr="//filter[@name='my_sale_orders_filter']" position="after">
                     <separator/>
                     <filter string="Commission Processed" name="commission_processed" domain="[('commission_processed', '=', True)]"/>
                     <filter string="Commission Pending" name="commission_pending" domain="[('commission_processed', '=', False), ('commission_status', '!=', 'draft')]"/>
                     <filter string="Commission Draft" name="commission_draft" domain="[('commission_status', '=', 'draft')]"/>
-                </filter>
-                <group expand="0" string="Group By" position="inside">
+                </xpath>
+                <xpath expr="//group" position="inside">
                     <filter string="Commission Status" name="group_commission_status" domain="[]" context="{'group_by': 'commission_status'}"/>
-                </group>
+                </xpath>
             </field>
         </record>
     </data>

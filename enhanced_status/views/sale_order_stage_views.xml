@@ -1,40 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
-        <record id="stage_draft" model="sale.order.stage">
-            <field name="name">Draft</field>
-            <field name="stage_code">draft</field>
-            <field name="sequence">1</field>
-            <field name="description">Initial quotation stage</field>
-        </record>
+    
+    <!-- Stage Form View -->
+    <record id="view_sale_order_stage_form" model="ir.ui.view">
+        <field name="name">sale.order.stage.form</field>
+        <field name="model">sale.order.stage</field>
+        <field name="arch" type="xml">
+            <form string="Sale Order Stage">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options='{"terminology": "archive"}'/>
+                        </button>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="name" required="1"/>
+                            <field name="stage_code" required="1"/>
+                            <field name="sequence"/>
+                            <field name="color" widget="color"/>
+                        </group>
+                        <group>
+                            <field name="responsible_group_id"/>
+                            <field name="auto_progress"/>
+                            <field name="fold"/>
+                            <field name="is_final_stage" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Describe what happens in this stage..."/>
+                        </page>
+                        <page string="Progress Conditions" name="conditions">
+                            <field name="progress_conditions" 
+                                   placeholder="Describe the conditions required to progress from this stage..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-        <record id="stage_documentation" model="sale.order.stage">
-            <field name="name">Documentation</field>
-            <field name="stage_code">documentation</field>
-            <field name="sequence">2</field>
-            <field name="description">Requirements gathering and documentation</field>
-        </record>
+    <!-- Stage Tree View -->
+    <record id="view_sale_order_stage_tree" model="ir.ui.view">
+        <field name="name">sale.order.stage.tree</field>
+        <field name="model">sale.order.stage</field>
+        <field name="arch" type="xml">
+            <tree string="Sale Order Stages" editable="bottom" default_order="sequence">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="stage_code"/>
+                <field name="responsible_group_id"/>
+                <field name="auto_progress"/>
+                <field name="fold"/>
+                <field name="color" widget="color"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
 
-        <record id="stage_calculation" model="sale.order.stage">
-            <field name="name">Calculation</field>
-            <field name="stage_code">calculation</field>
-            <field name="sequence">3</field>
-            <field name="description">Cost calculation and pricing</field>
-        </record>
+    <!-- Stage Search View -->
+    <record id="view_sale_order_stage_search" model="ir.ui.view">
+        <field name="name">sale.order.stage.search</field>
+        <field name="model">sale.order.stage</field>
+        <field name="arch" type="xml">
+            <search string="Sale Order Stages">
+                <field name="name"/>
+                <field name="stage_code"/>
+                <field name="responsible_group_id"/>
+                
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter string="Auto Progress" name="auto_progress" domain="[('auto_progress', '=', True)]"/>
+                <filter string="Final Stages" name="final_stage" domain="[('is_final_stage', '=', True)]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter string="Responsible Group" name="group_by_responsible" 
+                            context="{'group_by': 'responsible_group_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
 
-        <record id="stage_approved" model="sale.order.stage">
-            <field name="name">Approved</field>
-            <field name="stage_code">approved</field>
-            <field name="sequence">4</field>
-            <field name="description">Approved and confirmed orders</field>
-        </record>
+    <!-- Stage Action -->
+    <record id="action_sale_order_stage" model="ir.actions.act_window">
+        <field name="name">Workflow Stages</field>
+        <field name="res_model">sale.order.stage</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_sale_order_stage_tree"/>
+        <field name="search_view_id" ref="view_sale_order_stage_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure workflow stages for sale orders
+            </p>
+            <p>
+                Define the stages that sale orders will progress through,
+                from initial documentation to final completion.
+            </p>
+        </field>
+    </record>
 
-        <record id="stage_completed" model="sale.order.stage">
-            <field name="name">Completed</field>
-            <field name="stage_code">completed</field>
-            <field name="sequence">5</field>
-            <field name="description">Fully processed orders</field>
-            <field name="fold">1</field>
-        </record>
-    </data>
+    <!-- Menu Item -->
+    <menuitem id="menu_sale_order_stage"
+              name="Workflow Stages"
+              parent="sale.sale_menu_root"
+              action="action_sale_order_stage"
+              sequence="99"
+              groups="sales_team.group_sale_manager"/>
+
 </odoo>

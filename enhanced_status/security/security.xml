@@ -1,5 +1,60 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Minimal security file for enhanced_status module -->
-    <!-- Add groups/rules here as needed -->
+    <data noupdate="1">
+        
+        <!-- Enhanced Workflow Security Groups -->
+        <record id="group_workflow_stage_manager" model="res.groups">
+            <field name="name">Workflow Stage Manager</field>
+            <field name="category_id" ref="base.module_category_sales_management"/>
+            <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_manager'))]"/>
+            <field name="comment">Can manage workflow stages and override workflow locks</field>
+        </record>
+
+        <!-- Record Rules for Sale Order Stages -->
+        <record id="sale_order_stage_rule_all" model="ir.rule">
+            <field name="name">Sale Order Stage: All Users</field>
+            <field name="model_id" ref="model_sale_order_stage"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="sale_order_stage_rule_manager" model="ir.rule">
+            <field name="name">Sale Order Stage: Managers</field>
+            <field name="model_id" ref="model_sale_order_stage"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_workflow_stage_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Record Rules for Sale Orders with Enhanced Workflow -->
+        <record id="sale_order_completed_lock_rule" model="ir.rule">
+            <field name="name">Sale Order: Completed Orders Protection</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="domain_force">['|', ('state', '!=', 'completed'), ('user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="sale_order_manager_override_rule" model="ir.rule">
+            <field name="name">Sale Order: Manager Override</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_workflow_stage_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+    </data>
 </odoo>

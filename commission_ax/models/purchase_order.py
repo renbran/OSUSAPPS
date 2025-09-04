@@ -5,9 +5,20 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class PurchaseOrder(models.Model):
-    is_commission_po = fields.Boolean(string="Is Commission Purchase Order", default=False)
+    """Extended Purchase Order with commission tracking capabilities"""
     _inherit = 'purchase.order'
 
+    # Commission-related fields
+    origin_so_id = fields.Many2one('sale.order', string="Source Sale Order", readonly=True)
+    commission_posted = fields.Boolean(string="Commission Posted", default=False)
+    is_commission_po = fields.Boolean(
+        string="Is Commission Purchase Order", 
+        compute='_compute_is_commission_po', 
+        store=True,
+        help="Indicates if this PO was created for commission payments"
+    )
+    
+    # Project fields (conditional on project module)
     project_id = fields.Many2one(
         'project.project',
         string='Project',
@@ -19,9 +30,39 @@ class PurchaseOrder(models.Model):
         string='Unit',
         help='Related unit for this purchase order',
     )
+    
     description = fields.Char(string="Description")
-    origin_so_id = fields.Many2one('sale.order', string="Source Sale Order", readonly=True)
-    commission_posted = fields.Boolean(string="Commission Posted", default=False)
+
+    @api.depends('origin_so_id')
+    def _compute_is_commission_po(self):
+        """Compute if this is a commission purchase order."""
+        for po in self:
+            po.is_commission_po = bool(po.origin_so_id)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override to ensure vendor reference for commission POs."""
+        for vals in vals_list:
+            if vals.get('origin_so_id'):
+                sale_order = self.env['sale.order'].browse(vals['origin_so_id'])
+                if sale_order.client_order_ref and not vals.get('partner_ref'):
+                    vals['partner_ref'] = sale_order.client_order_ref
+        return super().create(vals_list)
+
+    def action_view_origin_sale_order(self):
+        """Smart button to view origin sale order."""
+        self.ensure_one()
+        if not self.origin_so_id:
+            raise UserError("This purchase order is not linked to any sale order.")
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Origin Sale Order',
+            'res_model': 'sale.order',
+            'res_id': self.origin_so_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     @api.depends('origin_so_id')
     def _compute_display_name(self):
@@ -55,12 +96,15 @@ class PurchaseOrder(models.Model):
         """Post commission when receipt is validated."""
         for order in self:
             if order.origin_so_id and not order.commission_posted:
-                # Check if all receipts are done
+                # Check if all receipts are done - safely access picking_ids
+                if not hasattr(order, 'picking_ids') or not order.picking_ids:
+                    continue
+                    
                 all_receipts_done = all(
                     picking.state == 'done' for picking in order.picking_ids
                 )
                 
-                if all_receipts_done and order.picking_ids:
+                if all_receipts_done:
                     try:
                         if order.state == 'draft':
                             order.button_confirm()
@@ -230,16 +274,3 @@ class PurchaseOrder(models.Model):
                     )
         
         return result
-
-    @api.model
-    def create(self, vals):
-        """Override create to add commission-specific setup."""
-        order = super(PurchaseOrder, self).create(vals)
-        
-        # Add message to source sale order if this is a commission PO
-        if order.origin_so_id:
-            order.origin_so_id.message_post(
-                body=f"Commission purchase order {order.name} has been created for {order.partner_id.name}"
-            )
-        
-        return order

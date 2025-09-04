@@ -1,0 +1,14 @@
+# Commission Management Icon Placeholder
+# 
+# This file serves as a placeholder for the module icon.
+# In production, replace this with an actual PNG icon file (128x128 pixels recommended).
+# 
+# The icon should represent commission management, such as:
+# - A handshake symbol
+# - Money/dollar signs
+# - Percentage symbol
+# - Sales chart
+#
+# File should be named: icon.png
+# Dimensions: 128x128 pixels
+# Format: PNG with transparency support
