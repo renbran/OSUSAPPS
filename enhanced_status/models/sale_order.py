@@ -98,7 +98,12 @@ class SaleOrder(models.Model):
     )
 
     # Related fields for enhanced tracking
-    picking_ids = fields.One2many('stock.picking', 'sale_id', string='Deliveries')
+    picking_ids = fields.One2many(
+        'stock.picking', 
+        compute='_compute_picking_ids',
+        string='Deliveries',
+        help="Delivery orders related to this sale order"
+    )
     related_purchase_orders = fields.Many2many(
         'purchase.order',
         compute='_compute_related_purchase_orders',
@@ -122,6 +127,15 @@ class SaleOrder(models.Model):
         can_unlock = self.env.user.has_group('sales_team.group_sale_manager')
         for order in self:
             order.can_unlock = can_unlock
+
+    @api.depends('order_line', 'order_line.move_ids')
+    def _compute_picking_ids(self):
+        """Compute delivery orders related to this sale order"""
+        for order in self:
+            # Get all stock moves from order lines, then get their pickings
+            moves = order.order_line.mapped('move_ids')
+            pickings = moves.mapped('picking_id')
+            order.picking_ids = pickings
 
     @api.depends('invoice_ids', 'invoice_ids.amount_total', 'invoice_ids.state', 'invoice_ids.amount_residual')
     def _compute_financial_amounts(self):
