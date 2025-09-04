@@ -9,45 +9,426 @@
                         <div class="page">
                             <style>
                                 @page {
-                                    margin: 8mm;
-                                    size: A4 landscape;
+                                    margin: 10mm;
+                                    size: A4;
                                 }
                                 
                                 body {
-                                    font-family: 'Segoe UI', Arial, sans-serif;
-                                    font-size: 11px;
-                                    line-height: 1.3;
+                                    font-family: 'Arial', sans-serif;
+                                    font-size: 12px;
+                                    line-height: 1.4;
                                     color: #333;
                                 }
                                 
-                                .statement-header {
-                                    background: linear-gradient(135deg, #800020, #a0002a);
+                                .report-header {
+                                    text-align: center;
+                                    margin-bottom: 20px;
+                                    padding-bottom: 10px;
+                                    border-bottom: 2px solid #800020;
+                                }
+                                
+                                .report-title {
+                                    font-size: 24px;
+                                    font-weight: bold;
+                                    color: #800020;
+                                    margin: 0 0 8px 0;
+                                }
+                                
+                                .report-subtitle {
+                                    font-size: 14px;
+                                    color: #666;
+                                    margin: 0;
+                                }
+                                
+                                .order-info {
+                                    background-color: #f8f9fa;
+                                    padding: 12px;
+                                    margin: 15px 0;
+                                    border-radius: 4px;
+                                    border-left: 4px solid #800020;
+                                }
+                                
+                                .section-header {
+                                    background-color: #800020;
                                     color: white;
-                                    padding: 15px 20px;
-                                    margin: -8mm -8mm 15px -8mm;
-                                    border-radius: 0 0 8px 8px;
+                                    padding: 8px 12px;
+                                    font-weight: bold;
+                                    font-size: 14px;
+                                    margin-top: 20px;
+                                    margin-bottom: 0;
+                                }
+                                
+                                .commission-table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-bottom: 10px;
+                                }
+                                
+                                .commission-table th {
+                                    background-color: #6c757d;
+                                    color: white;
+                                    padding: 8px;
+                                    font-weight: bold;
+                                    text-align: left;
+                                    font-size: 11px;
+                                    border: 1px solid #ddd;
+                                }
+                                
+                                .commission-table td {
+                                    padding: 6px 8px;
+                                    border: 1px solid #ddd;
+                                    font-size: 11px;
+                                }
+                                
+                                .commission-table tbody tr:nth-child(even) {
+                                    background-color: #f8f9fa;
+                                }
+                                
+                                .total-row {
+                                    background-color: #e9ecef !important;
+                                    font-weight: bold;
+                                }
+                                
+                                .text-right {
+                                    text-align: right;
+                                }
+                                
+                                .text-center {
                                     text-align: center;
                                 }
                                 
-                                .statement-title {
-                                    font-size: 22px;
+                                .summary-section {
+                                    background-color: #f8f9fa;
+                                    border: 2px solid #800020;
+                                    padding: 15px;
+                                    margin-top: 20px;
+                                    border-radius: 6px;
+                                }
+                                
+                                .summary-title {
+                                    font-size: 16px;
                                     font-weight: bold;
-                                    margin: 0;
-                                    text-transform: uppercase;
-                                    letter-spacing: 1.5px;
+                                    color: #800020;
+                                    margin-bottom: 10px;
+                                    text-align: center;
                                 }
                                 
-                                .statement-subtitle {
+                                .summary-table {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                }
+                                
+                                .summary-table td {
+                                    padding: 6px 12px;
+                                    border-bottom: 1px solid #dee2e6;
+                                }
+                                
+                                .summary-table .label {
+                                    font-weight: bold;
+                                    width: 70%;
+                                }
+                                
+                                .summary-table .value {
+                                    text-align: right;
+                                    font-weight: bold;
+                                    color: #800020;
+                                }
+                                
+                                .net-company-share {
+                                    background-color: #800020 !important;
+                                    color: white !important;
+                                }
+                                
+                                .net-company-share .label,
+                                .net-company-share .value {
+                                    color: white !important;
                                     font-size: 14px;
-                                    margin: 8px 0 0 0;
-                                    color: #ffd700;
-                                    font-weight: 500;
+                                    padding: 10px 12px;
                                 }
+                            </style>
+
+                            <!-- Report Header -->
+                            <div class="report-header">
+                                <h1 class="report-title">Compact Commission Statement</h1>
+                                <p class="report-subtitle">
+                                    <t t-if="data.get('partner_name')">
+                                        Partner: <span t-esc="data.get('partner_name')"/> | 
+                                    </t>
+                                    <t t-else="">
+                                        All Partners | 
+                                    </t>
+                                    Period: <span t-esc="data.get('date_from', '')"/> - <span t-esc="data.get('date_to', '')"/>
+                                </p>
+                                <p style="font-size: 12px; color: #888; margin: 5px 0;">All commission transactions across multiple deals</p>
+                            </div>
+
+                            <!-- Order Details Section -->
+                            <t t-if="data and data.get('commission_lines')">
+                                <t t-set="order_total" t-value="0"/>
+                                <t t-set="sample_order" t-value="None"/>
                                 
-                                .agent-info {
-                                    display: grid;
-                                    grid-template-columns: 1fr 1fr 1fr;
-                                    gap: 15px;
+                                <!-- Get order total and sample order info -->
+                                <t t-foreach="data['commission_lines']" t-as="line">
+                                    <t t-if="not sample_order">
+                                        <t t-set="sample_order" t-value="line"/>
+                                    </t>
+                                </t>
+                                
+                                <div class="section-header">DEAL SUMMARY</div>
+                                <table class="commission-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 30%;">DEAL / ORDER REF</th>
+                                            <th style="width: 30%;">CUSTOMER</th>
+                                            <th style="width: 20%;" class="text-center">ORDER DATE</th>
+                                            <th style="width: 20%;" class="text-right">ORDER TOTAL (AED)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-set="processed_orders" t-value="set()"/>
+                                        <t t-foreach="data['commission_lines']" t-as="line">
+                                            <t t-if="line.get('order_ref') not in processed_orders">
+                                                <t t-set="processed_orders" t-value="processed_orders | {line.get('order_ref')}"/>
+                                                <tr>
+                                                    <td><strong><span t-esc="line.get('order_ref', 'N/A')"/></strong></td>
+                                                    <td><span t-esc="line.get('customer_ref', 'N/A')"/></td>
+                                                    <td class="text-center"><span t-esc="line.get('order_date', 'N/A')"/></td>
+                                                    <td class="text-right"><span t-esc="'{:,.2f}'.format(line.get('order_total', 0))"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <tr class="total-row">
+                                            <td colspan="3"><strong>Total Deal Value</strong></td>
+                                            <td class="text-right">
+                                                <strong><span t-esc="'{:,.2f}'.format(sum(line.get('order_total', 0) for line in data['commission_lines'] if line.get('order_ref') in [l.get('order_ref') for l in data['commission_lines']]))"/></strong>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- External Commissions Section -->
+                                <t t-set="external_commissions" t-value="[line for line in data['commission_lines'] if line.get('category') == 'external']"/>
+                                <t t-if="external_commissions">
+                                    <div class="section-header">EXTERNAL COMMISSIONS</div>
+                                    <table class="commission-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25%;">RECIPIENT</th>
+                                                <th style="width: 20%;">ORDER REF</th>
+                                                <th style="width: 20%;">TYPE</th>
+                                                <th style="width: 12%;" class="text-center">RATE (%)</th>
+                                                <th style="width: 23%;" class="text-right">COMMISSION (AED)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="external_commissions" t-as="line">
+                                                <tr>
+                                                    <td><span t-esc="line['partner_name']"/></td>
+                                                    <td><span t-esc="line.get('order_ref', 'N/A')"/></td>
+                                                    <td><span t-esc="line['commission_type_display']"/></td>
+                                                    <td class="text-center">
+                                                        <t t-if="line['commission_type'] == 'fixed'">
+                                                            Fixed
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span t-esc="'{:.2f}%'.format(line['rate'])"/>
+                                                        </t>
+                                                    </td>
+                                                    <td class="text-right"><span t-esc="'{:,.2f}'.format(line['amount'])"/></td>
+                                                </tr>
+                                            </t>
+                                            <tr class="total-row">
+                                                <td colspan="4"><strong>Total External Commissions</strong></td>
+                                                <td class="text-right">
+                                                    <strong><span t-esc="'{:,.2f}'.format(sum(line['amount'] for line in external_commissions))"/></strong>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+
+                                <!-- Internal Commissions Section -->
+                                <t t-set="internal_commissions" t-value="[line for line in data['commission_lines'] if line.get('category') == 'internal']"/>
+                                <t t-if="internal_commissions">
+                                    <div class="section-header">INTERNAL COMMISSIONS</div>
+                                    <table class="commission-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25%;">RECIPIENT</th>
+                                                <th style="width: 20%;">ORDER REF</th>
+                                                <th style="width: 20%;">TYPE</th>
+                                                <th style="width: 12%;" class="text-center">RATE (%)</th>
+                                                <th style="width: 23%;" class="text-right">COMMISSION (AED)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="internal_commissions" t-as="line">
+                                                <tr>
+                                                    <td><span t-esc="line['partner_name']"/></td>
+                                                    <td><span t-esc="line.get('order_ref', 'N/A')"/></td>
+                                                    <td><span t-esc="line['commission_type_display']"/></td>
+                                                    <td class="text-center">
+                                                        <t t-if="line['commission_type'] == 'fixed'">
+                                                            Fixed
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span t-esc="'{:.2f}%'.format(line['rate'])"/>
+                                                        </t>
+                                                    </td>
+                                                    <td class="text-right"><span t-esc="'{:,.2f}'.format(line['amount'])"/></td>
+                                                </tr>
+                                            </t>
+                                            <tr class="total-row">
+                                                <td colspan="4"><strong>Total Internal Commissions</strong></td>
+                                                <td class="text-right">
+                                                    <strong><span t-esc="'{:,.2f}'.format(sum(line['amount'] for line in internal_commissions))"/></strong>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+
+                                <!-- Legacy Commissions Section -->
+                                <t t-set="legacy_commissions" t-value="[line for line in data['commission_lines'] if line.get('category') == 'legacy']"/>
+                                <t t-if="legacy_commissions">
+                                    <div class="section-header">LEGACY COMMISSIONS</div>
+                                    <table class="commission-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25%;">RECIPIENT</th>
+                                                <th style="width: 20%;">ORDER REF</th>
+                                                <th style="width: 20%;">TYPE</th>
+                                                <th style="width: 12%;" class="text-center">RATE (%)</th>
+                                                <th style="width: 23%;" class="text-right">COMMISSION (AED)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="legacy_commissions" t-as="line">
+                                                <tr>
+                                                    <td><span t-esc="line['partner_name']"/></td>
+                                                    <td><span t-esc="line.get('order_ref', 'N/A')"/></td>
+                                                    <td><span t-esc="line['commission_type_display']"/></td>
+                                                    <td class="text-center">
+                                                        <t t-if="line['commission_type'] == 'fixed'">
+                                                            Fixed
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span t-esc="'{:.2f}%'.format(line['rate'])"/>
+                                                        </t>
+                                                    </td>
+                                                    <td class="text-right"><span t-esc="'{:,.2f}'.format(line['amount'])"/></td>
+                                                </tr>
+                                            </t>
+                                            <tr class="total-row">
+                                                <td colspan="4"><strong>Total Legacy Commissions</strong></td>
+                                                <td class="text-right">
+                                                    <strong><span t-esc="'{:,.2f}'.format(sum(line['amount'] for line in legacy_commissions))"/></strong>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+
+                                <!-- Product Commissions Section -->
+                                <t t-set="product_commissions" t-value="[line for line in data['commission_lines'] if line.get('category') == 'product']"/>
+                                <t t-if="product_commissions">
+                                    <div class="section-header">PRODUCT COMMISSIONS</div>
+                                    <table class="commission-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25%;">RECIPIENT</th>
+                                                <th style="width: 20%;">ORDER REF</th>
+                                                <th style="width: 20%;">PRODUCT</th>
+                                                <th style="width: 12%;" class="text-center">TYPE</th>
+                                                <th style="width: 23%;" class="text-right">COMMISSION (AED)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="product_commissions" t-as="line">
+                                                <tr>
+                                                    <td><span t-esc="line['partner_name']"/></td>
+                                                    <td><span t-esc="line.get('order_ref', 'N/A')"/></td>
+                                                    <td><span t-esc="line.get('product_name', 'Commission Product')"/></td>
+                                                    <td class="text-center">Product</td>
+                                                    <td class="text-right"><span t-esc="'{:,.2f}'.format(line['amount'])"/></td>
+                                                </tr>
+                                            </t>
+                                            <tr class="total-row">
+                                                <td colspan="4"><strong>Total Product Commissions</strong></td>
+                                                <td class="text-right">
+                                                    <strong><span t-esc="'{:,.2f}'.format(sum(line['amount'] for line in product_commissions))"/></strong>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+
+                                <!-- Financial Summary Section -->
+                                <div class="summary-section">
+                                    <div class="summary-title">FINANCIAL SUMMARY</div>
+                                    <table class="summary-table">
+                                        <tr>
+                                            <td class="label">Order Total (AED):</td>
+                                            <td class="value"><span t-esc="'{:,.2f}'.format(data.get('total_amount', 0))"/></td>
+                                        </tr>
+                                        <tr t-if="external_commissions">
+                                            <td class="label">Total External Commissions (AED):</td>
+                                            <td class="value"><span t-esc="'{:,.2f}'.format(sum(line['amount'] for line in external_commissions))"/></td>
+                                        </tr>
+                                        <tr t-if="internal_commissions">
+                                            <td class="label">Total Internal Commissions (AED):</td>
+                                            <td class="value"><span t-esc="'{:,.2f}'.format(sum(line['amount'] for line in internal_commissions))"/></td>
+                                        </tr>
+                                        <tr t-if="legacy_commissions">
+                                            <td class="label">Total Legacy Commissions (AED):</td>
+                                            <td class="value"><span t-esc="'{:,.2f}'.format(sum(line['amount'] for line in legacy_commissions))"/></td>
+                                        </tr>
+                                        <tr t-if="product_commissions">
+                                            <td class="label">Total Product Commissions (AED):</td>
+                                            <td class="value"><span t-esc="'{:,.2f}'.format(sum(line['amount'] for line in product_commissions))"/></td>
+                                        </tr>
+                                        <tr style="border-top: 2px solid #800020;">
+                                            <td class="label" style="font-size: 14px;"><strong>Total Commission (AED):</strong></td>
+                                            <td class="value" style="font-size: 14px;"><strong><span t-esc="'{:,.2f}'.format(data.get('total_amount', 0))"/></strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="label">VAT 5% (AED):</td>
+                                            <td class="value"><span t-esc="'{:,.2f}'.format(data.get('total_amount', 0) * 0.05)"/></td>
+                                        </tr>
+                                        <tr class="net-company-share">
+                                            <td class="label">Net Company Share (AED):</td>
+                                            <td class="value"><span t-esc="'{:,.2f}'.format((data.get('order_total', data.get('total_amount', 0)) or data.get('total_amount', 0)) - data.get('total_amount', 0))"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </t>
+
+                            <!-- No Data Message -->
+                            <t t-if="not data or not data.get('commission_lines')">
+                                <div class="alert alert-warning text-center" style="margin: 20px 0; padding: 20px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px;">
+                                    <h4>No Commission Data Found</h4>
+                                    <p>No commission transactions found for the selected criteria and date range.</p>
+                                    <p>Period: <span t-esc="data.get('date_from', '')"/> - <span t-esc="data.get('date_to', '')"/></p>
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <!-- Report Action -->
+        <record id="action_report_commission_statement" model="ir.actions.report">
+            <field name="name">Commission Statement</field>
+            <field name="model">commission.partner.statement.wizard</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">commission_ax.commission_statement_report_template</field>
+            <field name="report_file">commission_statement_report_template</field>
+            <field name="print_report_name">'Commission Statement - %s' % (object.partner_id.name)</field>
+            <field name="paperformat_id" ref="base.paperformat_euro"/>
+        </record>
+    </data>
+</odoo>
                                     margin: 15px 0 20px 0;
                                     background: #f8f9fa;
                                     padding: 12px;

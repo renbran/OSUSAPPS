@@ -48,11 +48,27 @@
             <field name="name">commission.report.wizard.form</field>
             <field name="model">commission.report.wizard</field>
             <field name="arch" type="xml">
-                <form string="Generate Commission Report">
+                <form string="Per Sales Order Commission Report">
                     <sheet>
+                        <div class="oe_title">
+                            <h1>Per Sales Order Commission Report</h1>
+                            <p class="text-muted">Generate detailed commission report for a specific sales order and agent</p>
+                        </div>
+                        
                         <field name="report_generated" invisible="1"/>
+                        
                         <group invisible="report_generated == True">
-                            <field name="sale_order_id" readonly="report_generated == True"/>
+                            <group string="Order Selection">
+                                <field name="sale_order_id" readonly="report_generated == True" 
+                                       options="{'no_create': True}"
+                                       placeholder="Select the sales order for commission report"/>
+                                <field name="agent_id" readonly="report_generated == True" 
+                                       options="{'no_create': True}"
+                                       placeholder="Select the commission agent/partner"/>
+                            </group>
+                            <group string="Report Format">
+                                <field name="output_format" readonly="report_generated == True"/>
+                            </group>
                         </group>
 
                         <group invisible="report_generated == False">
@@ -63,7 +79,7 @@
                                 <p>Your commission report has been generated and is ready for download.</p>
                             </div>
                             <field name="report_filename" readonly="1"/>
-                            <field name="report_data" invisible="report_generated == False"/>
+                            <field name="report_data" invisible="report_generated == False" filename="report_filename"/>
                         </group>
                     </sheet>
 

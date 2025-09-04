@@ -44,7 +44,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             raise UserError("No commission data found for the selected criteria.")
         
         return self.env.ref('commission_ax.action_report_commission_statement').report_action(self, data=data)
-g
+
     def action_generate_excel_report(self):
         """Generate Excel commission statement report"""
         self.ensure_one()
