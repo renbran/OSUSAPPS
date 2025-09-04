@@ -384,6 +384,19 @@ class SaleOrder(models.Model):
             }
         }
 
+    def action_view_commission_details(self):
+        """View commission details for this sale order - compatibility method."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Commission Details',
+                'message': f'Commission details for order {self.name}. Total commission: {self.total_commission_amount}',
+                'type': 'info',
+            }
+        }
+
     def action_confirm_commissions(self):
         """Confirm calculated commissions."""
         self.commission_status = 'confirmed'
