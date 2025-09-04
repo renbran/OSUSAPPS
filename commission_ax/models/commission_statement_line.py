@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo impo                                                                                                                                                                                                                                                                                                                                                                      rt models, fields
 
 class CommissionStatementLine(models.TransientModel):
     _name = 'commission.statement.line'
