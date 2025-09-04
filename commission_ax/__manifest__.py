@@ -66,7 +66,6 @@ Technical Features:
         'data/commission_report_wizard_action.xml',
         'data/commission_purchase_orders_action.xml',
         'reports/commission_report.xml',
-        'reports/commission_report_template.xml',
         'reports/commission_calculation_report.xml',
         'reports/commission_statement_report.xml',
     ],
