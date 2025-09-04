@@ -141,8 +141,8 @@
         </record>
 
         <!-- Commission Partners Filter Action -->
-        <record id="action_commission_partners" model="ir.actions.act_window">
-            <field name="name">Commission Partners</field>
+        <record id="action_commission_statement_partners" model="ir.actions.act_window">
+            <field name="name">Commission Statement Partners</field>
             <field name="res_model">res.partner</field>
             <field name="view_mode">tree,form</field>
             <field name="domain">[('id', 'in', [])]</field>
