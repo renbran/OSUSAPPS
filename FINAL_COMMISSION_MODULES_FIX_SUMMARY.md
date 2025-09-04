@@ -46,6 +46,13 @@ All critical issues in commission_ax, commission_statement, and enhanced_status 
 - **Files Fixed**:
   - `enhanced_status/views/sale_order_views.xml`: Fixed group-by filter placement
 
+### 7. **View Modifier Field Errors** (Field used in modifier must be present in view)
+- **Root Cause**: Fields referenced in `invisible` and `readonly` modifiers not declared in view
+- **Solution**: Added missing fields as invisible fields in views
+- **Files Fixed**:
+  - `commission_ax/views/commission_wizard_views.xml`: Added `report_generated` field
+  - `commission_ax/views/commission_statement_wizard_views.xml`: Added `total_commission_amount` field
+
 ---
 
 ## ✅ VALIDATION RESULTS
@@ -139,12 +146,12 @@ enhanced_status/
 
 ## 📊 STATISTICS
 
-- **Total Fixes**: 42 critical issues resolved
+- **Total Fixes**: 45 critical issues resolved
 - **Deprecated Syntax**: 31 instances modernized
 - **New Files**: 2 wizard models created
 - **Safe Patterns**: 4 field access safety implementations
 - **Dependency Fixes**: 2 module dependency updates
-- **View Fixes**: 1 XPath error resolved
+- **View Fixes**: 1 XPath error + 2 modifier field errors resolved
 - **Modules Ready**: 3 commission modules fully compatible
 
 ---

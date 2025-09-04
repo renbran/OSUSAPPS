@@ -50,6 +50,7 @@
             <field name="arch" type="xml">
                 <form string="Generate Commission Report">
                     <sheet>
+                        <field name="report_generated" invisible="1"/>
                         <group invisible="report_generated == True">
                             <field name="sale_order_id" readonly="report_generated == True"/>
                         </group>

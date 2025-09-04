@@ -137,6 +137,9 @@
                         </div>
                     </button>
                 </xpath>
+                <xpath expr="//form/sheet" position="inside">
+                    <field name="total_commission_amount" invisible="1"/>
+                </xpath>
             </field>
         </record>
 
