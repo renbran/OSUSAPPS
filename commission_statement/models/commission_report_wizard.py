@@ -384,7 +384,7 @@ class CommissionStatementWizard(models.TransientModel):
                 'order_date': line_data['order_date'],
             }))
         
-        preview_wizard = self.env['commission.statement.preview'].create({
+        preview_wizard = self.env['commission.statement.report.preview'].create({
             'line_ids': lines,
             'total_amount': data['total_amount'],
             'total_lines': data['total_lines'],
@@ -397,7 +397,7 @@ class CommissionStatementWizard(models.TransientModel):
         return {
             'name': 'Commission Statement Preview',
             'type': 'ir.actions.act_window',
-            'res_model': 'commission.statement.preview',
+            'res_model': 'commission.statement.report.preview',
             'res_id': preview_wizard.id,
             'view_mode': 'form',
             'target': 'new',
@@ -405,10 +405,10 @@ class CommissionStatementWizard(models.TransientModel):
 
 
 class CommissionStatementPreview(models.TransientModel):
-    _name = 'commission.statement.preview'
-    _description = 'Commission Statement Preview'
+    _name = 'commission.statement.report.preview'
+    _description = 'Commission Statement Report Preview'
 
-    line_ids = fields.One2many('commission.statement.preview.line', 'preview_id', string='Commission Lines')
+    line_ids = fields.One2many('commission.statement.report.preview.line', 'preview_id', string='Commission Lines')
     total_amount = fields.Float(string='Total Amount')
     total_lines = fields.Integer(string='Total Lines')
     date_from = fields.Date(string='Date From')
@@ -418,10 +418,10 @@ class CommissionStatementPreview(models.TransientModel):
 
 
 class CommissionStatementPreviewLine(models.TransientModel):
-    _name = 'commission.statement.preview.line'
-    _description = 'Commission Statement Preview Line'
+    _name = 'commission.statement.report.preview.line'
+    _description = 'Commission Statement Report Preview Line'
 
-    preview_id = fields.Many2one('commission.statement.preview', string='Preview')
+    preview_id = fields.Many2one('commission.statement.report.preview', string='Preview')
     partner_name = fields.Char(string='Commission Name')
     order_ref = fields.Char(string='Order Ref')
     customer_ref = fields.Char(string='Customer Reference')

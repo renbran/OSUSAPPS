@@ -57,8 +57,8 @@
 
         <!-- Commission Statement Preview Form View -->
         <record id="view_commission_statement_preview_form" model="ir.ui.view">
-            <field name="name">commission.statement.preview.form</field>
-            <field name="model">commission.statement.preview</field>
+            <field name="name">commission.statement.report.preview.form</field>
+            <field name="model">commission.statement.report.preview</field>
             <field name="arch" type="xml">
                 <form string="Commission Statement Preview">
                     <sheet>
@@ -98,15 +98,15 @@
 
         <!-- Menu Items -->
         <!-- Main Commission Reports Menu -->
-        <menuitem id="menu_commission_reports" 
-                  name="Commission Reports" 
+        <menuitem id="menu_commission_statement_reports" 
+                  name="Commission Statement Reports" 
                   parent="sale.sale_menu_root" 
                   sequence="50"/>
 
         <!-- Commission Statement Report Menu -->
         <menuitem id="menu_commission_statement_report" 
                   name="Commission Statement Report" 
-                  parent="menu_commission_reports" 
+                  parent="menu_commission_statement_reports" 
                   action="action_commission_statement_wizard" 
                   sequence="10"/>
 
