@@ -1,760 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record id="commission_report_template_view" model="ir.ui.view">
-            <field name="name">commission.report.template</field>
-            <field name="model">sale.order</field>
-            <field name="type">qweb</field>
-            <field name="arch" type="xml">
-                <t t-name="commission_report_template">
-                    <t t-call="web.html_container">
-                        <t t-foreach="docs" t-as="o">
-                            <t t-call="web.external_layout">
-                                <div class="page">
-                                    <style>
-                                        @page {
-                                            margin: 8mm;
-                                            size: A4;
-                                        }
-                                        /* ... full CSS as provided ... */
-                                    </style>
-                                    <div class="commission-report">
-                                        <!-- Header Section -->
-                                        <div class="report-header">
-                                            <h1 class="report-title">Commission Report</h1>
-                                            <div class="report-subtitle">
-                                                Order: <strong>
-                                                <span t-field="o.name"/>
-                                            </strong> | 
-                                                Date: <strong>
-                                            <span t-field="o.date_order" t-options="{'widget': 'date'}"/>
-                                        </strong>
-                                    </div>
+        <!-- QWeb Template for Professional Commission Report -->
+        <template id="commission_payout_report_template_professional" name="Professional Commission Report">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <!-- Helpers -->
+                    <t t-set="external_total" t-value="(o.broker_amount or 0) + (o.referrer_amount or 0) + (o.cashback_amount or 0) + (o.other_external_amount or 0)"/>
+                    <t t-set="internal_total" t-value="(o.agent1_amount or 0) + (o.agent2_amount or 0) + (o.manager_amount or 0) + (o.director_amount or 0)"/>
+                    <t t-set="total_commission" t-value="external_total + internal_total"/>
+                    <t t-set="net_before_vat" t-value="(o.amount_total or 0) - total_commission"/>
+                    <t t-set="vat_rate" t-value="0.05"/>
+                    <t t-set="vat_amount" t-value="net_before_vat * vat_rate"/>
+                    <t t-set="net_commission" t-value="net_before_vat - vat_amount"/>
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_structure"/>
+                            <div class="row">
+                                <div class="col-12">
+                                    <h2>Commission Report</h2>
+                                    <p>Order: <span t-field="o.name"/></p>
+                                    <p>Customer: <span t-field="o.partner_id.name"/></p>
+                                    <p>Date: <span t-field="o.date_order"/></p>
+                                    <p>Total Amount: <span t-field="o.amount_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></p>
                                 </div>
-                                <!-- Order Information Grid -->
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <div class="info-label">Customer</div>
-                                        <div class="info-value">
-                                            <span t-field="o.partner_id.name"/>
-                                        </div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Project</div>
-                                        <div class="info-value">
-                                            <span t-field="o.project_id.name"/>
-                                        </div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Unit</div>
-                                        <div class="info-value">
-                                            <span t-field="o.unit_id.name"/>
-                                        </div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Sales Value</div>
-                                        <div class="info-value">
-                                            AED <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                                        </div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Salesperson</div>
-                                        <div class="info-value">
-                                            <span t-field="o.user_id.name"/>
-                                        </div>
-                                    </div>
-                                    <div class="info-item">
-                                        <div class="info-label">Commission Status</div>
-                                        <div class="info-value">
-                                            <span t-field="o.commission_status"/>
-                                            <t t-if="o.commission_status == 'draft'">
-                                                <span class="status-badge status-draft">Draft</span>
-                                            </t>
-                                            <t t-elif="o.commission_status == 'pending'">
-                                                <span class="status-badge status-pending">Pending</span>
-                                            </t>
-                                            <t t-elif="o.commission_status == 'approved'">
-                                                <span class="status-badge status-approved">Approved</span>
-                                            </t>
-                                            <t t-elif="o.commission_status == 'paid'">
-                                                <span class="status-badge status-paid">Paid</span>
-                                            </t>
-                                            <t t-else="">
-                                                N/A
-                                            </t>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Commission Summary Table -->
-                                <div class="section-header">COMMISSION DETAILS</div>
-                                <table class="commission-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Recipient</th>
-                                            <th>Type</th>
-                                            <th>Base Amount (AED)</th>
-                                            <th>Rate (%)</th>
-                                            <th>Commission (AED)</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Agent 1 -->
-                                        <tr t-if="o.agent1_partner_id">
-                                            <td>
-                                                <span t-field="o.agent1_partner_id.name"/>
-                                            </td>
-                                            <td>Agent 1</td>
-                                            <td class="amount-cell">
-                                                <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                                            </td>
-                                            <td class="rate-cell">
-                                                <t t-esc="'{:.2f}'.format(o.agent1_rate or 0)"/>
-                                            </td>
-                                            <td class="amount-cell highlight-amount">
-                                                <t t-esc="'{:,.2f}'.format(o.agent1_amount or 0)"/>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge status-pending">Pending</span>
-                                            </td>
-                                        </tr>
-                                        <!-- Agent 2 -->
-                                        <tr t-if="o.agent2_partner_id">
-                                            <td>
-                                                <span t-field="o.agent2_partner_id.name"/>
-                                            </td>
-                                            <td>Agent 2</td>
-                                            <td class="amount-cell">
-                                                <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                                            </td>
-                                            <td class="rate-cell">
-                                                <t t-esc="'{:.2f}'.format(o.agent2_rate or 0)"/>
-                                            </td>
-                                            <td class="amount-cell highlight-amount">
-                                                <t t-esc="'{:,.2f}'.format(o.agent2_amount or 0)"/>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge status-approved">Approved</span>
-                                            </td>
-                                        </tr>
-                                        <!-- Broker -->
-                                        <tr t-if="o.broker_partner_id">
-                                            <td>
-                                                <span t-field="o.broker_partner_id.name"/>
-                                            </td>
-                                            <td>Broker</td>
-                                            <td class="amount-cell">
-                                                <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                                            </td>
-                                            <td class="rate-cell">
-                                                <t t-esc="'{:.2f}'.format(o.broker_rate or 0)"/>
-                                            </td>
-                                            <td class="amount-cell highlight-amount">
-                                                <t t-esc="'{:,.2f}'.format(o.broker_amount or 0)"/>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge status-paid">Paid</span>
-                                            </td>
-                                        </tr>
-                                        <!-- Consultant -->
-                                        <tr t-if="o.consultant_id">
-                                            <td>
-                                                <span t-field="o.consultant_id.name"/>
-                                            </td>
-                                            <td>Consultant</td>
-                                            <td class="amount-cell">
-                                                <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                                            </td>
-                                            <td class="rate-cell">
-                                                <t t-esc="'{:.2f}'.format(o.consultant_comm_percentage or 0)"/>
-                                            </td>
-                                            <td class="amount-cell highlight-amount">
-                                                <t t-esc="'{:,.2f}'.format(o.salesperson_commission or 0)"/>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge status-approved">Approved</span>
-                                            </td>
-                                        </tr>
-                                        <!-- Referrer -->
-                                        <tr t-if="o.referrer_partner_id">
-                                            <td>
-                                                <span t-field="o.referrer_partner_id.name"/>
-                                            </td>
-                                            <td>Referrer</td>
-                                            <td class="amount-cell">
-                                                <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                                            </td>
-                                            <td class="rate-cell">
-                                                <t t-esc="'{:.2f}'.format(o.referrer_rate or 0)"/>
-                                            </td>
-                                            <td class="amount-cell highlight-amount">
-                                                <t t-esc="'{:,.2f}'.format(o.referrer_amount or 0)"/>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge status-draft">Draft</span>
-                                            </td>
-                                        </tr>
-                                        <!-- Cashback -->
-                                        <tr t-if="o.cashback_partner_id">
-                                            <td>
-                                                <span t-field="o.cashback_partner_id.name"/>
-                                            </td>
-                                            <td>Cashback</td>
-                                            <td class="amount-cell">
-                                                <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                                            </td>
-                                            <td class="rate-cell">
-                                                <t t-esc="'{:.2f}'.format(o.cashback_rate or 0)"/>
-                                            </td>
-                                            <td class="amount-cell highlight-amount">
-                                                <t t-esc="'{:,.2f}'.format(o.cashback_amount or 0)"/>
-                                            </td>
-                                            <td>
-                                                <span class="status-badge status-paid">Paid</span>
-                                            </td>
-                                        </tr>
-                                        <!-- External Commissions -->
-                                        <tr class="subtotal-row">
-                                            <td colspan="4" class="text-right">
-                                                <strong>Total External Commissions</strong>
-                                            </td>
-                                            <td class="amount-cell">
-                                                <strong>
-                                                    <t t-esc="'{:,.2f}'.format(o.total_external_commission_amount or 0)"/>
-                                                </strong>
-                                            </td>
-                                            <td></td>
-                                        </tr>
-                                        <!-- Internal Commissions -->
-                                        <tr class="subtotal-row">
-                                            <td colspan="4" class="text-right">
-                                                <strong>Total Internal Commissions</strong>
-                                            </td>
-                                            <td class="amount-cell">
-                                                <strong>
-                                                    <t t-esc="'{:,.2f}'.format(o.total_internal_commission_amount or 0)"/>
-                                                </strong>
-                                            </td>
-                                            <td></td>
-                                        </tr>
-                                        <!-- Grand Total -->
-                                        <tr class="grand-total-row">
-                                            <td colspan="4" class="text-right">
-                                                <strong>Total Commission</strong>
-                                            </td>
-                                            <td class="amount-cell">
-                                                <strong>
-                                                    <t t-esc="'{:,.2f}'.format(o.total_commission_amount or 0)"/>
-                                                </strong>
-                                            </td>
-                                            <td></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <!-- Commission Summary Boxes -->
-                                <div class="commission-summary">
-                                    <div class="summary-box">
-                                        <div class="summary-title">COMMISSION BREAKDOWN</div>
-                                        <div class="summary-item">
-                                            <span>Total Sales Value:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                                            </span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span>Total Commission:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format(o.total_commission_amount or 0)"/>
-                                            </span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span>External Commissions:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format(o.total_external_commission_amount or 0)"/>
-                                            </span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span>Internal Commissions:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format(o.total_internal_commission_amount or 0)"/>
-                                            </span>
-                                        </div>
-                                        <div class="summary-total">
-                                            <span>Company Share:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format(o.company_share or 0)"/>
-                                            </span>
-                                        </div>
-                                        <div class="summary-total">
-                                            <span>Net Company Share:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format(o.net_company_share or 0)"/>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="summary-box">
-                                        <div class="summary-title">PAYMENT SUMMARY</div>
-                                        <div class="summary-item">
-                                            <span>Total Invoiced:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format(o.amount_invoiced or 0)"/>
-                                            </span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span>Amount Paid:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format(o.amount_paid or 0)"/>
-                                            </span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span>Amount Due:</span>
-                                            <span>AED <t t-esc="'{:,.2f}'.format((o.amount_total or 0) - (o.amount_paid or 0))"/>
-                                            </span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span>Commission Processed:</span>
-                                            <span>
-                                                <t t-if="o.commission_processed">Yes</t>
-                                                <t t-else="">No</t>
-                                            </span>
-                                        </div>
-                                        <div class="summary-total">
-                                            <span>Commission Status:</span>
-                                            <span>
-                                                <t t-if="o.commission_status == 'draft'">Draft</t>
-                                                <t t-elif="o.commission_status == 'pending'">Pending Approval</t>
-                                                <t t-elif="o.commission_status == 'approved'">Approved</t>
-                                                <t t-elif="o.commission_status == 'paid'">Paid</t>
-                                                <t t-else="">N/A</t>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Notes Section -->
-                                <!-- Add notes section if needed -->
                             </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-6">
+                                    <h4>External Commissions</h4>
+                                    <table class="table table-sm">
+                                        <tr t-if="o.broker_amount">
+                                            <td>Broker</td>
+                                            <td class="text-right">
+                                                <span t-field="o.broker_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.referrer_amount">
+                                            <td>Referrer</td>
+                                            <td class="text-right">
+                                                <span t-field="o.referrer_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.cashback_amount">
+                                            <td>Cashback</td>
+                                            <td class="text-right">
+                                                <span t-field="o.cashback_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.other_external_amount">
+                                            <td>Other External</td>
+                                            <td class="text-right">
+                                                <span t-field="o.other_external_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td><strong>External Total</strong></td>
+                                            <td class="text-right">
+                                                <strong t-esc="external_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <div class="col-6">
+                                    <h4>Internal Commissions</h4>
+                                    <table class="table table-sm">
+                                        <tr t-if="o.agent1_amount">
+                                            <td>Agent 1</td>
+                                            <td class="text-right">
+                                                <span t-field="o.agent1_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.agent2_amount">
+                                            <td>Agent 2</td>
+                                            <td class="text-right">
+                                                <span t-field="o.agent2_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.manager_amount">
+                                            <td>Manager</td>
+                                            <td class="text-right">
+                                                <span t-field="o.manager_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="o.director_amount">
+                                            <td>Director</td>
+                                            <td class="text-right">
+                                                <span t-field="o.director_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td><strong>Internal Total</strong></td>
+                                            <td class="text-right">
+                                                <strong t-esc="internal_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h4>Summary</h4>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td>Total Commissions</td>
+                                            <td class="text-right">
+                                                <span t-esc="total_commission" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Net Before VAT</td>
+                                            <td class="text-right">
+                                                <span t-esc="net_before_vat" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>VAT (5%)</td>
+                                            <td class="text-right">
+                                                <span t-esc="vat_amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td><strong>Net Commission</strong></td>
+                                            <td class="text-right">
+                                                <strong t-esc="net_commission" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="oe_structure"/>
                         </div>
                     </t>
                 </t>
             </t>
-        </t>
-    </field>
-</record>
-<template id="enhanced_status_commission_report_team" name="Team Commission Report">
-    <t t-call="web.html_container">
-        <t t-foreach="docs" t-as="o">
-            <!-- Calculated Values -->
-            <t t-set="external_total" t-value="(o.broker_amount or 0) + (o.referrer_amount or 0) + (o.cashback_amount or 0) + (o.other_external_amount or 0)"/>
-            <t t-set="internal_total" t-value="(o.agent1_amount or 0) + (o.agent2_amount or 0) + (o.manager_amount or 0) + (o.director_amount or 0)"/>
-            <t t-set="total_commission" t-value="external_total + internal_total"/>
-            <t t-set="net_before_vat" t-value="(o.amount_total or 0) - total_commission"/>
-            <t t-set="vat_rate" t-value="0.05"/>
-            <t t-set="vat_amount" t-value="net_before_vat * vat_rate"/>
-            <t t-set="net_commission" t-value="net_before_vat - vat_amount"/>
+        </template>
 
-            <t t-call="web.external_layout">
-                <div class="page">
-                    <style>
-                                @page { 
-                                    margin: 6mm; 
-                                    size: A4; 
-                                }
-                                
-                                body { 
-                                    font-family: 'Segoe UI', Arial, sans-serif; 
-                                    font-size: 9px; 
-                                    line-height: 1.1; 
-                                    color: #000; 
-                                }
-                                
-                                .header { 
-                                    background: linear-gradient(135deg, #6b0632, #8b0d42); 
-                                    color: #fff; 
-                                    padding: 8px 10px; 
-                                    margin: -6mm -6mm 6px -6mm; 
-                                    border-radius: 4px; 
-                                    display: flex; 
-                                    justify-content: space-between; 
-                                    align-items: center; 
-                                }
-                                
-                                .header h1 { 
-                                    margin: 0; 
-                                    font-size: 16px; 
-                                    font-weight: bold; 
-                                    color: #fff; 
-                                }
-                                
-                                .header .sub { 
-                                    font-size: 8px; 
-                                    opacity: .9; 
-                                }
-                                
-                                .header .company { 
-                                    font-size: 7px; 
-                                    text-align: right; 
-                                }
-                                
-                                .section { 
-                                    background: #6b0632; 
-                                    color: #fff; 
-                                    font-size: 10px; 
-                                    font-weight: bold; 
-                                    padding: 3px 6px; 
-                                    margin: 4px 0 2px 0; 
-                                    border-radius: 2px; 
-                                    text-transform: uppercase; 
-                                }
-                                
-                                .team-leader {
-                                    background: #8b0d42;
-                                    color: #fff;
-                                    font-size: 9px;
-                                    font-weight: bold;
-                                    padding: 2px 6px;
-                                    margin: 2px 0 1px 0;
-                                    border-radius: 2px;
-                                }
-                                
-                                table { 
-                                    width: 100%; 
-                                    border-collapse: collapse; 
-                                    font-size: 8px; 
-                                    margin-bottom: 3px;
-                                }
-                                
-                                th { 
-                                    background: #f5f1f3; 
-                                    color: #6b0632; 
-                                    padding: 2px 4px; 
-                                    text-align: left;
-                                    font-weight: bold;
-                                    font-size: 8px;
-                                }
-                                
-                                td { 
-                                    padding: 2px 4px; 
-                                    border-bottom: 1px solid #e6e6e6; 
-                                    font-size: 8px;
-                                }
-                                
-                                .right { 
-                                    text-align: right; 
-                                }
-                                
-                                .center {
-                                    text-align: center;
-                                }
-                                
-                                .highlight { 
-                                    font-weight: 700; 
-                                    color: #6b0632; 
-                                }
-                                
-                                .row { 
-                                    display: flex; 
-                                    justify-content: space-between; 
-                                    padding: 1px 0; 
-                                    border-bottom: 1px dotted #ccc; 
-                                    font-size: 8px;
-                                }
-                                
-                                .row:last-child { 
-                                    border-bottom: none; 
-                                    font-weight: bold; 
-                                }
-                                
-                                .footer { 
-                                    margin-top: 4px; 
-                                    font-size: 6px; 
-                                    color: #555; 
-                                    text-align: center; 
-                                    border-top: 1px solid #ccc;
-                                    padding-top: 2px;
-                                }
-                                
-                                .team-member {
-                                    font-weight: bold;
-                                    color: #6b0632;
-                                }
-                    </style>
-
-                    <!-- HEADER -->
-                    <div class="header">
-                        <div>
-                            <h1>Commission Report</h1>
-                            <div class="sub">
-                                        Order: <span t-field="o.name"/>
- | Date: <span t-field="o.booking_date" t-options="{'widget': 'date'}"/>
-                        </div>
-                    </div>
-                    <div class="company">
-                                    OSUS Real Estate<br/>
-                                    Business Bay, Dubai<br/>
-                                    +971-4-366-4500
-                </div>
-            </div>
-
-            <!-- DEAL INFO -->
-            <div class="section">Deal Information</div>
-            <div class="row">
-                <div>Customer:</div>
-                <div>
-                    <span t-field="o.partner_id.name"/>
-                </div>
-            </div>
-            <div class="row">
-                <div>Project:</div>
-                <div>
-                    <span t-field="o.project_id.name"/>
-                </div>
-            </div>
-            <div class="row">
-                <div>Unit:</div>
-                <div>
-                    <span t-field="o.unit_id.name"/>
-                </div>
-            </div>
-            <div class="row">
-                <div>Order Total (AED):</div>
-                <div class="highlight">
-                    <span t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                </div>
-            </div>
-
-            <!-- PRIMARY MARKET SECTION -->
-            <t t-if="(o.manager_amount and o.manager_amount > 0) or (o.director_amount and o.director_amount > 0)">
-                <div class="section">🏢 PRIMARY MARKET – OSUS EXCLUSIVE</div>
-                <div class="team-leader">Team Leader: Setareh</div>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Role</th>
-                            <th>Partner</th>
-                            <th>Rate (%)</th>
-                            <th>Amount (AED)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <t t-if="o.manager_amount and o.manager_amount > 0">
-                            <tr>
-                                <td>Manager</td>
-                                <td class="team-member">
-                                    <span t-field="o.manager_partner_id.name" t-options="{'default': 'Setareh'}"/>
-                                </td>
-                                <td class="center">
-                                    <span t-esc="'{:.1f}'.format(o.manager_rate or 0)"/>
-                                </td>
-                                <td class="right highlight">
-                                    <span t-esc="'{:,.2f}'.format(o.manager_amount)"/>
-                                </td>
-                            </tr>
-                        </t>
-                        <t t-if="o.director_amount and o.director_amount > 0">
-                            <tr>
-                                <td>Director</td>
-                                <td class="team-member">
-                                    <span t-field="o.director_partner_id.name" t-options="{'default': 'Faraz Arif'}"/>
-                                </td>
-                                <td class="center">
-                                    <span t-esc="'{:.1f}'.format(o.director_rate or 0)"/>
-                                </td>
-                                <td class="right highlight">
-                                    <span t-esc="'{:,.2f}'.format(o.director_amount)"/>
-                                </td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </table>
-            </t>
-
-            <!-- SECONDARY MARKET SECTION -->
-            <t t-if="(o.agent1_amount and o.agent1_amount > 0) or (o.agent2_amount and o.agent2_amount > 0)">
-                <div class="section">🏢 SECONDARY MARKET</div>
-                <div class="team-leader">Team Leader: Aboelazayem Khalil</div>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Role</th>
-                            <th>Partner</th>
-                            <th>Rate (%)</th>
-                            <th>Amount (AED)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <t t-if="o.agent1_amount and o.agent1_amount > 0">
-                            <tr>
-                                <td>Agent 1</td>
-                                <td class="team-member">
-                                    <span t-field="o.agent1_partner_id.name" t-options="{'default': 'Yagmour'}"/>
-                                </td>
-                                <td class="center">
-                                    <span t-esc="'{:.1f}'.format(o.agent1_rate or 0)"/>
-                                </td>
-                                <td class="right highlight">
-                                    <span t-esc="'{:,.2f}'.format(o.agent1_amount)"/>
-                                </td>
-                            </tr>
-                        </t>
-                        <t t-if="o.agent2_amount and o.agent2_amount > 0">
-                            <tr>
-                                <td>Agent 2</td>
-                                <td class="team-member">
-                                    <span t-field="o.agent2_partner_id.name" t-options="{'default': 'Maikel'}"/>
-                                </td>
-                                <td class="center">
-                                    <span t-esc="'{:.1f}'.format(o.agent2_rate or 0)"/>
-                                </td>
-                                <td class="right highlight">
-                                    <span t-esc="'{:,.2f}'.format(o.agent2_amount)"/>
-                                </td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </table>
-            </t>
-
-            <!-- EXTERNAL PARTIES SECTION -->
-            <t t-if="external_total > 0">
-                <div class="section">💰 External Parties (Broker, Referrer, Cashback, Other)</div>
-
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Party</th>
-                            <th>Partner</th>
-                            <th>Rate (%)</th>
-                            <th>Amount (AED)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <t t-if="o.broker_amount and o.broker_amount > 0">
-                            <tr>
-                                <td>Broker</td>
-                                <td>
-                                    <span t-field="o.broker_partner_id.name" t-options="{'default': '—'}"/>
-                                </td>
-                                <td class="center">
-                                    <span t-esc="'{:.1f}'.format(o.broker_rate or 0)"/>
-                                </td>
-                                <td class="right">
-                                    <span t-esc="'{:,.2f}'.format(o.broker_amount)"/>
-                                </td>
-                            </tr>
-                        </t>
-                        <t t-if="o.referrer_amount and o.referrer_amount > 0">
-                            <tr>
-                                <td>Referrer</td>
-                                <td>
-                                    <span t-field="o.referrer_partner_id.name" t-options="{'default': '—'}"/>
-                                </td>
-                                <td class="center">
-                                    <span t-esc="'{:.1f}'.format(o.referrer_rate or 0)"/>
-                                </td>
-                                <td class="right">
-                                    <span t-esc="'{:,.2f}'.format(o.referrer_amount)"/>
-                                </td>
-                            </tr>
-                        </t>
-                        <t t-if="o.cashback_amount and o.cashback_amount > 0">
-                            <tr>
-                                <td>Cashback</td>
-                                <td>
-                                    <span t-field="o.cashback_partner_id.name" t-options="{'default': '—'}"/>
-                                </td>
-                                <td class="center">
-                                    <span t-esc="'{:.1f}'.format(o.cashback_rate or 0)"/>
-                                </td>
-                                <td class="right">
-                                    <span t-esc="'{:,.2f}'.format(o.cashback_amount)"/>
-                                </td>
-                            </tr>
-                        </t>
-                        <t t-if="o.other_external_amount and o.other_external_amount > 0">
-                            <tr>
-                                <td>Other External</td>
-                                <td>
-                                    <span t-field="o.other_external_partner_id.name" t-options="{'default': '—'}"/>
-                                </td>
-                                <td class="center">
-                                    <span t-esc="'{:.1f}'.format(o.other_external_rate or 0)"/>
-                                </td>
-                                <td class="right">
-                                    <span t-esc="'{:,.2f}'.format(o.other_external_amount)"/>
-                                </td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </table>
-            </t>
-
-            <!-- FINANCIAL SUMMARY -->
-            <div class="section">📈 Financial Summary</div>
-            <table>
-                <tbody>
-                    <tr>
-                        <td class="right">Order Total (AED):</td>
-                        <td class="right">
-                            <span t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="right">Total Commission (AED):</td>
-                        <td class="right">
-                            <span t-esc="'{:,.2f}'.format(total_commission)"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="right">External Total (AED):</td>
-                        <td class="right">
-                            <span t-esc="'{:,.2f}'.format(external_total)"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="right">Internal Total (AED):</td>
-                        <td class="right">
-                            <span t-esc="'{:,.2f}'.format(internal_total)"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="right">VAT 5% (AED):</td>
-                        <td class="right">
-                            <span t-esc="'{:,.2f}'.format(vat_amount)"/>
-                        </td>
-                    </tr>
-                    <tr style="background: #f5f1f3; font-weight: bold;">
-                        <td class="right">
-                            <strong>Net Company Share (AED):</strong>
-                        </td>
-                        <td class="right highlight">
-                            <strong>
-                                <span t-esc="'{:,.2f}'.format(net_commission)"/>
-                            </strong>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <!-- FOOTER -->
-            <div class="footer">
-                                Generated by: <span t-field="o.create_uid.name"/>
- on <span t-field="o.create_date" t-options="{'widget': 'datetime'}"/>
- | Confidential – OSUS Real Estate Brokerage LLC
-        </div>
-    </div>
-</t>
-</t>
-</t>
-</template>
-      <!-- Team-Structured Commission Report Template -->
-        
-<!-- The <template> block is not needed for Odoo 17 QWeb PDF reports, as the ir.ui.view arch field should contain the template. -->
-
-<!-- Report Action -->
-<record id="action_report_commission" model="ir.actions.report">
-    <field name="name">Commission Report</field>
-    <field name="model">sale.order</field>
-    <field name="report_type">qweb-pdf</field>
-    <field name="report_name">commission_report_template</field>
-    <field name="report_file">commission_report_template</field>
-    <field name="print_report_name">'Commission Report - %s' % object.name</field>
-    <field name="binding_model_id" ref="sale.model_sale_order"/>
-    <field name="binding_type">report</field>
-    <field name="paperformat_id" ref="base.paperformat_euro"/>
-</record>
-</data>
+        <!-- Report Action -->
+        <record id="action_report_commission_payout_professional" model="ir.actions.report">
+            <field name="name">Professional Commission Report</field>
+            <field name="model">sale.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">commission_ax.commission_payout_report_template_professional</field>
+            <field name="report_file">commission_payout_report_template_professional</field>
+            <field name="print_report_name">'Commission Report - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="binding_type">report</field>
+        </record>
+    </data>
 </odoo>
