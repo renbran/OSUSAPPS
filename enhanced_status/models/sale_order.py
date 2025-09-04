@@ -128,13 +128,14 @@ class SaleOrder(models.Model):
         for order in self:
             order.can_unlock = can_unlock
 
-    @api.depends('order_line', 'order_line.move_ids')
+    @api.depends('order_line')
     def _compute_picking_ids(self):
         """Compute delivery orders related to this sale order"""
         for order in self:
-            # Get all stock moves from order lines, then get their pickings
-            moves = order.order_line.mapped('move_ids')
-            pickings = moves.mapped('picking_id')
+            # Get pickings from procurement group or delivery orders
+            pickings = self.env['stock.picking'].search([
+                ('origin', '=', order.name)
+            ])
             order.picking_ids = pickings
 
     @api.depends('invoice_ids', 'invoice_ids.amount_total', 'invoice_ids.state', 'invoice_ids.amount_residual')
