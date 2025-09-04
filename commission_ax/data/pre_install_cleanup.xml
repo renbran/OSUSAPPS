@@ -7,6 +7,8 @@
         <delete model="ir.ui.view" search="[('xmlid', '=', 'commission_ax.view_order_form_inherit_commission_enhanced_v2')]"/>
 
         <!-- Clear view cache to ensure fresh loading -->
-        <function model="ir.ui.view" name="clear_caches"/>
+        <function model="ir.ui.view" name="clear_caches">
+            <value eval="()"/>
+        </function>
     </data>
 </odoo>

@@ -60,6 +60,7 @@ Technical Features:
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/cron_data.xml',
+        'data/sample_commission_data.xml',
         'views/sale_order.xml',
         'views/purchase_order.xml',
         'views/commission_wizard_views.xml',
