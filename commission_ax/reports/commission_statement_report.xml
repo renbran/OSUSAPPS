@@ -429,7 +429,7 @@
 <!-- Report Action -->
 <record id="action_report_commission_statement" model="ir.actions.report">
     <field name="name">Commission Statement</field>
-    <field name="model">commission.statement.wizard</field>
+    <field name="model">commission.partner.statement.wizard</field>
     <field name="report_type">qweb-pdf</field>
     <field name="report_name">commission_ax.commission_statement_report_template</field>
     <field name="report_file">commission_statement_report_template</field>

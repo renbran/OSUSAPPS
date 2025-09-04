@@ -109,7 +109,7 @@
             <field name="res_model">commission.partner.statement.wizard</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
-            <field name="view_id" ref="view_commission_statement_wizard_form"/>
+            <field name="view_id" ref="view_commission_partner_statement_wizard_form"/>
             <field name="groups_id" eval="[(4, ref('group_commission_user'))]"/>
         </record>
 
