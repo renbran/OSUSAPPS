@@ -195,7 +195,8 @@
                             <div class="report-header">
                                 <h1 class="report-title">Sales Order Commission Report</h1>
                                 <p class="report-subtitle">Detailed Commission Breakdown</p>
-                                <p style="font-size: 14px; color: #888; margin: 5px 0;">Generated on <span t-esc="datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p')"/></p>
+                                <p style="font-size: 14px; color: #888; margin: 5px 0;">Generated on <span t-esc="datetime.datetime.now().strftime('%B %d, %Y at %I:%M %p')"/>
+                                </p>
                             </div>
 
                             <!-- Order Information -->
@@ -205,29 +206,41 @@
                                     <div>
                                         <div class="info-item">
                                             <span class="info-label">Order Reference:</span>
-                                            <span class="info-value"><t t-esc="o.sale_order_id.name"/></span>
+                                            <span class="info-value">
+                                                <t t-esc="o.sale_order_id.name"/>
+                                            </span>
                                         </div>
                                         <div class="info-item">
                                             <span class="info-label">Customer:</span>
-                                            <span class="info-value"><t t-esc="o.sale_order_id.partner_id.name"/></span>
+                                            <span class="info-value">
+                                                <t t-esc="o.sale_order_id.partner_id.name"/>
+                                            </span>
                                         </div>
                                         <div class="info-item">
                                             <span class="info-label">Order Date:</span>
-                                            <span class="info-value"><t t-esc="o.sale_order_id.date_order.strftime('%B %d, %Y')"/></span>
+                                            <span class="info-value">
+                                                <t t-esc="o.sale_order_id.date_order.strftime('%B %d, %Y')"/>
+                                            </span>
                                         </div>
                                     </div>
                                     <div>
                                         <div class="info-item">
                                             <span class="info-label">Order Total:</span>
-                                            <span class="info-value"><t t-esc="'{:,.2f} {}'.format(o.sale_order_id.amount_total, o.sale_order_id.currency_id.name)"/></span>
+                                            <span class="info-value">
+                                                <t t-esc="'{:,.2f} {}'.format(o.sale_order_id.amount_total, o.sale_order_id.currency_id.name)"/>
+                                            </span>
                                         </div>
                                         <div class="info-item">
                                             <span class="info-label">Sales Person:</span>
-                                            <span class="info-value"><t t-esc="o.sale_order_id.user_id.name or 'N/A'"/></span>
+                                            <span class="info-value">
+                                                <t t-esc="o.sale_order_id.user_id.name or 'N/A'"/>
+                                            </span>
                                         </div>
                                         <div class="info-item">
                                             <span class="info-label">Order Status:</span>
-                                            <span class="info-value"><t t-esc="dict(o.sale_order_id._fields['state']._description_selection(o.env))[o.sale_order_id.state]"/></span>
+                                            <span class="info-value">
+                                                <t t-esc="dict(o.sale_order_id._fields['state']._description_selection(o.env))[o.sale_order_id.state]"/>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -250,28 +263,41 @@
                                         <t t-foreach="data['commission_lines']" t-as="line">
                                             <tr>
                                                 <td>
-                                                    <strong><span t-esc="line['partner_name']"/></strong>
-                                                    <br/><small style="color: #666;"><span t-esc="line.get('partner_category', 'Partner')"/></small>
+                                                    <strong>
+                                                        <span t-esc="line['partner_name']"/>
+                                                    </strong>
+                                                    <br/>
+                                                    <small style="color: #666;">
+                                                        <span t-esc="line.get('partner_category', 'Partner')"/>
+                                                    </small>
                                                 </td>
-                                                <td><span t-esc="line['commission_type_display']"/></td>
+                                                <td>
+                                                    <span t-esc="line['commission_type_display']"/>
+                                                </td>
                                                 <td class="text-center">
                                                     <t t-if="line['commission_type'] == 'fixed'">
                                                         <span style="color: #666; font-style: italic;">Fixed Amount</span>
                                                     </t>
                                                     <t t-else="">
-                                                        <strong style="color: #800020;"><span t-esc="'{:.2f}%'.format(line['rate'])"/></strong>
+                                                        <strong style="color: #800020;">
+                                                            <span t-esc="'{:.2f}%'.format(line['rate'])"/>
+                                                        </strong>
                                                     </t>
                                                 </td>
                                                 <td class="text-right">
                                                     <span t-esc="'{:,.2f} AED'.format(line.get('base_amount', o.sale_order_id.amount_total))"/>
                                                 </td>
                                                 <td class="text-right">
-                                                    <strong style="color: #800020;"><span t-esc="'{:,.2f} AED'.format(line['amount'])"/></strong>
+                                                    <strong style="color: #800020;">
+                                                        <span t-esc="'{:,.2f} AED'.format(line['amount'])"/>
+                                                    </strong>
                                                 </td>
                                             </tr>
                                         </t>
                                         <tr class="total-row">
-                                            <td colspan="4"><strong>Total Commissions for this Order</strong></td>
+                                            <td colspan="4">
+                                                <strong>Total Commissions for this Order</strong>
+                                            </td>
                                             <td class="text-right">
                                                 <strong style="font-size: 14px; color: #800020;">
                                                     <span t-esc="'{:,.2f} AED'.format(sum(line['amount'] for line in data['commission_lines']))"/>
@@ -287,19 +313,27 @@
                                     <div class="summary-grid">
                                         <div class="summary-item">
                                             <span class="summary-label">Order Subtotal:</span>
-                                            <span class="summary-value"><span t-esc="'{:,.2f} AED'.format(o.sale_order_id.amount_untaxed)"/></span>
+                                            <span class="summary-value">
+                                                <span t-esc="'{:,.2f} AED'.format(o.sale_order_id.amount_untaxed)"/>
+                                            </span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="summary-label">Order Tax:</span>
-                                            <span class="summary-value"><span t-esc="'{:,.2f} AED'.format(o.sale_order_id.amount_tax)"/></span>
+                                            <span class="summary-value">
+                                                <span t-esc="'{:,.2f} AED'.format(o.sale_order_id.amount_tax)"/>
+                                            </span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="summary-label">Order Total:</span>
-                                            <span class="summary-value"><span t-esc="'{:,.2f} AED'.format(o.sale_order_id.amount_total)"/></span>
+                                            <span class="summary-value">
+                                                <span t-esc="'{:,.2f} AED'.format(o.sale_order_id.amount_total)"/>
+                                            </span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="summary-label">Total Commission:</span>
-                                            <span class="summary-value"><span t-esc="'{:,.2f} AED'.format(sum(line['amount'] for line in data['commission_lines']))"/></span>
+                                            <span class="summary-value">
+                                                <span t-esc="'{:,.2f} AED'.format(sum(line['amount'] for line in data['commission_lines']))"/>
+                                            </span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="summary-label">Commission %:</span>
@@ -309,9 +343,11 @@
                                         </div>
                                         <div class="summary-item">
                                             <span class="summary-label">Net Company Revenue:</span>
-                                            <span class="summary-value"><span t-esc="'{:,.2f} AED'.format(o.sale_order_id.amount_total - sum(line['amount'] for line in data['commission_lines']))"/></span>
+                                            <span class="summary-value">
+                                                <span t-esc="'{:,.2f} AED'.format(o.sale_order_id.amount_total - sum(line['amount'] for line in data['commission_lines']))"/>
+                                            </span>
                                         </div>
-                                        
+
                                         <div class="grand-total">
                                             NET COMMISSION PAYOUT: <span t-esc="'{:,.2f} AED'.format(sum(line['amount'] for line in data['commission_lines']))"/>
                                         </div>
@@ -324,8 +360,14 @@
                                 <div class="no-data">
                                     <h4 style="color: #856404; margin-bottom: 10px;">⚠️ No Commission Data Found</h4>
                                     <p>No commission arrangements found for this sales order.</p>
-                                    <p><strong>Order:</strong> <span t-esc="o.sale_order_id.name"/></p>
-                                    <p><strong>Customer:</strong> <span t-esc="o.sale_order_id.partner_id.name"/></p>
+                                    <p>
+                                        <strong>Order:</strong>
+                                        <span t-esc="o.sale_order_id.name"/>
+                                    </p>
+                                    <p>
+                                        <strong>Customer:</strong>
+                                        <span t-esc="o.sale_order_id.partner_id.name"/>
+                                    </p>
                                 </div>
                             </t>
                         </div>

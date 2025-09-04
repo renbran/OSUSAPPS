@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- View cleanup - this file ensures proper view loading -->
+        <!-- No special cleanup needed - standard view loading will handle conflicts -->
+    </data>
+</odoo>

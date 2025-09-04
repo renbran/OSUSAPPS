@@ -9,18 +9,13 @@
             <field name="arch" type="xml">
                 <!-- Add Commission Statement smart button to button box -->
                 <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
-                    <button name="action_view_commission_statement" 
-                            type="object" 
-                            class="oe_stat_button" 
-                            icon="fa-file-text-o" 
-                            groups="base.group_user"
-                            invisible="commission_statement_count == 0">
+                    <button name="action_view_commission_statement" type="object" class="oe_stat_button" icon="fa-file-text-o" groups="base.group_user" invisible="commission_statement_count == 0">
                         <div class="o_stat_info">
                             <field name="commission_statement_count" widget="statinfo" string="Statements"/>
                         </div>
                     </button>
                 </xpath>
-                
+
                 <!-- Add invisible commission statement count field -->
                 <xpath expr="//form/sheet" position="inside">
                     <field name="commission_statement_count" invisible="1"/>
@@ -53,25 +48,13 @@
                             </group>
                             <group string="Commission Actions">
                                 <div>
-                                    <button name="action_process_commissions" 
-                                            string="Process Commissions" 
-                                            type="object" 
-                                            class="btn-primary" 
-                                            invisible="commission_processed == True"/>
+                                    <button name="action_process_commissions" string="Process Commissions" type="object" class="btn-primary" invisible="commission_processed == True"/>
                                 </div>
                                 <div>
-                                    <button name="action_confirm_commissions" 
-                                            string="Confirm Commissions" 
-                                            type="object" 
-                                            class="btn-success" 
-                                            invisible="commission_status != 'calculated' or commission_processed == False"/>
+                                    <button name="action_confirm_commissions" string="Confirm Commissions" type="object" class="btn-success" invisible="commission_status != 'calculated' or commission_processed == False"/>
                                 </div>
                                 <div>
-                                    <button name="action_reset_commissions" 
-                                            string="Reset to Draft" 
-                                            type="object" 
-                                            class="btn-warning" 
-                                            invisible="commission_status == 'draft'"/>
+                                    <button name="action_reset_commissions" string="Reset to Draft" type="object" class="btn-warning" invisible="commission_status == 'draft'"/>
                                 </div>
                             </group>
                         </group>
@@ -197,11 +180,7 @@
                                         <field name="date_order"/>
                                         <field name="state"/>
                                         <field name="commission_posted"/>
-                                        <button name="action_force_post" 
-                                                string="Force Post" 
-                                                type="object" 
-                                                icon="fa-check" 
-                                                invisible="commission_posted == True"/>
+                                        <button name="action_force_post" string="Force Post" type="object" icon="fa-check" invisible="commission_posted == True"/>
                                     </tree>
                                 </field>
                             </page>

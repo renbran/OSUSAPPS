@@ -12,7 +12,7 @@
                             <h1>Commission Statement Report Generator</h1>
                             <p class="text-muted">Generate detailed commission statements in PDF or Excel format</p>
                         </div>
-                        
+
                         <group>
                             <group string="Date Range">
                                 <field name="date_from" required="1"/>
@@ -24,7 +24,7 @@
                                 <field name="commission_type_filter"/>
                             </group>
                         </group>
-                        
+
                         <group string="Report Options">
                             <group>
                                 <field name="include_zero_commissions"/>
@@ -35,20 +35,11 @@
                             </group>
                         </group>
                     </sheet>
-                    
+
                     <footer>
-                        <button name="action_preview_data" 
-                                string="Preview Data" 
-                                type="object" 
-                                class="btn-secondary"/>
-                        <button name="action_generate_pdf_report" 
-                                string="Generate PDF" 
-                                type="object" 
-                                class="btn-primary"/>
-                        <button name="action_generate_excel_report" 
-                                string="Generate Excel" 
-                                type="object" 
-                                class="btn-success"/>
+                        <button name="action_preview_data" string="Preview Data" type="object" class="btn-secondary"/>
+                        <button name="action_generate_pdf_report" string="Generate PDF" type="object" class="btn-primary"/>
+                        <button name="action_generate_excel_report" string="Generate Excel" type="object" class="btn-success"/>
                         <button string="Cancel" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
@@ -65,14 +56,14 @@
                         <div class="oe_title">
                             <h1>Commission Statement Preview</h1>
                         </div>
-                        
+
                         <group>
                             <group>
                                 <field name="total_lines" readonly="1"/>
                                 <field name="total_amount" readonly="1" widget="monetary"/>
                             </group>
                         </group>
-                        
+
                         <notebook>
                             <page string="Commission Lines">
                                 <field name="line_ids" nolabel="1">
@@ -88,7 +79,7 @@
                             </page>
                         </notebook>
                     </sheet>
-                    
+
                     <footer>
                         <button string="Close" class="btn-primary" special="cancel"/>
                     </footer>
@@ -98,10 +89,7 @@
 
         <!-- Menu Items -->
         <!-- Main Commission Reports Menu -->
-        <menuitem id="menu_commission_reports" 
-                  name="Commission Reports" 
-                  parent="sale.sale_menu_root" 
-                  sequence="50"/>
+        <menuitem id="menu_commission_reports" name="Commission Reports" parent="sale.sale_menu_root" sequence="50"/>
 
         <!-- Action for Commission Partner Statement Wizard -->
         <record id="action_commission_partner_statement_wizard" model="ir.actions.act_window">
@@ -124,18 +112,10 @@
         </record>
 
         <!-- Compact Commission Statement Report Menu -->
-        <menuitem id="menu_commission_statement_report" 
-                  name="Compact Commission Statement" 
-                  parent="menu_commission_reports" 
-                  action="action_commission_partner_statement_wizard" 
-                  sequence="10"/>
+        <menuitem id="menu_commission_statement_report" name="Compact Commission Statement" parent="menu_commission_reports" action="action_commission_partner_statement_wizard" sequence="10"/>
 
         <!-- Per Order Commission Report Menu -->
-        <menuitem id="menu_per_order_commission_report" 
-                  name="Per Sales Order Commission" 
-                  parent="menu_commission_reports" 
-                  action="action_commission_per_order_wizard" 
-                  sequence="5"/>
+        <menuitem id="menu_per_order_commission_report" name="Per Sales Order Commission" parent="menu_commission_reports" action="action_commission_per_order_wizard" sequence="5"/>
 
         <!-- Add smart button to Sale Order for quick access -->
         <record id="view_order_form_commission_report_button" model="ir.ui.view">
@@ -144,11 +124,7 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
-                    <button name="action_open_commission_report_wizard" 
-                            type="object" 
-                            class="oe_stat_button" 
-                            icon="fa-file-excel-o"
-                            invisible="total_commission_amount == 0">
+                    <button name="action_open_commission_report_wizard" type="object" class="oe_stat_button" icon="fa-file-excel-o" invisible="total_commission_amount == 0">
                         <div class="o_stat_info">
                             <span class="o_stat_text">Commission</span>
                             <span class="o_stat_text">Report</span>
@@ -180,20 +156,13 @@
             <field name="inherit_id" ref="base.view_res_partner_filter"/>
             <field name="arch" type="xml">
                 <xpath expr="//filter[@name='supplier']" position="after">
-                    <filter name="commission_partners" 
-                            string="Commission Partners" 
-                            domain="[('supplier_rank', '>', 0)]"
-                            help="Partners who receive commissions"/>
+                    <filter name="commission_partners" string="Commission Partners" domain="[('supplier_rank', '>', 0)]" help="Partners who receive commissions"/>
                 </xpath>
             </field>
         </record>
 
         <!-- Add Commission Partners menu -->
-        <menuitem id="menu_commission_partners" 
-                  name="Commission Partners" 
-                  parent="menu_commission_reports" 
-                  action="action_commission_partners" 
-                  sequence="20"/>
+        <menuitem id="menu_commission_partners" name="Commission Partners" parent="menu_commission_reports" action="action_commission_partners" sequence="20"/>
 
     </data>
 </odoo>
