@@ -76,7 +76,6 @@ Professional Output:
     'data': [
         'security/security.xml',  # Basic security groups first
         'security/ir.model.access.csv',
-        'security/scholarix_access.csv',
         'data/ir_cron_data.xml',
         'views/res_partner_views.xml',
         'views/scholarix_commission_views.xml',  # This creates the models
