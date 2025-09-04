@@ -29,8 +29,8 @@
         </record>
 
         <!-- Enhanced Commission Management Tab -->
-        <record id="view_order_form_commission_enhanced" model="ir.ui.view">
-            <field name="name">sale.order.form.commission.enhanced</field>
+        <record id="view_order_form_inherit_commission_enhanced_v2" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.commission.enhanced.v2</field>
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
