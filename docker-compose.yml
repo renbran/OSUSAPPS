@@ -22,6 +22,7 @@ services:
       PASSWORD: odoo
     volumes:
       - ./commission_ax:/mnt/extra-addons/commission_ax
+      - ./commission_partner_statement:/mnt/extra-addons/commission_partner_statement
       - ./odoo.conf:/etc/odoo/odoo.conf
       - odoo_data:/var/lib/odoo
     command: odoo -c /etc/odoo/odoo.conf
