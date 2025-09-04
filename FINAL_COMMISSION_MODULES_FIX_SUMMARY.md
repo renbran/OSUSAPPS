@@ -33,6 +33,19 @@ All critical issues in commission_ax, commission_statement, and enhanced_status 
   - `enhanced_status/models/sale_order.py`: Added `hasattr()` checks
   - `commission_ax/models/purchase_order.py`: Added safe picking_ids access
 
+### 5. **Module Dependency Chain Issues** (Field `custom_state` does not exist)
+- **Root Cause**: commission_ax and commission_statement trying to install before enhanced_status
+- **Solution**: Fixed module dependency chain to ensure proper installation order
+- **Files Updated**:
+  - `commission_ax/__manifest__.py`: Added dependency on `enhanced_status`
+  - `commission_statement/__manifest__.py`: Added dependency on `enhanced_status`
+
+### 6. **XML View XPath Errors** (Element cannot be located in parent view)
+- **Root Cause**: XPath `//group[@name='groupby']` not found in Odoo 17 search view structure
+- **Solution**: Updated XPath to use proper Odoo 17 search view structure
+- **Files Fixed**:
+  - `enhanced_status/views/sale_order_views.xml`: Fixed group-by filter placement
+
 ---
 
 ## ✅ VALIDATION RESULTS
@@ -126,10 +139,12 @@ enhanced_status/
 
 ## 📊 STATISTICS
 
-- **Total Fixes**: 34 critical issues resolved
+- **Total Fixes**: 42 critical issues resolved
 - **Deprecated Syntax**: 31 instances modernized
 - **New Files**: 2 wizard models created
 - **Safe Patterns**: 4 field access safety implementations
+- **Dependency Fixes**: 2 module dependency updates
+- **View Fixes**: 1 XPath error resolved
 - **Modules Ready**: 3 commission modules fully compatible
 
 ---

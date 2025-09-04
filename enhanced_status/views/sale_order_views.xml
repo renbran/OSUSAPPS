@@ -302,13 +302,15 @@
             </xpath>
 
             <!-- Add stage groupby -->
-            <xpath expr="//group[@name='groupby']" position="inside">
-                <filter string="Workflow Stage" name="groupby_stage" 
-                        domain="[]" context="{'group_by': 'stage_id'}"/>
-                <filter string="Billing Status" name="groupby_billing" 
-                        domain="[]" context="{'group_by': 'billing_status'}"/>
-                <filter string="Payment Status" name="groupby_payment" 
-                        domain="[]" context="{'group_by': 'payment_status'}"/>
+            <xpath expr="//search" position="inside">
+                <group expand="0" string="Group By">
+                    <filter string="Workflow Stage" name="groupby_stage" 
+                            domain="[]" context="{'group_by': 'stage_id'}"/>
+                    <filter string="Billing Status" name="groupby_billing" 
+                            domain="[]" context="{'group_by': 'billing_status'}"/>
+                    <filter string="Payment Status" name="groupby_payment" 
+                            domain="[]" context="{'group_by': 'payment_status'}"/>
+                </group>
             </xpath>
 
         </field>
