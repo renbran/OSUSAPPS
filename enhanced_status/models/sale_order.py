@@ -5,20 +5,17 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     
-    # Override the default state field to integrate with custom workflow
-    state = fields.Selection(
-        selection_add=[
-            ('documentation', 'Documentation'),
-            ('calculation', 'Calculation'),
-            ('approved', 'Approved'),
-            ('completed', 'Completed'),
-        ],
-        ondelete={
-            'documentation': 'set default',
-            'calculation': 'set default', 
-            'approved': 'set default',
-            'completed': 'set default'
-        }
+    # Custom state field for workflow tracking
+    custom_state = fields.Selection([
+        ('draft', 'Draft'),
+        ('documentation', 'Documentation'),
+        ('calculation', 'Calculation'),
+        ('approved', 'Approved'),
+        ('completed', 'Completed'),
+    ], string='Custom State', 
+       default='draft', 
+       tracking=True,
+       help="Custom workflow state for enhanced order tracking"
     )
 
     # Enhanced workflow fields
@@ -28,7 +25,6 @@ class SaleOrder(models.Model):
         tracking=True, 
         index=True,
         group_expand='_read_group_stage_ids',
-        default=lambda self: self._get_default_stage(),
         help="Current stage in the custom workflow"
     )
 
@@ -96,19 +92,6 @@ class SaleOrder(models.Model):
         store=True,
         help="True when all criteria for automatic completion are satisfied"
     )
-
-    # Related fields for enhanced tracking
-    related_purchase_orders = fields.Many2many(
-        'purchase.order',
-        compute='_compute_related_purchase_orders',
-        string='Related Purchase Orders',
-        help="Purchase orders created from this sale order"
-    )
-
-    @api.model
-    def _get_default_stage(self):
-        """Get default stage for new sale orders"""
-        return self.env['sale.order.stage'].search([('stage_code', '=', 'draft')], limit=1)
 
     @api.depends('state')
     def _compute_is_locked(self):
@@ -185,19 +168,8 @@ class SaleOrder(models.Model):
             )
             
             delivery_complete = order._check_delivery_completion()
-            po_complete = order._check_purchase_completion()
             
-            order.completion_criteria_met = financial_complete and delivery_complete and po_complete
-
-    def _compute_related_purchase_orders(self):
-        """Find purchase orders related to this sale order"""
-        for order in self:
-            related_pos = self.env['purchase.order'].search([
-                '|',
-                ('origin', 'ilike', order.name),
-                ('partner_ref', 'ilike', order.name)
-            ])
-            order.related_purchase_orders = related_pos
+            order.completion_criteria_met = financial_complete and delivery_complete
 
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
@@ -206,184 +178,61 @@ class SaleOrder(models.Model):
 
     @api.onchange('stage_id')
     def _onchange_stage_id(self):
-        """Synchronize stage with state"""
+        """Synchronize stage with custom_state"""
         if self.stage_id and self.stage_id.stage_code:
-            # Map stage codes to states
-            stage_state_mapping = {
-                'draft': 'draft',
-                'documentation': 'documentation', 
-                'calculation': 'calculation',
-                'approved': 'approved',
-                'completed': 'completed'
-            }
-            
-            new_state = stage_state_mapping.get(self.stage_id.stage_code)
-            if new_state and new_state != self.state:
-                self.state = new_state
+            self.custom_state = self.stage_id.stage_code
 
-    # ============== WORKFLOW OVERRIDE METHODS ==============
-    
-    def action_confirm(self):
-        """Override confirm to integrate with custom workflow"""
-        # Call parent method first
-        result = super().action_confirm()
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to ensure custom_state is properly set"""
+        records = super().create(vals_list)
+        for record in records:
+            if not record.custom_state:
+                if record.stage_id and record.stage_id.stage_code:
+                    record.custom_state = record.stage_id.stage_code
+                else:
+                    record.custom_state = 'draft'
+        return records
+
+    def write(self, vals):
+        """Override write with safe custom_state handling"""
+        result = super().write(vals)
         
-        # Move to approved state if currently in calculation
+        # Ensure custom_state is set for all records
         for order in self:
-            if order.state == 'calculation':
-                order._move_to_approved()
-            elif order.state in ['draft', 'sent']:
-                # Move to documentation for new confirmations
-                order._move_to_documentation()
+            if not order.custom_state:
+                order.custom_state = 'draft'
+        
+        # Auto-complete if criteria met
+        self._check_auto_completion()
         
         return result
 
-    def action_cancel(self):
-        """Override cancel with workflow considerations"""
-        # Check if any orders are locked
-        locked_orders = self.filtered('is_locked')
-        if locked_orders and not self.env.user.has_group('sales_team.group_sale_manager'):
-            raise AccessError("Cannot cancel completed orders without administrator privileges.")
-        
-        # Reset workflow state before cancellation
+    def _check_auto_completion(self):
+        """Check if order should be auto-completed"""
         for order in self:
-            if order.stage_id:
-                draft_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'draft')], limit=1)
-                if draft_stage:
-                    order.stage_id = draft_stage
-        
-        return super().action_cancel()
+            # Safely check custom_state with fallback
+            custom_state = getattr(order, 'custom_state', 'draft') or 'draft'
+            if (custom_state == 'approved' and 
+                order.state == 'sale' and
+                order._is_order_complete()):
+                order._auto_complete_order()
 
-    def action_draft(self):
-        """Override draft with workflow reset"""
-        result = super().action_draft()
-        
-        # Reset to draft stage
-        for order in self:
-            draft_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'draft')], limit=1)
-            if draft_stage:
-                order.stage_id = draft_stage
-        
-        return result
-
-    # ============== CUSTOM WORKFLOW ACTIONS ==============
-    
-    def action_move_to_documentation(self):
-        """Move order to documentation stage"""
-        self._check_workflow_transition('documentation')
-        return self._move_to_documentation()
-        
-    def _move_to_documentation(self):
-        """Internal method to move to documentation"""
-        stage = self.env['sale.order.stage'].search([('stage_code', '=', 'documentation')], limit=1)
-        if stage:
-            self.write({'stage_id': stage.id, 'state': 'documentation'})
-            self.message_post(body="Order moved to Documentation stage")
-        return True
-
-    def action_move_to_calculation(self):
-        """Move order to calculation stage"""
-        self._check_workflow_transition('calculation')
-        return self._move_to_calculation()
-        
-    def _move_to_calculation(self):
-        """Internal method to move to calculation"""
-        stage = self.env['sale.order.stage'].search([('stage_code', '=', 'calculation')], limit=1)
-        if stage:
-            self.write({'stage_id': stage.id, 'state': 'calculation'})
-            self.message_post(body="Order moved to Calculation stage")
-        return True
-
-    def action_move_to_approved(self):
-        """Move order to approved stage"""
-        self._check_workflow_transition('approved')
-        return self._move_to_approved()
-        
-    def _move_to_approved(self):
-        """Internal method to move to approved"""
-        stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
-        if stage:
-            self.write({'stage_id': stage.id, 'state': 'approved'})
-            self.message_post(body="Order approved and ready for execution")
-        return True
-
-    def action_complete_order(self):
-        """Complete the order (manual completion)"""
-        self._check_workflow_transition('completed')
-        return self._complete_order()
-        
-    def _complete_order(self):
-        """Internal method to complete order"""
-        stage = self.env['sale.order.stage'].search([('stage_code', '=', 'completed')], limit=1)
-        if stage:
-            self.write({'stage_id': stage.id, 'state': 'completed'})
-            self.message_post(body="Order completed and locked")
-        return True
-
-    def action_unlock_order(self):
-        """Unlock completed order (admin only)"""
-        self.ensure_one()
-        if not self.can_unlock:
-            raise AccessError("Insufficient permissions to unlock order.")
-            
-        approved_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
-        if approved_stage:
-            self.write({'stage_id': approved_stage.id, 'state': 'approved'})
-            self.message_post(
-                body=f"Order unlocked by {self.env.user.name}",
-                message_type='notification'
-            )
-        return True
-
-    # ============== WORKFLOW VALIDATION ==============
-    
-    def _check_workflow_transition(self, target_state):
-        """Validate workflow transitions"""
+    def _is_order_complete(self):
+        """Check if order is complete"""
         self.ensure_one()
         
-        # Define valid transitions
-        valid_transitions = {
-            'documentation': ['draft', 'sent'],
-            'calculation': ['documentation', 'sent'], 
-            'approved': ['calculation', 'sale'],
-            'completed': ['approved', 'sale']
-        }
+        # Check financial completion
+        financial_complete = (
+            self.billing_status == 'fully_invoiced' and 
+            self.payment_status == 'fully_paid'
+        )
         
-        current_state = self.state
-        if target_state in valid_transitions:
-            if current_state not in valid_transitions[target_state]:
-                raise UserError(
-                    f"Invalid workflow transition from {current_state} to {target_state}. "
-                    f"Valid transitions for {target_state}: {', '.join(valid_transitions[target_state])}"
-                )
+        # Check delivery completion
+        delivery_complete = self._check_delivery_completion()
         
-        # Additional business rule validations
-        if target_state == 'completed':
-            self._validate_completion_requirements()
+        return financial_complete and delivery_complete
 
-    def _validate_completion_requirements(self):
-        """Validate that order can be completed"""
-        self.ensure_one()
-        
-        errors = []
-        
-        # Check if order is confirmed
-        if self.state not in ['approved', 'sale']:
-            errors.append("Order must be approved before completion")
-        
-        # Check financial status (optional warning, not blocking)
-        if self.billing_status != 'fully_invoiced':
-            # This is a warning, not an error
-            self.message_post(
-                body="⚠️ Warning: Order is being completed but is not fully invoiced",
-                message_type='notification'
-            )
-        
-        if errors:
-            raise ValidationError("\n".join(errors))
-
-    # ============== BUSINESS LOGIC HELPERS ==============
-    
     def _check_delivery_completion(self):
         """Check if all deliveries are completed"""
         self.ensure_one()
@@ -394,181 +243,8 @@ class SaleOrder(models.Model):
             return True
         return all(picking.state == 'done' for picking in self.picking_ids)
 
-    def _check_purchase_completion(self):
-        """Check if related purchase orders are completed"""
-        self.ensure_one()
-        
-        # This is optional - some sales may not have related POs
-        if not self.related_purchase_orders:
-            return True
-            
-        # Check if all POs are in final states
-        for po in self.related_purchase_orders:
-            if po.state not in ['done', 'cancel']:
-                return False
-        
-        return True
-
-    # ============== AUTOMATED WORKFLOW ==============
-    
-    @api.model
-    def _cron_check_auto_completion(self):
-        """Cron job to automatically complete eligible orders"""
-        eligible_orders = self.search([
-            ('state', '=', 'approved'),
-            ('completion_criteria_met', '=', True)
-        ])
-        
-        for order in eligible_orders:
-            try:
-                order._complete_order()
-                order.message_post(body="Order automatically completed based on completion criteria")
-            except Exception as e:
-                import logging
-                _logger = logging.getLogger(__name__)
-                _logger.warning(f"Failed to auto-complete order {order.name}: {str(e)}")
-
-    @api.model
-    def _cron_update_financial_status(self):
-        """Cron job to update financial status for all active orders"""
-        orders = self.search([('state', 'not in', ['draft', 'cancel', 'completed'])])
-        
-        # Trigger recomputation
-        orders._compute_financial_amounts()
-        orders._compute_financial_status()
-        orders._compute_completion_criteria()
-
-    # ============== CONSTRAINTS AND VALIDATIONS ==============
-    
-    def write(self, vals):
-        """Override write with enhanced locking logic"""
-        # Check for locked orders
-        for order in self:
-            if order.is_locked and not order.can_unlock:
-                # Define fields that can be modified even when locked
-                allowed_fields = {
-                    'reconciliation_notes', 'workflow_notes', 'stage_id', 'state',
-                    'billing_status', 'payment_status', 'invoiced_amount', 
-                    'paid_amount', 'balance_amount', 'completion_criteria_met',
-                    'message_follower_ids', 'message_ids'
-                }
-                
-                restricted_fields = set(vals.keys()) - allowed_fields
-                if restricted_fields:
-                    raise AccessError(
-                        f"Cannot modify {', '.join(restricted_fields)} - "
-                        "order is completed and locked. Contact administrator to unlock."
-                    )
-        
-        result = super().write(vals)
-        
-        # Trigger workflow notifications
-        if 'state' in vals or 'stage_id' in vals:
-            self._notify_stage_change()
-        
-        return result
-
-    def _notify_stage_change(self):
-        """Notify followers of stage changes"""
-        for order in self:
-            if order.message_follower_ids:
-                stage_name = order.stage_id.name if order.stage_id else order.state.title()
-                message = f"Sale Order {order.name} moved to: {stage_name}"
-                order.message_post(
-                    body=message,
-                    message_type='notification',
-                    subtype_xmlid='mail.mt_note'
-                )
-
-    @api.model
-    def _read_group_stage_ids(self, stages, domain, order):
-        return self.env['sale.order.stage'].search([])
-
-    @api.onchange('stage_id')
-    def _onchange_stage_id(self):
-        if self.stage_id and self.stage_id.stage_code:
-            self.custom_state = self.stage_id.stage_code
-
-    def write(self, vals):
-        # Prevent editing locked orders
-        for order in self:
-            if order.is_locked and not order.can_unlock:
-                restricted_fields = set(vals.keys()) - {
-                    'reconciliation_notes', 'stage_id', 'custom_state', 
-                    'billing_status', 'payment_status', 'invoiced_amount', 
-                    'paid_amount', 'balance_amount'
-                }
-                if restricted_fields:
-                    raise AccessError("This order is completed and locked.")
-        
-        result = super().write(vals)
-        
-        # Notify followers of stage changes
-        if 'custom_state' in vals or 'stage_id' in vals:
-            self._notify_stage_change()
-        
-        # Auto-complete if criteria met
-        self._check_auto_completion()
-        
-        return result
-
-    def _notify_stage_change(self):
-        for order in self:
-            if order.message_follower_ids:
-                stage_name = dict(order._fields['custom_state'].selection).get(order.custom_state, order.custom_state)
-                message = f"Sale Order {order.name} moved to: {stage_name}"
-                order.message_post(
-                    body=message,
-                    message_type='notification',
-                    subtype_xmlid='mail.mt_note'
-                )
-
-    def _check_auto_completion(self):
-        for order in self:
-            if (order.custom_state == 'approved' and 
-                order.state == 'sale' and
-                order._is_order_complete()):
-                order._auto_complete_order()
-
-    def _is_order_complete(self):
-        self.ensure_one()
-        
-        # Check financial completion
-        financial_complete = (
-            self.billing_status == 'fully_invoiced' and 
-            self.payment_status == 'fully_paid'
-        )
-        
-        # Check PO completion
-        po_complete = self._check_po_completion()
-        
-        # Check delivery completion
-        delivery_complete = self._check_delivery_completion()
-        
-        return financial_complete and po_complete and delivery_complete
-
-    def _check_po_completion(self):
-        # Find related POs
-        related_pos = self.env['purchase.order'].search([
-            ('origin', 'like', self.name),
-            ('state', 'not in', ['cancel', 'draft'])
-        ])
-        
-        if not related_pos:
-            return True
-        
-        for po in related_pos:
-            # Check if PO is fully processed
-            po_invoices = po.invoice_ids.filtered(lambda inv: inv.state == 'posted')
-            po_invoiced = sum(po_invoices.mapped('amount_total'))
-            po_paid = sum(po_invoices.mapped(lambda inv: inv.amount_total - inv.amount_residual))
-            
-            if po_invoiced < po.amount_total or po_paid < po_invoiced:
-                return False
-        
-        return True
-
     def _auto_complete_order(self):
+        """Automatically complete order"""
         completed_stage = self.env['sale.order.stage'].search([('stage_code', '=', 'completed')], limit=1)
         if completed_stage:
             self.sudo().write({
@@ -576,67 +252,41 @@ class SaleOrder(models.Model):
                 'custom_state': 'completed'
             })
 
-    # Workflow action methods
+    # ============== WORKFLOW ACTIONS ==============
+    
     def action_move_to_documentation(self):
+        """Move order to documentation stage"""
         self.ensure_one()
         stage = self.env['sale.order.stage'].search([('stage_code', '=', 'documentation')], limit=1)
         if stage:
             self.write({'stage_id': stage.id, 'custom_state': 'documentation'})
 
     def action_move_to_calculation(self):
+        """Move order to calculation stage"""
         self.ensure_one()
         stage = self.env['sale.order.stage'].search([('stage_code', '=', 'calculation')], limit=1)
         if stage:
             self.write({'stage_id': stage.id, 'custom_state': 'calculation'})
 
     def action_move_to_approved(self):
+        """Move order to approved stage"""
         self.ensure_one()
         stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
         if stage:
             self.write({'stage_id': stage.id, 'custom_state': 'approved'})
 
     def action_complete_order(self):
+        """Complete the order"""
         self.ensure_one()
         stage = self.env['sale.order.stage'].search([('stage_code', '=', 'completed')], limit=1)
         if stage:
             self.write({'stage_id': stage.id, 'custom_state': 'completed'})
 
     def action_unlock_order(self):
+        """Unlock completed order (admin only)"""
         self.ensure_one()
         if not self.can_unlock:
             raise AccessError("Insufficient permissions to unlock order.")
         stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
         if stage:
             self.write({'stage_id': stage.id, 'custom_state': 'approved'})
-
-    def action_emergency_complete(self):
-        self.ensure_one()
-        if not self.env.user.has_group('sales_team.group_sale_manager'):
-            raise AccessError("Only administrators can emergency complete orders.")
-        
-        stage = self.env['sale.order.stage'].search([('stage_code', '=', 'completed')], limit=1)
-        if stage:
-            self.write({'stage_id': stage.id, 'custom_state': 'completed'})
-            self.message_post(
-                body=f"EMERGENCY COMPLETION by {self.env.user.name}",
-                message_type='notification'
-            )
-
-    def action_emergency_reset(self):
-        self.ensure_one()
-        if not self.env.user.has_group('sales_team.group_sale_manager'):
-            raise AccessError("Only administrators can emergency reset orders.")
-        
-        stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
-        if stage:
-            self.write({'stage_id': stage.id, 'custom_state': 'approved'})
-            self.message_post(
-                body=f"EMERGENCY RESET by {self.env.user.name}",
-                message_type='notification'
-            )
-
-    @api.model
-    def _cron_update_financial_status(self):
-        orders = self.search([('state', 'not in', ['draft', 'cancel'])])
-        orders._compute_financial_amounts()
-        orders._compute_financial_status()
