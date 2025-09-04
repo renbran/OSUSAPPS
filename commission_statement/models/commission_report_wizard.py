@@ -45,7 +45,44 @@ class CommissionStatementWizard(models.TransientModel):
         data = self._prepare_report_data()
         
         if not data['commission_lines']:
-            raise UserError("No commission data found for the selected criteria.")
+            # Enhanced debugging information
+            domain = self._get_sale_order_domain()
+            orders = self.env['sale.order'].search(domain)
+            
+            debug_info = [
+                f"Date range: {self.date_from} to {self.date_to}",
+                f"Found {len(orders)} orders in date range",
+                f"Order states filter: sale, done",
+            ]
+            
+            if self.partner_id:
+                debug_info.append(f"Partner filter: {self.partner_id.name}")
+            if self.sale_order_id:
+                debug_info.append(f"Order filter: {self.sale_order_id.name}")
+                
+            # Check if commission_ax module is installed
+            commission_module = self.env['ir.module.module'].search([
+                ('name', '=', 'commission_ax'),
+                ('state', '=', 'installed')
+            ])
+            
+            if not commission_module:
+                debug_info.append("⚠️  commission_ax module not installed - commission fields not available")
+            else:
+                debug_info.append("✓ commission_ax module is installed")
+                
+            # Check first few orders for commission data
+            if orders:
+                sample_order = orders[0]
+                has_commission_fields = hasattr(sample_order, 'total_commission_amount')
+                debug_info.append(f"Commission fields available: {has_commission_fields}")
+                
+                if has_commission_fields:
+                    total_comm = getattr(sample_order, 'total_commission_amount', 0)
+                    debug_info.append(f"Sample order {sample_order.name} total commission: {total_comm}")
+            
+            error_msg = "No commission data found for the selected criteria.\n\nDebugging info:\n" + "\n".join(debug_info)
+            raise UserError(error_msg)
         
         return self.env.ref('commission_statement.action_commission_statement_pdf').report_action(self, data=data)
 
@@ -55,7 +92,44 @@ class CommissionStatementWizard(models.TransientModel):
         data = self._prepare_report_data()
         
         if not data['commission_lines']:
-            raise UserError("No commission data found for the selected criteria.")
+            # Enhanced debugging information (same as PDF method)
+            domain = self._get_sale_order_domain()
+            orders = self.env['sale.order'].search(domain)
+            
+            debug_info = [
+                f"Date range: {self.date_from} to {self.date_to}",
+                f"Found {len(orders)} orders in date range",
+                f"Order states filter: sale, done",
+            ]
+            
+            if self.partner_id:
+                debug_info.append(f"Partner filter: {self.partner_id.name}")
+            if self.sale_order_id:
+                debug_info.append(f"Order filter: {self.sale_order_id.name}")
+                
+            # Check if commission_ax module is installed
+            commission_module = self.env['ir.module.module'].search([
+                ('name', '=', 'commission_ax'),
+                ('state', '=', 'installed')
+            ])
+            
+            if not commission_module:
+                debug_info.append("⚠️  commission_ax module not installed - commission fields not available")
+            else:
+                debug_info.append("✓ commission_ax module is installed")
+                
+            # Check first few orders for commission data
+            if orders:
+                sample_order = orders[0]
+                has_commission_fields = hasattr(sample_order, 'total_commission_amount')
+                debug_info.append(f"Commission fields available: {has_commission_fields}")
+                
+                if has_commission_fields:
+                    total_comm = getattr(sample_order, 'total_commission_amount', 0)
+                    debug_info.append(f"Sample order {sample_order.name} total commission: {total_comm}")
+            
+            error_msg = "No commission data found for the selected criteria.\n\nDebugging info:\n" + "\n".join(debug_info)
+            raise UserError(error_msg)
         
         # Create Excel file
         output = io.BytesIO()
@@ -281,7 +355,18 @@ class CommissionStatementWizard(models.TransientModel):
         missing_fields = [f for f in required_fields if not hasattr(order, f)]
         if missing_fields:
             _logger.warning("Missing commission fields on sale.order %s: %s", order.name, missing_fields)
-            return lines
+        
+        # Method 1: Extract from commission FIELDS on sale order
+        lines.extend(self._extract_commission_from_fields(order))
+        
+        # Method 2: Extract from commission PRODUCT LINES in sale order
+        lines.extend(self._extract_commission_from_order_lines(order))
+        
+        return lines
+    
+    def _extract_commission_from_fields(self, order):
+        """Extract commission data from sale order fields (original method)"""
+        lines = []
         
         # Helper function to add commission line
         def add_commission_line(partner, amount, comm_type, rate, category, commission_field_name):
@@ -354,6 +439,121 @@ class CommissionStatementWizard(models.TransientModel):
         
         return lines
 
+    def _extract_commission_from_order_lines(self, order):
+        """Extract commission data from sale order lines (commission products)"""
+        lines = []
+        
+        # Look for commission products in order lines
+        if hasattr(order, 'order_line'):
+            for line in order.order_line:
+                # Check if this is a commission product line
+                if line.product_id and 'commission' in line.product_id.name.lower():
+                    # Try to extract partner info from product description or line
+                    partner = self._extract_partner_from_commission_line(line, order)
+                    role = self._extract_role_from_commission_line(line)
+                    
+                    if partner and line.price_subtotal > 0:
+                        # Convert commission product to commission line format
+                        commission_line = {
+                            'partner_name': partner.name,
+                            'partner_id': partner.id,
+                            'order_ref': order.name,
+                            'customer_ref': order.partner_id.name,
+                            'commission_type': 'fixed',  # Commission products are typically fixed amounts
+                            'commission_type_display': 'Product Commission',
+                            'rate': 0,  # Not applicable for product-based commissions
+                            'amount': line.price_subtotal,
+                            'category': 'product',
+                            'sale_order_id': order.id,
+                            'commission_field': f'product_{line.id}',
+                            'order_date': order.date_order,
+                            'order_amount': order.amount_total,
+                            'product_name': line.product_id.name,
+                            'description': line.name,
+                            'quantity': line.product_uom_qty,
+                            'unit_price': line.price_unit,
+                        }
+                        
+                        # Apply filters
+                        if self._should_include_commission_line(commission_line):
+                            lines.append(commission_line)
+                            _logger.debug("Added commission line from product: partner=%s, amount=%s, product=%s for order %s", 
+                                        partner.name, line.price_subtotal, line.product_id.name, order.name)
+        
+        if not lines:
+            _logger.debug("No commission products found in order lines for order %s", order.name)
+            
+        return lines
+    
+    def _extract_partner_from_commission_line(self, line, order):
+        """Extract partner from commission line based on role or fallback to order fields"""
+        # Try to determine partner based on commission type and order fields
+        product_name = line.product_id.name.lower()
+        
+        if 'primary' in product_name or 'consultant' in product_name:
+            return getattr(order, 'consultant_id', None)
+        elif 'manager' in product_name:
+            if 'senior' in product_name:
+                return getattr(order, 'senior_manager_id', None)
+            elif 'regional' in product_name:
+                return getattr(order, 'regional_manager_id', None)
+            else:
+                return getattr(order, 'manager_id', None)
+        elif 'broker' in product_name:
+            return getattr(order, 'broker_partner_id', None)
+        elif 'director' in product_name:
+            return getattr(order, 'director_id', None)
+        elif 'agent' in product_name:
+            # Try to determine which agent based on description or fallback
+            return getattr(order, 'agent1_partner_id', None) or getattr(order, 'agent2_partner_id', None)
+        
+        # Fallback to consultant if can't determine specific role
+        return getattr(order, 'consultant_id', None) or getattr(order, 'manager_id', None)
+    
+    def _extract_role_from_commission_line(self, line):
+        """Extract role from commission product name"""
+        product_name = line.product_id.name.lower()
+        if 'primary' in product_name or 'consultant' in product_name:
+            return 'Consultant'
+        elif 'manager' in product_name:
+            if 'senior' in product_name:
+                return 'Senior Manager'
+            elif 'regional' in product_name:
+                return 'Regional Manager'
+            else:
+                return 'Manager'
+        elif 'broker' in product_name:
+            return 'Broker'
+        elif 'director' in product_name:
+            return 'Director'
+        elif 'agent' in product_name:
+            return 'Agent'
+        
+        # Default fallback
+        return 'Commission'
+    
+    def _should_include_commission_line(self, commission_line):
+        """Check if commission line should be included based on filters"""
+        # Check zero commission filter
+        if not self.include_zero_commissions and commission_line['amount'] <= 0:
+            return False
+        
+        # Check partner filter
+        if self.partner_id and commission_line['partner_id'] != self.partner_id.id:
+            return False
+        
+        # Check commission type filter
+        if self.commission_type_filter != 'all':
+            if self.commission_type_filter == 'internal' and commission_line['category'] != 'internal':
+                return False
+            elif self.commission_type_filter == 'external' and commission_line['category'] != 'external':
+                return False
+            elif self.commission_type_filter == 'legacy' and commission_line['category'] != 'legacy':
+                return False
+            # Allow 'product' category to be included in all filters for now
+        
+        return True
+
     def _get_commission_type_display(self, commission_type):
         """Get human-readable commission type"""
         type_mapping = {
@@ -368,7 +568,44 @@ class CommissionStatementWizard(models.TransientModel):
         data = self._prepare_report_data()
         
         if not data['commission_lines']:
-            raise UserError("No commission data found for the selected criteria.")
+            # Enhanced debugging information (same as other methods)
+            domain = self._get_sale_order_domain()
+            orders = self.env['sale.order'].search(domain)
+            
+            debug_info = [
+                f"Date range: {self.date_from} to {self.date_to}",
+                f"Found {len(orders)} orders in date range",
+                f"Order states filter: sale, done",
+            ]
+            
+            if self.partner_id:
+                debug_info.append(f"Partner filter: {self.partner_id.name}")
+            if self.sale_order_id:
+                debug_info.append(f"Order filter: {self.sale_order_id.name}")
+                
+            # Check if commission_ax module is installed
+            commission_module = self.env['ir.module.module'].search([
+                ('name', '=', 'commission_ax'),
+                ('state', '=', 'installed')
+            ])
+            
+            if not commission_module:
+                debug_info.append("⚠️  commission_ax module not installed - commission fields not available")
+            else:
+                debug_info.append("✓ commission_ax module is installed")
+                
+            # Check first few orders for commission data
+            if orders:
+                sample_order = orders[0]
+                has_commission_fields = hasattr(sample_order, 'total_commission_amount')
+                debug_info.append(f"Commission fields available: {has_commission_fields}")
+                
+                if has_commission_fields:
+                    total_comm = getattr(sample_order, 'total_commission_amount', 0)
+                    debug_info.append(f"Sample order {sample_order.name} total commission: {total_comm}")
+            
+            error_msg = "No commission data found for the selected criteria.\n\nDebugging info:\n" + "\n".join(debug_info)
+            raise UserError(error_msg)
         
         # Create a simple tree view to preview the data
         lines = []

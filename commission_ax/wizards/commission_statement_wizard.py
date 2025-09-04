@@ -43,8 +43,8 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         if not data['commission_lines']:
             raise UserError("No commission data found for the selected criteria.")
         
-        return self.env.ref('your_module.action_commission_statement_pdf').report_action(self, data=data)
-
+        return self.env.ref('commission_ax.action_report_commission_statement').report_action(self, data=data)
+g
     def action_generate_excel_report(self):
         """Generate Excel commission statement report"""
         self.ensure_one()
@@ -115,7 +115,9 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             if line['commission_type'] == 'fixed':
                 worksheet.write(row, 4, 'Fixed', text_format)
             else:
-                worksheet.write(row, 4, line['rate'] / 100, percentage_format)
+                # Rate is stored as percentage (5.0 = 5%), convert to decimal (0.05) for Excel percentage format
+                rate_decimal = line['rate'] / 100.0
+                worksheet.write(row, 4, rate_decimal, percentage_format)
             
             worksheet.write(row, 5, line['amount'], currency_format)
             row += 1
@@ -156,6 +158,10 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         for order in sale_orders:
             lines = self._extract_commission_lines(order)
             commission_lines.extend(lines)
+            
+            # Also extract commission data from order lines (commission products)
+            product_lines = self._extract_commission_from_order_lines(order)
+            commission_lines.extend(product_lines)
         
         # Sort by partner name if grouping is enabled
         if self.group_by_partner:
@@ -188,7 +194,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         """Extract commission lines from a sale order"""
         lines = []
         
-        # Helper function to add commission line
+        # Helper function to add commission line with proper rate handling
         def add_commission_line(partner, amount, comm_type, rate, category):
             if not partner or (not self.include_zero_commissions and amount <= 0):
                 return
@@ -207,6 +213,10 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             
             commission_type_display = self._get_commission_type_display(comm_type)
             
+            # Ensure rate is always in percentage format (5.0 for 5%)
+            # If commission type is fixed, rate is irrelevant for display
+            display_rate = rate if comm_type != 'fixed' else 0.0
+            
             lines.append({
                 'partner_name': partner.name,
                 'partner_id': partner.id,
@@ -214,7 +224,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                 'customer_ref': order.partner_id.name,
                 'commission_type': comm_type,
                 'commission_type_display': commission_type_display,
-                'rate': rate,
+                'rate': display_rate,  # Store as percentage (5.0 = 5%)
                 'amount': amount,
                 'category': category,
                 'sale_order_id': order.id
@@ -291,6 +301,72 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             'percent_untaxed_total': 'Total %'
         }
         return type_mapping.get(commission_type, commission_type)
+
+    def _extract_commission_from_order_lines(self, order):
+        """Extract commission data from sale order lines (commission products)"""
+        lines = []
+        
+        # Look for commission products in order lines
+        if hasattr(order, 'order_line'):
+            for line in order.order_line:
+                # Check if this is a commission product line
+                if line.product_id and 'commission' in line.product_id.name.lower():
+                    # Try to extract partner info from product description or line
+                    partner = self._extract_partner_from_commission_line(line, order)
+                    
+                    if partner and line.price_subtotal > 0:
+                        # Filter by partner if specified
+                        if self.partner_id and partner.id != self.partner_id.id:
+                            continue
+                            
+                        # Skip zero commissions if not included
+                        if not self.include_zero_commissions and line.price_subtotal <= 0:
+                            continue
+                        
+                        # Convert commission product to commission line format
+                        commission_line = {
+                            'partner_name': partner.name,
+                            'partner_id': partner.id,
+                            'order_ref': order.name,
+                            'customer_ref': order.partner_id.name,
+                            'commission_type': 'fixed',  # Commission products are typically fixed amounts
+                            'commission_type_display': 'Product Commission',
+                            'rate': 0.0,  # Not applicable for product-based commissions
+                            'amount': line.price_subtotal,
+                            'category': 'product',
+                            'sale_order_id': order.id,
+                        }
+                        
+                        lines.append(commission_line)
+                        _logger.debug("Added commission line from product: partner=%s, amount=%s, product=%s for order %s", 
+                                    partner.name, line.price_subtotal, line.product_id.name, order.name)
+        
+        return lines
+    
+    def _extract_partner_from_commission_line(self, line, order):
+        """Extract partner from commission line based on role or fallback to order fields"""
+        # Try to determine partner based on commission type and order fields
+        product_name = line.product_id.name.lower()
+        
+        if 'primary' in product_name or 'consultant' in product_name:
+            return getattr(order, 'consultant_id', None)
+        elif 'manager' in product_name:
+            if 'senior' in product_name:
+                return getattr(order, 'senior_manager_id', None)
+            elif 'regional' in product_name:
+                return getattr(order, 'regional_manager_id', None)
+            else:
+                return getattr(order, 'manager_id', None)
+        elif 'broker' in product_name:
+            return getattr(order, 'broker_partner_id', None)
+        elif 'director' in product_name:
+            return getattr(order, 'director_id', None)
+        elif 'agent' in product_name:
+            # Try to determine which agent based on description or fallback
+            return getattr(order, 'agent1_partner_id', None) or getattr(order, 'agent2_partner_id', None)
+        
+        # Fallback to consultant if can't determine specific role
+        return getattr(order, 'consultant_id', None) or getattr(order, 'manager_id', None)
 
     def action_preview_data(self):
         """Preview the data that will be included in the report"""

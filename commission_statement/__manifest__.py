@@ -36,6 +36,7 @@ Report Columns:
         'sale',
         'purchase',
         'web',
+        'commission_ax',  # Required for commission fields and data
     ],
     'data': [
         'security/security.xml',
