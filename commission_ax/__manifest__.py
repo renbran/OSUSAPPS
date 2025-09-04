@@ -54,9 +54,9 @@ Technical Features:
         'account',
         'stock',
         'portal',
-        'commission_statement',  # Added proper dependency
     ],
     'data': [
+        'security/security.xml',
         'security/ir.model.access.csv',
         'data/cron_data.xml',
         'views/sale_order.xml',
