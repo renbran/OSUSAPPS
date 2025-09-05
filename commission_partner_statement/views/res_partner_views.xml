@@ -85,7 +85,7 @@
                 <filter name="auto_statement" string="Auto Statement Enabled" domain="[('enable_auto_commission_statement', '=', True)]"/>
             </xpath>
 
-            <xpath expr="//group[@expand='1' and @string='Group By']" position="inside">
+            <xpath expr="//group[1]" position="inside">
                 <filter name="group_by_commission_status" string="Commission Status" context="{'group_by': 'enable_auto_commission_statement'}"/>
             </xpath>
         </field>
