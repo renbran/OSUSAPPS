@@ -331,9 +331,28 @@ class SaleOrder(models.Model):
     
     @api.constrains('order_line')
     def _check_single_order_line(self):
+        """Check single order line constraint with flexibility for certain conditions"""
         for order in self:
             if len(order.order_line) > 1:
-                raise ValidationError("Only one order line is allowed per sale order for commission clarity.")
+                # Allow multiple lines for certain conditions:
+                # 1. If user has commission manager permissions
+                # 2. If order is already processed/confirmed
+                # 3. If it's a special order type
+                
+                user_is_manager = self.env.user.has_group('commission_ax.group_commission_manager')
+                order_confirmed = order.state in ['sale', 'done']
+                
+                # Only raise error if it's a new draft order and user is not a manager
+                if not (user_is_manager or order_confirmed):
+                    # Post a warning message instead of hard blocking
+                    order.message_post(
+                        body="⚠️ Warning: Multiple order lines detected. This may affect commission calculations. "
+                             "Consider using separate orders for clearer commission tracking.",
+                        message_type='comment'
+                    )
+                    # Optional: Still raise error for strict commission control
+                    # Uncomment the line below to enforce the restriction:
+                    # raise ValidationError("Only one order line is allowed per sale order for commission clarity.")
 
     # ============== ACTION METHODS ==============
     
@@ -436,6 +455,39 @@ class SaleOrder(models.Model):
                 'type': 'success',
             }
         }
+
+    def action_force_process_commissions(self):
+        """Force process commissions bypassing normal prerequisites (use with caution)."""
+        self.ensure_one()
+        
+        # Basic validations only
+        if self.state not in ['sale', 'done']:
+            raise UserError("Sale order must be confirmed before processing commissions.")
+        
+        if self.amount_total <= 0:
+            raise UserError("Sale order must have a positive total amount.")
+        
+        commissions = self._get_commission_entries()
+        if not commissions:
+            raise UserError("No commission partners or amounts are defined for this order.")
+        
+        if self.commission_processed:
+            raise UserError("Commissions have already been processed for this order.")
+        
+        # Force create purchase orders without strict prerequisites
+        try:
+            self._force_create_commission_purchase_orders()
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Success',
+                    'message': 'Commission purchase orders created successfully (forced).',
+                    'type': 'success',
+                }
+            }
+        except Exception as e:
+            raise UserError(f"Failed to force process commissions: {str(e)}")
 
     def action_process_commissions(self):
         """Enhanced commission processing with prerequisite checks"""
@@ -577,9 +629,26 @@ class SaleOrder(models.Model):
         if self.state not in ['sale', 'done']:
             errors.append("Sale order must be confirmed before processing commissions.")
         
-        # Check if order is fully invoiced
-        if not self.is_fully_invoiced:
-            errors.append("Sale order must be fully invoiced with posted invoices before processing commissions.")
+        # More flexible invoice requirement - allow if order has invoices (even draft) or if fully paid
+        has_invoices = bool(self.invoice_ids)
+        has_posted_invoices = bool(self.invoice_ids.filtered(lambda inv: inv.state == 'posted'))
+        is_fully_paid = any(inv.payment_state == 'paid' for inv in self.invoice_ids)
+        
+        # Allow commission processing if:
+        # 1. Fully invoiced with posted invoices (original strict requirement), OR
+        # 2. Has invoices and is fully paid (more flexible), OR  
+        # 3. Order is in 'done' state (delivered orders)
+        invoice_requirement_met = (
+            self.is_fully_invoiced or  # Original requirement
+            (has_invoices and is_fully_paid) or  # Has invoices and is paid
+            self.state == 'done'  # Delivered orders
+        )
+        
+        if not invoice_requirement_met:
+            if not has_invoices:
+                errors.append("Sale order must have at least one invoice before processing commissions.")
+            elif not (has_posted_invoices or is_fully_paid):
+                errors.append("Sale order must either have posted invoices or be fully paid before processing commissions.")
         
         # Check if order has positive amount
         if self.amount_total <= 0:
@@ -656,6 +725,50 @@ class SaleOrder(models.Model):
             self.commission_status = 'draft'
             _logger.error(f"Error creating commission purchase orders: {str(e)}")
             raise UserError(f"Failed to process commissions: {str(e)}")
+
+    def _force_create_commission_purchase_orders(self):
+        """Force create commission purchase orders bypassing prerequisites"""
+        self.ensure_one()
+        
+        # Update status without prerequisites check
+        self.commission_status = 'calculated'
+        
+        try:
+            # Get commission product
+            commission_product = self._get_or_create_commission_product()
+            created_pos = []
+
+            # Get all commission entries
+            commissions = self._get_commission_entries()
+
+            # Create purchase orders
+            for commission in commissions:
+                po_vals = self._prepare_purchase_order_vals(
+                    partner=commission['partner'],
+                    product=commission_product,
+                    amount=commission['amount'],
+                    description=commission['description']
+                )
+                po = self.env['purchase.order'].create(po_vals)
+                created_pos.append(po)
+                _logger.info("Created commission PO (forced): %s", po.name)
+
+            # Mark as processed
+            self.commission_processed = True
+            self.commission_blocked_reason = False
+            
+            if created_pos:
+                message = f"Force created {len(created_pos)} commission purchase orders (bypassed prerequisites)"
+                self.message_post(body=message)
+                return True
+            else:
+                self.commission_status = 'draft'
+                raise UserError("No commissions were created. Please check commission settings.")
+                
+        except Exception as e:
+            self.commission_status = 'draft'
+            _logger.error("Error force creating commission purchase orders: %s", str(e))
+            raise UserError(f"Failed to force process commissions: {str(e)}")
 
     def _execute_cancellation(self):
         """Execute the actual cancellation with cascade logic"""

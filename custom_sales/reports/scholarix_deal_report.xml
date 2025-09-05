@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- SCHOLARIX Deal Report Action -->
+    <record id="action_report_scholarix_deal" model="ir.actions.report">
+        <field name="name">SCHOLARIX Deal Report</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_sales.scholarix_deal_report_document</field>
+        <field name="report_file">custom_sales.scholarix_deal_report_document</field>
+        <field name="print_report_name">'SCHOLARIX Deal - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Report Template -->
+    <template id="scholarix_deal_report_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+            <t t-set="forced_vat" t-value="doc.fiscal_position_id.foreign_vat"/>
+            
+            <div class="page">
+                <div class="oe_structure"/>
+
+                <!-- SCHOLARIX Header -->
+                <div class="text-center mb-4" style="border: 3px solid #722F37; padding: 15px; background-color: #f8f9fa;">
+                    <h1 style="color: #722F37; font-weight: bold; margin: 0; font-size: 28px;">SCHOLARIX</h1>
+                    <h2 style="color: #722F37; margin: 5px 0; font-size: 20px;">Property Deal Report</h2>
+                    <p style="margin: 0; color: #666; font-style: italic;">Professional Real Estate Commission Analysis</p>
+                </div>
+
+                <h2 class="mt-4" style="color: #722F37; border-bottom: 2px solid #722F37; padding-bottom: 5px;">
+                    <span t-if="env.context.get('proforma', False) or is_pro_forma">Pro-Forma Deal # </span>
+                    <span t-elif="doc.state in ['draft','sent']">Deal Proposal # </span>
+                    <span t-else="">Deal # </span>
+                    <span t-field="doc.name" style="color: #000;">SO0000</span>
+                </h2>
+
+                <!-- Deal Information Section -->
+                <div class="row mt-4 mb-4" id="deal_informations" style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #722F37;">
+                    <div t-if="doc.client_order_ref" class="col-auto col-3 mw-100 mb-2" name="informations_reference">
+                        <strong style="color: #722F37;">Property Reference:</strong><br/>
+                        <span class="m-0" t-field="doc.client_order_ref" style="font-weight: bold;">SO0000</span>
+                    </div>
+                    <div t-if="doc.date_order" class="col-auto col-3 mw-100 mb-2" name="informations_date">
+                        <strong t-if="doc.state in ['draft', 'sent']" style="color: #722F37;">Deal Date:</strong>
+                        <strong t-else="" style="color: #722F37;">Closed Date:</strong><br/>
+                        <span class="m-0" t-field="doc.date_order" t-options="{&quot;widget&quot;: &quot;date&quot;}" style="font-weight: bold;">2023-12-31</span>
+                    </div>
+                    <div t-if="doc.validity_date and doc.state in ['draft', 'sent']" class="col-auto col-3 mw-100 mb-2" name="expiration_date">
+                        <strong style="color: #722F37;">Valid Until:</strong><br/>
+                        <span class="m-0" t-field="doc.validity_date" style="font-weight: bold;">2023-12-31</span>
+                    </div>
+                    <div t-if="doc.user_id.name" class="col-auto col-3 mw-100 mb-2">
+                        <strong style="color: #722F37;">Deal Agent:</strong><br/>
+                        <span class="m-0" t-field="doc.user_id" style="font-weight: bold;">Mitchell Admin</span>
+                    </div>
+                </div>
+
+                <!-- Property Details Section -->
+                <t t-set="lines_to_report" t-value="doc._get_order_lines_to_report()"/>
+                <t t-set="display_discount" t-value="any(l.discount for l in lines_to_report)"/>
+
+                <div class="oe_structure"/>
+                <h3 style="color: #722F37; font-weight: bold; border-bottom: 2px solid #722F37; padding-bottom: 5px;">Property Details</h3>
+                <table class="table table-sm o_main_table mt-4" style="border: 2px solid #722F37;">
+                    <thead style="background-color: #722F37; color: white;">
+                        <tr>
+                            <th name="th_description" class="text-start" style="border: 1px solid #722F37; color: white; font-weight: bold;">Property Description</th>
+                            <th name="th_quantity" class="text-end" style="border: 1px solid #722F37; color: white; font-weight: bold;">Units</th>
+                            <th name="th_priceunit" class="text-end" style="border: 1px solid #722F37; color: white; font-weight: bold;">Unit Price</th>
+                            <th name="th_discount" t-if="display_discount" class="text-end" style="border: 1px solid #722F37; color: white; font-weight: bold;">
+                                <span>Discount%</span>
+                            </th>
+                            <th name="th_taxes" class="text-end" style="border: 1px solid #722F37; color: white; font-weight: bold;">Taxes</th>
+                            <th name="th_subtotal" class="text-end" style="border: 1px solid #722F37; color: white; font-weight: bold;">
+                                <span>Total Value</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="sale_tbody">
+                        <t t-set="current_subtotal" t-value="0"/>
+                        <t t-foreach="lines_to_report" t-as="line">
+                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"/>
+                            <tr t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                <t t-if="not line.display_type">
+                                    <td name="td_name" style="border: 1px solid #722F37;"><span t-field="line.name">Property Name</span></td>
+                                    <td name="td_quantity" class="text-end" style="border: 1px solid #722F37;">
+                                        <span t-field="line.product_uom_qty">3</span>
+                                        <span t-field="line.product_uom">units</span>
+                                        <span t-if="line.product_packaging_id">
+                                            (<span t-field="line.product_packaging_qty" t-options="{&quot;widget&quot;: &quot;integer&quot;}"/> <span t-field="line.product_packaging_id"/>)
+                                        </span>
+                                    </td>
+                                    <td name="td_priceunit" class="text-end" style="border: 1px solid #722F37;">
+                                        <span t-field="line.price_unit">3</span>
+                                    </td>
+                                    <td t-if="display_discount" class="text-end" style="border: 1px solid #722F37;">
+                                        <span t-field="line.discount">-</span>
+                                    </td>
+                                    <t t-set="taxes" t-value="', '.join([(tax.invoice_label or tax.name) for tax in line.tax_id])"/>
+                                    <td name="td_taxes" t-attf-class="text-end {{ 'text-nowrap' if len(taxes) &lt; 10 else '' }}" style="border: 1px solid #722F37;">
+                                        <span t-out="taxes">Tax 15%</span>
+                                    </td>
+                                    <td t-if="not line.is_downpayment" name="td_subtotal" class="text-end o_price_total" style="border: 1px solid #722F37; font-weight: bold;">
+                                        <span t-field="line.price_subtotal">27.00</span>
+                                    </td>
+                                </t>
+                                <t t-elif="line.display_type == 'line_section'">
+                                    <td name="td_section_line" colspan="99" style="border: 1px solid #722F37; background-color: #f8f9fa; font-weight: bold; color: #722F37;">
+                                        <span t-field="line.name">Property Section</span>
+                                    </td>
+                                    <t t-set="current_section" t-value="line"/>
+                                    <t t-set="current_subtotal" t-value="0"/>
+                                </t>
+                                <t t-elif="line.display_type == 'line_note'">
+                                    <td name="td_note_line" colspan="99" style="border: 1px solid #722F37; font-style: italic; color: #666;">
+                                        <span t-field="line.name">Property notes and specifications</span>
+                                    </td>
+                                </t>
+                            </tr>
+                            <t t-if="current_section and (line_last or lines_to_report[line_index+1].display_type == 'line_section') and not line.is_downpayment">
+                                <tr class="is-subtotal text-end" style="background-color: #f8f9fa;">
+                                    <td name="td_section_subtotal" colspan="99" style="border: 1px solid #722F37; font-weight: bold; color: #722F37;">
+                                        <strong class="mr16">Section Total</strong>
+                                        <span t-out="current_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}">31.05</span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Deal Value Summary -->
+                <div class="clearfix" name="deal_total_summary">
+                    <div id="total" class="row" name="total">
+                        <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ms-auto">
+                            <table class="table table-sm table-borderless" style="border: 2px solid #722F37;">
+                                <t t-set="tax_totals" t-value="doc.tax_totals"/>
+                                <t t-call="sale.document_tax_totals"/>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCHOLARIX Commission Analysis Section -->
+                <div class="oe_structure"/>
+                <div name="scholarix_commission_section" class="mt-4" style="border: 3px solid #722F37; padding: 20px; background-color: #fff;">
+                    <h3 style="color: #722F37; font-weight: bold; text-align: center; margin-bottom: 20px; font-size: 24px;">
+                        🏢 SCHOLARIX Commission Analysis 📊
+                    </h3>
+                    
+                    <!-- External Commissions -->
+                    <div t-if="doc.broker_partner_id or doc.referrer_partner_id or doc.cashback_partner_id or doc.other_external_partner_id" class="mt-3">
+                        <h4 class="mb-3" style="color: #722F37; font-weight: bold; font-size: 18px;">🌐 External Commissions</h4>
+                        <table class="table table-sm" style="border: 2px solid #722F37;">
+                            <thead style="background-color: #722F37; color: white;">
+                                <tr>
+                                    <th class="text-start" style="font-weight: bold; border: 1px solid #722F37; color: white; padding: 10px;">Partner</th>
+                                    <th class="text-center" style="font-weight: bold; border: 1px solid #722F37; color: white; padding: 10px;">Type</th>
+                                    <th class="text-end" style="font-weight: bold; border: 1px solid #722F37; color: white; padding: 10px;">Rate</th>
+                                    <th class="text-end" style="font-weight: bold; border: 1px solid #722F37; color: white; padding: 10px;">Commission Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-if="doc.broker_partner_id and doc.broker_amount and doc.broker_amount > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.broker_partner_id.name"/></td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.broker_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.broker_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.broker_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.broker_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.broker_rate"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.broker_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.referrer_partner_id and doc.referrer_amount and doc.referrer_amount > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.referrer_partner_id.name"/></td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.referrer_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.referrer_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.referrer_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.referrer_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.referrer_rate"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.referrer_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.cashback_partner_id and doc.cashback_amount and doc.cashback_amount > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.cashback_partner_id.name"/></td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.cashback_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.cashback_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.cashback_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.cashback_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.cashback_rate"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.cashback_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.other_external_partner_id and doc.other_external_amount and doc.other_external_amount > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.other_external_partner_id.name"/></td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.other_external_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.other_external_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.other_external_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.other_external_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.other_external_rate"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.other_external_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Internal Commissions -->
+                    <div t-if="doc.agent1_partner_id or doc.agent2_partner_id or doc.manager_partner_id or doc.director_partner_id" class="mt-4">
+                        <h4 class="mb-3" style="color: #722F37; font-weight: bold; font-size: 18px;">🏢 Internal Team Commissions</h4>
+                        <table class="table table-sm" style="border: 2px solid #722F37;">
+                            <thead style="background-color: #722F37; color: white;">
+                                <tr>
+                                    <th class="text-start" style="font-weight: bold; border: 1px solid #722F37; padding: 10px;">Team Member</th>
+                                    <th class="text-center" style="font-weight: bold; border: 1px solid #722F37; padding: 10px;">Commission Type</th>
+                                    <th class="text-end" style="font-weight: bold; border: 1px solid #722F37; padding: 10px;">Rate</th>
+                                    <th class="text-end" style="font-weight: bold; border: 1px solid #722F37; padding: 10px;">Commission Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-if="doc.agent1_partner_id and doc.agent1_amount and doc.agent1_amount > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.agent1_partner_id.name"/></td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.agent1_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.agent1_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.agent1_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.agent1_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.agent1_rate"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.agent1_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.agent2_partner_id and doc.agent2_amount and doc.agent2_amount > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.agent2_partner_id.name"/></td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.agent2_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.agent2_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.agent2_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.agent2_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.agent2_rate"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.agent2_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.manager_partner_id and doc.manager_amount and doc.manager_amount > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.manager_partner_id.name"/></td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.manager_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.manager_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.manager_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.manager_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.manager_rate"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.manager_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.director_partner_id and doc.director_amount and doc.director_amount > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.director_partner_id.name"/></td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.director_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.director_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.director_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.director_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.director_rate"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.director_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Legacy Commissions -->
+                    <div t-if="doc.consultant_id or doc.manager_id or doc.second_agent_id or doc.director_id" class="mt-4">
+                        <h4 class="mb-3" style="color: #722F37; font-weight: bold; font-size: 18px;">📋 Legacy Commission Structure</h4>
+                        <table class="table table-sm" style="border: 2px solid #722F37;">
+                            <thead style="background-color: #722F37; color: white;">
+                                <tr>
+                                    <th class="text-start" style="font-weight: bold; border: 1px solid #722F37; padding: 10px;">Legacy Partner</th>
+                                    <th class="text-center" style="font-weight: bold; border: 1px solid #722F37; padding: 10px;">Commission Type</th>
+                                    <th class="text-end" style="font-weight: bold; border: 1px solid #722F37; padding: 10px;">Rate</th>
+                                    <th class="text-end" style="font-weight: bold; border: 1px solid #722F37; padding: 10px;">Commission Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-if="doc.consultant_id and doc.salesperson_commission and doc.salesperson_commission > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.consultant_id.name"/> (Consultant)</td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.consultant_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.consultant_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.consultant_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.consultant_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.consultant_comm_percentage"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.salesperson_commission" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.manager_id and doc.manager_commission and doc.manager_commission > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.manager_id.name"/> (Manager)</td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.manager_legacy_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.manager_legacy_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.manager_legacy_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.manager_legacy_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.manager_comm_percentage"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.manager_commission" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.second_agent_id and doc.second_agent_commission and doc.second_agent_commission > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.second_agent_id.name"/> (Second Agent)</td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.second_agent_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.second_agent_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.second_agent_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.second_agent_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.second_agent_comm_percentage"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.second_agent_commission" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.director_id and doc.director_commission and doc.director_commission > 0">
+                                    <td style="border: 1px solid #722F37; padding: 8px; font-weight: 500;"><span t-field="doc.director_id.name"/> (Director)</td>
+                                    <td class="text-center" style="border: 1px solid #722F37; padding: 8px;">
+                                        <span t-if="doc.director_legacy_commission_type == 'fixed'">Fixed Amount</span>
+                                        <span t-elif="doc.director_legacy_commission_type == 'percent_unit_price'">% Unit Price</span>
+                                        <span t-elif="doc.director_legacy_commission_type == 'percent_untaxed_total'">% Total Value</span>
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold;">
+                                        <span t-if="doc.director_legacy_commission_type == 'fixed'">Fixed</span>
+                                        <span t-else="" t-field="doc.director_comm_percentage"/>%
+                                    </td>
+                                    <td class="text-end" style="border: 1px solid #722F37; padding: 8px; font-weight: bold; color: #722F37;">
+                                        <span t-field="doc.director_commission" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- SCHOLARIX Financial Summary -->
+                    <div class="mt-4" style="border: 2px solid #722F37; background-color: #f8f9fa; padding: 15px;">
+                        <h4 class="text-center mb-3" style="color: #722F37; font-weight: bold; font-size: 20px;">💰 SCHOLARIX Deal Financial Summary 💰</h4>
+                        <table class="table table-sm table-borderless" style="width: 100%;">
+                            <tbody>
+                                <tr t-if="doc.total_external_commission_amount and doc.total_external_commission_amount > 0" style="border-top: 2px solid #722F37;">
+                                    <td class="text-end" style="font-weight: bold; color: #722F37; font-size: 16px; padding: 10px;">Total External Commissions:</td>
+                                    <td class="text-end" style="font-weight: bold; color: #722F37; font-size: 16px; padding: 10px;">
+                                        <span t-field="doc.total_external_commission_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.total_internal_commission_amount and doc.total_internal_commission_amount > 0" style="border-top: 1px solid #722F37;">
+                                    <td class="text-end" style="font-weight: bold; color: #722F37; font-size: 16px; padding: 10px;">Total Internal Commissions:</td>
+                                    <td class="text-end" style="font-weight: bold; color: #722F37; font-size: 16px; padding: 10px;">
+                                        <span t-field="doc.total_internal_commission_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="doc.total_commission_amount and doc.total_commission_amount > 0" style="border-top: 2px solid #722F37;">
+                                    <td class="text-end" style="font-weight: bold; color: #722F37; font-size: 16px; padding: 10px;">Total All Commissions:</td>
+                                    <td class="text-end" style="font-weight: bold; color: #722F37; font-size: 16px; padding: 10px;">
+                                        <span t-field="doc.total_commission_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                                <tr style="border-top: 3px solid #722F37; background-color: #722F37; color: white;">
+                                    <td class="text-end" style="font-weight: bold; padding: 15px; font-size: 18px;">🏢 SCHOLARIX Net Company Share:</td>
+                                    <td class="text-end" style="font-weight: bold; padding: 15px; font-size: 18px;">
+                                        <span t-field="doc.net_company_share" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Deal Status and Notes -->
+                    <div class="mt-4 text-center" style="border: 2px solid #722F37; padding: 15px; background-color: #f8f9fa;">
+                        <h5 style="color: #722F37; font-weight: bold;">Deal Status &amp; Notes</h5>
+                        <p t-if="doc.state == 'draft'" style="color: #666; font-style: italic;">Status: Draft - Deal under preparation</p>
+                        <p t-elif="doc.state == 'sent'" style="color: #666; font-style: italic;">Status: Sent - Awaiting client response</p>
+                        <p t-elif="doc.state == 'sale'" style="color: #28a745; font-weight: bold;">Status: Confirmed - Deal closed successfully! 🎉</p>
+                        <p t-elif="doc.state == 'done'" style="color: #28a745; font-weight: bold;">Status: Done - Deal completed and delivered! ✅</p>
+                        <p t-else="" style="color: #666; font-style: italic;">Status: <span t-field="doc.state"/></p>
+                    </div>
+                </div>
+
+                <!-- Signature Section -->
+                <div t-if="not doc.signature" class="oe_structure"/>
+                <div t-else="" class="mt-4 ml64 mr4" name="signature" style="border: 1px solid #722F37; padding: 15px; background-color: #f8f9fa;">
+                    <div class="offset-8">
+                        <strong style="color: #722F37;">SCHOLARIX Authorized Signature</strong>
+                    </div>
+                    <div class="offset-8">
+                        <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                    </div>
+                    <div class="offset-8 text-center">
+                        <span t-field="doc.signed_by" style="font-weight: bold;">Oscar Morgan</span>
+                    </div>
+                </div>
+
+                <!-- Terms and Additional Notes -->
+                <div style="border: 1px solid #722F37; padding: 15px; margin-top: 15px; background-color: #f8f9fa;">
+                    <div>
+                        <span t-field="doc.note" t-attf-style="#{'text-align:justify;text-justify:inter-word;' if doc.company_id.terms_type != 'html' else ''}" name="order_note"/>
+                        <p t-if="not is_html_empty(doc.payment_term_id.note)">
+                            <strong style="color: #722F37;">Payment Terms:</strong>
+                            <span t-field="doc.payment_term_id.note">The payment should also be transmitted with love</span>
+                        </p>
+                        <div class="oe_structure"/>
+                        <p t-if="doc.fiscal_position_id and not is_html_empty(doc.fiscal_position_id.sudo().note)" id="fiscal_position_remark">
+                            <strong style="color: #722F37;">Fiscal Position Remark:</strong>
+                            <span t-field="doc.fiscal_position_id.sudo().note">No further requirements for this payment</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-3" style="color: #722F37; font-style: italic; font-size: 12px; border-top: 1px solid #722F37; padding-top: 10px;">
+                    <p>This is an official SCHOLARIX Property Deal Report generated on <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')"/></p>
+                    <p style="margin: 0;">© SCHOLARIX - Professional Real Estate Commission Management System</p>
+                </div>
+
+                <div class="oe_structure"/>
+            </div>
+        </t>
+    </template>
+</odoo>

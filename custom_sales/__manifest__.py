@@ -77,6 +77,7 @@ Business Intelligence:
         'views/dashboard_error_templates.xml',
         'wizard/sales_report_wizard_views.xml',
         'reports/sales_reports.xml',
+        'reports/scholarix_deal_report.xml',
     ],
     'demo': [
         'demo/demo_data.xml',

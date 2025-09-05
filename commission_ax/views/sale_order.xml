@@ -51,6 +51,9 @@
                                     <button name="action_process_commissions" string="Process Commissions" type="object" class="btn-primary" invisible="commission_processed == True"/>
                                 </div>
                                 <div>
+                                    <button name="action_force_process_commissions" string="Force Process (Skip Checks)" type="object" class="btn-danger" invisible="commission_processed == True" confirm="This will bypass invoice and payment requirements. Are you sure?"/>
+                                </div>
+                                <div>
                                     <button name="action_confirm_commissions" string="Confirm Commissions" type="object" class="btn-success" invisible="commission_status != 'calculated' or commission_processed == False"/>
                                 </div>
                                 <div>
