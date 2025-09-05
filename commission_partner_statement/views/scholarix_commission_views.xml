@@ -246,30 +246,6 @@
         </field>
     </record>
 
-    <!-- Enhanced Partner View with SCHOLARIX Commission -->
-    <record id="view_partner_form_scholarix_commission" model="ir.ui.view">
-        <field name="name">res.partner.form.scholarix.commission</field>
-        <field name="model">res.partner</field>
-        <field name="inherit_id" ref="commission_partner_statement.view_partner_form_commission_statement"/>
-        <field name="arch" type="xml">
-            <!-- Add SCHOLARIX Commission button to button box -->
-            <div name="button_box" position="inside">
-                <button name="action_view_scholarix_statements" type="object" class="oe_stat_button" icon="fa-line-chart" invisible="commission_order_count == 0">
-                    <div class="o_stat_info">
-                        <field name="commission_order_count" widget="statinfo" string="SCHOLARIX"/>
-                        <span class="o_stat_text">Statements</span>
-                    </div>
-                </button>
-            </div>
-
-            <!-- Add SCHOLARIX actions to commission tab -->
-            <group string="Commission Statement Reports" position="after">
-                <group string="SCHOLARIX Reports" col="2">
-                    <button name="action_generate_scholarix_statement" string="Generate SCHOLARIX Statement" type="object" class="btn-primary" invisible="commission_order_count == 0"/>
-                    <button name="%(action_scholarix_commission_report_wizard)d" string="Consolidated Report Wizard" type="action" class="btn-success"/>
-                </group>
-            </group>
-        </field>
-    </record>
+    <!-- Note: Enhanced partner view temporarily disabled due to xpath inheritance issues -->
 
 </odoo>

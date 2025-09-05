@@ -45,7 +45,6 @@ Security & Access Control:
 Integration:
 ------------
 * Seamless integration with commission_ax module
-* Compatible with enhanced_status module
 * Extends res.partner model with SCHOLARIX-specific functionality
 * Works with existing Odoo sales, accounting, and partner management
 
@@ -71,7 +70,6 @@ Professional Output:
         'sale', 
         'contacts',
         'commission_ax',  # Required for commission fields
-        'enhanced_status',  # Required for order status
     ],
     'data': [
         'security/security.xml',  # Basic security groups first

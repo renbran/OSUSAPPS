@@ -7,7 +7,7 @@
         <!-- Agents can only see their own statements -->
         <record id="scholarix_commission_statement_agent_rule" model="ir.rule">
             <field name="name">SCHOLARIX Commission Statement: Agent can see own statements</field>
-            <field name="model_id" ref="base.model_scholarix_commission_statement"/>
+            <field name="model_id" ref="model_scholarix_commission_statement"/>
             <field name="domain_force">[('agent_id.user_ids', 'in', [user.id])]</field>
             <field name="groups" eval="[(4, ref('base.group_portal')), (4, ref('base.group_user'))]"/>
             <field name="perm_read" eval="True"/>
@@ -19,7 +19,7 @@
         <!-- Commission users can see all statements but limited write access -->
         <record id="scholarix_commission_statement_user_rule" model="ir.rule">
             <field name="name">SCHOLARIX Commission Statement: User access</field>
-            <field name="model_id" ref="base.model_scholarix_commission_statement"/>
+            <field name="model_id" ref="model_scholarix_commission_statement"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_commission_statement_user'))]"/>
             <field name="perm_read" eval="True"/>
@@ -31,7 +31,7 @@
         <!-- Commission managers have full access -->
         <record id="scholarix_commission_statement_manager_rule" model="ir.rule">
             <field name="name">SCHOLARIX Commission Statement: Manager full access</field>
-            <field name="model_id" ref="base.model_scholarix_commission_statement"/>
+            <field name="model_id" ref="model_scholarix_commission_statement"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('group_commission_statement_manager'))]"/>
             <field name="perm_read" eval="True"/>
@@ -43,7 +43,7 @@
         <!-- Commission Lines Rules -->
         <record id="scholarix_commission_line_agent_rule" model="ir.rule">
             <field name="name">SCHOLARIX Commission Line: Agent can see own lines</field>
-            <field name="model_id" ref="base.model_scholarix_commission_line"/>
+            <field name="model_id" ref="model_scholarix_commission_line"/>
             <field name="domain_force">[('statement_id.agent_id.user_ids', 'in', [user.id])]</field>
             <field name="groups" eval="[(4, ref('base.group_portal')), (4, ref('base.group_user'))]"/>
             <field name="perm_read" eval="True"/>
@@ -55,7 +55,7 @@
         <!-- Email Template for SCHOLARIX Commission Statement -->
         <record id="email_template_scholarix_commission_statement" model="mail.template">
             <field name="name">SCHOLARIX Commission Statement</field>
-            <field name="model_id" ref="base.model_scholarix_commission_statement"/>
+            <field name="model_id" ref="model_scholarix_commission_statement"/>
             <field name="subject">SCHOLARIX Commission Statement - ${object.agent_id.name} - ${object.period_start} to ${object.period_end}</field>
             <field name="body_html" type="html">
                 <div style="font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; padding: 30px; border-radius: 10px;">
