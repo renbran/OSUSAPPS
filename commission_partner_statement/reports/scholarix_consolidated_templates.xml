@@ -334,7 +334,7 @@
                                         <tr>
                                             <th style="width: 15%;">Order Ref</th>
                                             <th style="width: 12%;">Date</th>
-                                            <th style="width: 25%;">Customer</th>
+                                            <th style="width: 25%;">Customer / Client Ref</th>
                                             <th style="width: 12%;">Order Amount</th>
                                             <th style="width: 12%;">Direct Sales</th>
                                             <th style="width: 12%;">Referral</th>
@@ -352,6 +352,9 @@
                                                 </td>
                                                 <td>
                                                     <span t-field="line.customer_id.name"/>
+                                                    <t t-if="line.client_order_ref">
+                                                        <br/><small style="color: #6c757d;">Ref: <span t-field="line.client_order_ref"/></small>
+                                                    </t>
                                                 </td>
                                                 <td>$                                                    <span t-esc="'{:,.2f}'.format(line.order_amount)"/>
                                                 </td>
