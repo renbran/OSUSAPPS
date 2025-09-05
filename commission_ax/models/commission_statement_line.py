@@ -1,4 +1,4 @@
-from odoo impo                                                                                                                                                                                                                                                                                                                                                                      rt models, fields
+from odoo import models, fields
 
 class CommissionStatementLine(models.TransientModel):
     _name = 'commission.statement.line'
@@ -6,10 +6,10 @@ class CommissionStatementLine(models.TransientModel):
 
     wizard_id = fields.Many2one('commission.partner.statement.wizard', string='Wizard', help="Related commission statement wizard", required=True)
     agent_name = fields.Char(string='Agent Name', help="Name of the commission agent", tracking=True, required=True)
-    deal_date = fields.Date(string='Deal Date', help="Date of the deal", tracking=True, required=True)
+    booking_date = fields.Date(string='Booking Date', help="Date of the booking", tracking=True, required=True)
     commission_type = fields.Char(string='Commission Type', help="Type of commission", tracking=True)
     rate = fields.Char(string='Rate', help="Commission rate (%)", tracking=True)
-    property_price = fields.Float(string='Property Price', help="Property price for commission calculation", tracking=True)
+    sale_value = fields.Float(string='Sale Value', help="Sale value for commission calculation", tracking=True)
     gross_commission = fields.Float(string='Gross Commission', help="Gross commission amount", tracking=True)
     vat_rate = fields.Char(string='VAT (%)', help="VAT rate (%)", tracking=True)
     net_commission = fields.Float(string='Net Commission', help="Net commission after VAT", tracking=True)
