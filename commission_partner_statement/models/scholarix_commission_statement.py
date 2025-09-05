@@ -15,6 +15,7 @@ class ScholarixCommissionStatement(models.Model):
     """SCHOLARIX Commission Statement Model for consolidated reporting"""
     _name = 'scholarix.commission.statement'
     _description = 'SCHOLARIX Commission Statement'
+    _inherit = ['mail.thread']
     _order = 'period_start desc, agent_id'
     _rec_name = 'display_name'
 
