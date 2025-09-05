@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import base64
 import io
 import json
@@ -19,21 +20,25 @@ class Partner(models.Model):
     commission_sale_order_ids = fields.Many2many(
         'sale.order',
         compute='_compute_commission_sale_orders',
+        store=True,
         help='Sale Orders where this partner receives commission'
     )
     total_commission_amount = fields.Monetary(
         string='Total Commission Amount',
         compute='_compute_commission_totals',
+        store=True,
         help='Total commission amount from all orders'
     )
     commission_order_count = fields.Integer(
         string='Commission Orders Count',
         compute='_compute_commission_totals',
+        store=True,
         help='Number of orders with commission for this partner'
     )
     last_commission_date = fields.Date(
         string='Last Commission Date',
         compute='_compute_commission_totals',
+        store=True,
         help='Date of last commission order'
     )
     
@@ -73,7 +78,13 @@ class Partner(models.Model):
             ])
             partner.commission_sale_order_ids = commission_orders
 
-    @api.depends('commission_sale_order_ids')
+    @api.depends('commission_sale_order_ids', 'commission_sale_order_ids.broker_amount',
+                 'commission_sale_order_ids.referrer_amount', 'commission_sale_order_ids.cashback_amount',
+                 'commission_sale_order_ids.other_external_amount', 'commission_sale_order_ids.agent1_amount',
+                 'commission_sale_order_ids.agent2_amount', 'commission_sale_order_ids.manager_amount',
+                 'commission_sale_order_ids.director_amount', 'commission_sale_order_ids.salesperson_commission',
+                 'commission_sale_order_ids.manager_commission', 'commission_sale_order_ids.second_agent_commission',
+                 'commission_sale_order_ids.director_commission', 'commission_sale_order_ids.date_order')
     def _compute_commission_totals(self):
         """Compute commission totals and statistics"""
         for partner in self:
