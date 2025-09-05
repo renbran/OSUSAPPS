@@ -68,6 +68,7 @@ Professional Output:
     'website': 'https://www.osusproperties.com',
     'depends': [
         'base', 
+        'mail',  # Required for mail.thread inheritance
         'sale', 
         'contacts',
         'commission_ax',  # Required for commission fields
