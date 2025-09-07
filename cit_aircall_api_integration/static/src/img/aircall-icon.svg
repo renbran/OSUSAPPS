@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Phone circle background -->
+    <circle cx="256" cy="256" r="240" fill="#00B388"/>
+    
+    <!-- Phone handset -->
+    <path d="M352 312v-16c0-13.255-10.745-24-24-24h-48v-48h48c13.255 0 24-10.745 24-24v-64c0-13.255-10.745-24-24-24h-48V88c0-13.255-10.745-24-24-24h-16c-13.255 0-24 10.745-24 24v24h-48c-13.255 0-24 10.745-24 24v64c0 13.255 10.745 24 24 24h48v48h-48c-13.255 0-24 10.745-24 24v16c0 13.255 10.745 24 24 24h144c13.255 0 24-10.745 24-24z" 
+        fill="white"/>
+    
+    <!-- Sound waves -->
+    <path d="M384 256c0 70.692-57.308 128-128 128S128 326.692 128 256" 
+        stroke="white" 
+        stroke-width="24" 
+        stroke-linecap="round"
+        fill="none"/>
+    <path d="M416 256c0 88.366-71.634 160-160 160S96 344.366 96 256" 
+        stroke="white" 
+        stroke-width="16" 
+        stroke-linecap="round"
+        fill="none"/>
+</svg>
