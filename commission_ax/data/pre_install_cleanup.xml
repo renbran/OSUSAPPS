@@ -6,6 +6,7 @@
         <delete model="ir.ui.view" search="[('xmlid', 'like', 'commission_ax.view_order_form_commission_enhanced')]"/>
         <delete model="ir.ui.view" search="[('xmlid', '=', 'commission_ax.view_order_form_inherit_commission_enhanced_v2')]"/>
 
-        <!-- Views cleanup completed -->
+        <!-- Clear view cache to ensure fresh loading -->
+        <function model="ir.ui.view" name="clear_caches"/>
     </data>
 </odoo>

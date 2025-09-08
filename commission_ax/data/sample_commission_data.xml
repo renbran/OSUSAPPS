@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sample Commission Partners -->
+        <record id="partner_consultant_john" model="res.partner">
+            <field name="name">John Smith (Primary Consultant)</field>
+            <field name="email">john.smith@company.com</field>
+            <field name="phone">+971-50-123-4567</field>
+            <field name="supplier_rank">1</field>
+            <field name="is_company">False</field>
+        </record>
+
+        <record id="partner_manager_sarah" model="res.partner">
+            <field name="name">Sarah Johnson (Regional Manager)</field>
+            <field name="email">sarah.johnson@company.com</field>
+            <field name="phone">+971-50-234-5678</field>
+            <field name="supplier_rank">1</field>
+            <field name="is_company">False</field>
+        </record>
+
+        <record id="partner_director_mike" model="res.partner">
+            <field name="name">Mike Wilson (Sales Director)</field>
+            <field name="email">mike.wilson@company.com</field>
+            <field name="phone">+971-50-345-6789</field>
+            <field name="supplier_rank">1</field>
+            <field name="is_company">False</field>
+        </record>
+
+        <record id="partner_broker_alex" model="res.partner">
+            <field name="name">Alex Property Brokers LLC</field>
+            <field name="email">alex@brokers.ae</field>
+            <field name="phone">+971-4-567-8901</field>
+            <field name="supplier_rank">1</field>
+            <field name="is_company">True</field>
+        </record>
+
+        <record id="partner_agent_emma" model="res.partner">
+            <field name="name">Emma Rodriguez (Internal Agent)</field>
+            <field name="email">emma.rodriguez@company.com</field>
+            <field name="phone">+971-50-456-7890</field>
+            <field name="supplier_rank">1</field>
+            <field name="is_company">False</field>
+        </record>
+
+        <record id="partner_referrer_david" model="res.partner">
+            <field name="name">David Real Estate Referrals</field>
+            <field name="email">david@referrals.ae</field>
+            <field name="phone">+971-4-678-9012</field>
+            <field name="supplier_rank">1</field>
+            <field name="is_company">True</field>
+        </record>
+
+        <!-- Sample Customer -->
+        <record id="customer_ahmed" model="res.partner">
+            <field name="name">Ahmed Al Mansouri</field>
+            <field name="email">ahmed.almansouri@email.com</field>
+            <field name="phone">+971-50-789-0123</field>
+            <field name="customer_rank">1</field>
+            <field name="is_company">False</field>
+        </record>
+
+        <!-- Sample Product -->
+        <record id="product_villa_downtown" model="product.product">
+            <field name="name">Luxury Villa - Downtown Dubai</field>
+            <field name="detailed_type">service</field>
+            <field name="list_price">2500000.00</field>
+            <field name="standard_price">2300000.00</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+        </record>
+
+        <!-- Commission Products -->
+        <record id="commission_product_broker" model="product.product">
+            <field name="name">Broker Commission - Property Sale</field>
+            <field name="detailed_type">service</field>
+            <field name="list_price">0.00</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+        </record>
+
+        <!-- Sample Sale Order with Commissions -->
+        <record id="sample_sale_order_villa" model="sale.order">
+            <field name="name">SO-2025-001-VILLA</field>
+            <field name="partner_id" ref="customer_ahmed"/>
+            <field name="date_order" eval="datetime.now() - timedelta(days=15)"/>
+            <field name="state">sale</field>
+            <field name="pricelist_id" ref="product.list0"/>
+
+            <!-- Legacy Commission Fields -->
+            <field name="consultant_id" ref="partner_consultant_john"/>
+            <field name="salesperson_commission">37500.00</field>
+            <field name="consultant_commission_type">percent_untaxed_total</field>
+            <field name="consultant_comm_percentage">1.5</field>
+
+            <field name="manager_id" ref="partner_manager_sarah"/>
+            <field name="manager_commission">25000.00</field>
+            <field name="manager_legacy_commission_type">percent_untaxed_total</field>
+            <field name="manager_comm_percentage">1.0</field>
+
+            <field name="director_id" ref="partner_director_mike"/>
+            <field name="director_commission">12500.00</field>
+            <field name="director_legacy_commission_type">percent_untaxed_total</field>
+            <field name="director_comm_percentage">0.5</field>
+
+            <!-- External Commission Fields -->
+            <field name="broker_partner_id" ref="partner_broker_alex"/>
+            <field name="broker_amount">50000.00</field>
+            <field name="broker_commission_type">percent_untaxed_total</field>
+            <field name="broker_rate">2.0</field>
+
+            <field name="referrer_partner_id" ref="partner_referrer_david"/>
+            <field name="referrer_amount">12500.00</field>
+            <field name="referrer_commission_type">percent_untaxed_total</field>
+            <field name="referrer_rate">0.5</field>
+
+            <!-- Internal Commission Fields -->
+            <field name="agent1_partner_id" ref="partner_agent_emma"/>
+            <field name="agent1_amount">25000.00</field>
+            <field name="agent1_commission_type">percent_untaxed_total</field>
+            <field name="agent1_rate">1.0</field>
+
+            <field name="manager_partner_id" ref="partner_manager_sarah"/>
+            <field name="manager_amount">15000.00</field>
+            <field name="manager_commission_type">percent_untaxed_total</field>
+            <field name="manager_rate">0.6</field>
+        </record>
+
+        <!-- Sale Order Line for Main Product -->
+        <record id="sample_order_line_villa" model="sale.order.line">
+            <field name="order_id" ref="sample_sale_order_villa"/>
+            <field name="product_id" ref="product_villa_downtown"/>
+            <field name="product_uom_qty">1</field>
+            <field name="price_unit">2500000.00</field>
+            <field name="name">Luxury Villa - Downtown Dubai - 4 Bedroom</field>
+        </record>
+
+        <!-- Commission Product Line -->
+        <record id="sample_commission_line_broker" model="sale.order.line">
+            <field name="order_id" ref="sample_sale_order_villa"/>
+            <field name="product_id" ref="commission_product_broker"/>
+            <field name="product_uom_qty">1</field>
+            <field name="price_unit">30000.00</field>
+            <field name="name">Additional Broker Commission - Special Agreement</field>
+        </record>
+
+        <!-- Second Sample Order for Multi-Deal Report -->
+        <record id="sample_sale_order_apartment" model="sale.order">
+            <field name="name">SO-2025-002-APT</field>
+            <field name="partner_id" ref="customer_ahmed"/>
+            <field name="date_order" eval="datetime.now() - timedelta(days=10)"/>
+            <field name="state">sale</field>
+            <field name="pricelist_id" ref="product.list0"/>
+
+            <!-- Different commission structure -->
+            <field name="consultant_id" ref="partner_consultant_john"/>
+            <field name="salesperson_commission">15000.00</field>
+            <field name="consultant_commission_type">fixed</field>
+
+            <field name="broker_partner_id" ref="partner_broker_alex"/>
+            <field name="broker_amount">20000.00</field>
+            <field name="broker_commission_type">fixed</field>
+
+            <field name="agent1_partner_id" ref="partner_agent_emma"/>
+            <field name="agent1_amount">10000.00</field>
+            <field name="agent1_commission_type">fixed</field>
+        </record>
+
+        <record id="product_apartment" model="product.product">
+            <field name="name">Modern Apartment - Business Bay</field>
+            <field name="detailed_type">service</field>
+            <field name="list_price">1200000.00</field>
+            <field name="categ_id" ref="product.product_category_all"/>
+        </record>
+
+        <record id="sample_order_line_apartment" model="sale.order.line">
+            <field name="order_id" ref="sample_sale_order_apartment"/>
+            <field name="product_id" ref="product_apartment"/>
+            <field name="product_uom_qty">1</field>
+            <field name="price_unit">1200000.00</field>
+            <field name="name">Modern Apartment - Business Bay - 2 Bedroom</field>
+        </record>
+    </data>
+</odoo>

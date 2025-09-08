@@ -56,6 +56,7 @@ Technical Features:
         'portal',
     ],
     'data': [
+        'data/pre_install_cleanup.xml',
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/cron_data.xml',
