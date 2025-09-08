@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Override Sale Order Form View with Custom Workflow -->
+    <!-- Override Sale Order Form View with Enhanced Organized Layout -->
     <record id="view_order_form_enhanced_workflow" model="ir.ui.view">
         <field name="name">sale.order.form.enhanced.workflow</field>
         <field name="model">sale.order</field>
@@ -51,44 +51,128 @@
                 <attribute name="help">Confirm order after approval process</attribute>
             </xpath>
 
-            <!-- Add financial tracking section -->
-            <xpath expr="//field[@name='partner_id']" position="after">
-                <group name="workflow_info" string="Workflow Information" invisible="state in ['draft', 'cancel']">
-                    <group>
-                        <field name="billing_status" widget="badge"/>
-                        <field name="payment_status" widget="badge"/>
-                    </group>
-                    <group>
-                        <field name="invoiced_amount"/>
-                        <field name="paid_amount"/>
-                        <field name="balance_amount"/>
-                    </group>
+            <!-- Transform the existing content into tabs by wrapping it in a notebook -->
+            <xpath expr="//group[@name='sale_header']" position="replace">
+                <notebook>
+                    <!-- Tab 1: Order Information -->
+                    <page string="📋 Order Details" name="order_details">
+                        <group name="sale_header">
+                            <group name="customer_details" string="Customer Information">
+                                <field name="partner_id" readonly="is_locked and not can_unlock" context="{'search_default_customer': 1, 'show_address': 1}" options='{"always_reload": True}'/>
+                                <field name="partner_invoice_id" groups="account.group_delivery_invoice_address" context="{'default_type':'invoice'}" readonly="is_locked and not can_unlock"/>
+                                <field name="partner_shipping_id" groups="account.group_delivery_invoice_address" context="{'default_type':'delivery'}" readonly="is_locked and not can_unlock"/>
+                                <field name="pricelist_id" groups="product.group_sale_pricelist" readonly="is_locked and not can_unlock"/>
+                            </group>
+                            <group name="order_info" string="Order Information">
+                                <field name="date_order" readonly="is_locked and not can_unlock"/>
+                                <field name="validity_date" readonly="is_locked and not can_unlock"/>
+                                <field name="user_id" readonly="is_locked and not can_unlock"/>
+                                <field name="team_id" readonly="is_locked and not can_unlock"/>
+                                <field name="company_id" groups="base.group_multi_company" readonly="is_locked and not can_unlock"/>
+                            </group>
+                        </group>
+                    </page>
+
+                    <!-- Tab 2: Workflow & Status -->
+                    <page string="⚙️ Workflow Status" name="workflow_status" invisible="state in ['draft', 'cancel']">
+                        <group>
+                            <group name="workflow_progress" string="Workflow Progress">
+                                <field name="state" widget="badge"/>
+                                <field name="stage_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="completion_criteria_met" widget="boolean_toggle"/>
+                            </group>
+                            <group name="workflow_control" string="Workflow Control">
+                                <field name="is_locked" widget="boolean_toggle" readonly="1"/>
+                                <field name="can_unlock" widget="boolean_toggle" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group name="workflow_notes_tab" string="Workflow Notes">
+                            <field name="workflow_notes" placeholder="Add workflow progression notes, decisions, and status updates..." nolabel="1" widget="text"/>
+                        </group>
+                    </page>
+
+                    <!-- Tab 3: Financial Tracking -->
+                    <page string="💰 Financial Status" name="financial_status" invisible="state in ['draft', 'cancel']">
+                        <group>
+                            <group name="billing_info" string="Billing Information">
+                                <field name="billing_status" widget="badge"/>
+                                <field name="invoiced_amount" widget="monetary"/>
+                                <field name="invoice_ids" readonly="1" widget="many2many_tags"/>
+                            </group>
+                            <group name="payment_info" string="Payment Information">
+                                <field name="payment_status" widget="badge"/>
+                                <field name="paid_amount" widget="monetary"/>
+                                <field name="balance_amount" widget="monetary"/>
+                            </group>
+                        </group>
+
+                        <group name="reconciliation_section" string="Reconciliation Notes" invisible="state not in ['approved', 'sale', 'completed']">
+                            <field name="reconciliation_notes" placeholder="Add financial reconciliation notes, payment details, and completion tracking..." nolabel="1" widget="text"/>
+                        </group>
+                    </page>
+
+                    <!-- Tab 4: Payment & Delivery Terms -->
+                    <page string="📋 Terms &amp; Conditions" name="terms_conditions">
+                        <group>
+                            <group name="payment_terms" string="Payment Terms">
+                                <field name="payment_term_id" readonly="is_locked and not can_unlock"/>
+                                <field name="fiscal_position_id" groups="account.group_account_manager" readonly="is_locked and not can_unlock"/>
+                                <field name="currency_id" groups="base.group_multi_currency" readonly="is_locked and not can_unlock"/>
+                            </group>
+                            <group name="delivery_terms" string="Delivery Terms">
+                                <field name="commitment_date" readonly="is_locked and not can_unlock"/>
+                            </group>
+                        </group>
+                    </page>
+
+                    <!-- Tab 5: Internal Notes -->
+                    <page string="📝 Notes &amp; References" name="notes_references">
+                        <group>
+                            <group name="references" string="References">
+                                <field name="client_order_ref" readonly="is_locked and not can_unlock"/>
+                                <field name="reference" readonly="1"/>
+                                <field name="origin" readonly="1"/>
+                            </group>
+                            <group name="tracking" string="Tracking">
+                                <field name="tag_ids" widget="many2many_tags" readonly="is_locked and not can_unlock"/>
+                            </group>
+                        </group>
+                    </page>
+
+                </notebook>
+            </xpath>
+
+            <!-- Move order lines to first tab after the customer info -->
+            <xpath expr="//page[@name='order_details']" position="inside">
+                <field name="order_line" readonly="is_locked and not can_unlock" widget="section_and_note_one2many" mode="tree,form"/>
+
+                <!-- Order totals -->
+                <group class="oe_subtotal_footer oe_right">
+                    <field name="amount_untaxed" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                    <field name="amount_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                    <div class="oe_subtotal_footer_separator oe_inline">
+                        <label for="amount_total" />
+                        <field name="amount_total" nolabel="1" class="oe_subtotal_footer_range" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                    </div>
                 </group>
             </xpath>
 
-            <!-- Add workflow notes section -->
-            <xpath expr="//field[@name='note']" position="after">
-                <group name="workflow_notes" string="Workflow Notes" invisible="state in ['draft', 'cancel']">
-                    <field name="workflow_notes" placeholder="Add workflow progression notes..." nolabel="1"/>
-                    <field name="reconciliation_notes" placeholder="Add financial reconciliation notes..." invisible="state not in ['approved', 'sale', 'completed']" nolabel="1"/>
+            <!-- Move notes to the Notes & References tab -->
+            <xpath expr="//page[@name='notes_references']" position="inside">
+                <group name="internal_notes" string="Internal Notes">
+                    <field name="note" placeholder="Terms and conditions..." nolabel="1" readonly="is_locked and not can_unlock" widget="html"/>
                 </group>
             </xpath>
 
-            <!-- Lock order lines when completed -->
+            <!-- Hide the original order_line and note fields since we're moving them -->
             <xpath expr="//field[@name='order_line']" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
+                <attribute name="invisible">1</attribute>
             </xpath>
 
-            <!-- Lock partner when completed -->
-            <xpath expr="//field[@name='partner_id']" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
+            <xpath expr="//field[@name='note']" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
-
-            <!-- Lock payment terms when completed -->
-            <xpath expr="//field[@name='payment_term_id']" position="attributes">
-                <attribute name="readonly">is_locked and not can_unlock</attribute>
-            </xpath>
-
         </field>
     </record>
 

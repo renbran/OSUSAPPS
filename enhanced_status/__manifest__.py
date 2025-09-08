@@ -47,8 +47,22 @@
         'data/sale_order_stage.xml',
         'views/sale_order_stage_views.xml',
         'views/sale_order_views.xml',
+        'views/commission_menu.xml',
         'data/ir_cron_data.xml',
+        'reports/commission_report_template.xml',
     ],
+    'assets': {
+        'web.assets_frontend': [
+            'enhanced_status/static/src/css/sale_order_enhanced.css',
+            'enhanced_status/static/src/js/sale_order_enhanced.js',
+            'enhanced_status/static/src/xml/sale_order_templates.xml',
+        ],
+        'web.assets_backend': [
+            'enhanced_status/static/src/css/sale_order_enhanced.css',
+            'enhanced_status/static/src/js/sale_order_enhanced.js',
+            'enhanced_status/static/src/xml/sale_order_templates.xml',
+        ],
+    },
     'demo': [],
     'installable': True,
     'application': False,
