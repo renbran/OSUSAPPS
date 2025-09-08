@@ -81,6 +81,12 @@ class SaleOrder(models.Model):
         compute='_compute_can_unlock',
         help="True if current user can unlock completed orders"
     )
+    
+    is_warning = fields.Boolean(
+        string='Has Warnings',
+        compute='_compute_is_warning',
+        help="True if there are validation warnings for this order"
+    )
 
     # Business logic fields
     reconciliation_notes = fields.Text(
@@ -111,6 +117,26 @@ class SaleOrder(models.Model):
         can_unlock = self.env.user.has_group('sales_team.group_sale_manager')
         for order in self:
             order.can_unlock = can_unlock
+
+    def _compute_is_warning(self):
+        """Compute if there are validation warnings for this order"""
+        for order in self:
+            # Check for common warning conditions
+            has_warnings = False
+            
+            # Warning if no order lines
+            if not order.order_line:
+                has_warnings = True
+            
+            # Warning if customer has no payment terms and amount > 0
+            if order.amount_total > 0 and not order.partner_id.property_payment_term_id:
+                has_warnings = True
+            
+            # Warning if overdue invoices exist
+            if order.invoice_ids.filtered(lambda inv: inv.state == 'posted' and inv.amount_residual > 0):
+                has_warnings = True
+                
+            order.is_warning = has_warnings
 
     @api.depends('invoice_ids', 'invoice_ids.amount_total', 'invoice_ids.state', 'invoice_ids.amount_residual')
     def _compute_financial_amounts(self):

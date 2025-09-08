@@ -23,6 +23,8 @@
                 <field name="can_unlock" invisible="1"/>
                 <field name="completion_criteria_met" invisible="1"/>
                 <field name="has_due" invisible="1"/>
+                <field name="is_warning" invisible="1"/>
+                <field name="company_id" invisible="1"/>
             </xpath>
 
             <!-- Replace default buttons with custom workflow buttons -->
