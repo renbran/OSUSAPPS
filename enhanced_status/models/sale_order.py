@@ -48,6 +48,13 @@ class SaleOrder(models.Model):
         help="Total amount invoiced for this order"
     )
     
+    # Compatibility field for base view validation
+    has_due = fields.Boolean(
+        string='Has Due Amount',
+        compute='_compute_has_due',
+        help="True if order has outstanding amounts due"
+    )
+    
     paid_amount = fields.Monetary(
         string='Paid Amount',
         compute='_compute_financial_amounts',
@@ -170,6 +177,17 @@ class SaleOrder(models.Model):
             delivery_complete = order._check_delivery_completion()
             
             order.completion_criteria_met = financial_complete and delivery_complete
+
+    @api.depends('balance_amount', 'payment_status', 'billing_status')
+    def _compute_has_due(self):
+        """Compute if order has outstanding due amounts"""
+        for order in self:
+            # Has due amount if there's a positive balance or partially paid status
+            order.has_due = (
+                order.balance_amount > 0.01 or  # Positive balance with tolerance
+                order.payment_status in ['unpaid', 'partially_paid'] or
+                order.billing_status == 'partially_invoiced'
+            )
 
     @api.model
     def _read_group_stage_ids(self, stages, domain, order):
