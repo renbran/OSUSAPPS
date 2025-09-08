@@ -35,20 +35,20 @@
 
 .o_form_view .o_notebook .nav-tabs .nav-link:hover {
   background-color: #f8f9fa;
-  color: #007bff;
+  color: #800020;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .o_form_view .o_notebook .nav-tabs .nav-link.active {
-  background-color: #007bff;
+  background-color: #800020;
   color: white;
-  border-color: #007bff;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  border-color: #800020;
+  box-shadow: 0 4px 12px rgba(128, 0, 32, 0.3);
 }
 
 .o_form_view .o_notebook .nav-tabs .nav-link.active::before {
-  background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #007bff 100%);
+  background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #800020 100%);
 }
 
 /* Tab content area */
@@ -62,7 +62,7 @@
 
 /* Progress Indicator Styling */
 .progress-indicator-wrapper {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #800020 0%, #a00028 100%);
   color: white;
   padding: 15px;
   border-radius: 8px;
@@ -151,8 +151,8 @@
 }
 
 .financial-item.invoiced {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border-color: #2196f3;
+  background: linear-gradient(135deg, #fde8e8 0%, #fcc8c8 100%);
+  border-color: #800020;
 }
 
 .financial-item.paid {
@@ -172,7 +172,7 @@
 }
 
 .financial-item.invoiced .financial-icon {
-  color: #2196f3;
+  color: #800020;
 }
 
 .financial-item.paid .financial-icon {
@@ -205,7 +205,7 @@
 .financial-percentage {
   font-size: 14px;
   font-weight: 600;
-  color: #007bff;
+  color: #800020;
 }
 
 .financial-progress-bars {
@@ -271,7 +271,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #007bff 100%);
+  background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #800020 100%);
   border-radius: 12px 12px 0 0;
 }
 
@@ -319,7 +319,7 @@
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #800020;
   padding-bottom: 5px;
   display: inline-block;
 }
@@ -332,7 +332,7 @@
 }
 
 .o_field_one2many .o_list_table th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #800020 0%, #a00028 100%);
   color: white;
   font-weight: 700;
   border-bottom: none;
@@ -378,8 +378,8 @@
 }
 
 .o_field_text textarea:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #800020;
+  box-shadow: 0 0 0 0.2rem rgba(128, 0, 32, 0.25);
   background: white;
   transform: translateY(-1px);
 }
@@ -428,15 +428,15 @@
 
 .workflow-helper .btn {
   background: transparent;
-  border: 1px solid #007bff;
-  color: #007bff;
+  border: 1px solid #800020;
+  color: #800020;
   font-size: 12px;
   padding: 5px 10px;
   border-radius: 15px;
 }
 
 .workflow-helper .btn:hover {
-  background: #007bff;
+  background: #800020;
   color: white;
 }
 
@@ -481,7 +481,7 @@
 }
 
 .oe_subtotal_footer_separator {
-  border-top: 3px solid #007bff;
+  border-top: 3px solid #800020;
   margin-top: 15px;
   padding-top: 15px;
   position: relative;
@@ -500,7 +500,7 @@
 .oe_subtotal_footer_range {
   font-size: 20px;
   font-weight: bold;
-  color: #007bff;
+  color: #800020;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -544,10 +544,10 @@
 }
 
 .o_field_text textarea::-webkit-scrollbar-thumb {
-  background: #007bff;
+  background: #800020;
   border-radius: 3px;
 }
 
 .o_field_text textarea::-webkit-scrollbar-thumb:hover {
-  background: #0056b3;
+  background: #600018;
 }
