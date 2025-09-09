@@ -18,6 +18,12 @@ class SaleOrder(models.Model):
         help="True if current user can unlock orders"
     )
     
+    has_due = fields.Boolean(
+        string='Has Due Amounts',
+        compute='_compute_has_due',
+        help="True if order has overdue amounts"
+    )
+    
     # Simple compute methods
     @api.depends('state')
     def _compute_is_locked(self):
@@ -30,6 +36,15 @@ class SaleOrder(models.Model):
         can_unlock = self.env.user.has_group('sales_team.group_sale_manager')
         for order in self:
             order.can_unlock = can_unlock
+
+    def _compute_has_due(self):
+        """Simple due amount computation"""
+        for order in self:
+            # Simple check for overdue invoices
+            overdue_invoices = order.invoice_ids.filtered(
+                lambda inv: inv.state == 'posted' and inv.amount_residual > 0
+            )
+            order.has_due = bool(overdue_invoices)
 
     # Simple workflow methods
     def action_complete_order(self):

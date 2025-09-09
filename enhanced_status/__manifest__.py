@@ -46,6 +46,7 @@
         'security/security.xml',
         'data/sale_order_stage.xml',
         'views/sale_order_stage_views.xml',
+        'views/sale_order_simple_view.xml',
         'views/commission_menu.xml',
         'data/ir_cron_data.xml',
         'reports/commission_report_template.xml',

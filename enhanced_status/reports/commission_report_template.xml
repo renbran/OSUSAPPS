@@ -2,7 +2,7 @@
 <odoo>
     <!-- Commission Payout Report Template -->
     <template id="commission_payout_report_template_final">
-        <t t-name="order_status_override.commission_report_document_final">
+        <t t-name="enhanced_status.commission_report_document_final">
             <t t-call="web.html_container">
                 <t t-foreach="docs" t-as="o">
                     <t t-call="web.external_layout">
@@ -80,7 +80,7 @@
                                 
                                 /* Section Headers */
                                 .section-header {
-                                    background: #8b1538;
+                                    background: #800020;
                                     color: white;
                                     padding: 12px 16px;
                                     font-weight: bold;
@@ -135,12 +135,12 @@
                                 .section-total {
                                     background: #e8e8e8 !important;
                                     font-weight: bold;
-                                    border-top: 2px solid #8b1538;
+                                    border-top: 2px solid #800020;
                                     font-size: 15px;
                                 }
                                 
                                 .final-total {
-                                    background: #8b1538 !important;
+                                    background: #800020 !important;
                                     color: white !important;
                                     font-weight: bold;
                                     font-size: 16px;
@@ -162,7 +162,7 @@
                                 }
                                 
                                 .footer-website {
-                                    color: #8b1538;
+                                    color: #800020;
                                     font-weight: bold;
                                 }
                             </style>
@@ -203,19 +203,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <span t-field="o.unit_id.name"/>
-    (                                            <span t-field="o.project_id.name"/>
-    )</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-right">
-                                            <t t-esc="'{:,.2f}'.format(o.amount_untaxed or 0)"/>
-                                        </td>
-                                        <td class="text-right">
-                                            <t t-esc="'{:,.2f}'.format(o.amount_untaxed or 0)"/>
-                                        </td>
-                                    </tr>
+                                    <t t-foreach="o.order_line" t-as="line">
+                                        <tr>
+                                            <td>
+                                                <span t-field="line.product_id.name"/>
+                                                <t t-if="line.name != line.product_id.name">
+                                                    <br/>
+                                                    <small t-field="line.name"/>
+                                                </t>
+                                            </td>
+                                            <td class="text-center">
+                                                <t t-esc="'{:.0f}'.format(line.product_uom_qty)"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(line.price_unit or 0)"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(line.price_subtotal or 0)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
                                     <tr class="total-row">
                                         <td colspan="3" class="text-right">Order Total (AED):</td>
                                         <td class="text-right">
@@ -225,154 +232,53 @@
                                 </tbody>
                             </table>
 
-                            <!-- External Commissions Section -->
-                            <t t-set="external_commissions" t-value="[
-                                    ('Broker', o.broker_partner_id, o.broker_rate, o.broker_amount, 'Percentage of Unit Price'),
-                                    ('Referrer', o.referrer_partner_id, o.referrer_rate, o.referrer_amount, 'Percentage of Unit Price'),
-                                    ('Cashback', o.cashback_partner_id, o.cashback_rate, o.cashback_amount, 'Percentage of Unit Price'),
-                                    ('Other External', o.other_external_partner_id, o.other_external_rate, o.other_external_amount, 'Percentage of Unit Price')
-                                ]"/>
+                            <!-- Basic Commission Structure (Demo/Template) -->
+                            <t t-set="has_commissions" t-value="o.user_id or o.team_id"/>
 
-                            <t t-set="has_external" t-value="any(comm[3] and comm[3] > 0 for comm in external_commissions if comm[1])"/>
-
-                            <t t-if="has_external">
-                                <div class="section-header">EXTERNAL COMMISSIONS</div>
-                                <table class="report-table">
-                                    <thead>
-                                        <tr>
-                                            <th>PARTY</th>
-                                            <th>PARTNER</th>
-                                            <th>TYPE</th>
-                                            <th class="text-center">RATE (%)</th>
-                                            <th class="text-right">AMOUNT (AED)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <t t-foreach="external_commissions" t-as="comm">
-                                            <tr t-if="comm[1] and comm[3] and comm[3] > 0">
-                                                <td>
-                                                    <t t-esc="comm[0]"/>
-                                                </td>
-                                                <td>
-                                                    <span t-field="comm[1].name"/>
-                                                </td>
-                                                <td>
-                                                    <t t-esc="comm[4]"/>
-                                                </td>
-                                                <td class="text-center">
-                                                    <t t-esc="'{:.2f}'.format(comm[2] or 0)"/>
-                                                </td>
-                                                <td class="text-right">
-                                                    <t t-esc="'{:,.2f}'.format(comm[3] or 0)"/>
-                                                </td>
-                                            </tr>
-                                        </t>
-                                        <tr class="section-total">
-                                            <td colspan="4" class="text-right">Total External (AED):</td>
-                                            <td class="text-right">
-                                                <t t-esc="'{:,.2f}'.format(o.total_external_commission_amount or 0)"/>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </t>
-
-                            <!-- Internal Commissions Section -->
-                            <t t-set="internal_commissions" t-value="[
-                                    ('Manager', o.manager_partner_id, o.manager_rate, o.manager_amount, 'Percentage of Untaxed Total'),
-                                    ('Director', o.director_partner_id, o.director_rate, o.director_amount, 'Percentage of Unit Price'),
-                                    ('Agent 1', o.agent1_partner_id, o.agent1_rate, o.agent1_amount, 'Percentage of Untaxed Total'),
-                                    ('Agent 2', o.agent2_partner_id, o.agent2_rate, o.agent2_amount, 'Percentage of Unit Price')
-                                ]"/>
-
-                            <t t-set="has_internal" t-value="any(comm[3] and comm[3] > 0 for comm in internal_commissions if comm[1])"/>
-
-                            <t t-if="has_internal">
-                                <div class="section-header">INTERNAL COMMISSIONS</div>
+                            <t t-if="has_commissions">
+                                <div class="section-header">COMMISSION STRUCTURE</div>
                                 <table class="report-table">
                                     <thead>
                                         <tr>
                                             <th>ROLE</th>
-                                            <th>PARTNER</th>
+                                            <th>PERSON/TEAM</th>
                                             <th>TYPE</th>
                                             <th class="text-center">RATE (%)</th>
                                             <th class="text-right">AMOUNT (AED)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <t t-foreach="internal_commissions" t-as="comm">
-                                            <tr t-if="comm[1] and comm[3] and comm[3] > 0">
-                                                <td>
-                                                    <t t-esc="comm[0]"/>
-                                                </td>
-                                                <td>
-                                                    <span t-field="comm[1].name"/>
-                                                </td>
-                                                <td>
-                                                    <t t-esc="comm[4]"/>
-                                                </td>
-                                                <td class="text-center">
-                                                    <t t-esc="'{:.2f}'.format(comm[2] or 0)"/>
-                                                </td>
-                                                <td class="text-right">
-                                                    <t t-esc="'{:,.2f}'.format(comm[3] or 0)"/>
-                                                </td>
-                                            </tr>
-                                        </t>
-                                        <tr class="section-total">
-                                            <td colspan="4" class="text-right">Total Internal (AED):</td>
+                                        <!-- Sales Person Commission -->
+                                        <tr t-if="o.user_id">
+                                            <td>Sales Person</td>
+                                            <td>
+                                                <span t-field="o.user_id.name"/>
+                                            </td>
+                                            <td>Standard Commission</td>
+                                            <td class="text-center">2.00</td>
                                             <td class="text-right">
-                                                <t t-esc="'{:,.2f}'.format(o.total_internal_commission_amount or 0)"/>
+                                                <t t-esc="'{:,.2f}'.format((o.amount_total or 0) * 0.02)"/>
                                             </td>
                                         </tr>
-                                    </tbody>
-                                </table>
-                            </t>
 
-                            <!-- Legacy Commissions Section -->
-                            <t t-set="legacy_commissions" t-value="[
-                                    ('Consultant', o.consultant_id, o.consultant_comm_percentage, o.salesperson_commission, 'Legacy Commission'),
-                                    ('Manager (Legacy)', o.manager_id, o.manager_comm_percentage, o.manager_commission, 'Legacy Commission')
-                                ]"/>
-
-                            <t t-set="has_legacy" t-value="any(comm[3] and comm[3] > 0 for comm in legacy_commissions if comm[1])"/>
-
-                            <t t-if="has_legacy">
-                                <div class="section-header">LEGACY COMMISSIONS</div>
-                                <table class="report-table">
-                                    <thead>
-                                        <tr>
-                                            <th>ROLE</th>
-                                            <th>PARTNER</th>
-                                            <th>TYPE</th>
-                                            <th class="text-center">RATE (%)</th>
-                                            <th class="text-right">AMOUNT (AED)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <t t-foreach="legacy_commissions" t-as="comm">
-                                            <tr t-if="comm[1] and comm[3] and comm[3] > 0">
-                                                <td>
-                                                    <t t-esc="comm[0]"/>
-                                                </td>
-                                                <td>
-                                                    <span t-field="comm[1].name"/>
-                                                </td>
-                                                <td>
-                                                    <t t-esc="comm[4]"/>
-                                                </td>
-                                                <td class="text-center">
-                                                    <t t-esc="'{:.2f}%'.format(comm[2] or 0)"/>
-                                                </td>
-                                                <td class="text-right">
-                                                    <t t-esc="'{:,.2f}'.format(comm[3] or 0)"/>
-                                                </td>
-                                            </tr>
-                                        </t>
-                                        <tr class="section-total">
-                                            <td colspan="4" class="text-right">Total Legacy (AED):</td>
+                                        <!-- Team Commission -->
+                                        <tr t-if="o.team_id">
+                                            <td>Sales Team</td>
+                                            <td>
+                                                <span t-field="o.team_id.name"/>
+                                            </td>
+                                            <td>Team Bonus</td>
+                                            <td class="text-center">0.50</td>
                                             <td class="text-right">
-                                                <t t-esc="'{:,.2f}'.format((o.salesperson_commission or 0) + (o.manager_commission or 0))"/>
+                                                <t t-esc="'{:,.2f}'.format((o.amount_total or 0) * 0.005)"/>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Total Commission Row -->
+                                        <tr class="section-total">
+                                            <td colspan="4" class="text-right">Total Commission (AED):</td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format((o.amount_total or 0) * 0.025)"/>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -380,31 +286,15 @@
                             </t>
 
                             <!-- Summary Totals -->
-                            <t t-if="has_external or has_internal or has_legacy">
+                            <t t-if="has_commissions">
                                 <div class="section-header">COMMISSION SUMMARY</div>
                                 <table class="report-table" style="margin-top: 25px;">
                                     <tbody>
-                                        <!-- External Commission Total -->
-                                        <tr t-if="has_external">
-                                            <td colspan="4" class="text-right">Total External Commission (AED):</td>
+                                        <!-- Order Total -->
+                                        <tr>
+                                            <td colspan="4" class="text-right">Order Total (AED):</td>
                                             <td class="text-right">
-                                                <t t-esc="'{:,.2f}'.format(o.total_external_commission_amount or 0)"/>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Internal Commission Total -->
-                                        <tr t-if="has_internal">
-                                            <td colspan="4" class="text-right">Total Internal Commission (AED):</td>
-                                            <td class="text-right">
-                                                <t t-esc="'{:,.2f}'.format(o.total_internal_commission_amount or 0)"/>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Legacy Commission Total -->
-                                        <tr t-if="has_legacy">
-                                            <td colspan="4" class="text-right">Total Legacy Commission (AED):</td>
-                                            <td class="text-right">
-                                                <t t-esc="'{:,.2f}'.format((o.salesperson_commission or 0) + (o.manager_commission or 0))"/>
+                                                <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
                                             </td>
                                         </tr>
 
@@ -415,47 +305,27 @@
                                             </td>
                                             <td class="text-right">
                                                 <strong>
-                                                    <t t-esc="'{:,.2f}'.format(o.total_commission_amount or 0)"/>
+                                                    <t t-esc="'{:,.2f}'.format((o.amount_total or 0) * 0.025)"/>
                                                 </strong>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Net Before VAT -->
-                                        <tr>
-                                            <td colspan="4" class="text-right">Net Before VAT (AED):</td>
-                                            <td class="text-right">
-                                                <t t-esc="'{:,.2f}'.format((o.total_commission_amount or 0) - (o.amount_tax or 0))"/>
                                             </td>
                                         </tr>
 
                                         <!-- VAT Amount -->
                                         <tr t-if="o.amount_tax and o.amount_tax > 0">
-                                            <td colspan="4" class="text-right">VAT Amount (5%) (AED):</td>
+                                            <td colspan="4" class="text-right">VAT (5%) (AED):</td>
                                             <td class="text-right">
                                                 <t t-esc="'{:,.2f}'.format(o.amount_tax or 0)"/>
                                             </td>
                                         </tr>
 
-                                        <!-- Net Commission (Total with VAT) -->
-                                        <tr class="section-total">
-                                            <td colspan="4" class="text-right">
-                                                <strong>Net Commission Payable (AED):</strong>
-                                            </td>
-                                            <td class="text-right">
-                                                <strong>
-                                                    <t t-esc="'{:,.2f}'.format(o.total_commission_amount or 0)"/>
-                                                </strong>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Company Net (Sales Value - Commission - VAT) -->
+                                        <!-- Net Company Share -->
                                         <tr class="final-total">
                                             <td colspan="4" class="text-right">
                                                 <strong>Net Company Share (AED):</strong>
                                             </td>
                                             <td class="text-right">
                                                 <strong>
-                                                    <t t-esc="'{:,.2f}'.format((o.amount_total or 0) - (o.total_commission_amount or 0))"/>
+                                                    <t t-esc="'{:,.2f}'.format((o.amount_total or 0) - ((o.amount_total or 0) * 0.025))"/>
                                                 </strong>
                                             </td>
                                         </tr>
