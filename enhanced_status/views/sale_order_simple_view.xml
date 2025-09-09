@@ -19,7 +19,7 @@
                 <field name="can_unlock" invisible="1"/>
                 <field name="has_due" invisible="1"/>
                 <field name="is_warning" invisible="1"/>
-                
+
                 <!-- Core sale order dependencies -->
                 <field name="company_id" invisible="1"/>
                 <field name="pricelist_id" invisible="1"/>
@@ -29,7 +29,7 @@
                 <field name="partner_shipping_id" invisible="1"/>
                 <field name="partner_invoice_id" invisible="1"/>
                 <field name="tax_calculation_rounding_method" invisible="1"/>
-                
+
                 <!-- Standard sale order fields -->
                 <field name="invoice_status" invisible="1"/>
                 <field name="commitment_date" invisible="1"/>
