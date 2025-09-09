@@ -20,6 +20,11 @@
                 <field name="is_warning" invisible="1"/>
                 <field name="company_id" invisible="1"/>
                 <field name="pricelist_id" invisible="1"/>
+                <field name="tax_country_id" invisible="1"/>
+                <field name="fiscal_position_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="partner_shipping_id" invisible="1"/>
+                <field name="partner_invoice_id" invisible="1"/>
             </xpath>
 
             <!-- Simplify buttons - keep only essential ones -->
