@@ -17,6 +17,8 @@
                 <field name="is_locked" invisible="1"/>
                 <field name="can_unlock" invisible="1"/>
                 <field name="has_due" invisible="1"/>
+                <field name="is_warning" invisible="1"/>
+                <field name="company_id" invisible="1"/>
             </xpath>
 
             <!-- Simplify buttons - keep only essential ones -->

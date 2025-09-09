@@ -24,6 +24,12 @@ class SaleOrder(models.Model):
         help="True if order has overdue amounts"
     )
     
+    is_warning = fields.Boolean(
+        string='Has Warnings',
+        compute='_compute_is_warning',
+        help="True if there are validation warnings for this order"
+    )
+    
     # Simple compute methods
     @api.depends('state')
     def _compute_is_locked(self):
@@ -45,6 +51,22 @@ class SaleOrder(models.Model):
                 lambda inv: inv.state == 'posted' and inv.amount_residual > 0
             )
             order.has_due = bool(overdue_invoices)
+
+    def _compute_is_warning(self):
+        """Simple warning computation"""
+        for order in self:
+            # Simple warning checks
+            has_warnings = False
+            
+            # Warning if no order lines
+            if not order.order_line:
+                has_warnings = True
+            
+            # Warning if customer has no payment terms and amount > 0
+            if order.amount_total > 0 and not order.partner_id.property_payment_term_id:
+                has_warnings = True
+                
+            order.is_warning = has_warnings
 
     # Simple workflow methods
     def action_complete_order(self):
