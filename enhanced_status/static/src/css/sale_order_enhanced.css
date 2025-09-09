@@ -35,20 +35,20 @@
 
 .o_form_view .o_notebook .nav-tabs .nav-link:hover {
   background-color: #f8f9fa;
-  color: #007bff;
+  color: #800020;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .o_form_view .o_notebook .nav-tabs .nav-link.active {
-  background-color: #007bff;
+  background-color: #800020;
   color: white;
-  border-color: #007bff;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  border-color: #800020;
+  box-shadow: 0 4px 12px rgba(128, 0, 32, 0.3);
 }
 
 .o_form_view .o_notebook .nav-tabs .nav-link.active::before {
-  background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #007bff 100%);
+  background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #800020 100%);
 }
 
 /* Tab content area */
@@ -62,7 +62,7 @@
 
 /* Progress Indicator Styling */
 .progress-indicator-wrapper {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #800020 0%, #a00028 100%);
   color: white;
   padding: 15px;
   border-radius: 8px;
@@ -151,8 +151,8 @@
 }
 
 .financial-item.invoiced {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border-color: #2196f3;
+  background: linear-gradient(135deg, #fde8e8 0%, #fcc8c8 100%);
+  border-color: #800020;
 }
 
 .financial-item.paid {
@@ -172,7 +172,7 @@
 }
 
 .financial-item.invoiced .financial-icon {
-  color: #2196f3;
+  color: #800020;
 }
 
 .financial-item.paid .financial-icon {
@@ -205,7 +205,7 @@
 .financial-percentage {
   font-size: 14px;
   font-weight: 600;
-  color: #007bff;
+  color: #800020;
 }
 
 .financial-progress-bars {
@@ -271,7 +271,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #007bff 100%);
+  background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #800020 100%);
   border-radius: 12px 12px 0 0;
 }
 
@@ -319,7 +319,7 @@
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #800020;
   padding-bottom: 5px;
   display: inline-block;
 }
@@ -332,7 +332,7 @@
 }
 
 .o_field_one2many .o_list_table th {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #800020 0%, #a00028 100%);
   color: white;
   font-weight: 700;
   border-bottom: none;
@@ -378,8 +378,8 @@
 }
 
 .o_field_text textarea:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #800020;
+  box-shadow: 0 0 0 0.2rem rgba(128, 0, 32, 0.25);
   background: white;
   transform: translateY(-1px);
 }
@@ -428,15 +428,15 @@
 
 .workflow-helper .btn {
   background: transparent;
-  border: 1px solid #007bff;
-  color: #007bff;
+  border: 1px solid #800020;
+  color: #800020;
   font-size: 12px;
   padding: 5px 10px;
   border-radius: 15px;
 }
 
 .workflow-helper .btn:hover {
-  background: #007bff;
+  background: #800020;
   color: white;
 }
 
@@ -481,7 +481,7 @@
 }
 
 .oe_subtotal_footer_separator {
-  border-top: 3px solid #007bff;
+  border-top: 3px solid #800020;
   margin-top: 15px;
   padding-top: 15px;
   position: relative;
@@ -500,29 +500,327 @@
 .oe_subtotal_footer_range {
   font-size: 20px;
   font-weight: bold;
-  color: #007bff;
+  color: #800020;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .o_form_view .o_notebook .nav-tabs {
+    padding: 8px 8px 0 8px;
+  }
+  
+  .financial-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .workflow-progress,
+  .status-card {
+    padding: 20px;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 992px) {
   .o_form_view .o_notebook .nav-tabs .nav-link {
-    padding: 8px 12px;
+    padding: 10px 15px;
+    font-size: 13px;
+    margin-right: 3px;
+  }
+  
+  .financial-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .financial-item {
+    padding: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .financial-amount {
+    font-size: 16px;
+  }
+  
+  .progress-indicator-wrapper {
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+  
+  .o_field_one2many .o_list_table th {
+    padding: 12px 8px;
+    font-size: 10px;
+  }
+  
+  .o_field_one2many .o_list_table td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  
+  .oe_subtotal_footer {
+    padding: 20px;
+    margin-top: 20px;
+  }
+  
+  .oe_subtotal_footer_range {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .o_form_view .o_notebook .nav-tabs {
+    padding: 5px;
+    flex-wrap: wrap;
+  }
+  
+  .o_form_view .o_notebook .nav-tabs .nav-link {
+    padding: 12px 16px;
     font-size: 12px;
+    margin: 2px;
+    border-radius: 6px;
+    flex: 1 1 auto;
+    text-align: center;
+    min-width: 120px;
   }
 
   .workflow-progress,
   .status-card {
-    padding: 15px;
-  }
-
-  .financial-summary-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    padding: 18px;
+    margin-bottom: 15px;
+    border-radius: 10px;
   }
 
   .tab-content {
-    padding: 15px;
+    padding: 18px;
+    min-height: 300px;
+  }
+  
+  .financial-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .financial-item {
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  
+  .financial-icon {
+    font-size: 20px;
+    margin-right: 12px;
+  }
+  
+  .financial-amount {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  
+  .financial-label {
+    font-size: 11px;
+  }
+  
+  .progress-indicator-wrapper {
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+  }
+  
+  .progress-title {
+    font-size: 13px;
+  }
+  
+  .progress-percentage {
+    font-size: 15px;
+  }
+  
+  .o_group .o_form_label {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  
+  .o_field_one2many .o_list_table {
+    font-size: 12px;
+  }
+  
+  .o_field_one2many .o_list_table th {
+    padding: 10px 6px;
+    font-size: 9px;
+  }
+  
+  .o_field_one2many .o_list_table td {
+    padding: 8px 6px;
+    word-wrap: break-word;
+    min-width: 80px;
+  }
+  
+  .o_field_monetary {
+    font-size: 14px;
+  }
+  
+  .o_field_text textarea {
+    padding: 12px;
+    font-size: 13px;
+    min-height: 100px;
+  }
+  
+  .oe_subtotal_footer {
+    padding: 16px;
+    margin-top: 16px;
+    border-radius: 10px;
+  }
+  
+  .oe_subtotal_footer_range {
+    font-size: 16px;
+  }
+  
+  .workflow-helper {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  .lock-indicator {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 10px;
+    display: inline-block;
+  }
+}
+
+@media (max-width: 576px) {
+  .o_form_view .o_notebook .nav-tabs {
+    flex-direction: column;
+    padding: 8px;
+  }
+  
+  .o_form_view .o_notebook .nav-tabs .nav-link {
+    width: 100%;
+    margin: 2px 0;
+    padding: 14px 20px;
+    font-size: 13px;
+    text-align: center;
+    border-radius: 8px;
+  }
+
+  .workflow-progress,
+  .status-card {
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+  }
+
+  .tab-content {
+    padding: 16px;
+    min-height: 250px;
+  }
+  
+  .financial-item {
+    padding: 14px;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  
+  .financial-icon {
+    font-size: 24px;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+  
+  .financial-amount {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  
+  .financial-label {
+    font-size: 12px;
+  }
+  
+  .progress-indicator-wrapper {
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  
+  .progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .progress-stages {
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+  }
+  
+  .stage-marker {
+    padding: 6px 10px;
+    font-size: 9px;
+    margin: 2px;
+  }
+  
+  .o_field_one2many .o_list_table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .o_field_one2many .o_list_table th,
+  .o_field_one2many .o_list_table td {
+    min-width: 100px;
+    padding: 8px 4px;
+    font-size: 11px;
+  }
+  
+  .o_field_text textarea {
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 120px;
+  }
+  
+  .oe_subtotal_footer {
+    padding: 14px;
+    text-align: center;
+  }
+  
+  .oe_subtotal_footer_range {
+    font-size: 18px;
+    display: block;
+    margin-top: 8px;
+  }
+  
+  .o_form_view .btn {
+    width: 100%;
+    margin: 5px 0;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Ensure minimum touch target sizes for mobile */
+@media (max-width: 768px) {
+  .o_form_view .o_notebook .nav-tabs .nav-link,
+  .o_form_view .btn,
+  .workflow-helper .btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* High density displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .financial-icon,
+  .stage-marker,
+  .lock-indicator {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -544,10 +842,10 @@
 }
 
 .o_field_text textarea::-webkit-scrollbar-thumb {
-  background: #007bff;
+  background: #800020;
   border-radius: 3px;
 }
 
 .o_field_text textarea::-webkit-scrollbar-thumb:hover {
-  background: #0056b3;
+  background: #600018;
 }

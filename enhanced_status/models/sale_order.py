@@ -334,3 +334,47 @@ class SaleOrder(models.Model):
         stage = self.env['sale.order.stage'].search([('stage_code', '=', 'approved')], limit=1)
         if stage:
             self.write({'stage_id': stage.id, 'custom_state': 'approved'})
+
+    @api.model
+    def _get_report_values(self, docids, data=None):
+        """Prepare data for commission report"""
+        docs = self.browse(docids)
+        
+        # Prepare commission data for each order
+        for order in docs:
+            # Calculate external commissions (example: 5% of order total)
+            external_commissions = []
+            if order.amount_total > 0:
+                external_commissions = [{
+                    'name': 'External Sales Commission',
+                    'rate': 5.0,
+                    'base_amount': order.amount_total,
+                    'amount': order.amount_total * 0.05,
+                    'partner': order.partner_id.name if order.partner_id else 'N/A'
+                }]
+            
+            # Calculate internal commissions (example: 3% of order total)
+            internal_commissions = []
+            if order.user_id and order.amount_total > 0:
+                internal_commissions = [{
+                    'name': 'Internal Sales Commission',
+                    'salesperson': order.user_id.name,
+                    'rate': 3.0,
+                    'base_amount': order.amount_total,
+                    'amount': order.amount_total * 0.03,
+                }]
+            
+            # Legacy commissions (if applicable)
+            legacy_commissions = []
+            
+            # Add commission data to order context
+            order.external_commissions = external_commissions
+            order.internal_commissions = internal_commissions
+            order.legacy_commissions = legacy_commissions
+        
+        return {
+            'doc_ids': docids,
+            'doc_model': 'sale.order',
+            'docs': docs,
+            'data': data,
+        }
