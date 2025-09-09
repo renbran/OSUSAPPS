@@ -14,10 +14,13 @@
 
             <!-- Add essential control fields -->
             <xpath expr="//field[@name='state']" position="after">
+                <!-- Custom workflow fields -->
                 <field name="is_locked" invisible="1"/>
                 <field name="can_unlock" invisible="1"/>
                 <field name="has_due" invisible="1"/>
                 <field name="is_warning" invisible="1"/>
+                
+                <!-- Core sale order dependencies -->
                 <field name="company_id" invisible="1"/>
                 <field name="pricelist_id" invisible="1"/>
                 <field name="tax_country_id" invisible="1"/>
@@ -25,6 +28,33 @@
                 <field name="currency_id" invisible="1"/>
                 <field name="partner_shipping_id" invisible="1"/>
                 <field name="partner_invoice_id" invisible="1"/>
+                <field name="tax_calculation_rounding_method" invisible="1"/>
+                
+                <!-- Additional common dependencies -->
+                <field name="warehouse_id" invisible="1"/>
+                <field name="procurement_group_id" invisible="1"/>
+                <field name="picking_policy" invisible="1"/>
+                <field name="invoice_status" invisible="1"/>
+                <field name="delivery_status" invisible="1"/>
+                <field name="commitment_date" invisible="1"/>
+                <field name="expected_date" invisible="1"/>
+                <field name="validity_date" invisible="1"/>
+                <field name="require_signature" invisible="1"/>
+                <field name="require_payment" invisible="1"/>
+                <field name="show_update_pricelist" invisible="1"/>
+                <field name="show_update_fpos" invisible="1"/>
+                <field name="team_id" invisible="1"/>
+                <field name="analytic_account_id" invisible="1"/>
+                <field name="campaign_id" invisible="1"/>
+                <field name="medium_id" invisible="1"/>
+                <field name="source_id" invisible="1"/>
+                <field name="opportunity_id" invisible="1"/>
+                <field name="tag_ids" invisible="1"/>
+                <field name="amount_untaxed" invisible="1"/>
+                <field name="amount_tax" invisible="1"/>
+                <field name="amount_total" invisible="1"/>
+                <field name="invoice_count" invisible="1"/>
+                <field name="delivery_count" invisible="1"/>
             </xpath>
 
             <!-- Simplify buttons - keep only essential ones -->
