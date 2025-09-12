@@ -5,6 +5,19 @@ from odoo.exceptions import UserError
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     
+    # Custom workflow state field
+    custom_state = fields.Selection([
+        ('draft', 'Draft'),
+        ('documentation', 'Documentation'),
+        ('calculation', 'Calculation'),
+        ('approved', 'Approved'),
+        ('completed', 'Completed'),
+    ], string='Custom State', 
+       default='draft', 
+       tracking=True,
+       help="Custom workflow state for enhanced order tracking"
+    )
+    
     # Simple workflow control fields
     is_locked = fields.Boolean(
         string='Is Locked',
@@ -31,11 +44,11 @@ class SaleOrder(models.Model):
     )
     
     # Simple compute methods
-    @api.depends('state')
+    @api.depends('state', 'custom_state')
     def _compute_is_locked(self):
         """Simple lock computation"""
         for order in self:
-            order.is_locked = order.state == 'done'
+            order.is_locked = order.state == 'done' or order.custom_state == 'completed'
 
     def _compute_can_unlock(self):
         """Check if user can unlock orders"""
@@ -69,10 +82,26 @@ class SaleOrder(models.Model):
             order.is_warning = has_warnings
 
     # Simple workflow methods
+    def action_move_to_documentation(self):
+        """Move order to documentation stage"""
+        self.custom_state = 'documentation'
+        return True
+        
+    def action_move_to_calculation(self):
+        """Move order to calculation stage"""
+        self.custom_state = 'calculation'
+        return True
+        
+    def action_move_to_approved(self):
+        """Move order to approved stage"""
+        self.custom_state = 'approved'
+        return True
+    
     def action_complete_order(self):
         """Mark order as completed"""
         if self.state == 'sale':
-            self.state = 'done'
+            self.write({'state': 'done'})
+        self.custom_state = 'completed'
         return True
 
     def action_unlock_order(self):
@@ -81,5 +110,5 @@ class SaleOrder(models.Model):
             raise UserError("You don't have permission to unlock orders.")
         
         if self.state == 'done':
-            self.state = 'sale'
+            self.write({'state': 'sale'})
         return True
