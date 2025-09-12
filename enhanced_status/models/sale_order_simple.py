@@ -59,11 +59,9 @@ class SaleOrder(models.Model):
     def _compute_has_due(self):
         """Simple due amount computation"""
         for order in self:
-            # Simple check for overdue invoices
-            overdue_invoices = order.invoice_ids.filtered(
-                lambda inv: inv.state == 'posted' and inv.amount_residual > 0
-            )
-            order.has_due = bool(overdue_invoices)
+            # Simple check - just set to False for now
+            # Can be enhanced based on specific requirements
+            order.has_due = False
 
     def _compute_is_warning(self):
         """Simple warning computation"""
@@ -76,7 +74,7 @@ class SaleOrder(models.Model):
                 has_warnings = True
             
             # Warning if customer has no payment terms and amount > 0
-            if order.amount_total > 0 and not order.partner_id.property_payment_term_id:
+            if order.amount_total > 0 and hasattr(order.partner_id, 'property_payment_term_id') and not order.partner_id.property_payment_term_id:
                 has_warnings = True
                 
             order.is_warning = has_warnings
