@@ -1,4 +1,5 @@
 <odoo>
+    <!-- Inherit Sale Order Form to Add Sale Type Field -->
     <record id="view_order_form_inherit_sale_type" model="ir.ui.view">
         <field name="name">sale.order.form.inherit.sale.type</field>
         <field name="model">sale.order</field>
@@ -9,4 +10,71 @@
             </field>
         </field>
     </record>
+
+    <!-- Enhanced Search View with Dynamic Sale Type Filters -->
+    <record id="view_sales_order_filter_inherit_sale_type" model="ir.ui.view">
+        <field name="name">sale.order.search.inherit.sale.type</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_view_search_inherit_sale"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='sales_person']" position="after">
+                <!-- Sale Type Filter -->
+                <filter string="Sale Type" name="sale_type" context="{'group_by': 'sale_order_type_id'}"/>
+            </xpath>
+            
+            <!-- Add individual filters for each sale type -->
+            <xpath expr="//filter[@name='sales_person']" position="after">
+                <separator/>
+                <!-- Static filter for orders without type -->
+                <filter string="No Sale Type" name="no_sale_type" domain="[('sale_order_type_id', '=', False)]"/>
+                <!-- Static filter for orders with any type -->
+                <filter string="Has Sale Type" name="has_sale_type" domain="[('sale_order_type_id', '!=', False)]"/>
+            </xpath>
+
+            <!-- Add search field for sale type -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="sale_order_type_id" string="Sale Type" filter_domain="[('sale_order_type_id', 'ilike', self)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Tree View with Sale Type Column -->
+    <record id="view_order_tree_inherit_sale_type" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.sale.type</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="sale_order_type_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Enhanced Action with Dynamic Context -->
+    <record id="action_orders_dynamic_sale_type" model="ir.actions.act_window">
+        <field name="name">Sales Orders by Type</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="search_view_id" ref="view_sales_order_filter_inherit_sale_type"/>
+        <field name="context">{
+            'search_default_has_sale_type': 1,
+            'search_default_sale_type': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first sales order with a specific type!
+            </p><p>
+                Sale order types help you categorize and manage different kinds of sales.
+                Each type can have its own sequence and workflow.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu for Dynamic Sale Type View -->
+    <menuitem id="menu_sale_orders_by_type" 
+              name="Orders by Type" 
+              parent="sale.sale_order_menu" 
+              action="action_orders_dynamic_sale_type" 
+              sequence="15"/>
 </odoo>

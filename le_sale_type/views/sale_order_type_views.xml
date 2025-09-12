@@ -1,40 +1,157 @@
 <odoo>
-    <!-- Editable Tree View for Sale Order Type -->
+    <!-- Enhanced Tree View for Sale Order Type -->
     <record id="view_sale_order_type_tree_editable" model="ir.ui.view">
         <field name="name">sale.order.type.tree.editable</field>
         <field name="model">sale.order.type</field>
         <field name="arch" type="xml">
             <tree>
+                <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="description"/>
+                <field name="prefix"/>
+                <field name="order_count"/>
+                <field name="total_amount" widget="monetary"/>
                 <field name="active"/>
             </tree>
         </field>
     </record>
+
+    <!-- Enhanced Form View for Sale Order Type -->
     <record id="view_sale_order_type_form" model="ir.ui.view">
         <field name="name">sale.order.type.form</field>
         <field name="model">sale.order.type</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="action_view_orders" 
+                            type="object" 
+                            string="View Orders" 
+                            class="oe_highlight"
+                            attrs="{'invisible': [('order_count', '=', 0)]}"/>
+                </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_orders" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-list-alt">
+                            <field name="order_count" widget="statinfo" string="Orders"/>
+                        </button>
+                    </div>
+                    
                     <group>
-                        <field name="name"/>
-                        <field name="sequence_id"/>
-                        <field name="prefix"/>
-                        <field name="description"/>
-                        <field name="active"/>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="sequence_id"/>
+                            <field name="prefix"/>
+                            <field name="color" widget="color"/>
+                        </group>
                     </group>
+                    
+                    <group>
+                        <field name="description"/>
+                    </group>
+                    
+                    <div class="oe_clear">
+                        <label for="total_amount" class="oe_edit_only"/>
+                        <h2>
+                            <field name="total_amount" widget="monetary"/>
+                        </h2>
+                    </div>
                 </sheet>
             </form>
         </field>
     </record>
-    <!-- Action to Open the Tree View -->
+
+    <!-- Kanban View for Sale Order Type -->
+    <record id="view_sale_order_type_kanban" model="ir.ui.view">
+        <field name="name">sale.order.type.kanban</field>
+        <field name="model">sale.order.type</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="order_count"/>
+                <field name="total_amount"/>
+                <field name="color"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <field name="description"/>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <span>Orders: <field name="order_count"/></span>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <span>Total: <field name="total_amount" widget="monetary"/></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Search View for Sale Order Type -->
+    <record id="view_sale_order_type_search" model="ir.ui.view">
+        <field name="name">sale.order.type.search</field>
+        <field name="model">sale.order.type</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Sale Type" filter_domain="[('name', 'ilike', self)]"/>
+                <field name="description" string="Description"/>
+                <field name="prefix" string="Prefix"/>
+                
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Inactive" name="inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter string="Has Orders" name="has_orders" domain="[('order_count', '>', 0)]"/>
+                <filter string="No Orders" name="no_orders" domain="[('order_count', '=', 0)]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter string="Active/Inactive" name="group_active" context="{'group_by': 'active'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Enhanced Action to Open Sale Order Types -->
     <record id="action_sale_order_type_list" model="ir.actions.act_window">
         <field name="name">Sale Order Types</field>
         <field name="res_model">sale.order.type</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_sale_order_type_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first sale order type!
+            </p><p>
+                Sale order types allow you to categorize your sales orders and 
+                automatically assign different sequences and workflows to each type.
+            </p>
+        </field>
     </record>
 
-    <!-- Menu Item to Access the Tree View -->
-    <menuitem id="menu_sale_order_type" name="Sale Order Types" parent="sale.menu_sale_config" action="action_sale_order_type_list" sequence="100"/>
+    <!-- Menu Item to Access Sale Order Types -->
+    <menuitem id="menu_sale_order_type" 
+              name="Sale Order Types" 
+              parent="sale.menu_sale_config" 
+              action="action_sale_order_type_list" 
+              sequence="100"/>
 </odoo>
