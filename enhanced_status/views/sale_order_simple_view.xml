@@ -7,26 +7,123 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- Add custom workflow fields -->
+            <!-- Replace complex state with simple workflow -->
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="draft,sale,done" statusbar_colors='{"done":"success","sale":"info"}'/>
+            </xpath>
+
+            <!-- Add essential control fields -->
             <xpath expr="//field[@name='state']" position="after">
-                <field name="custom_state" invisible="1"/>
+                <!-- Custom workflow fields -->
                 <field name="is_locked" invisible="1"/>
                 <field name="can_unlock" invisible="1"/>
                 <field name="has_due" invisible="1"/>
                 <field name="is_warning" invisible="1"/>
+
+                <!-- Core sale order dependencies -->
+                <field name="company_id" invisible="1"/>
+                <field name="pricelist_id" invisible="1"/>
+                <field name="tax_country_id" invisible="1"/>
+                <field name="fiscal_position_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="partner_shipping_id" invisible="1"/>
+                <field name="partner_invoice_id" invisible="1"/>
+                <field name="tax_calculation_rounding_method" invisible="1"/>
+
+                <!-- Standard sale order fields -->
+                <field name="invoice_status" invisible="1"/>
+                <field name="commitment_date" invisible="1"/>
+                <field name="expected_date" invisible="1"/>
+                <field name="validity_date" invisible="1"/>
+                <field name="require_signature" invisible="1"/>
+                <field name="require_payment" invisible="1"/>
+                <field name="show_update_pricelist" invisible="1"/>
+                <field name="show_update_fpos" invisible="1"/>
+                <field name="team_id" invisible="1"/>
+                <field name="analytic_account_id" invisible="1"/>
+                <field name="campaign_id" invisible="1"/>
+                <field name="medium_id" invisible="1"/>
+                <field name="source_id" invisible="1"/>
+                <field name="opportunity_id" invisible="1"/>
+                <field name="tag_ids" invisible="1"/>
+                <field name="amount_untaxed" invisible="1"/>
+                <field name="amount_tax" invisible="1"/>
+                <field name="amount_total" invisible="1"/>
+                <field name="invoice_count" invisible="1"/>
             </xpath>
 
-            <!-- Add simple workflow buttons -->
+            <!-- Simplify buttons - keep only essential ones -->
             <xpath expr="//button[@name='action_quotation_send']" position="after">
-                <button name="action_complete_order" type="object" string="Mark Complete" 
-                        class="btn-success" invisible="state != 'sale'" 
-                        help="Mark order as completed"/>
-                <button name="action_unlock_order" type="object" string="🔓 Unlock" 
-                        class="btn-warning" invisible="not is_locked or not can_unlock" 
-                        confirm="Unlock this order for editing?" 
-                        help="Unlock order (Admin only)"/>
+                <!-- Simple workflow buttons -->
+                <button name="action_complete_order" type="object" string="Mark Complete" class="btn-success" invisible="state != 'sale'" help="Mark order as completed"/>
+                <button name="action_unlock_order" type="object" string="🔓 Unlock" class="btn-warning" invisible="not is_locked or not can_unlock" confirm="Unlock this order for editing?" help="Unlock order (Admin only)"/>
+            </xpath>
+
+            <!-- Simplify the form with clean tabs -->
+            <xpath expr="//group[@name='sale_header']" position="replace">
+                <notebook>
+                    <!-- Tab 1: Essential Order Info -->
+                    <page string="📋 Order Information" name="order_info">
+                        <group>
+                            <group name="customer_info" string="Customer">
+                                <field name="partner_id" readonly="is_locked and not can_unlock"/>
+                                <field name="date_order" readonly="is_locked and not can_unlock"/>
+                                <field name="user_id" readonly="is_locked and not can_unlock"/>
+                            </group>
+                            <group name="order_details" string="Order Details">
+                                <field name="validity_date" readonly="is_locked and not can_unlock"/>
+                                <field name="client_order_ref" readonly="is_locked and not can_unlock"/>
+                                <field name="payment_term_id" readonly="is_locked and not can_unlock"/>
+                            </group>
+                        </group>
+                    </page>
+
+                    <!-- Tab 2: Financial Summary -->
+                    <page string="💰 Financial Summary" name="financial_summary">
+                        <group>
+                            <group name="amounts" string="Order Amounts">
+                                <field name="amount_untaxed" readonly="1"/>
+                                <field name="amount_tax" readonly="1"/>
+                                <field name="amount_total" readonly="1"/>
+                            </group>
+                            <group name="billing" string="Billing Status">
+                                <field name="invoice_status" widget="badge"/>
+                                <field name="invoice_count"/>
+                            </group>
+                        </group>
+                    </page>
+
+                    <!-- Tab 3: Notes -->
+                    <page string="📝 Notes" name="notes">
+                        <group>
+                            <field name="note" placeholder="Add order notes and comments..." nolabel="1"/>
+                        </group>
+                    </page>
+
+                </notebook>
+            </xpath>
+
+            <!-- Simplify order lines section -->
+            <xpath expr="//page[@name='order_info']" position="inside">
+                <group name="order_lines" string="Order Lines">
+                    <field name="order_line" readonly="is_locked and not can_unlock" context="{'default_order_id': active_id}">
+                        <tree editable="bottom">
+                            <field name="product_id"/>
+                            <field name="name"/>
+                            <field name="product_uom_qty"/>
+                            <field name="price_unit"/>
+                            <field name="price_subtotal"/>
+                        </tree>
+                    </field>
+                </group>
+            </xpath>
+
+            <!-- Keep essential buttons but simplified -->
+            <xpath expr="//button[@name='action_confirm']" position="attributes">
+                <attribute name="string">Confirm Order</attribute>
             </xpath>
 
         </field>
     </record>
+
 </odoo>
