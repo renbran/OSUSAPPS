@@ -662,6 +662,17 @@ class AccountPayment(models.Model):
 
     def action_post(self):
         """Enhanced posting with strict approval validation - NO BYPASSING ALLOWED"""
+        # Check if posting should be skipped (from register wizard)
+        if self.env.context.get('skip_immediate_posting'):
+            # Don't post, just ensure correct workflow state
+            for record in self:
+                if hasattr(record, 'approval_state'):
+                    record.write({
+                        'approval_state': 'under_review',
+                        'state': 'draft'
+                    })
+            return True
+            
         for record in self:
             # STRICT WORKFLOW ENFORCEMENT: ALL payments must complete approval workflow before posting
             if hasattr(record, 'approval_state') and record.approval_state:
