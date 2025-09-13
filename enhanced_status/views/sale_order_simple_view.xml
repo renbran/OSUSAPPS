@@ -15,10 +15,8 @@
             <!-- Add essential control fields -->
             <xpath expr="//field[@name='state']" position="after">
                 <!-- Custom workflow state field -->
-                <field name="custom_state" widget="statusbar" 
-                       statusbar_visible="draft,documentation,calculation,approved,completed"
-                       readonly="is_locked and not can_unlock"/>
-                
+                <field name="custom_state" widget="statusbar" statusbar_visible="draft,documentation,calculation,approved,completed" readonly="is_locked and not can_unlock"/>
+
                 <!-- Custom workflow fields -->
                 <field name="is_locked" invisible="1"/>
                 <field name="can_unlock" invisible="1"/>
@@ -60,26 +58,15 @@
             <!-- Simplify buttons - keep only essential ones -->
             <xpath expr="//button[@name='action_quotation_send']" position="after">
                 <!-- Custom workflow buttons -->
-                <button name="action_move_to_documentation" type="object" string="→ Documentation" 
-                        class="btn-primary" invisible="custom_state != 'draft' or is_locked" 
-                        help="Move to documentation stage"/>
-                <button name="action_move_to_calculation" type="object" string="→ Calculation" 
-                        class="btn-primary" invisible="custom_state != 'documentation' or is_locked" 
-                        help="Move to calculation stage"/>
-                <button name="action_move_to_approved" type="object" string="→ Approved" 
-                        class="btn-primary" invisible="custom_state != 'calculation' or is_locked" 
-                        help="Move to approved stage"/>
-                
+                <button name="action_move_to_documentation" type="object" string="→ Documentation" class="btn-primary" invisible="custom_state != 'draft' or is_locked" help="Move to documentation stage"/>
+                <button name="action_move_to_calculation" type="object" string="→ Calculation" class="btn-primary" invisible="custom_state != 'documentation' or is_locked" help="Move to calculation stage"/>
+                <button name="action_move_to_approved" type="object" string="→ Approved" class="btn-primary" invisible="custom_state != 'calculation' or is_locked" help="Move to approved stage"/>
+
                 <!-- Complete button - only when sale order is confirmed -->
-                <button name="action_complete_order" type="object" string="Mark Complete" 
-                        class="btn-success" invisible="state != 'sale' or custom_state != 'approved'" 
-                        help="Mark order as completed"/>
-                
+                <button name="action_complete_order" type="object" string="Mark Complete" class="btn-success" invisible="state != 'sale' or custom_state != 'approved'" help="Mark order as completed"/>
+
                 <!-- Unlock button - only for admins when order is locked -->
-                <button name="action_unlock_order" type="object" string="Unlock &amp; Reset to Quotation" 
-                        class="btn-warning" invisible="not is_locked or not can_unlock" 
-                        confirm="This will unlock the order and reset it back to quotation state. Continue?" 
-                        help="Unlock order and reset to quotation (Admin only)"/>
+                <button name="action_unlock_order" type="object" string="Unlock &amp; Reset to Quotation" class="btn-warning" invisible="not is_locked or not can_unlock" confirm="This will unlock the order and reset it back to quotation state. Continue?" help="Unlock order and reset to quotation (Admin only)"/>
             </xpath>
 
             <!-- Simplify the form with clean tabs -->

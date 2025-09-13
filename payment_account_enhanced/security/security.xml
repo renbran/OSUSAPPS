@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Define Payment Groups Category -->
+        <record id="module_category_payment_management" model="ir.module.category">
+            <field name="name">Payment Management</field>
+            <field name="description">Manage payment workflow and approvals</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Define Payment User Group -->
+        <record id="group_payment_user" model="res.groups">
+            <field name="name">Payment User</field>
+            <field name="category_id" ref="module_category_payment_management"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Basic payment operations user</field>
+        </record>
+
+        <!-- Define Payment Verifier Group -->
+        <record id="group_payment_verifier" model="res.groups">
+            <field name="name">Payment Verifier</field>
+            <field name="category_id" ref="module_category_payment_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_payment_user'))]"/>
+            <field name="comment">Can verify payment details</field>
+        </record>
+
+        <!-- Define Payment Reviewer Group -->
+        <record id="group_payment_reviewer" model="res.groups">
+            <field name="name">Payment Reviewer</field>
+            <field name="category_id" ref="module_category_payment_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_payment_verifier'))]"/>
+            <field name="comment">Can review payment transactions</field>
+        </record>
+
+        <!-- Define Payment Approver Group -->
+        <record id="group_payment_approver" model="res.groups">
+            <field name="name">Payment Approver</field>
+            <field name="category_id" ref="module_category_payment_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_payment_reviewer'))]"/>
+            <field name="comment">Can approve payment transactions</field>
+        </record>
+
+        <!-- Define Payment Authorizer Group -->
+        <record id="group_payment_authorizer" model="res.groups">
+            <field name="name">Payment Authorizer</field>
+            <field name="category_id" ref="module_category_payment_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_payment_approver'))]"/>
+            <field name="comment">Can authorize payment transactions</field>
+        </record>
+
+        <!-- Define Payment Poster Group -->
+        <record id="group_payment_poster" model="res.groups">
+            <field name="name">Payment Poster</field>
+            <field name="category_id" ref="module_category_payment_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_payment_authorizer'))]"/>
+            <field name="comment">Can post approved payments</field>
+        </record>
+
+        <!-- Define Payment Manager Group -->
+        <record id="group_payment_manager" model="res.groups">
+            <field name="name">Payment Manager</field>
+            <field name="category_id" ref="module_category_payment_management"/>
+            <field name="implied_ids" eval="[(4, ref('group_payment_poster'))]"/>
+            <field name="comment">Full control over payment operations</field>
+        </record>
+    </data>
+</odoo>
