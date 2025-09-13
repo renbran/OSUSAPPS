@@ -13,16 +13,14 @@
                                 <xpath expr="//header" position="replace">
                                         <header>
                                                 <!-- 4-Stage Approval Workflow Statusbar -->
-                                                <field name="approval_state" widget="statusbar" statusbar_visible="draft,under_review,for_approval,for_authorization,approved,posted" statusbar_colors='{"draft":"secondary","under_review":"info","for_approval":"warning","for_authorization":"warning","approved":"success","posted":"success"}' invisible="approval_state == False"/>
+                                                <field name="approval_state" widget="statusbar" statusbar_visible="draft,under_review,for_approval,for_authorization,approved,posted" statusbar_colors='{"draft":"secondary","under_review":"info","for_approval":"warning","for_authorization":"warning","approved":"success","posted":"success"}' invisible="approval_state in [False, '']"/>
 
                                                 <!-- Legacy verification status for backward compatibility -->
-                                                <field name="verification_status" widget="statusbar" statusbar_visible="pending,verified,rejected" statusbar_colors='{"pending":"info","verified":"success","rejected":"danger"}' invisible="approval_state != False"/>
+                                                <field name="verification_status" widget="statusbar" statusbar_visible="pending,verified,rejected" statusbar_colors='{"pending":"info","verified":"success","rejected":"danger"}' invisible="approval_state not in [False, '']"/>
 
                                                 <!-- Hidden fields for intelligent button conditions -->
                                                 <field name="state" invisible="1"/>
                                                 <field name="payment_type" invisible="1"/>
-                                                <field name="approval_state" invisible="1"/>
-                                                <field name="verification_status" invisible="1"/>
                                                 <field name="can_verify" invisible="1"/>
                                                 <field name="can_submit_for_review" invisible="1"/>
                                                 <field name="can_review" invisible="1"/>
@@ -38,25 +36,25 @@
                                                 <field name="show_print_buttons" invisible="1"/>
 
                                                 <!-- Intelligent 4-Stage Workflow Buttons -->
-                                                <button name="action_submit_for_review" string="Submit for Review" type="object" class="btn-primary" invisible="show_submit_button == False"/>
+                                                <button name="action_submit_for_review" string="Submit for Review" type="object" class="btn-primary" invisible="not show_submit_button"/>
 
-                                                <button name="action_review_payment" string="Review" type="object" class="btn-success" invisible="show_review_button == False"/>
+                                                <button name="action_review_payment" string="Review" type="object" class="btn-success" invisible="not show_review_button"/>
 
-                                                <button name="action_approve_payment" string="Approve" type="object" class="btn-success" invisible="show_approve_button == False"/>
+                                                <button name="action_approve_payment" string="Approve" type="object" class="btn-success" invisible="not show_approve_button"/>
 
-                                                <button name="action_authorize_payment" string="Authorize" type="object" class="btn-success" invisible="show_authorize_button == False"/>
+                                                <button name="action_authorize_payment" string="Authorize" type="object" class="btn-success" invisible="not show_authorize_button"/>
 
-                                                <button name="action_post" string="Post Payment" type="object" class="btn-primary" invisible="show_post_button == False"/>
+                                                <button name="action_post" string="Post Payment" type="object" class="btn-primary" invisible="not show_post_button"/>
 
-                                                <button name="action_reject_payment" string="Reject" type="object" class="btn-danger" invisible="show_reject_button == False" confirm="Are you sure you want to reject this payment?"/>
+                                                <button name="action_reject_payment" string="Reject" type="object" class="btn-danger" invisible="not show_reject_button" confirm="Are you sure you want to reject this payment?"/>
 
                                                 <!-- Legacy Verification Button -->
-                                                <button name="action_verify_payment" string="Verify Payment" type="object" class="btn-success" invisible="show_verify_button == False"/>
+                                                <button name="action_verify_payment" string="Verify Payment" type="object" class="btn-success" invisible="not show_verify_button"/>
 
                                                 <!-- Smart Print Buttons -->
-                                                <button name="action_print_osus_voucher" string="OSUS Voucher" type="object" class="btn btn-outline-primary" invisible="show_print_buttons == False"/>
+                                                <button name="action_print_osus_voucher" string="OSUS Voucher" type="object" class="btn btn-outline-primary" invisible="not show_print_buttons"/>
 
-                                                <button name="action_print_enhanced_voucher" string="Enhanced Voucher" type="object" class="btn btn-outline-primary" invisible="show_print_buttons == False"/>
+                                                <button name="action_print_enhanced_voucher" string="Enhanced Voucher" type="object" class="btn btn-outline-primary" invisible="not show_print_buttons"/>
 
                                                 <button name="action_print_compact_voucher" string="Compact Voucher" type="object" class="btn btn-outline-primary" invisible="state == 'draft'"/>
 

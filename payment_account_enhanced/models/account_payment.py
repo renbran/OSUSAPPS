@@ -285,7 +285,7 @@ class AccountPayment(models.Model):
                 bool(user.groups_id.filtered(lambda g: g.xml_id == 'payment_account_enhanced.group_payment_authorizer'))
             )
 
-    @api.depends('approval_state', 'verification_status', 'state', 'payment_type', 'can_submit_for_review', 'can_review', 'can_approve', 'can_authorize')
+    @api.depends('approval_state', 'verification_status', 'state', 'payment_type')
     def _compute_button_visibility(self):
         """Compute intelligent button visibility based on current stage and user permissions"""
         for record in self:
@@ -294,26 +294,26 @@ class AccountPayment(models.Model):
             # Submit for Review button - only show in draft stage if user can submit
             record.show_submit_button = (
                 record.approval_state == 'draft' and 
-                record.can_submit_for_review
+                user.has_group('account.group_account_user')
             )
             
             # Review button - only show in under_review stage if user can review
             record.show_review_button = (
                 record.approval_state == 'under_review' and 
-                record.can_review
+                user.has_group('payment_account_enhanced.group_payment_reviewer')
             )
             
             # Approve button - only show in for_approval stage if user can approve
             record.show_approve_button = (
                 record.approval_state == 'for_approval' and 
-                record.can_approve
+                user.has_group('payment_account_enhanced.group_payment_approver')
             )
             
             # Authorize button - only show in for_authorization stage if user can authorize
             record.show_authorize_button = (
                 record.approval_state == 'for_authorization' and 
                 record.payment_type in ['outbound', 'transfer'] and
-                record.can_authorize
+                user.has_group('payment_account_enhanced.group_payment_authorizer')
             )
             
             # Post button - only show in approved stage if user has posting rights
@@ -334,7 +334,7 @@ class AccountPayment(models.Model):
             record.show_verify_button = (
                 not record.approval_state and  # Legacy payments without approval workflow
                 record.verification_status == 'pending' and
-                record.can_verify
+                user.has_group('payment_account_enhanced.group_payment_verifier')
             )
             
             # Print buttons - show only for posted/completed payments
