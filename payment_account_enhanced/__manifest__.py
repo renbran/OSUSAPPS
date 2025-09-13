@@ -47,7 +47,8 @@
         'data/sequence.xml',
         'data/mail_template_data.xml',
         
-        # Views
+        # Views (Load in dependency order)
+        'views/menus.xml',
         'views/account_payment_views.xml',
         'views/account_move_views.xml',
         'views/payment_approval_history_views.xml',
@@ -56,12 +57,11 @@
         'views/res_config_settings_views.xml',
         'views/website_verification_templates.xml',
         'views/payment_dashboard_views.xml',
-        'reports/payment_voucher_template_fixed.xml',
         
         # Reports
         'reports/payment_voucher_report.xml',
         'reports/payment_voucher_template.xml',
-        
+        'reports/payment_voucher_template_fixed.xml',
         
         # Wizards
         'wizards/register_payment.xml',
