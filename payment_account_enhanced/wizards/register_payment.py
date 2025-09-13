@@ -40,6 +40,48 @@ class AccountPaymentRegister(models.TransientModel):
         
         return payment_vals
     
+    def _create_payments(self):
+        """Create payments without posting them"""
+        payments = self.env['account.payment']
+        
+        for batches in self._get_batches():
+            batch_result = self._get_batch_result(batches)
+            payment_vals = self._create_payment_vals_from_wizard(batch_result)
+            
+            # Ensure payment is created but not posted
+            payment_vals['state'] = 'draft'
+            payment_vals['approval_state'] = 'under_review'
+            
+            payment = self.env['account.payment'].create(payment_vals)
+            payments += payment
+            
+        return payments
+    
+    def action_create_payments(self):
+        """Override to create payments without posting them - enforce approval workflow"""
+        payments = self._create_payments()
+        
+        if self._context.get('dont_redirect_to_payments'):
+            return True
+            
+        action = {
+            'name': _('Payments'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.payment',
+            'context': {'create': False},
+        }
+        if len(payments) == 1:
+            action.update({
+                'view_mode': 'form',
+                'res_id': payments.id,
+            })
+        else:
+            action.update({
+                'view_mode': 'tree,form',
+                'domain': [('id', 'in', payments.ids)],
+            })
+        return action
+    
     def _create_payment_vals_from_batch(self, batch_result):
         """Alternative method name in some Odoo versions"""
         try:

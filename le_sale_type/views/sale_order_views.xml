@@ -21,7 +21,7 @@
                 <!-- Sale Type Filter -->
                 <filter string="Sale Type" name="sale_type" context="{'group_by': 'sale_order_type_id'}"/>
             </xpath>
-            
+
             <!-- Add individual filters for each sale type -->
             <xpath expr="//filter[@name='sales_person']" position="after">
                 <separator/>
@@ -64,7 +64,8 @@
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create your first sales order with a specific type!
-            </p><p>
+            </p>
+            <p>
                 Sale order types help you categorize and manage different kinds of sales.
                 Each type can have its own sequence and workflow.
             </p>
@@ -72,9 +73,5 @@
     </record>
 
     <!-- Menu for Dynamic Sale Type View -->
-    <menuitem id="menu_sale_orders_by_type" 
-              name="Orders by Type" 
-              parent="sale.sale_order_menu" 
-              action="action_orders_dynamic_sale_type" 
-              sequence="15"/>
+    <menuitem id="menu_sale_orders_by_type" name="Orders by Type" parent="sale.sale_order_menu" action="action_orders_dynamic_sale_type" sequence="15"/>
 </odoo>

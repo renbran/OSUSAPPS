@@ -23,22 +23,15 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_view_orders" 
-                            type="object" 
-                            string="View Orders" 
-                            class="oe_highlight"
-                            attrs="{'invisible': [('order_count', '=', 0)]}"/>
+                    <button name="action_view_orders" type="object" string="View Orders" class="oe_highlight" attrs="{'invisible': [('order_count', '=', 0)]}"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_orders" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-list-alt">
+                        <button name="action_view_orders" type="object" class="oe_stat_button" icon="fa-list-alt">
                             <field name="order_count" widget="statinfo" string="Orders"/>
                         </button>
                     </div>
-                    
+
                     <group>
                         <group>
                             <field name="name"/>
@@ -51,11 +44,11 @@
                             <field name="color" widget="color"/>
                         </group>
                     </group>
-                    
+
                     <group>
                         <field name="description"/>
                     </group>
-                    
+
                     <div class="oe_clear">
                         <label for="total_amount" class="oe_edit_only"/>
                         <h2>
@@ -94,10 +87,12 @@
                                 </div>
                                 <div class="o_kanban_record_bottom">
                                     <div class="oe_kanban_bottom_left">
-                                        <span>Orders: <field name="order_count"/></span>
+                                        <span>Orders: <field name="order_count"/>
+                                        </span>
                                     </div>
                                     <div class="oe_kanban_bottom_right">
-                                        <span>Total: <field name="total_amount" widget="monetary"/></span>
+                                        <span>Total: <field name="total_amount" widget="monetary"/>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -117,13 +112,13 @@
                 <field name="name" string="Sale Type" filter_domain="[('name', 'ilike', self)]"/>
                 <field name="description" string="Description"/>
                 <field name="prefix" string="Prefix"/>
-                
+
                 <filter string="Active" name="active" domain="[('active', '=', True)]"/>
                 <filter string="Inactive" name="inactive" domain="[('active', '=', False)]"/>
                 <separator/>
                 <filter string="Has Orders" name="has_orders" domain="[('order_count', '>', 0)]"/>
                 <filter string="No Orders" name="no_orders" domain="[('order_count', '=', 0)]"/>
-                
+
                 <group expand="0" string="Group By">
                     <filter string="Active/Inactive" name="group_active" context="{'group_by': 'active'}"/>
                 </group>
@@ -141,7 +136,8 @@
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create your first sale order type!
-            </p><p>
+            </p>
+            <p>
                 Sale order types allow you to categorize your sales orders and 
                 automatically assign different sequences and workflows to each type.
             </p>
@@ -149,9 +145,5 @@
     </record>
 
     <!-- Menu Item to Access Sale Order Types -->
-    <menuitem id="menu_sale_order_type" 
-              name="Sale Order Types" 
-              parent="sale.menu_sale_config" 
-              action="action_sale_order_type_list" 
-              sequence="100"/>
+    <menuitem id="menu_sale_order_type" name="Sale Order Types" parent="sale.menu_sale_config" action="action_sale_order_type_list" sequence="100"/>
 </odoo>

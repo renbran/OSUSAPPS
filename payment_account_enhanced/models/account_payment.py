@@ -347,16 +347,13 @@ class AccountPayment(models.Model):
     def _compute_payment_qr_code(self):
         for record in self:
             # Only generate QR code for saved records with QR enabled
-            if record.qr_in_report and record.id and hasattr(record, 'id') and record.id:
+            if record.qr_in_report and record.id:
                 try:
                     base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
                     if base_url and record.id:
                         qr_data = f"{base_url}/payment/verify/{record.id}"
-                    elif record.id:
-                        qr_data = f"Payment:{record.id}"
                     else:
-                        record.qr_code = False
-                        continue
+                        qr_data = f"Payment:{record.id}"
                     record.qr_code = record._generate_qr_image(qr_data)
                 except Exception as e:
                     _logger.error("Error generating QR code for payment %s: %s", record.voucher_number or 'Draft', e)
@@ -666,8 +663,8 @@ class AccountPayment(models.Model):
     def action_post(self):
         """Enhanced posting with strict approval validation - NO BYPASSING ALLOWED"""
         for record in self:
-            # STRICT WORKFLOW ENFORCEMENT: No exceptions for posting without approval
-            if hasattr(record, 'approval_state'):
+            # STRICT WORKFLOW ENFORCEMENT: ALL payments must complete approval workflow before posting
+            if hasattr(record, 'approval_state') and record.approval_state:
                 if record.approval_state != 'approved':
                     raise UserError(_(
                         'Payment cannot be posted without completing the approval workflow.\n'
