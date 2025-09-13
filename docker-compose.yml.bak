@@ -22,14 +22,14 @@ services:
       - USER=odoo
       - PASSWORD=odoo
     volumes:
-      - type: bind
-        source: /d/RUNNING APPS/ready production/latest/OSUSAPPS/payment_account_enhanced
-        target: /mnt/extra-addons/payment_account_enhanced
-      - type: bind
-        source: /d/RUNNING APPS/ready production/latest/OSUSAPPS/odoo.conf
-        target: /etc/odoo/odoo.conf
+      - ./payment_account_enhanced:/mnt/extra-addons/payment_account_enhanced
+      - ./odoo.conf:/etc/odoo/odoo.conf
       - odoo-data:/var/lib/odoo
 
 volumes:
   db-data:
   odoo-data:
+    command: odoo -c /etc/odoo/odoo.conf
+volumes:
+  db_data:
+  odoo_data:
