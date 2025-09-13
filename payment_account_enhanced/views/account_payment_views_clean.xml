@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        
+
         <!-- Enhanced Payment Form View with Direct Override -->
         <record id="view_account_payment_form_enhanced" model="ir.ui.view">
             <field name="name">account.payment.form.enhanced</field>
@@ -14,9 +14,7 @@
                 <xpath expr="//header" position="replace">
                     <header>
                         <!-- Custom Approval Workflow Statusbar - Always Visible -->
-                        <field name="approval_state" widget="statusbar" 
-                               statusbar_visible="draft,under_review,for_approval,for_authorization,approved,posted" 
-                               statusbar_colors='{"draft":"secondary","under_review":"info","for_approval":"warning","for_authorization":"warning","approved":"success","posted":"success"}'/>
+                        <field name="approval_state" widget="statusbar" statusbar_visible="draft,under_review,for_approval,for_authorization,approved,posted" statusbar_colors='{"draft":"secondary","under_review":"info","for_approval":"warning","for_authorization":"warning","approved":"success","posted":"success"}'/>
 
                         <!-- Essential hidden fields -->
                         <field name="state" invisible="1"/>
@@ -24,54 +22,25 @@
 
                         <!-- Workflow Action Buttons with Simple Visibility Logic -->
                         <!-- Submit for Review - Show only in draft state -->
-                        <button name="action_submit_for_review" 
-                                string="Submit for Review" 
-                                type="object" 
-                                class="btn-primary" 
-                                invisible="approval_state != 'draft'"/>
+                        <button name="action_submit_for_review" string="Submit for Review" type="object" class="btn-primary" invisible="approval_state != 'draft'"/>
 
                         <!-- Review Button - Show only in under_review state -->
-                        <button name="action_review_payment" 
-                                string="Review" 
-                                type="object" 
-                                class="btn-success" 
-                                invisible="approval_state != 'under_review'"/>
+                        <button name="action_review_payment" string="Review" type="object" class="btn-success" invisible="approval_state != 'under_review'"/>
 
                         <!-- Approve Button - Show only in for_approval state -->
-                        <button name="action_approve_payment" 
-                                string="Approve" 
-                                type="object" 
-                                class="btn-success" 
-                                invisible="approval_state != 'for_approval'"/>
+                        <button name="action_approve_payment" string="Approve" type="object" class="btn-success" invisible="approval_state != 'for_approval'"/>
 
                         <!-- Authorize Button - Show only in for_authorization state -->
-                        <button name="action_authorize_payment" 
-                                string="Authorize" 
-                                type="object" 
-                                class="btn-success" 
-                                invisible="approval_state != 'for_authorization'"/>
+                        <button name="action_authorize_payment" string="Authorize" type="object" class="btn-success" invisible="approval_state != 'for_authorization'"/>
 
                         <!-- Post Button - Show only in approved state -->
-                        <button name="action_post" 
-                                string="Post Payment" 
-                                type="object" 
-                                class="btn-primary" 
-                                invisible="approval_state != 'approved'"/>
+                        <button name="action_post" string="Post Payment" type="object" class="btn-primary" invisible="approval_state != 'approved'"/>
 
                         <!-- Reject Button - Show for reviewable states -->
-                        <button name="action_reject_payment" 
-                                string="Reject" 
-                                type="object" 
-                                class="btn-danger" 
-                                invisible="approval_state not in ['under_review', 'for_approval', 'for_authorization']" 
-                                confirm="Are you sure you want to reject this payment?"/>
-                                
+                        <button name="action_reject_payment" string="Reject" type="object" class="btn-danger" invisible="approval_state not in ['under_review', 'for_approval', 'for_authorization']" confirm="Are you sure you want to reject this payment?"/>
+
                         <!-- Print Buttons - Show for posted payments -->
-                        <button name="action_print_osus_voucher" 
-                                string="Print Voucher" 
-                                type="object" 
-                                class="btn-outline-primary" 
-                                invisible="approval_state not in ['approved', 'posted']"/>
+                        <button name="action_print_osus_voucher" string="Print Voucher" type="object" class="btn-outline-primary" invisible="approval_state not in ['approved', 'posted']"/>
                     </header>
                 </xpath>
 
@@ -112,12 +81,10 @@
             <field name="inherit_id" ref="account.view_account_payment_tree"/>
             <field name="priority" eval="90"/>
             <field name="arch" type="xml">
-                
+
                 <!-- Add approval state after state field -->
                 <xpath expr="//field[@name='state']" position="after">
-                    <field name="approval_state" decoration-info="approval_state == 'under_review'" 
-                           decoration-warning="approval_state in ['for_approval', 'for_authorization']"
-                           decoration-success="approval_state in ['approved', 'posted']"/>
+                    <field name="approval_state" decoration-info="approval_state == 'under_review'" decoration-warning="approval_state in ['for_approval', 'for_authorization']" decoration-success="approval_state in ['approved', 'posted']"/>
                 </xpath>
 
                 <!-- Add voucher number after name -->
