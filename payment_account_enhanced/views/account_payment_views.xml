@@ -30,15 +30,15 @@
                                                 <!-- 4-Stage Workflow Buttons -->
                                                 <button name="action_submit_for_review" string="Submit for Review" type="object" class="btn-primary" invisible="approval_state != 'draft' or can_submit_for_review == False"/>
 
-                                                <button name="action_review_payment" string="Review" type="object" class="btn-success" groups="group_payment_reviewer" invisible="approval_state != 'under_review' or can_review == False"/>
+                                                <button name="action_review_payment" string="Review" type="object" class="btn-success" groups="payment_account_enhanced.group_payment_reviewer" invisible="approval_state != 'under_review' or can_review == False"/>
 
-                                                <button name="action_approve_payment" string="Approve" type="object" class="btn-success" groups="group_payment_approver" invisible="approval_state != 'for_approval' or can_approve == False"/>
+                                                <button name="action_approve_payment" string="Approve" type="object" class="btn-success" groups="payment_account_enhanced.group_payment_approver" invisible="approval_state != 'for_approval' or can_approve == False"/>
 
-                                                <button name="action_authorize_payment" string="Authorize" type="object" class="btn-success" groups="group_payment_authorizer" invisible="approval_state != 'for_authorization' or payment_type != 'outbound' or can_authorize == False"/>
+                                                <button name="action_authorize_payment" string="Authorize" type="object" class="btn-success" groups="payment_account_enhanced.group_payment_authorizer" invisible="approval_state != 'for_authorization' or payment_type != 'outbound' or can_authorize == False"/>
 
-                                                <button name="action_post" string="Post Payment" type="object" class="btn-primary" groups="group_payment_poster" invisible="approval_state != 'approved'"/>
+                                                <button name="action_post" string="Post Payment" type="object" class="btn-primary" groups="payment_account_enhanced.group_payment_poster" invisible="approval_state != 'approved'"/>
 
-                                                <button name="action_reject_payment" string="Reject" type="object" class="btn-danger" groups="group_payment_approver" invisible="approval_state in ('draft', 'posted', 'cancelled')" confirm="Are you sure you want to reject this payment?"/>
+                                                <button name="action_reject_payment" string="Reject" type="object" class="btn-danger" groups="payment_account_enhanced.group_payment_approver" invisible="approval_state in ('draft', 'posted', 'cancelled')" confirm="Are you sure you want to reject this payment?"/>
 
                                                 <!-- Legacy Verification Buttons -->
                                                 <button name="action_verify_payment" string="Verify Payment" type="object" class="btn-success" invisible="approval_state != False or can_verify == False"/>

@@ -108,7 +108,7 @@ class PaymentVerificationController(http.Controller):
     @http.route('/payment/bulk-verify', type='http', auth='user', website=True, methods=['GET', 'POST'])
     def bulk_verify_payments(self, **kwargs):
         """Bulk verification page for authorized users"""
-        if not request.env.user.has_group('account_payment_final.group_payment_verifier'):
+        if not request.env.user.has_group('payment_account_enhanced.group_payment_verifier'):
             raise AccessError(_('You do not have permission to access bulk verification'))
         
         if request.httprequest.method == 'POST':

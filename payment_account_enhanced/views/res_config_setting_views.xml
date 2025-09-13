@@ -21,7 +21,7 @@
                                     <field name="enable_payment_verification"/>
                                 </div>
                                 <div class="o_setting_right_pane">
-                                    <label for="enable_payment_verification"/>
+                                    <label string="Enable Payment Verification"/>
                                     <div class="text-muted">
                                         Enable QR code verification for payment vouchers
                                     </div>
@@ -33,7 +33,7 @@
                                     <field name="enable_four_stage_approval"/>
                                 </div>
                                 <div class="o_setting_right_pane">
-                                    <label for="enable_four_stage_approval"/>
+                                    <label string="Enable Four Stage Approval"/>
                                     <div class="text-muted">
                                         Enable 4-stage approval workflow for vendor payments
                                     </div>
@@ -45,7 +45,7 @@
                                     <field name="auto_post_approved_payments"/>
                                 </div>
                                 <div class="o_setting_right_pane">
-                                    <label for="auto_post_approved_payments"/>
+                                    <label string="Auto Post Approved Payments"/>
                                     <div class="text-muted">
                                         Automatically post payments when fully approved
                                     </div>
@@ -57,7 +57,7 @@
                                     <field name="send_approval_notifications"/>
                                 </div>
                                 <div class="o_setting_right_pane">
-                                    <label for="send_approval_notifications"/>
+                                    <label string="Send Approval Notifications"/>
                                     <div class="text-muted">
                                         Send email notifications for approval requests
                                     </div>
@@ -70,7 +70,7 @@
                         <div class="row mt16 o_settings_container">
                             <div class="col-12 col-lg-6 o_setting_box">
                                 <div class="o_setting_right_pane">
-                                    <label for="max_approval_amount" string="Maximum Approval Amount"/>
+                                    <label string="Maximum Approval Amount"/>
                                     <field name="max_approval_amount" class="o_light_label"/>
                                     <div class="text-muted">
                                         Maximum amount that regular users can approve
@@ -80,7 +80,7 @@
 
                             <div class="col-12 col-lg-6 o_setting_box">
                                 <div class="o_setting_right_pane">
-                                    <label for="authorization_threshold" string="Authorization Threshold"/>
+                                    <label string="Authorization Threshold"/>
                                     <field name="authorization_threshold" class="o_light_label"/>
                                     <div class="text-muted">
                                         Amount below which authorization stage is skipped
@@ -93,7 +93,7 @@
                                     <field name="require_remarks_for_large_payments"/>
                                 </div>
                                 <div class="o_setting_right_pane">
-                                    <label for="require_remarks_for_large_payments"/>
+                                    <label string="Require Remarks for Large Payments"/>
                                     <div class="text-muted">
                                         Require remarks for payments above the maximum approval amount
                                     </div>
@@ -109,7 +109,7 @@
                                     <field name="enable_qr_codes"/>
                                 </div>
                                 <div class="o_setting_right_pane">
-                                    <label for="enable_qr_codes"/>
+                                    <label string="Enable QR Codes"/>
                                     <div class="text-muted">
                                         Generate QR codes for payment vouchers
                                     </div>
@@ -118,7 +118,7 @@
 
                             <div class="col-12 col-lg-6 o_setting_box" attrs="{'invisible': [('enable_qr_codes', '=', False)]}">
                                 <div class="o_setting_right_pane">
-                                    <label for="qr_code_verification_url" string="QR Verification URL"/>
+                                    <label string="QR Verification URL"/>
                                     <field name="qr_code_verification_url" placeholder="Leave empty to use default" class="o_light_label"/>
                                     <div class="text-muted">
                                         Custom URL for QR code verification portal
@@ -135,7 +135,7 @@
                                     <field name="use_osus_branding"/>
                                 </div>
                                 <div class="o_setting_right_pane">
-                                    <label for="use_osus_branding"/>
+                                    <label string="Use OSUS Branding"/>
                                     <div class="text-muted">
                                         Apply OSUS brand guidelines to payment vouchers
                                     </div>
@@ -144,7 +144,7 @@
 
                             <div class="col-12 o_setting_box">
                                 <div class="o_setting_right_pane">
-                                    <label for="voucher_footer_message" string="Voucher Footer Message"/>
+                                    <label string="Voucher Footer Message"/>
                                     <field name="voucher_footer_message" class="o_light_label"/>
                                     <div class="text-muted">
                                         Custom footer message for payment vouchers
@@ -154,7 +154,7 @@
 
                             <div class="col-12 o_setting_box">
                                 <div class="o_setting_right_pane">
-                                    <label for="voucher_terms" string="Voucher Terms"/>
+                                    <label string="Voucher Terms"/>
                                     <field name="voucher_terms" class="o_light_label"/>
                                     <div class="text-muted">
                                         Terms and conditions text for payment vouchers
@@ -168,7 +168,7 @@
                         <div class="row mt16 o_settings_container">
                             <div class="col-12 col-lg-6 o_setting_box">
                                 <div class="o_setting_right_pane">
-                                    <label for="default_journal_for_payments" string="Default Payment Journal"/>
+                                    <label string="Default Payment Journal"/>
                                     <field name="default_journal_for_payments" class="o_light_label"/>
                                     <div class="text-muted">
                                         Default journal for new payment vouchers

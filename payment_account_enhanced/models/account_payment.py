@@ -220,7 +220,7 @@ class AccountPayment(models.Model):
             # Basic verification permission
             record.can_verify = (
                 record.verification_status == 'pending' and
-                user.has_group('account_payment_final.group_payment_verifier')
+                user.has_group('payment_account_enhanced.group_payment_verifier')
             )
             
             # Workflow permissions based on approval_state
@@ -231,17 +231,17 @@ class AccountPayment(models.Model):
             
             record.can_review = (
                 record.approval_state == 'under_review' and
-                user.has_group('account_payment_final.group_payment_reviewer')
+                user.has_group('payment_account_enhanced.group_payment_reviewer')
             )
             
             record.can_approve = (
                 record.approval_state == 'for_approval' and
-                bool(user.groups_id.filtered(lambda g: g.xml_id == 'account_payment_final.group_payment_approver'))
+                bool(user.groups_id.filtered(lambda g: g.xml_id == 'payment_account_enhanced.group_payment_approver'))
             )
             record.can_authorize = (
                 record.approval_state == 'for_authorization' and
                 record.payment_type in ['outbound', 'transfer'] and
-                bool(user.groups_id.filtered(lambda g: g.xml_id == 'account_payment_final.group_payment_authorizer'))
+                bool(user.groups_id.filtered(lambda g: g.xml_id == 'payment_account_enhanced.group_payment_authorizer'))
             )
 
     @api.depends('name', 'amount', 'partner_id', 'approval_state', 'verification_status', 'qr_in_report')
@@ -344,7 +344,7 @@ class AccountPayment(models.Model):
         if self.verification_status != 'pending':
             raise UserError(_('Only payments in "Pending" status can be verified'))
         
-        if not self.env.user.has_group('account_payment_final.group_payment_verifier'):
+        if not self.env.user.has_group('payment_account_enhanced.group_payment_verifier'):
             raise AccessError(_("You don't have permission to verify payments"))
         
         try:
@@ -390,7 +390,7 @@ class AccountPayment(models.Model):
         if self.verification_status not in ['pending', 'verified']:
             raise UserError(_('Only payments in "Pending" or "Verified" status can be rejected'))
         
-        if not self.env.user.has_group('account_payment_final.group_payment_verifier'):
+        if not self.env.user.has_group('payment_account_enhanced.group_payment_verifier'):
             raise AccessError(_("You don't have permission to reject payment verification"))
         
         try:
@@ -461,7 +461,7 @@ class AccountPayment(models.Model):
         if self.approval_state != 'under_review':
             raise UserError(_("Only payments under review can be processed"))
         
-        if not self.env.user.has_group('account_payment_final.group_payment_reviewer'):
+        if not self.env.user.has_group('payment_account_enhanced.group_payment_reviewer'):
             raise AccessError(_("You don't have permission to review payments"))
         
         # Set review fields
@@ -494,7 +494,7 @@ class AccountPayment(models.Model):
         if self.approval_state != 'for_approval':
             raise UserError(_("Only payments pending approval can be approved"))
         
-        if not self.env.user.has_group('account_payment_final.group_payment_approver'):
+        if not self.env.user.has_group('payment_account_enhanced.group_payment_approver'):
             raise AccessError(_("You don't have permission to approve payments"))
         
         # Set approval fields
@@ -530,7 +530,7 @@ class AccountPayment(models.Model):
         if self.approval_state != 'for_authorization':
             raise UserError(_("Only vendor payments waiting for authorization can be authorized"))
         
-        if not self.env.user.has_group('account_payment_final.group_payment_authorizer'):
+        if not self.env.user.has_group('payment_account_enhanced.group_payment_authorizer'):
             raise AccessError(_("You don't have permission to authorize payments"))
         
         # Set authorization fields
@@ -681,15 +681,15 @@ class AccountPayment(models.Model):
         return (
             self.env.user.has_group('account.group_account_manager') or
             self.env.context.get('bypass_approval_workflow') or
-            self.env.user.has_group('account_payment_final.group_payment_manager')
+            self.env.user.has_group('payment_account_enhanced.group_payment_manager')
         )
 
     def _check_rejection_permissions(self):
         """Check if user can reject at current stage"""
         permission_map = {
-            'under_review': 'account_payment_final.group_payment_reviewer',
-            'for_approval': 'account_payment_final.group_payment_approver',
-            'for_authorization': 'account_payment_final.group_payment_authorizer'
+            'under_review': 'payment_account_enhanced.group_payment_reviewer',
+            'for_approval': 'payment_account_enhanced.group_payment_approver',
+            'for_authorization': 'payment_account_enhanced.group_payment_authorizer'
         }
         
         required_group = permission_map.get(self.approval_state)
@@ -809,7 +809,7 @@ class AccountPayment(models.Model):
         """Enhanced unlink with proper validation"""
         for record in self:
             if hasattr(record, 'approval_state') and record.approval_state not in ['draft', 'cancelled']:
-                if not self.env.user.has_group('account_payment_final.group_payment_manager'):
+                if not self.env.user.has_group('payment_account_enhanced.group_payment_manager'):
                     raise UserError(_("You can only delete draft or cancelled payments"))
             if record.state == 'posted':
                 raise UserError(_("You cannot delete posted payments"))
