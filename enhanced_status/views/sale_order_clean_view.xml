@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Clean Sale Order Form View -->
+    <record id="view_order_form_enhanced_clean" model="ir.ui.view">
+        <field name="name">sale.order.form.enhanced.clean</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add custom fields as invisible -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="custom_state" invisible="1"/>
+                <field name="is_locked" invisible="1"/>
+                <field name="can_unlock" invisible="1"/>
+                <field name="has_due" invisible="1"/>
+                <field name="is_warning" invisible="1"/>
+            </xpath>
+
+            <!-- Add simple workflow buttons -->
+            <xpath expr="//button[@name='action_quotation_send']" position="after">
+                <button name="action_complete_order" type="object" string="Mark Complete" class="btn-success" invisible="state != 'sale'" help="Mark order as completed"/>
+                <button name="action_unlock_order" type="object" string="🔓 Unlock" class="btn-warning" invisible="not is_locked or not can_unlock" confirm="Unlock this order for editing?" help="Unlock order (Admin only)"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
