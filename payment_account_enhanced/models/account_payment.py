@@ -407,12 +407,26 @@ class AccountPayment(models.Model):
         if 'verification_status' not in vals:
             vals['verification_status'] = 'pending'
         
-        # Enforce approval workflow unless explicitly bypassed
-        if not self.env.context.get('bypass_approval_workflow'):
+        # ENFORCE ENHANCED WORKFLOW - NO BYPASSING ALLOWED
+        # All payments must go through the enhanced workflow
+        if not self.env.context.get('install_mode') and not self.env.context.get('import_file'):
+            # Determine initial state based on context and amount
+            initial_state = 'under_review'  # Start directly at review stage as requested
+            
+            # For payments created from invoices/bills, always start at review
+            if self.env.context.get('active_model') in ['account.move', 'account.invoice']:
+                initial_state = 'under_review'
+            
             vals.update({
-                'approval_state': 'draft',
-                'state': 'draft'
+                'approval_state': initial_state,
+                'state': 'draft'  # Keep Odoo state as draft until posting
             })
+            
+            # Log that workflow is enforced
+            if 'remarks' not in vals:
+                vals['remarks'] = 'Enhanced workflow enforced - payment requires approval'
+            else:
+                vals['remarks'] = f"{vals.get('remarks', '')} [Workflow: Enhanced approval required]"
         
         # Validate amount
         if vals.get('amount', 0) <= 0:
@@ -650,12 +664,17 @@ class AccountPayment(models.Model):
         return self._return_success_message(_('Payment has been authorized successfully.'))
 
     def action_post(self):
-        """Enhanced posting with approval validation"""
+        """Enhanced posting with strict approval validation - NO BYPASSING ALLOWED"""
         for record in self:
-            # Check approval requirements
-            if hasattr(record, 'approval_state') and record.approval_state != 'approved':
-                if not record._can_bypass_approval():
-                    raise UserError(_('Payment must be approved before posting. Current state: %s') % record.approval_state)
+            # STRICT WORKFLOW ENFORCEMENT: No exceptions for posting without approval
+            if hasattr(record, 'approval_state'):
+                if record.approval_state != 'approved':
+                    raise UserError(_(
+                        'Payment cannot be posted without completing the approval workflow.\n'
+                        'Current state: %s\n'
+                        'Required state: approved\n'
+                        'Please complete the review → approve → authorize workflow steps.'
+                    ) % record.approval_state)
             
             # Validate journal configuration before posting
             record._validate_journal_configuration()
@@ -799,11 +818,14 @@ class AccountPayment(models.Model):
             raise UserError(_('Cannot post payment using archived journal "%s"') % self.journal_id.name)
 
     def _can_bypass_approval(self):
-        """Determine if approval workflow can be bypassed"""
+        """Determine if approval workflow can be bypassed - NEVER allow bypass for enhanced workflow"""
+        # For enhanced workflow, NEVER allow bypassing - all payments must go through workflow
+        # Only allow bypass for system operations or very specific admin contexts
         return (
-            self.env.user.has_group('account.group_account_manager') or
-            self.env.context.get('bypass_approval_workflow') or
-            self.env.user.has_group('payment_account_enhanced.group_payment_manager')
+            self.env.context.get('install_mode') or  # During module installation
+            self.env.context.get('import_file') or   # During data import
+            (self.env.context.get('force_bypass_approval') and 
+             self.env.user.has_group('payment_account_enhanced.group_payment_manager'))
         )
 
     def _check_rejection_permissions(self):
@@ -912,13 +934,58 @@ class AccountPayment(models.Model):
 
     @api.constrains('approval_state', 'state')
     def _check_approval_constraints(self):
-        """Ensure payments follow approval workflow before posting"""
+        """STRICT ENFORCEMENT: Ensure ALL payments follow approval workflow before posting"""
         for payment in self:
-            if (payment.state == 'posted' and 
-                hasattr(payment, 'approval_state') and 
-                payment.approval_state not in ['approved', 'posted'] and
-                not payment._can_bypass_approval()):
-                raise ValidationError(_('Payment cannot be posted without proper approval workflow completion'))
+            # Skip constraint during installation or data import
+            if self.env.context.get('install_mode') or self.env.context.get('import_file'):
+                continue
+                
+            # STRICT RULE: Posted payments MUST have completed approval workflow
+            if payment.state == 'posted' and hasattr(payment, 'approval_state'):
+                if payment.approval_state not in ['approved', 'posted']:
+                    raise ValidationError(_(
+                        'WORKFLOW VIOLATION: Payment "%s" cannot be posted without completing the approval workflow.\n'
+                        'Current approval state: %s\n'
+                        'Required state: approved\n'
+                        'Enhanced workflow is mandatory for all payments.'
+                    ) % (payment.name or 'New Payment', payment.approval_state))
+
+    @api.constrains('approval_state')
+    def _check_workflow_progression(self):
+        """Ensure workflow states progress correctly"""
+        if self.env.context.get('install_mode') or self.env.context.get('import_file'):
+            return
+            
+        valid_progressions = {
+            False: ['draft', 'under_review'],  # New payments
+            'draft': ['under_review'],
+            'under_review': ['for_approval', 'draft'],  # Can go back to draft if rejected
+            'for_approval': ['for_authorization', 'under_review', 'approved', 'draft'],
+            'for_authorization': ['approved', 'for_approval', 'draft'],
+            'approved': ['posted'],
+            'posted': [],  # Terminal state
+        }
+        
+        for payment in self:
+            if not hasattr(payment, 'approval_state'):
+                continue
+                
+            # Check if this is a state change
+            if payment._origin and payment._origin.approval_state != payment.approval_state:
+                old_state = payment._origin.approval_state
+                new_state = payment.approval_state
+                
+                if new_state not in valid_progressions.get(old_state, []):
+                    raise ValidationError(_(
+                        'Invalid workflow progression for payment "%s".\n'
+                        'Cannot change from "%s" to "%s".\n'
+                        'Valid next states: %s'
+                    ) % (
+                        payment.name or 'New Payment',
+                        old_state or 'New',
+                        new_state,
+                        ', '.join(valid_progressions.get(old_state, []))
+                    ))
 
     @api.constrains('amount')
     def _check_amount_positive(self):

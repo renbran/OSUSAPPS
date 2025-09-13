@@ -19,14 +19,24 @@ class AccountPaymentRegister(models.TransientModel):
     )
     
     def _create_payment_vals_from_wizard(self, batch_result):
-        """Override to include additional fields"""
+        """Override to include additional fields and enforce workflow"""
         payment_vals = super()._create_payment_vals_from_wizard(batch_result)
         
         # Add our custom fields to payment values
         payment_vals.update({
             'remarks': self.remarks,
             'qr_in_report': self.qr_in_report,
+            # ENFORCE WORKFLOW: All payments from invoices start at review stage
+            'approval_state': 'under_review',
+            'state': 'draft',  # Keep as draft until workflow completion
         })
+        
+        # Add workflow note to remarks
+        workflow_note = "Payment created from invoice/bill - Enhanced workflow enforced"
+        if payment_vals.get('remarks'):
+            payment_vals['remarks'] = f"{payment_vals['remarks']} [{workflow_note}]"
+        else:
+            payment_vals['remarks'] = workflow_note
         
         return payment_vals
     
@@ -38,10 +48,20 @@ class AccountPaymentRegister(models.TransientModel):
             # Fallback for different method name
             payment_vals = super()._create_payment_vals_from_wizard(batch_result)
         
-        # Add our custom fields to payment values
+        # Add our custom fields to payment values and enforce workflow
         payment_vals.update({
             'remarks': self.remarks,
             'qr_in_report': self.qr_in_report,
+            # ENFORCE WORKFLOW: All payments from invoices start at review stage
+            'approval_state': 'under_review',
+            'state': 'draft',  # Keep as draft until workflow completion
         })
+        
+        # Add workflow note to remarks
+        workflow_note = "Payment created from invoice/bill - Enhanced workflow enforced"
+        if payment_vals.get('remarks'):
+            payment_vals['remarks'] = f"{payment_vals['remarks']} [{workflow_note}]"
+        else:
+            payment_vals['remarks'] = workflow_note
         
         return payment_vals
