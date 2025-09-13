@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Top Level Menu: Payment Management -->
-    <menuitem id="menu_payment_management_root" name="Payment Management" sequence="10" parent="" action="" groups="account.group_account_user"/>
+    <menuitem id="menu_payment_management_root" name="Payment Management" sequence="10" groups="account.group_account_user"/>
 
     <!-- Dashboard Menu -->
     <menuitem id="menu_payment_dashboard" name="Dashboard" parent="menu_payment_management_root" sequence="20" action="payment_account_enhanced.action_payment_dashboard" groups="account.group_account_user"/>

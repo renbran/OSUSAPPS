@@ -47,8 +47,7 @@
         'data/sequence.xml',
         'data/mail_template_data.xml',
         
-        # Views (Load in dependency order)
-        'views/menus.xml',
+        # Views (Load actions before menus that reference them)
         'views/account_payment_views.xml',
         'views/account_move_views.xml',
         'views/payment_approval_history_views.xml',
@@ -57,6 +56,9 @@
         'views/res_config_settings_views.xml',
         'views/website_verification_templates.xml',
         'views/payment_dashboard_views.xml',
+        
+        # Menus (Load after views to ensure actions exist)
+        'views/menus.xml',
         
         # Reports
         'reports/payment_voucher_report.xml',
