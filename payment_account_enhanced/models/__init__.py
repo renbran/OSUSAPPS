@@ -6,6 +6,5 @@ from . import payment_approval_history
 from . import payment_qr_verification
 from . import payment_workflow_stage
 from . import res_company
-from . import res_config_settings
 from . import res_partner
 from . import payment_dashboard
