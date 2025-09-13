@@ -53,7 +53,6 @@
         'views/payment_approval_history_views.xml',
         'views/payment_qr_verification_views.xml',
         'views/payment_workflow_stage_views.xml',
-        'views/res_config_settings_views.xml',
         'views/website_verification_templates.xml',
         'views/payment_dashboard_views.xml',
         
