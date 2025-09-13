@@ -2,7 +2,7 @@
 <odoo>
     <data noupdate="1">
         <!-- Security Groups for Payment Account Enhanced -->
-        
+
         <!-- Payment Reviewer Group -->
         <record id="group_payment_reviewer" model="res.groups">
             <field name="name">Payment Reviewer</field>
@@ -28,7 +28,7 @@
         </record>
 
         <!-- Record Rules for Payment Access Control -->
-        
+
         <!-- Payment Draft/Under Review - Accessible by all account users -->
         <record id="payment_rule_draft_review" model="ir.rule">
             <field name="name">Payment: Draft and Under Review Access</field>
