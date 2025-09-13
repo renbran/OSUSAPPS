@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <data noupdate="0">
         <!-- Create Payment Module Category -->
         <record id="module_category_payment" model="ir.module.category">
             <field name="name">Payment Management</field>
@@ -10,9 +10,10 @@
 
         <!-- Payment User Groups - Base group first, then hierarchy -->
         <record id="group_payment_user" model="res.groups">
-            <field name="name">Payment / User</field>
-            <field name="category_id" ref="module_category_payment"/>
+            <field name="name">Payment User</field>
+            <field name="category_id" ref="payment_account_enhanced.module_category_payment"/>
             <field name="implied_ids" eval="[(4, ref('account.group_account_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_admin'))]"/>
             <field name="comment">Basic payment access - can create and view own payments</field>
         </record>
 
