@@ -249,10 +249,27 @@ class ResConfigSettings(models.TransientModel):
                     }
                 }
             
+            # Find a suitable partner
+            partner = self.env.ref('base.res_partner_1', raise_if_not_found=False)
+            if not partner:
+                partner = self.env['res.partner'].search([], limit=1)
+            
+            if not partner:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _('QR Code Test Failed'),
+                        'message': _('No suitable partner found for test payment creation'),
+                        'type': 'warning',
+                        'sticky': False,
+                    }
+                }
+            
             # Create test payment
             test_values = {
                 'payment_type': 'outbound',
-                'partner_id': self.env.ref('base.res_partner_1', raise_if_not_found=False).id or self.env['res.partner'].search([], limit=1).id,
+                'partner_id': partner.id,
                 'amount': 1000.0,
                 'currency_id': self.company_id.currency_id.id,
                 'journal_id': journal.id,
@@ -269,7 +286,7 @@ class ResConfigSettings(models.TransientModel):
             
             # Test QR code generation - only if payment was created successfully
             qr_generated = False
-            if test_payment and test_payment.id:
+            if test_payment and hasattr(test_payment, 'id') and test_payment.id:
                 if hasattr(test_payment, '_compute_payment_qr_code'):
                     test_payment._compute_payment_qr_code()
                 

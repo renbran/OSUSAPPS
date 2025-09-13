@@ -346,14 +346,15 @@ class AccountPayment(models.Model):
     @api.depends('name', 'amount', 'partner_id', 'approval_state', 'verification_status', 'qr_in_report')
     def _compute_payment_qr_code(self):
         for record in self:
-            # Only generate QR code for saved records with QR enabled
-            if record.qr_in_report and record.id:
+            # Only generate QR code for saved records with QR enabled and valid ID
+            if record.qr_in_report and record.id and hasattr(record, 'id') and record.id > 0:
                 try:
                     base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
                     if base_url and record.id:
                         qr_data = f"{base_url}/payment/verify/{record.id}"
                     else:
-                        qr_data = f"Payment:{record.id}"
+                        # Fallback to structured data when URL not available
+                        qr_data = record._create_fallback_qr_data()
                     record.qr_code = record._generate_qr_image(qr_data)
                 except Exception as e:
                     _logger.error("Error generating QR code for payment %s: %s", record.voucher_number or 'Draft', e)
@@ -379,14 +380,14 @@ class AccountPayment(models.Model):
             _logger.error("Error generating QR code: %s", e)
             return False
 
-    def _create_fallback_qr_data(self, record):
+    def _create_fallback_qr_data(self):
         """Create structured QR data for manual verification when URL not available"""
-        voucher_ref = record.voucher_number or record.name or 'Draft Payment'
-        amount_str = f"{record.amount:.2f} {record.currency_id.name if record.currency_id else 'USD'}"
-        partner_name = record.partner_id.display_name if record.partner_id else 'Unknown'
-        date_str = record.date.strftime('%Y-%m-%d') if hasattr(record, 'date') and record.date else 'Draft'
-        status = record.approval_state.upper() if hasattr(record, 'approval_state') else record.verification_status.upper()
-        return f"PAYMENT VERIFICATION\nAmount: {amount_str}\nPartner: {partner_name}\nDate: {date_str}\nStatus: {status}"
+        voucher_ref = self.voucher_number or self.name or 'Draft Payment'
+        amount_str = f"{self.amount:.2f} {self.currency_id.name if self.currency_id else 'USD'}"
+        partner_name = self.partner_id.display_name if self.partner_id else 'Unknown'
+        date_str = self.date.strftime('%Y-%m-%d') if hasattr(self, 'date') and self.date else 'Draft'
+        status = self.approval_state.upper() if hasattr(self, 'approval_state') and self.approval_state else (self.verification_status.upper() if self.verification_status else 'DRAFT')
+        return f"PAYMENT VERIFICATION\nRef: {voucher_ref}\nAmount: {amount_str}\nPartner: {partner_name}\nDate: {date_str}\nStatus: {status}"
 
     # ============================================================================
     # CORE BUSINESS METHODS

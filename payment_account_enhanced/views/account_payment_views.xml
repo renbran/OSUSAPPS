@@ -7,6 +7,7 @@
                         <field name="name">account.payment.form.enhanced</field>
                         <field name="model">account.payment</field>
                         <field name="inherit_id" ref="account.view_account_payment_form"/>
+                        <field name="priority" eval="90"/>
                         <field name="arch" type="xml">
 
                                 <!-- Replace header with workflow statusbar -->
@@ -170,6 +171,14 @@
                                         Payments go through an enhanced approval workflow for security.
                                 </p>
                         </field>
+                </record>
+
+                <!-- Enhanced Payment Form View Action -->
+                <record id="view_account_payment_form_action" model="ir.actions.act_window.view">
+                        <field name="sequence" eval="2"/>
+                        <field name="view_mode">form</field>
+                        <field name="view_id" ref="view_account_payment_form_enhanced"/>
+                        <field name="act_window_id" ref="action_account_payment_tree"/>
                 </record>
 
         </data>
