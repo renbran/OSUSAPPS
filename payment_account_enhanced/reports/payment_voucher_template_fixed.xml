@@ -10,39 +10,63 @@
                             <!-- Simple, clean voucher layout -->
                             <div class="row">
                                 <div class="col-12 text-center mb-4">
-                                    <h2><strong>Payment Voucher</strong></h2>
+                                    <h2>
+                                        <strong>Payment Voucher</strong>
+                                    </h2>
                                 </div>
                             </div>
 
                             <div class="row mb-3">
                                 <div class="col-6">
-                                    <strong>Voucher #:</strong> <span t-field="doc.voucher_number"/>
+                                    <strong>Voucher #:</strong>
+                                    <span t-field="doc.voucher_number"/>
                                 </div>
                                 <div class="col-6 text-right">
-                                    <strong>Date:</strong> <span t-field="doc.date"/>
+                                    <strong>Date:</strong>
+                                    <span t-field="doc.date"/>
                                 </div>
                             </div>
 
                             <table class="table table-bordered">
                                 <tr>
-                                    <td width="25%"><strong>Pay To:</strong></td>
-                                    <td width="75%"><span t-field="doc.partner_id"/></td>
+                                    <td width="25%">
+                                        <strong>Pay To:</strong>
+                                    </td>
+                                    <td width="75%">
+                                        <span t-field="doc.partner_id"/>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Amount:</strong></td>
-                                    <td><span t-field="doc.amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                    <td>
+                                        <strong>Amount:</strong>
+                                    </td>
+                                    <td>
+                                        <span t-field="doc.amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Payment Method:</strong></td>
-                                    <td><span t-field="doc.payment_method_line_id"/></td>
+                                    <td>
+                                        <strong>Payment Method:</strong>
+                                    </td>
+                                    <td>
+                                        <span t-field="doc.payment_method_line_id"/>
+                                    </td>
                                 </tr>
                                 <tr t-if="doc.ref">
-                                    <td><strong>Reference:</strong></td>
-                                    <td><span t-field="doc.ref"/></td>
+                                    <td>
+                                        <strong>Reference:</strong>
+                                    </td>
+                                    <td>
+                                        <span t-field="doc.ref"/>
+                                    </td>
                                 </tr>
                                 <tr t-if="doc.remarks">
-                                    <td><strong>Remarks:</strong></td>
-                                    <td><span t-field="doc.remarks"/></td>
+                                    <td>
+                                        <strong>Remarks:</strong>
+                                    </td>
+                                    <td>
+                                        <span t-field="doc.remarks"/>
+                                    </td>
                                 </tr>
                             </table>
 
@@ -51,16 +75,31 @@
                                 <h5>Approval Details</h5>
                                 <table class="table table-sm">
                                     <tr t-if="doc.reviewer_id">
-                                        <td><strong>Reviewed By:</strong></td>
-                                        <td><span t-field="doc.reviewer_id"/> - <span t-field="doc.reviewer_date"/></td>
+                                        <td>
+                                            <strong>Reviewed By:</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.reviewer_id"/>
+ -                                            <span t-field="doc.reviewer_date"/>
+                                        </td>
                                     </tr>
                                     <tr t-if="doc.approver_id">
-                                        <td><strong>Approved By:</strong></td>
-                                        <td><span t-field="doc.approver_id"/> - <span t-field="doc.approver_date"/></td>
+                                        <td>
+                                            <strong>Approved By:</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.approver_id"/>
+ -                                            <span t-field="doc.approver_date"/>
+                                        </td>
                                     </tr>
                                     <tr t-if="doc.authorizer_id">
-                                        <td><strong>Authorized By:</strong></td>
-                                        <td><span t-field="doc.authorizer_id"/> - <span t-field="doc.authorizer_date"/></td>
+                                        <td>
+                                            <strong>Authorized By:</strong>
+                                        </td>
+                                        <td>
+                                            <span t-field="doc.authorizer_id"/>
+ -                                            <span t-field="doc.authorizer_date"/>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
