@@ -39,7 +39,7 @@
         'python': ['qrcode', 'Pillow']
     },
     'data': [
-        # Security (Load first)
+        # Security (Load first) - Use the main security file
         'security/payment_security.xml',
         'security/ir.model.access.csv',
         
