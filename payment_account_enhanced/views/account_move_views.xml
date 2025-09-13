@@ -14,15 +14,25 @@
                     <field name="move_type" invisible="1"/>
                 </xpath>
 
-                <!-- Add basic workflow buttons only for invoices/bills -->
+                <!-- Add hidden fields for intelligent button conditions -->
+                <xpath expr="//header" position="before">
+                    <field name="move_type" invisible="1"/>
+                    <field name="approval_state" invisible="1"/>
+                    <field name="can_submit_for_review" invisible="1"/>
+                    <field name="can_review" invisible="1"/>
+                    <field name="can_approve" invisible="1"/>
+                    <field name="can_post_manual" invisible="1"/>
+                </xpath>
+
+                <!-- Add intelligent workflow buttons only for invoices/bills -->
                 <xpath expr="//header" position="inside">
-                    <button name="action_submit_for_review" string="Submit for Review" type="object" class="btn-primary" invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')"/>
+                    <button name="action_submit_for_review" string="Submit for Review" type="object" class="btn-primary" invisible="can_submit_for_review == False"/>
 
-                    <button name="action_review_approve" string="Review &amp; Approve" type="object" class="btn-success" groups="payment_account_enhanced.group_payment_reviewer" invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')"/>
+                    <button name="action_review_approve" string="Review &amp; Approve" type="object" class="btn-success" invisible="can_review == False"/>
 
-                    <button name="action_final_approve" string="Final Approve" type="object" class="btn-success" groups="payment_account_enhanced.group_payment_approver" invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')"/>
+                    <button name="action_final_approve" string="Final Approve" type="object" class="btn-success" invisible="can_approve == False"/>
 
-                    <button name="action_reject_invoice_bill" string="Reject" type="object" class="btn-danger" groups="payment_account_enhanced.group_payment_approver" invisible="move_type not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')" confirm="Are you sure you want to reject this document?"/>
+                    <button name="action_reject_invoice_bill" string="Reject" type="object" class="btn-danger" invisible="can_review == False and can_approve == False" confirm="Are you sure you want to reject this document?"/>
                 </xpath>
 
             </field>

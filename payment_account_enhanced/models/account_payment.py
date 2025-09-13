@@ -211,6 +211,47 @@ class AccountPayment(models.Model):
         help="Whether current user can authorize"
     )
 
+    # Intelligent Button Visibility Fields
+    show_submit_button = fields.Boolean(
+        compute='_compute_button_visibility',
+        help="Show Submit for Review button"
+    )
+    
+    show_review_button = fields.Boolean(
+        compute='_compute_button_visibility',
+        help="Show Review button"
+    )
+    
+    show_approve_button = fields.Boolean(
+        compute='_compute_button_visibility',
+        help="Show Approve button"
+    )
+    
+    show_authorize_button = fields.Boolean(
+        compute='_compute_button_visibility',
+        help="Show Authorize button"
+    )
+    
+    show_post_button = fields.Boolean(
+        compute='_compute_button_visibility',
+        help="Show Post Payment button"
+    )
+    
+    show_reject_button = fields.Boolean(
+        compute='_compute_button_visibility',
+        help="Show Reject button"
+    )
+    
+    show_verify_button = fields.Boolean(
+        compute='_compute_button_visibility',
+        help="Show Verify Payment button"
+    )
+    
+    show_print_buttons = fields.Boolean(
+        compute='_compute_button_visibility',
+        help="Show Print buttons"
+    )
+
     @api.depends('approval_state', 'verification_status')
     def _compute_workflow_permissions(self):
         """Compute workflow permissions for current user"""
@@ -244,10 +285,69 @@ class AccountPayment(models.Model):
                 bool(user.groups_id.filtered(lambda g: g.xml_id == 'payment_account_enhanced.group_payment_authorizer'))
             )
 
+    @api.depends('approval_state', 'verification_status', 'state', 'payment_type', 'can_submit_for_review', 'can_review', 'can_approve', 'can_authorize')
+    def _compute_button_visibility(self):
+        """Compute intelligent button visibility based on current stage and user permissions"""
+        for record in self:
+            user = self.env.user
+            
+            # Submit for Review button - only show in draft stage if user can submit
+            record.show_submit_button = (
+                record.approval_state == 'draft' and 
+                record.can_submit_for_review
+            )
+            
+            # Review button - only show in under_review stage if user can review
+            record.show_review_button = (
+                record.approval_state == 'under_review' and 
+                record.can_review
+            )
+            
+            # Approve button - only show in for_approval stage if user can approve
+            record.show_approve_button = (
+                record.approval_state == 'for_approval' and 
+                record.can_approve
+            )
+            
+            # Authorize button - only show in for_authorization stage if user can authorize
+            record.show_authorize_button = (
+                record.approval_state == 'for_authorization' and 
+                record.payment_type in ['outbound', 'transfer'] and
+                record.can_authorize
+            )
+            
+            # Post button - only show in approved stage if user has posting rights
+            record.show_post_button = (
+                record.approval_state == 'approved' and
+                (user.has_group('payment_account_enhanced.group_payment_poster') or
+                 user.has_group('account.group_account_manager'))
+            )
+            
+            # Reject button - show if payment is in reviewable stages and user has appropriate rights
+            record.show_reject_button = (
+                record.approval_state in ['under_review', 'for_approval', 'for_authorization'] and
+                ((record.approval_state == 'under_review' and user.has_group('payment_account_enhanced.group_payment_reviewer')) or
+                 (record.approval_state in ['for_approval', 'for_authorization'] and user.has_group('payment_account_enhanced.group_payment_approver')))
+            )
+            
+            # Verify button - show only for legacy verification workflow
+            record.show_verify_button = (
+                not record.approval_state and  # Legacy payments without approval workflow
+                record.verification_status == 'pending' and
+                record.can_verify
+            )
+            
+            # Print buttons - show only for posted/completed payments
+            record.show_print_buttons = (
+                record.state in ['posted', 'sent'] or
+                record.approval_state in ['approved', 'posted']
+            )
+
     @api.depends('name', 'amount', 'partner_id', 'approval_state', 'verification_status', 'qr_in_report')
     def _compute_payment_qr_code(self):
         for record in self:
-            if record.qr_in_report and record.id:
+            # Only generate QR code for saved records with QR enabled
+            if record.qr_in_report and record.id and hasattr(record, 'id') and record.id:
                 try:
                     base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
                     if base_url and record.id:
@@ -557,6 +657,9 @@ class AccountPayment(models.Model):
                 if not record._can_bypass_approval():
                     raise UserError(_('Payment must be approved before posting. Current state: %s') % record.approval_state)
             
+            # Validate journal configuration before posting
+            record._validate_journal_configuration()
+            
             # Set posting user
             record.actual_approver_id = self.env.user
             
@@ -568,6 +671,8 @@ class AccountPayment(models.Model):
                 record.approval_state = 'posted'
                 record._log_approval_action('approved', 'posted', 'post')
                 record.message_post(body=_("Payment posted by %s") % self.env.user.name)
+            
+            return result
             
             return result
 
@@ -675,6 +780,23 @@ class AccountPayment(models.Model):
             value = getattr(self, field)
             if not value or (field == 'amount' and value <= 0):
                 raise ValidationError(_('%s is required and must be valid.') % label)
+
+    def _validate_journal_configuration(self):
+        """Validate journal configuration before posting"""
+        if not self.journal_id:
+            raise UserError(_('Journal is required for payment posting'))
+        
+        # Check if journal has required accounts configured
+        if self.payment_type == 'outbound':
+            if not self.journal_id.default_account_id:
+                raise UserError(_('Journal "%s" must have a default account configured for outbound payments') % self.journal_id.name)
+        else:  # inbound
+            if not self.journal_id.default_account_id:
+                raise UserError(_('Journal "%s" must have a default account configured for inbound payments') % self.journal_id.name)
+        
+        # Ensure journal is active and not archived
+        if not self.journal_id.active:
+            raise UserError(_('Cannot post payment using archived journal "%s"') % self.journal_id.name)
 
     def _can_bypass_approval(self):
         """Determine if approval workflow can be bypassed"""

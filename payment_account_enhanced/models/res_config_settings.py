@@ -267,17 +267,19 @@ class ResConfigSettings(models.TransientModel):
                 
             test_payment = self.env['account.payment'].create(test_values)
             
-            # Test QR code generation
-            if hasattr(test_payment, '_compute_payment_qr_code'):
-                test_payment._compute_payment_qr_code()
-            
-            # Check if QR code was generated
+            # Test QR code generation - only if payment was created successfully
             qr_generated = False
-            if hasattr(test_payment, 'qr_code') and test_payment.qr_code:
-                qr_generated = True
+            if test_payment and test_payment.id:
+                if hasattr(test_payment, '_compute_payment_qr_code'):
+                    test_payment._compute_payment_qr_code()
+                
+                # Check if QR code was generated
+                if hasattr(test_payment, 'qr_code') and test_payment.qr_code:
+                    qr_generated = True
             
             # Clean up test payment
-            test_payment.unlink()
+            if test_payment:
+                test_payment.unlink()
             
             if qr_generated:
                 return {
