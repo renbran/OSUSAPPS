@@ -84,6 +84,14 @@ class AccountPayment(models.Model):
         help="Date when the payment was authorized"
     )
 
+    # Approval History relationship
+    approval_history_ids = fields.One2many(
+        'payment.approval.history',
+        'payment_id',
+        string='Approval History',
+        help="Complete approval workflow history"
+    )
+
     # ============================================================================
     # WORKFLOW METHODS
     # ============================================================================
