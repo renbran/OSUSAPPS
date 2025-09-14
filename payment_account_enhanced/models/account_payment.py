@@ -139,16 +139,35 @@ class AccountPayment(models.Model):
         if not vals.get('access_token'):
             vals['access_token'] = self._generate_access_token()
             
-        return super(AccountPayment, self).create(vals)
+        # Create the payment record
+        payment = super(AccountPayment, self).create(vals)
+        
+        # Force QR code generation immediately after creation
+        try:
+            payment._compute_qr_code()
+        except Exception as e:
+            _logger.warning("Could not generate QR code immediately for payment %s: %s", payment.voucher_number, str(e))
+            
+        return payment
 
     def write(self, vals):
         """Override write to ensure access tokens and QR codes are generated"""
         result = super(AccountPayment, self).write(vals)
         
-        # Generate access token if missing
+        # Generate access token if missing and force QR regeneration
         for record in self:
+            needs_qr_update = False
+            
             if not record.access_token:
                 record.access_token = record._generate_access_token()
+                needs_qr_update = True
+            
+            # Force QR regeneration if certain fields changed or QR is missing
+            if not record.qr_code or needs_qr_update or any(field in vals for field in ['voucher_number', 'name', 'approval_state']):
+                try:
+                    record._compute_qr_code()
+                except Exception as e:
+                    _logger.warning("Could not update QR code for payment %s: %s", record.voucher_number or record.name, str(e))
         
         return result
 
@@ -158,11 +177,13 @@ class AccountPayment(models.Model):
         token_data = f"{uuid.uuid4().hex}-{fields.Datetime.now().isoformat()}"
         return hashlib.sha256(token_data.encode()).hexdigest()[:32]
 
-    @api.depends('voucher_number', 'amount', 'approval_state', 'partner_id', 'date', 'access_token')
+    @api.depends('voucher_number', 'amount', 'approval_state', 'partner_id', 'date', 'access_token', 'name')
     def _compute_qr_code(self):
         """Generate QR code for payment voucher verification with access token"""
         for record in self:
-            if record.voucher_number and record.id and record.access_token:
+            # Generate QR if we have either voucher_number or name, and access_token
+            payment_ref = record.voucher_number or record.name
+            if payment_ref and record.id and record.access_token:
                 try:
                     # Get company QR settings
                     company = record.company_id
@@ -175,7 +196,7 @@ class AccountPayment(models.Model):
                     if company.qr_code_verification_url:
                         verification_url = f"{company.qr_code_verification_url}/{record.access_token}"
                     
-                    # Generate QR code with verification URL (always generate, regardless of company setting)
+                    # Generate QR code with verification URL (always generate)
                     qr = qrcode.QRCode(
                         version=1,
                         error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -192,7 +213,7 @@ class AccountPayment(models.Model):
                     record.qr_code = base64.b64encode(buffer.getvalue())
                         
                 except Exception as e:
-                    _logger.error("Error generating QR code for payment %s: %s", record.voucher_number, str(e))
+                    _logger.error("Error generating QR code for payment %s: %s", payment_ref, str(e))
                     record.qr_code = False
             else:
                 record.qr_code = False

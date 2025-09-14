@@ -247,7 +247,7 @@ class PaymentQRVerification(models.Model):
                 'amount': payment.amount,
                 'currency': payment.currency_id.name,
                 'partner': payment.partner_id.name if payment.partner_id else '',
-                'date': str(payment.payment_date) if payment.payment_date else '',
+                'date': str(payment.date) if payment.date else '',
                 'approval_state': payment.approval_state,
                 'company': payment.company_id.name,
             }
