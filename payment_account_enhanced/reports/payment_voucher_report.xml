@@ -230,202 +230,208 @@
                             <!-- QR Code Fallback (Enhanced messaging) -->
                             <div t-if="not payment.qr_code and payment.access_token" style="text-align: center; margin-bottom: 25px; background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeaa7;">
                                 <div style="font-weight: bold; margin-bottom: 10px; color: #856404; font-size: 14px;">
-                                    <i class="fa fa-qrcode"/> QR Code Generation In Progress
+                                    <i class="fa fa-qrcode"/>
+ QR Code Generation In Progress
                                 </div>
                                 <div style="font-size: 11px; color: #856404; line-height: 1.4;">
                                     <div>QR code is being generated. You can verify this voucher by visiting:</div>
                                     <div style="margin-top: 8px; font-family: monospace; background: white; padding: 8px; border: 1px solid #ddd; word-break: break-all; font-size: 10px; border-radius: 4px;">
-                                        <strong>Verification URL:</strong><br/>
-                                        <span style="color: #0066cc;">http://localhost:8069/payment/verify/<span t-field="payment.access_token"/></span>
-                                    </div>
-                                    <div style="margin-top: 8px; font-size: 10px; color: #6c757d;">
-                                        Voucher: <span t-field="payment.voucher_number"/> | Token: <span t-esc="payment.access_token[:8] if payment.access_token else 'N/A'"/>...
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- No verification available -->
-                            <div t-if="not payment.qr_code and not payment.access_token" style="text-align: center; margin-bottom: 25px; background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f1aeb5;">
-                                <div style="font-weight: bold; margin-bottom: 10px; color: #721c24; font-size: 14px;">
-                                    <i class="fa fa-exclamation-triangle"/> Verification Not Available
-                                </div>
-                                <div style="font-size: 11px; color: #721c24; line-height: 1.4;">
-                                    <div>This voucher does not have verification capabilities enabled.</div>
-                                    <div style="margin-top: 5px; font-size: 10px;">Please contact the finance department for manual verification.</div>
-                                </div>
-                            </div>
-
-                            <!-- Approval Workflow Section -->
-                            <div t-if="payment.reviewer_id or payment.approver_id or payment.authorizer_id or payment.approval_history_ids" style="margin-bottom: 25px;">
-                                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; font-size: 16px;">APPROVAL WORKFLOW</h3>
-
-                                <!-- Approval History Table -->
-                                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;">
-                                    <table style="width: 100%; border-collapse: collapse;">
-                                        <thead>
-                                            <tr style="background-color: #e9ecef;">
-                                                <th style="padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #dee2e6;">Stage</th>
-                                                <th style="padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #dee2e6;">Approved By</th>
-                                                <th style="padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #dee2e6;">Date &amp; Time</th>
-                                                <th style="padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #dee2e6;">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Created By -->
-                                            <tr>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">1. Created</td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.create_uid.name"/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.create_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
-                                                </td>
-                                            </tr>
-
-                                            <!-- Reviewed By -->
-                                            <tr t-if="payment.reviewer_id">
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">2. Reviewed</td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.reviewer_id.name"/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.reviewer_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
-                                                </td>
-                                            </tr>
-
-                                            <!-- Approved By -->
-                                            <tr t-if="payment.approver_id">
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">3. Approved</td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.approver_id.name"/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.approver_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
-                                                </td>
-                                            </tr>
-
-                                            <!-- Authorized By -->
-                                            <tr t-if="payment.authorizer_id">
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">4. Authorized</td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.authorizer_id.name"/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.authorizer_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
-                                                </td>
-                                            </tr>
-
-                                            <!-- Posted/Finalized -->
-                                            <tr t-if="payment.state == 'posted'">
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">5. Posted</td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.write_uid.name"/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span t-field="payment.write_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
-                                                </td>
-                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                    <span style="background-color: #007bff; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ POSTED</span>
-                                                </td>
-                                            </tr>
-
-                                            <!-- Additional History from approval_history_ids -->
-                                            <t t-foreach="payment.approval_history_ids" t-as="history">
-                                                <tr t-if="history.action_type in ['review', 'approve', 'authorize', 'verify']">
-                                                    <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">
-                                                        <span t-field="history.action_type"/>
- -                                                        <span t-field="history.stage_to"/>
-                                                    </td>
-                                                    <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                        <span t-field="history.user_id.name"/>
-                                                        <span t-if="history.comments" style="font-style: italic; color: #6c757d;">
-                                                            <br/>
-Comment: <span t-field="history.comments"/>
-                                                        </span>
-                                                    </td>
-                                                    <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                        <span t-field="history.approval_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
-                                                    </td>
-                                                    <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
-                                                        <span style="background-color: #17a2b8; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ LOGGED</span>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </tbody>
-                                    </table>
-
-                                    <!-- Current Status Summary -->
-                                    <div style="margin-top: 15px; padding: 10px; background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 5px 5px 0;">
-                                        <strong style="color: #1976d2;">Current Status: </strong>
-                                        <span style="color: #1976d2; font-weight: bold; text-transform: uppercase;">
-                                            <span t-field="payment.approval_state"/>
+                                        <strong>Verification URL:</strong>
+                                        <br/>
+                                        <span style="color: #0066cc;">http://localhost:8069/payment/verify/<span t-field="payment.access_token"/>
                                         </span>
                                     </div>
+                                    <div style="margin-top: 8px; font-size: 10px; color: #6c757d;">
+                                        Voucher: <span t-field="payment.voucher_number"/>
+ | Token: <span t-esc="payment.access_token[:8] if payment.access_token else 'N/A'"/>
+...
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Signatures Section -->
-                            <div style="margin-top: 40px; margin-bottom: 30px;">
-                                <h4 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">AUTHORIZED SIGNATURES</h4>
-                                <table style="width: 100%;">
-                                    <tr>
-                                        <td style="width: 33%; text-align: center; vertical-align: bottom;">
-                                            <div style="height: 60px;"></div>
-                                            <div style="border-top: 1px solid #333; padding-top: 5px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
-                                            <div style="font-weight: bold; font-size: 12px;">FINANCE DEPARTMENT</div>
-                                            <div style="font-size: 10px; color: #7f8c8d;">Signature &amp; Date</div>
-                                        </td>
-                                        <td style="width: 33%; text-align: center; vertical-align: bottom;">
-                                            <div style="height: 60px;"></div>
-                                            <div style="border-top: 1px solid #333; padding-top: 5px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
-                                            <div style="font-weight: bold; font-size: 12px;">ACCOUNTS MANAGER</div>
-                                            <div style="font-size: 10px; color: #7f8c8d;">Signature &amp; Date</div>
-                                        </td>
-                                        <td style="width: 33%; text-align: center; vertical-align: bottom;">
-                                            <div style="height: 60px;"></div>
-                                            <div style="border-top: 1px solid #333; padding-top: 5px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
-                                            <div style="font-weight: bold; font-size: 12px;">AUTHORIZED OFFICER</div>
-                                            <div style="font-size: 10px; color: #7f8c8d;">Signature &amp; Date</div>
-                                        </td>
-                                    </tr>
+                        <!-- No verification available -->
+                        <div t-if="not payment.qr_code and not payment.access_token" style="text-align: center; margin-bottom: 25px; background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f1aeb5;">
+                            <div style="font-weight: bold; margin-bottom: 10px; color: #721c24; font-size: 14px;">
+                                <i class="fa fa-exclamation-triangle"/>
+ Verification Not Available
+                            </div>
+                            <div style="font-size: 11px; color: #721c24; line-height: 1.4;">
+                                <div>This voucher does not have verification capabilities enabled.</div>
+                                <div style="margin-top: 5px; font-size: 10px;">Please contact the finance department for manual verification.</div>
+                            </div>
+                        </div>
+
+                        <!-- Approval Workflow Section -->
+                        <div t-if="payment.reviewer_id or payment.approver_id or payment.authorizer_id or payment.approval_history_ids" style="margin-bottom: 25px;">
+                            <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; font-size: 16px;">APPROVAL WORKFLOW</h3>
+
+                            <!-- Approval History Table -->
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background-color: #e9ecef;">
+                                            <th style="padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #dee2e6;">Stage</th>
+                                            <th style="padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #dee2e6;">Approved By</th>
+                                            <th style="padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #dee2e6;">Date &amp; Time</th>
+                                            <th style="padding: 10px; text-align: left; font-weight: bold; border-bottom: 2px solid #dee2e6;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Created By -->
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">1. Created</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.create_uid.name"/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.create_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Reviewed By -->
+                                        <tr t-if="payment.reviewer_id">
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">2. Reviewed</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.reviewer_id.name"/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.reviewer_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Approved By -->
+                                        <tr t-if="payment.approver_id">
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">3. Approved</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.approver_id.name"/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.approver_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Authorized By -->
+                                        <tr t-if="payment.authorizer_id">
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">4. Authorized</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.authorizer_id.name"/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.authorizer_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Posted/Finalized -->
+                                        <tr t-if="payment.state == 'posted'">
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">5. Posted</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.write_uid.name"/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span t-field="payment.write_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
+                                            </td>
+                                            <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                <span style="background-color: #007bff; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ POSTED</span>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Additional History from approval_history_ids -->
+                                        <t t-foreach="payment.approval_history_ids" t-as="history">
+                                            <tr t-if="history.action_type in ['review', 'approve', 'authorize', 'verify']">
+                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">
+                                                    <span t-field="history.action_type"/>
+ -                                                    <span t-field="history.stage_to"/>
+                                                </td>
+                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                    <span t-field="history.user_id.name"/>
+                                                    <span t-if="history.comments" style="font-style: italic; color: #6c757d;">
+                                                        <br/>
+Comment: <span t-field="history.comments"/>
+                                                    </span>
+                                                </td>
+                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                    <span t-field="history.approval_date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'/>
+                                                </td>
+                                                <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
+                                                    <span style="background-color: #17a2b8; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ LOGGED</span>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
                                 </table>
-                            </div>
 
-                            <!-- Footer -->
-                            <div style="border-top: 1px solid #ddd; padding-top: 15px; text-align: center; font-size: 12px; color: #7f8c8d;">
-                                <div style="margin-bottom: 5px;">
-                                    Computer-generated document | <span t-field="payment.company_id.name"/>
-                                </div>
-                                <div>
-                                    <span t-if="payment.company_id.phone">
-                                        📞                                        <span t-field="payment.company_id.phone"/>
- |
-                                    </span>
-                                    <span t-if="payment.company_id.email">
-                                        📧                                        <span t-field="payment.company_id.email"/>
- |
-                                    </span>
-                                    <span t-if="payment.company_id.website">
-                                        🌐                                        <span t-field="payment.company_id.website"/>
+                                <!-- Current Status Summary -->
+                                <div style="margin-top: 15px; padding: 10px; background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 5px 5px 0;">
+                                    <strong style="color: #1976d2;">Current Status: </strong>
+                                    <span style="color: #1976d2; font-weight: bold; text-transform: uppercase;">
+                                        <span t-field="payment.approval_state"/>
                                     </span>
                                 </div>
                             </div>
                         </div>
-                    </t>
+
+                        <!-- Signatures Section -->
+                        <div style="margin-top: 40px; margin-bottom: 30px;">
+                            <h4 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">AUTHORIZED SIGNATURES</h4>
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td style="width: 33%; text-align: center; vertical-align: bottom;">
+                                        <div style="height: 60px;"></div>
+                                        <div style="border-top: 1px solid #333; padding-top: 5px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
+                                        <div style="font-weight: bold; font-size: 12px;">FINANCE DEPARTMENT</div>
+                                        <div style="font-size: 10px; color: #7f8c8d;">Signature &amp; Date</div>
+                                    </td>
+                                    <td style="width: 33%; text-align: center; vertical-align: bottom;">
+                                        <div style="height: 60px;"></div>
+                                        <div style="border-top: 1px solid #333; padding-top: 5px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
+                                        <div style="font-weight: bold; font-size: 12px;">ACCOUNTS MANAGER</div>
+                                        <div style="font-size: 10px; color: #7f8c8d;">Signature &amp; Date</div>
+                                    </td>
+                                    <td style="width: 33%; text-align: center; vertical-align: bottom;">
+                                        <div style="height: 60px;"></div>
+                                        <div style="border-top: 1px solid #333; padding-top: 5px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
+                                        <div style="font-weight: bold; font-size: 12px;">AUTHORIZED OFFICER</div>
+                                        <div style="font-size: 10px; color: #7f8c8d;">Signature &amp; Date</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Footer -->
+                        <div style="border-top: 1px solid #ddd; padding-top: 15px; text-align: center; font-size: 12px; color: #7f8c8d;">
+                            <div style="margin-bottom: 5px;">
+                                    Computer-generated document | <span t-field="payment.company_id.name"/>
+                            </div>
+                            <div>
+                                <span t-if="payment.company_id.phone">
+                                        📞                                    <span t-field="payment.company_id.phone"/>
+ |
+                                </span>
+                                <span t-if="payment.company_id.email">
+                                        📧                                    <span t-field="payment.company_id.email"/>
+ |
+                                </span>
+                                <span t-if="payment.company_id.website">
+                                        🌐                                    <span t-field="payment.company_id.website"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </t>
             </t>
-        </template>
-    </data>
+        </t>
+    </template>
+</data>
 </odoo>
