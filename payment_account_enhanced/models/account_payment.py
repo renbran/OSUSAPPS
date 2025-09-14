@@ -147,7 +147,7 @@ class AccountPayment(models.Model):
         token_data = f"{uuid.uuid4().hex}-{fields.Datetime.now().isoformat()}"
         return hashlib.sha256(token_data.encode()).hexdigest()[:32]
 
-    @api.depends('voucher_number', 'amount', 'approval_state', 'partner_id', 'payment_date', 'access_token')
+    @api.depends('voucher_number', 'amount', 'approval_state', 'partner_id', 'date', 'access_token')
     def _compute_qr_code(self):
         """Generate QR code for payment voucher verification with access token"""
         for record in self:
@@ -164,7 +164,7 @@ class AccountPayment(models.Model):
                         'amount': str(record.amount),
                         'currency': record.currency_id.name,
                         'partner': record.partner_id.name if record.partner_id else '',
-                        'date': str(record.payment_date) if record.payment_date else '',
+                        'date': str(record.date) if record.date else '',
                         'approval_state': record.approval_state,
                         'company': record.company_id.name,
                         'payment_type': record.payment_type,
