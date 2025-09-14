@@ -58,23 +58,37 @@ class Partner(models.Model):
     def _compute_commission_sale_orders(self):
         """Compute sale orders where this partner receives commission"""
         for partner in self:
+            # DEFENSIVE FIX: Ensure partner.id is always an integer, never a list
+            partner_id = partner.id
+            if isinstance(partner_id, (list, tuple)):
+                # If somehow partner.id is a list, take the first element
+                partner_id = partner_id[0] if partner_id else False
+                # Log this as it should not happen
+                import logging
+                _logger = logging.getLogger(__name__)
+                _logger.warning("Partner ID was unexpectedly a list: %s. Using %s", partner.id, partner_id)
+            
+            if not partner_id:
+                partner.commission_sale_order_ids = self.env['sale.order']
+                continue
+                
             commission_orders = self.env['sale.order'].search([
                 '|', '|', '|', '|', '|', '|', '|', '|', '|', '|', '|',
                 # External commissions
-                ('broker_partner_id', '=', partner.id),
-                ('referrer_partner_id', '=', partner.id),
-                ('cashback_partner_id', '=', partner.id),
-                ('other_external_partner_id', '=', partner.id),
+                ('broker_partner_id', '=', partner_id),
+                ('referrer_partner_id', '=', partner_id),
+                ('cashback_partner_id', '=', partner_id),
+                ('other_external_partner_id', '=', partner_id),
                 # Internal commissions
-                ('agent1_partner_id', '=', partner.id),
-                ('agent2_partner_id', '=', partner.id),
-                ('manager_partner_id', '=', partner.id),
-                ('director_partner_id', '=', partner.id),
+                ('agent1_partner_id', '=', partner_id),
+                ('agent2_partner_id', '=', partner_id),
+                ('manager_partner_id', '=', partner_id),
+                ('director_partner_id', '=', partner_id),
                 # Legacy commissions
-                ('consultant_id', '=', partner.id),
-                ('manager_id', '=', partner.id),
-                ('second_agent_id', '=', partner.id),
-                ('director_id', '=', partner.id),
+                ('consultant_id', '=', partner_id),
+                ('manager_id', '=', partner_id),
+                ('second_agent_id', '=', partner_id),
+                ('director_id', '=', partner_id),
             ])
             partner.commission_sale_order_ids = commission_orders
 
@@ -256,24 +270,43 @@ class Partner(models.Model):
             date_from = date.today().replace(day=1)  # First day of current month
         if not date_to:
             date_to = date.today()
+        
+        # DEFENSIVE FIX: Ensure self.id is always an integer, never a list
+        partner_id = self.id
+        if isinstance(partner_id, (list, tuple)):
+            partner_id = partner_id[0] if partner_id else False
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.warning("Partner ID was unexpectedly a list in commission_statement_query: %s. Using %s", self.id, partner_id)
+        
+        if not partner_id:
+            return {
+                'partner': self,
+                'date_from': date_from,
+                'date_to': date_to,
+                'statement_lines': [],
+                'total_amount': 0.0,
+                'orders_count': 0,
+                'currency': self.currency_id,
+            }
             
         domain = [
             '|', '|', '|', '|', '|', '|', '|', '|', '|', '|', '|',
             # External commissions
-            ('broker_partner_id', '=', self.id),
-            ('referrer_partner_id', '=', self.id),
-            ('cashback_partner_id', '=', self.id),
-            ('other_external_partner_id', '=', self.id),
+            ('broker_partner_id', '=', partner_id),
+            ('referrer_partner_id', '=', partner_id),
+            ('cashback_partner_id', '=', partner_id),
+            ('other_external_partner_id', '=', partner_id),
             # Internal commissions
-            ('agent1_partner_id', '=', self.id),
-            ('agent2_partner_id', '=', self.id),
-            ('manager_partner_id', '=', self.id),
-            ('director_partner_id', '=', self.id),
+            ('agent1_partner_id', '=', partner_id),
+            ('agent2_partner_id', '=', partner_id),
+            ('manager_partner_id', '=', partner_id),
+            ('director_partner_id', '=', partner_id),
             # Legacy commissions
-            ('consultant_id', '=', self.id),
-            ('manager_id', '=', self.id),
-            ('second_agent_id', '=', self.id),
-            ('director_id', '=', self.id),
+            ('consultant_id', '=', partner_id),
+            ('manager_id', '=', partner_id),
+            ('second_agent_id', '=', partner_id),
+            ('director_id', '=', partner_id),
         ]
         
         # Add date range filter
@@ -336,13 +369,12 @@ class Partner(models.Model):
         date_from = date.today().replace(day=1)
         date_to = date.today()
         
-        data = self.commission_statement_query(date_from, date_to)
+        # Get the report reference
+        report_ref = 'commission_partner_statement.action_commission_partner_statement_pdf'
+        report_action = self.env.ref(report_ref)
         
-        # Use direct report action reference for Odoo 17 compatibility
-        try:
-            # Get the report action
-            report_action = self.env.ref('commission_partner_statement.action_commission_partner_statement_pdf')
-            return report_action.report_action(self, data=data)
+        # Generate the report
+        return report_action.report_action(self)
         except Exception as e:
             # Fallback to direct PDF generation
             report_obj = self.env['ir.actions.report']

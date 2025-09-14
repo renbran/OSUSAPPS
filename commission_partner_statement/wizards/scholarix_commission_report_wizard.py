@@ -256,8 +256,22 @@ class ScholarixCommissionReportWizard(models.TransientModel):
     
     def _generate_pdf_report(self, report_data):
         """Generate PDF report"""
+        # DEFENSIVE FIX: Ensure proper ID handling to prevent list corruption
+        wizard_id = self.id
+        if isinstance(wizard_id, (list, tuple)):
+            wizard_id = wizard_id[0] if wizard_id else False
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.warning("Wizard ID was unexpectedly a list: %s. Using %s", self.id, wizard_id)
+        
+        if not wizard_id:
+            raise UserError(_("Cannot generate report: Invalid wizard ID"))
+            
         report = self.env.ref('commission_partner_statement.action_scholarix_consolidated_report')
-        return report.report_action(self, data=report_data)
+        
+        # Pass the wizard record properly, ensuring it's a single record
+        wizard_record = self.browse(wizard_id)
+        return report.report_action(wizard_record, data=report_data)
     
     def _generate_excel_report(self, report_data):
         """Generate Excel report"""
