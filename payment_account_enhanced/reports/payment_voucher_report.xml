@@ -222,7 +222,7 @@
                             <!-- Approval Workflow Section -->
                             <div t-if="payment.reviewer_id or payment.approver_id or payment.authorizer_id or payment.approval_history_ids" style="margin-bottom: 25px;">
                                 <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; font-size: 16px;">APPROVAL WORKFLOW</h3>
-                                
+
                                 <!-- Approval History Table -->
                                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px;">
                                     <table style="width: 100%; border-collapse: collapse;">
@@ -248,7 +248,7 @@
                                                     <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
                                                 </td>
                                             </tr>
-                                            
+
                                             <!-- Reviewed By -->
                                             <tr t-if="payment.reviewer_id">
                                                 <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">2. Reviewed</td>
@@ -262,7 +262,7 @@
                                                     <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
                                                 </td>
                                             </tr>
-                                            
+
                                             <!-- Approved By -->
                                             <tr t-if="payment.approver_id">
                                                 <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">3. Approved</td>
@@ -276,7 +276,7 @@
                                                     <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
                                                 </td>
                                             </tr>
-                                            
+
                                             <!-- Authorized By -->
                                             <tr t-if="payment.authorizer_id">
                                                 <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">4. Authorized</td>
@@ -290,7 +290,7 @@
                                                     <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ COMPLETED</span>
                                                 </td>
                                             </tr>
-                                            
+
                                             <!-- Posted/Finalized -->
                                             <tr t-if="payment.state == 'posted'">
                                                 <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">5. Posted</td>
@@ -304,17 +304,19 @@
                                                     <span style="background-color: #007bff; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">✓ POSTED</span>
                                                 </td>
                                             </tr>
-                                            
+
                                             <!-- Additional History from approval_history_ids -->
                                             <t t-foreach="payment.approval_history_ids" t-as="history">
                                                 <tr t-if="history.action_type in ['review', 'approve', 'authorize', 'verify']">
                                                     <td style="padding: 8px; border-bottom: 1px solid #dee2e6; font-weight: bold;">
-                                                        <span t-field="history.action_type"/> - <span t-field="history.stage_to"/>
+                                                        <span t-field="history.action_type"/>
+ -                                                        <span t-field="history.stage_to"/>
                                                     </td>
                                                     <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
                                                         <span t-field="history.user_id.name"/>
                                                         <span t-if="history.comments" style="font-style: italic; color: #6c757d;">
-                                                            <br/>Comment: <span t-field="history.comments"/>
+                                                            <br/>
+Comment: <span t-field="history.comments"/>
                                                         </span>
                                                     </td>
                                                     <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">
@@ -327,7 +329,7 @@
                                             </t>
                                         </tbody>
                                     </table>
-                                    
+
                                     <!-- Current Status Summary -->
                                     <div style="margin-top: 15px; padding: 10px; background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 0 5px 5px 0;">
                                         <strong style="color: #1976d2;">Current Status: </strong>
