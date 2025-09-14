@@ -141,6 +141,17 @@ class AccountPayment(models.Model):
             
         return super(AccountPayment, self).create(vals)
 
+    def write(self, vals):
+        """Override write to ensure access tokens and QR codes are generated"""
+        result = super(AccountPayment, self).write(vals)
+        
+        # Generate access token if missing
+        for record in self:
+            if not record.access_token:
+                record.access_token = record._generate_access_token()
+        
+        return result
+
     def _generate_access_token(self):
         """Generate secure access token for QR code validation"""
         # Create unique token based on current time, random UUID, and some payment data
@@ -155,56 +166,44 @@ class AccountPayment(models.Model):
                 try:
                     # Get company QR settings
                     company = record.company_id
-                    base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', default='')
+                    base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', default='http://localhost:8069')
                     
-                    # Create comprehensive verification data with access token
-                    qr_data = {
-                        'type': 'payment_verification',
-                        'voucher_number': record.voucher_number,
-                        'amount': str(record.amount),
-                        'currency': record.currency_id.name,
-                        'partner': record.partner_id.name if record.partner_id else '',
-                        'date': str(record.date) if record.date else '',
-                        'approval_state': record.approval_state,
-                        'company': record.company_id.name,
-                        'payment_type': record.payment_type,
-                        'access_token': record.access_token,
-                        'verification_url': f"{base_url}/payment/verify/{record.access_token}" if base_url else '',
-                        'payment_id': record.id,
-                        'generated_at': fields.Datetime.now().isoformat(),
-                    }
+                    # Create verification URL for QR code (simple URL, not JSON)
+                    verification_url = f"{base_url}/payment/verify/{record.access_token}"
                     
                     # Use custom verification URL if configured
                     if company.qr_code_verification_url:
-                        qr_data['verification_url'] = f"{company.qr_code_verification_url}/{record.access_token}"
+                        verification_url = f"{company.qr_code_verification_url}/{record.access_token}"
                     
-                    # Convert to JSON for QR code
-                    qr_text = json.dumps(qr_data, ensure_ascii=False)
+                    # Generate QR code with verification URL (always generate, regardless of company setting)
+                    qr = qrcode.QRCode(
+                        version=1,
+                        error_correction=qrcode.constants.ERROR_CORRECT_M,
+                        box_size=10,
+                        border=4,
+                    )
+                    qr.add_data(verification_url)
+                    qr.make(fit=True)
                     
-                    # Generate QR code only if QR codes are enabled
-                    if company.enable_qr_codes:
-                        qr = qrcode.QRCode(
-                            version=1,
-                            error_correction=qrcode.constants.ERROR_CORRECT_L,
-                            box_size=10,
-                            border=4,
-                        )
-                        qr.add_data(qr_text)
-                        qr.make(fit=True)
-                        
-                        # Create image
-                        qr_img = qr.make_image(fill_color="black", back_color="white")
-                        buffer = BytesIO()
-                        qr_img.save(buffer, format='PNG')
-                        record.qr_code = base64.b64encode(buffer.getvalue())
-                    else:
-                        record.qr_code = False
+                    # Create image
+                    qr_img = qr.make_image(fill_color="black", back_color="white")
+                    buffer = BytesIO()
+                    qr_img.save(buffer, format='PNG')
+                    record.qr_code = base64.b64encode(buffer.getvalue())
                         
                 except Exception as e:
                     _logger.error("Error generating QR code for payment %s: %s", record.voucher_number, str(e))
                     record.qr_code = False
             else:
                 record.qr_code = False
+
+    def action_regenerate_qr_code(self):
+        """Force regenerate QR code for this payment"""
+        self.ensure_one()
+        if not self.access_token:
+            self.access_token = self._generate_access_token()
+        self._compute_qr_code()
+        return True
 
     def action_submit_for_review(self):
         """Submit payment for review (Stage 1)"""

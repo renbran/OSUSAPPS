@@ -49,7 +49,7 @@ class PaymentVerificationController(http.Controller):
                 'verification_code': verification_log.verification_code if verification_log else None,
             }
             
-            return request.render('account_payment_final.payment_verification_page', context)
+            return request.render('payment_account_enhanced.payment_verification_success', context)
             
         except Exception as e:
             _logger.error(f"Error in payment verification for payment_id {payment_id}: {e}")
@@ -113,7 +113,7 @@ class PaymentVerificationController(http.Controller):
             payment = request.env['account.payment'].sudo().search([('access_token', '=', access_token)], limit=1)
             
             if not payment:
-                return request.render('payment_account_enhanced.payment_not_found', {
+                return request.render('payment_account_enhanced.payment_verification_error', {
                     'error_message': _('Payment Not Found'),
                     'error_details': _('The payment voucher you are trying to verify does not exist or has been removed.'),
                 })
@@ -148,7 +148,7 @@ class PaymentVerificationController(http.Controller):
                 'access_token_verified': True,
             }
             
-            return request.render('payment_account_enhanced.payment_verification_page', context)
+            return request.render('payment_account_enhanced.payment_verification_success', context)
             
         except Exception as e:
             _logger.error(f"Error in token payment verification for token {access_token}: {e}")
