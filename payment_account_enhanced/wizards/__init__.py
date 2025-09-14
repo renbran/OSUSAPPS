@@ -1,1 +1,1 @@
-from . import register_payment
+# No wizard models to import - all models are in models/ directory
