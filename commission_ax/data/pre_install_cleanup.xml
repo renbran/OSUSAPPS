@@ -3,7 +3,7 @@
     <data noupdate="0">
         <!-- Delete any problematic cached views -->
         <delete model="ir.ui.view" search="[('name', 'like', 'commission.enhanced'), ('model', '=', 'sale.order')]"/>
-        
+
         <!-- Clear view cache to ensure fresh loading -->
         <record id="clear_view_cache" model="ir.actions.server">
             <field name="name">Clear View Cache</field>
