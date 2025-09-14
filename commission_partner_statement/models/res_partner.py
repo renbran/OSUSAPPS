@@ -369,16 +369,23 @@ class Partner(models.Model):
         date_from = date.today().replace(day=1)
         date_to = date.today()
         
-        # Get the report reference
-        report_ref = 'commission_partner_statement.action_commission_partner_statement_pdf'
-        report_action = self.env.ref(report_ref)
-        
-        # Generate the report
-        return report_action.report_action(self)
+        try:
+            # Get the report reference
+            report_ref = 'commission_partner_statement.action_commission_partner_statement_pdf'
+            report_action = self.env.ref(report_ref)
+            
+            # Generate the report
+            return report_action.report_action(self)
         except Exception as e:
             # Fallback to direct PDF generation
             report_obj = self.env['ir.actions.report']
             template_name = 'commission_partner_statement.commission_partner_statement_template'
+            
+            # Prepare data for the report
+            data = {
+                'date_from': date_from.strftime('%Y-%m-%d'),
+                'date_to': date_to.strftime('%Y-%m-%d'),
+            }
             
             try:
                 # Generate PDF directly using the template
