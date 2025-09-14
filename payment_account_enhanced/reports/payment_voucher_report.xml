@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Paper Format for Payment Voucher -->
+        <record id="paperformat_voucher_a4" model="report.paperformat">
+            <field name="name">Payment Voucher A4</field>
+            <field name="default" eval="False"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">15</field>
+            <field name="margin_bottom">15</field>
+            <field name="margin_left">15</field>
+            <field name="margin_right">15</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">96</field>
+        </record>
+
+        <!-- Payment Voucher Report Action -->
+        <record id="action_report_payment_voucher" model="ir.actions.report">
+            <field name="name">Payment Voucher</field>
+            <field name="model">account.payment</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">payment_account_enhanced.payment_voucher_template</field>
+            <field name="report_file">payment_account_enhanced.payment_voucher_template</field>
+            <field name="binding_model_id" ref="account.model_account_payment"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="payment_account_enhanced.paperformat_voucher_a4"/>
+        </record>
+
+        <!-- Payment Voucher Template -->
+        <template id="payment_voucher_template">
+            <t t-call="web.html_container">
+                <!-- Inline CSS Styles for the Payment Voucher -->
+                <style>
+                    .o_payment_voucher_container {
+                        font-family: Arial, sans-serif;
+                        color: #333;
+                        line-height: 1.5;
+                    }
+                    .o_payment_voucher_container table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    .o_payment_voucher_container th {
+                        text-align: left;
+                        padding: 8px;
+                        background-color: #f8f9fa;
+                        border-bottom: 1px solid #ddd;
+                    }
+                    .o_payment_voucher_container td {
+                        padding: 8px;
+                        border-bottom: 1px solid #eee;
+                    }
+                    @media print {
+                        .o_payment_voucher_container {
+                            font-size: 12px;
+                        }
+                        .o_payment_signatures {
+                            page-break-inside: avoid;
+                        }
+                    }
+                </style>
+
+                <t t-foreach="docs" t-as="payment">
+                    <t t-call="web.external_layout">
+                        <div class="page o_payment_voucher_container">
+                            <!-- Header -->
+                            <div class="o_payment_voucher_header" style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #2c3e50; padding-bottom: 15px;">
+                                <h1 style="color: #2c3e50; margin: 0; font-size: 28px; font-weight: bold;">
+                                    <span t-field="payment.company_id.name"/>
+                                </h1>
+                                <div style="color: #7f8c8d; font-size: 14px; margin-top: 5px;">
+                                    <span t-field="payment.company_id.street"/>
+                                    <span t-if="payment.company_id.street2">
+                                        <span t-field="payment.company_id.street2"/>
+                                    </span>
+                                    <span t-field="payment.company_id.city"/>
+                                    <span t-if="payment.company_id.state_id.name">
+                                        <span t-field="payment.company_id.state_id.name"/>
+                                    </span>
+                                    <span t-field="payment.company_id.zip"/>
+                                    <span t-if="payment.company_id.country_id.name">
+                                        <span t-field="payment.company_id.country_id.name"/>
+                                    </span>
+                                </div>
+                                <div style="color: #7f8c8d; font-size: 14px; margin-top: 3px;">
+                                    <span t-if="payment.company_id.vat">
+                                        VAT: <span t-field="payment.company_id.vat"/> |
+                                    </span>
+                                    <span t-if="payment.company_id.phone">
+                                        📞 <span t-field="payment.company_id.phone"/> |
+                                    </span>
+                                    <span t-if="payment.company_id.email">
+                                        📧 <span t-field="payment.company_id.email"/>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Document Title and Reference -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                                <h2 style="color: #2c3e50; margin: 0; font-size: 24px; font-weight: bold;">PAYMENT RECEIPT</h2>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: bold;">Ref: <span t-field="payment.name"/></div>
+                                    <div>Date: <span t-field="payment.date"/></div>
+                                </div>
+                            </div>
+
+                            <!-- Recipient Information -->
+                            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; font-size: 16px;">ISSUED TO:</h3>
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td style="width: 50%;">
+                                            <strong>Name:</strong>
+                                            <span t-field="payment.partner_id"/>
+                                        </td>
+                                        <td>
+                                            <strong>Phone:</strong>
+                                            <span t-if="payment.partner_id.phone">
+                                                <span t-field="payment.partner_id.phone"/>
+                                            </span>
+                                            <span t-else="">N/A</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Email:</strong>
+                                            <span t-if="payment.partner_id.email">
+                                                <span t-field="payment.partner_id.email"/>
+                                            </span>
+                                            <span t-else="">N/A</span>
+                                        </td>
+                                        <td>
+                                            <strong>Payment Method:</strong>
+                                            <span t-field="payment.journal_id"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Payment Details -->
+                            <div style="margin-bottom: 25px;">
+                                <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px; font-size: 16px;">PAYMENT DETAILS</h3>
+                                <table>
+                                    <tr>
+                                        <td style="width: 30%; font-weight: bold;">Transaction Type:</td>
+                                        <td>
+                                            <span t-field="payment.payment_type"/>
+                                            <t t-if="payment.payment_type == 'inbound'">(Money Received)</t>
+                                            <t t-elif="payment.payment_type == 'outbound'">(Money Sent)</t>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="payment.ref">
+                                        <td style="font-weight: bold;">Reference:</td>
+                                        <td><span t-field="payment.ref"/></td>
+                                    </tr>
+                                    <tr t-if="payment.communication">
+                                        <td style="font-weight: bold;">Communication:</td>
+                                        <td><span t-field="payment.communication"/></td>
+                                    </tr>
+                                    <tr t-if="payment.remarks">
+                                        <td style="font-weight: bold;">Remarks:</td>
+                                        <td><span t-field="payment.remarks"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Amount Section -->
+                            <div style="background-color: #e8f4fc; padding: 20px; border-radius: 5px; margin-bottom: 25px; text-align: center;">
+                                <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                                    TOTAL AMOUNT: <span t-field="payment.amount" t-options='{"widget": "monetary", "display_currency": payment.currency_id}'/>
+                                </div>
+                                <div style="font-style: italic; color: #2c3e50;">
+                                    <span t-esc="payment.currency_id.amount_to_text(payment.amount)"/>
+                                    <span t-field="payment.currency_id.name"/>
+                                </div>
+                            </div>
+
+                            <!-- Payment Status -->
+                            <div style="text-align: center; margin-bottom: 25px;">
+                                <div style="display: inline-block; padding: 8px 20px; background-color: #27ae60; color: white; border-radius: 20px; font-weight: bold;">
+                                    <t t-if="payment.state == 'posted'">Payment Completed</t>
+                                    <t t-elif="payment.state == 'draft'">Payment Draft</t>
+                                    <t t-elif="payment.state == 'cancelled'">Payment Cancelled</t>
+                                    <t t-else="">
+                                        <span t-field="payment.state"/>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- QR Code Section (if enabled) -->
+                            <div t-if="payment.qr_code" style="text-align: center; margin-bottom: 25px;">
+                                <img t-att-src="image_data_uri(payment.qr_code)" style="max-width: 120px; border: 1px solid #ddd; padding: 5px;"/>
+                                <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                                    Scan QR code to verify payment authenticity
+                                </div>
+                            </div>
+
+                            <!-- Signatures Section -->
+                            <div style="margin-top: 40px; margin-bottom: 30px;">
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td style="width: 33%; text-align: center;">
+                                            <div style="border-top: 1px solid #333; padding-top: 10px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
+                                            <div style="font-weight: bold;">Prepared By</div>
+                                            <div style="font-size: 12px; color: #7f8c8d;">
+                                                <span t-field="payment.create_uid.name"/>
+                                            </div>
+                                        </td>
+                                        <td style="width: 33%; text-align: center;">
+                                            <div style="border-top: 1px solid #333; padding-top: 10px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
+                                            <div style="font-weight: bold;">Approved By</div>
+                                            <div style="font-size: 12px; color: #7f8c8d;">Finance Team</div>
+                                        </td>
+                                        <td style="width: 33%; text-align: center;">
+                                            <div style="border-top: 1px solid #333; padding-top: 10px; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
+                                            <div style="font-weight: bold;">Received By</div>
+                                            <div style="font-size: 12px; color: #7f8c8d;">Customer</div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style="border-top: 1px solid #ddd; padding-top: 15px; text-align: center; font-size: 12px; color: #7f8c8d;">
+                                <div style="margin-bottom: 5px;">
+                                    Computer-generated document | <span t-field="payment.company_id.name"/>
+                                </div>
+                                <div>
+                                    <span t-if="payment.company_id.phone">
+                                        📞 <span t-field="payment.company_id.phone"/> |
+                                    </span>
+                                    <span t-if="payment.company_id.email">
+                                        📧 <span t-field="payment.company_id.email"/> |
+                                    </span>
+                                    <span t-if="payment.company_id.website">
+                                        🌐 <span t-field="payment.company_id.website"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
