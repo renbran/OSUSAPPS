@@ -1,112 +1,188 @@
 // SCSS Variables for Odoo 17 compatibility
 $osus-burgundy: #8b1538;
 $osus-burgundy-light: #a41e3a;
+$osus-burgundy-dark: #7c2439;
 $osus-gold: #d4af37;
 $osus-gold-light: #f5e67b;
+$osus-gold-gradient: #bfa46f;
+$osus-gold-gradient-light: #d4c195;
 $osus-cream: #faf8f3;
 $osus-shadow-md: 0 4px 15px rgba(139, 21, 56, 0.15);
 $osus-shadow-lg: 0 8px 25px rgba(139, 21, 56, 0.2);
 $osus-radius-md: 8px;
 $osus-radius-lg: 12px;
 
-.o_payment_account_enhanced_voucher_header {
-  background: linear-gradient(
-    135deg,
-    $osus-burgundy 0%,
-    $osus-burgundy-light 100%
-  );
-  color: #fff;
-  border-radius: 0 0 $osus-radius-lg $osus-radius-lg;
-  margin-bottom: 18px;
+// Base container for vouchers
+.o_payment_account_enhanced_voucher_container {
+  font-family: "DejaVu Sans", Arial, sans-serif;
+  color: #2c2c2c;
+  line-height: 1.5;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #fff;
+
+  // Ensure proper spacing for Odoo 17
+  padding: 20px;
   box-shadow: $osus-shadow-md;
+  border-radius: $osus-radius-md;
 }
 
+// Header section - Fixed duplicate and syntax issues
 .o_payment_account_enhanced_voucher_header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background: linear-gradient(135deg, #7c2439 0%, #8b2a47 100%);
+  background: linear-gradient(
+    135deg,
+    $osus-burgundy-dark 0%,
+    darken($osus-burgundy-dark, 5%) 100%
+  );
   color: #fff;
   padding: 18px 32px 12px 32px;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 $osus-radius-lg $osus-radius-lg;
   margin-bottom: 18px;
+  box-shadow: $osus-shadow-md;
+
+  // Ensure print compatibility
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
+
 .o_payment_account_enhanced_voucher_header_left {
   flex: 1;
   min-width: 0;
 }
+
 .o_payment_account_enhanced_voucher_ref {
   font-size: 1.1em;
   font-weight: 700;
   margin-bottom: 6px;
+  color: #fff;
 }
+
 .o_payment_account_enhanced_voucher_company {
   font-size: 0.98em;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.95);
 }
+
 .o_payment_account_enhanced_voucher_header_right {
   display: flex;
   align-items: center;
   min-width: 120px;
+  justify-content: flex-end;
 }
+
 .o_payment_account_enhanced_voucher_logo {
   height: 48px;
   width: auto;
   max-width: 140px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
+  object-fit: contain; // Better image handling for Odoo 17
 }
 
+// Title section
 .o_payment_account_enhanced_voucher_title {
   text-align: center;
   margin-bottom: 18px;
-  h2 {
+
+  h1,
+  h2,
+  h3 {
     font-size: 1.7em;
     font-weight: 700;
-    color: #7c2439;
+    color: $osus-burgundy-dark;
     margin: 0;
     letter-spacing: 1px;
+    line-height: 1.3;
   }
 }
 
+// Details table section
 .o_payment_account_enhanced_voucher_details {
   margin-bottom: 18px;
+
   .o_payment_account_enhanced_voucher_table {
     width: 100%;
     border-collapse: collapse;
+    background: #fff;
+
     th,
     td {
       padding: 7px 14px;
       font-size: 1em;
       border-bottom: 1px solid #e0e0e0;
+      text-align: left;
+      vertical-align: top;
     }
+
     th {
       background: #fafbfc;
-      color: #7c2439;
+      color: $osus-burgundy-dark;
       font-weight: 600;
       width: 38%;
-      text-align: left;
     }
+
     td {
       color: #333;
       font-weight: 500;
     }
+
+    // Striped rows for better readability
+    tbody tr:nth-child(even) {
+      background: rgba(248, 249, 250, 0.5);
+    }
+
+    // Hover effect for interactive elements
+    tbody tr:hover {
+      background: rgba(139, 21, 56, 0.05);
+    }
   }
 }
 
+// Amount section - Fixed incomplete rule
 .o_payment_account_enhanced_voucher_amount {
-  background: linear-gradient(135deg, #bfa46f 0%, #d4c195 50%, #bfa46f 100%);
+  background: linear-gradient(
+    135deg,
+    $osus-gold-gradient 0%,
+    $osus-gold-gradient-light 50%,
+    $osus-gold-gradient 100%
+  );
   color: #fff;
-  border-radius: 8px;
+  padding: 18px 0;
+  border-radius: $osus-radius-md;
+  text-align: center;
+  font-size: 1.3em;
+  font-weight: 700;
+  margin: 18px 0 24px 0;
+  box-shadow: $osus-shadow-md;
 
+  // Ensure print compatibility
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+
+  .amount-text {
+    font-size: 1.2em;
+    font-weight: 800;
+  }
+
+  .amount-currency {
+    font-size: 0.9em;
+    opacity: 0.9;
+    margin-left: 5px;
+  }
 }
 
+// Signatures section
 .o_payment_account_enhanced_voucher_signatures {
   display: flex;
   gap: 18px;
   margin-bottom: 24px;
+  flex-wrap: wrap; // Added for responsiveness
+
   .o_payment_account_enhanced_voucher_signature_box {
     flex: 1;
+    min-width: 200px; // Prevent boxes from getting too narrow
     background: #f8f9fa;
     border: 1px solid #dee2e6;
     border-radius: 6px;
@@ -114,89 +190,410 @@ $osus-radius-lg: 12px;
     min-height: 90px;
     text-align: center;
     font-size: 1em;
+
     .o_payment_account_enhanced_voucher_signature_label {
       font-weight: 700;
-      color: #7c2439;
+      color: $osus-burgundy-dark;
       margin-bottom: 6px;
       font-size: 1.05em;
     }
+
     .o_payment_account_enhanced_voucher_signature_date {
       color: #666;
       font-size: 0.95em;
       margin-top: 2px;
     }
+
     .o_payment_account_enhanced_voucher_pending {
       color: #dc3545;
       font-weight: 600;
       font-style: italic;
     }
+
+    // Approved signature styling
+    &.approved {
+      background: rgba(40, 167, 69, 0.1);
+      border-color: #28a745;
+
+      .o_payment_account_enhanced_voucher_signature_label {
+        color: #28a745;
+      }
+    }
+
+    // Rejected signature styling
+    &.rejected {
+      background: rgba(220, 53, 69, 0.1);
+      border-color: #dc3545;
+
+      .o_payment_account_enhanced_voucher_signature_label {
+        color: #dc3545;
+      }
+    }
   }
+
   .o_payment_account_enhanced_voucher_signature_manual {
     background: #fff;
-    border: 2px solid #7c2439;
+    border: 2px solid $osus-burgundy-dark;
+
     .o_payment_account_enhanced_voucher_signature_line {
       border-top: 2px solid #333;
       width: 100%;
       height: 15px;
       margin: 8px 0 2px 0;
     }
+
     .o_payment_account_enhanced_voucher_signature_sublabel {
       font-size: 0.92em;
       color: #666;
       font-weight: 600;
       margin-bottom: 6px;
     }
+
     .o_payment_account_enhanced_voucher_signature_row {
       display: flex;
       gap: 10px;
       margin-top: 8px;
+      flex-wrap: wrap; // Added for responsiveness
+
       > div {
         flex: 1;
+        min-width: 100px; // Prevent content from getting too narrow
       }
     }
   }
 }
 
+// Footer section - Fixed incomplete rule
 .o_payment_account_enhanced_voucher_footer {
-  background: linear-gradient(135deg, $osus-burgundy 0%, $osus-burgundy-light 100%);
+  background: linear-gradient(
+    135deg,
+    $osus-burgundy 0%,
+    $osus-burgundy-light 100%
+  );
   color: #fff;
+  width: 100%;
+  padding: 14px 32px;
   border-radius: $osus-radius-lg $osus-radius-lg 0 0;
+  text-align: center;
+  font-size: 1em;
+  margin-top: auto;
   box-shadow: $osus-shadow-md;
-}
+
+  // Ensure print compatibility
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+
   .o_payment_account_enhanced_voucher_footer_note {
     font-size: 0.95em;
     color: rgba(255, 255, 255, 0.85);
     margin-top: 4px;
   }
+
+  .footer-links {
+    margin-top: 8px;
+
+    a {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      margin: 0 8px;
+
+      &:hover {
+        color: #fff;
+        text-decoration: underline;
+      }
+    }
+  }
 }
 
-// Print optimization
+// Status indicators
+.o_payment_account_enhanced_voucher_status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.draft {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+  }
+
+  &.posted {
+    background: linear-gradient(
+      135deg,
+      $osus-gold 0%,
+      darken($osus-gold, 10%) 100%
+    );
+    color: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  &.cancelled {
+    background: #dc3545;
+    color: #fff;
+  }
+
+  &.reconciled {
+    background: #28a745;
+    color: #fff;
+  }
+}
+
+// Additional utility classes for Odoo 17
+.o_payment_account_enhanced_voucher {
+  // Text utilities
+  &_text_bold {
+    font-weight: 700;
+  }
+  &_text_semibold {
+    font-weight: 600;
+  }
+  &_text_normal {
+    font-weight: 400;
+  }
+  &_text_light {
+    font-weight: 300;
+  }
+
+  // Color utilities
+  &_text_burgundy {
+    color: $osus-burgundy;
+  }
+  &_text_gold {
+    color: $osus-gold;
+  }
+  &_text_muted {
+    color: #666;
+  }
+  &_text_white {
+    color: #fff;
+  }
+
+  // Background utilities
+  &_bg_burgundy {
+    background: $osus-burgundy;
+    color: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  &_bg_gold {
+    background: $osus-gold;
+    color: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  &_bg_light {
+    background: #f8f9fa;
+  }
+  &_bg_white {
+    background: #fff;
+  }
+
+  // Spacing utilities
+  &_p_sm {
+    padding: 8px;
+  }
+  &_p_md {
+    padding: 16px;
+  }
+  &_p_lg {
+    padding: 24px;
+  }
+
+  &_m_sm {
+    margin: 8px;
+  }
+  &_m_md {
+    margin: 16px;
+  }
+  &_m_lg {
+    margin: 24px;
+  }
+
+  // Border utilities
+  &_border {
+    border: 1px solid #dee2e6;
+  }
+  &_border_burgundy {
+    border: 1px solid $osus-burgundy;
+  }
+  &_border_gold {
+    border: 1px solid $osus-gold;
+  }
+
+  &_rounded {
+    border-radius: $osus-radius-md;
+  }
+  &_rounded_lg {
+    border-radius: $osus-radius-lg;
+  }
+}
+
+// Print optimization - Enhanced for Odoo 17
 @media print {
   .o_payment_account_enhanced_voucher_container {
     box-shadow: none !important;
     background: #fff !important;
     color: #222 !important;
     page-break-after: always;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
   }
+
   .o_payment_account_enhanced_voucher_footer,
-  .o_payment_account_enhanced_voucher_header {
+  .o_payment_account_enhanced_voucher_header,
+  .o_payment_account_enhanced_voucher_amount {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  // Ensure signatures don't break across pages
+  .o_payment_account_enhanced_voucher_signatures {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  // Ensure table doesn't break across pages
+  .o_payment_account_enhanced_voucher_table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  // Remove shadows and rounded corners for print
+  .o_payment_account_enhanced_voucher_signature_box,
+  .o_payment_account_enhanced_voucher_signature_manual {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
 }
 
-// Responsive for A4 and mobile preview
-@media (max-width: 900px) {
+// Responsive for A4 and mobile preview - Enhanced
+@media (max-width: 991.98px) {
+  .o_payment_account_enhanced_voucher_container {
+    padding: 0 8px;
+  }
+
+  .o_payment_account_enhanced_voucher_header,
+  .o_payment_account_enhanced_voucher_footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .o_payment_account_enhanced_voucher_signatures {
+    flex-direction: column;
+    gap: 12px;
+
+    .o_payment_account_enhanced_voucher_signature_box {
+      min-width: auto;
+    }
+  }
+
+  .o_payment_account_enhanced_voucher_header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .o_payment_account_enhanced_voucher_title {
+    h1,
+    h2,
+    h3 {
+      font-size: 1.4em;
+    }
+  }
+}
+
+@media (max-width: 575.98px) {
   .o_payment_account_enhanced_voucher_container {
     padding: 0 4px;
   }
+
   .o_payment_account_enhanced_voucher_header,
   .o_payment_account_enhanced_voucher_footer {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding: 10px 8px;
   }
+
   .o_payment_account_enhanced_voucher_signatures {
-    flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+  }
+
+  .o_payment_account_enhanced_voucher_table {
+    th,
+    td {
+      padding: 5px 8px;
+      font-size: 0.9em;
+    }
+  }
+
+  .o_payment_account_enhanced_voucher_amount {
+    font-size: 1.1em;
+    padding: 12px 0;
+  }
+
+  .o_payment_account_enhanced_voucher_logo {
+    height: 36px;
+    max-width: 100px;
+  }
+
+  .o_payment_account_enhanced_voucher_title {
+    h1,
+    h2,
+    h3 {
+      font-size: 1.2em;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+// Dark mode support for Odoo 17 Enterprise
+@media (prefers-color-scheme: dark) {
+  .o_payment_account_enhanced_voucher_container {
+    background: #2c2c2c;
+    color: #e9ecef;
+  }
+
+  .o_payment_account_enhanced_voucher_table {
+    background: #343a40;
+
+    th {
+      background: #495057;
+      color: $osus-gold;
+    }
+
+    td {
+      color: #e9ecef;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(73, 80, 87, 0.5);
+    }
+
+    tbody tr:hover {
+      background: rgba(139, 21, 56, 0.2);
+    }
+  }
+
+  .o_payment_account_enhanced_voucher_signature_box {
+    background: #495057;
+    border-color: #6c757d;
+    color: #e9ecef;
+
+    .o_payment_account_enhanced_voucher_signature_label {
+      color: $osus-gold;
+    }
+  }
+
+  .o_payment_account_enhanced_voucher_signature_manual {
+    background: #343a40;
+    border-color: $osus-burgundy-light;
   }
 }
