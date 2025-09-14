@@ -86,13 +86,15 @@
                                 </div>
                                 <div style="color: #7f8c8d; font-size: 14px; margin-top: 3px;">
                                     <span t-if="payment.company_id.vat">
-                                        VAT: <span t-field="payment.company_id.vat"/> |
+                                        VAT: <span t-field="payment.company_id.vat"/>
+ |
                                     </span>
                                     <span t-if="payment.company_id.phone">
-                                        📞 <span t-field="payment.company_id.phone"/> |
+                                        📞                                        <span t-field="payment.company_id.phone"/>
+ |
                                     </span>
                                     <span t-if="payment.company_id.email">
-                                        📧 <span t-field="payment.company_id.email"/>
+                                        📧                                        <span t-field="payment.company_id.email"/>
                                     </span>
                                 </div>
                             </div>
@@ -101,8 +103,10 @@
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                                 <h2 style="color: #2c3e50; margin: 0; font-size: 24px; font-weight: bold;">PAYMENT RECEIPT</h2>
                                 <div style="text-align: right;">
-                                    <div style="font-weight: bold;">Ref: <span t-field="payment.name"/></div>
-                                    <div>Date: <span t-field="payment.date"/></div>
+                                    <div style="font-weight: bold;">Ref: <span t-field="payment.name"/>
+                                    </div>
+                                    <div>Date: <span t-field="payment.date"/>
+                                    </div>
                                 </div>
                             </div>
 
@@ -153,15 +157,21 @@
                                     </tr>
                                     <tr t-if="payment.ref">
                                         <td style="font-weight: bold;">Reference:</td>
-                                        <td><span t-field="payment.ref"/></td>
+                                        <td>
+                                            <span t-field="payment.ref"/>
+                                        </td>
                                     </tr>
                                     <tr t-if="payment.communication">
                                         <td style="font-weight: bold;">Communication:</td>
-                                        <td><span t-field="payment.communication"/></td>
+                                        <td>
+                                            <span t-field="payment.communication"/>
+                                        </td>
                                     </tr>
                                     <tr t-if="payment.remarks">
                                         <td style="font-weight: bold;">Remarks:</td>
-                                        <td><span t-field="payment.remarks"/></td>
+                                        <td>
+                                            <span t-field="payment.remarks"/>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
@@ -229,13 +239,15 @@
                                 </div>
                                 <div>
                                     <span t-if="payment.company_id.phone">
-                                        📞 <span t-field="payment.company_id.phone"/> |
+                                        📞                                        <span t-field="payment.company_id.phone"/>
+ |
                                     </span>
                                     <span t-if="payment.company_id.email">
-                                        📧 <span t-field="payment.company_id.email"/> |
+                                        📧                                        <span t-field="payment.company_id.email"/>
+ |
                                     </span>
                                     <span t-if="payment.company_id.website">
-                                        🌐 <span t-field="payment.company_id.website"/>
+                                        🌐                                        <span t-field="payment.company_id.website"/>
                                     </span>
                                 </div>
                             </div>
