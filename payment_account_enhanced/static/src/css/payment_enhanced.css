@@ -36,7 +36,11 @@
 
 /* Custom buttons */
 .btn-osus-primary {
-  background: linear-gradient(135deg, var(--osus-burgundy) 0%, var(--osus-burgundy-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--osus-burgundy) 0%,
+    var(--osus-burgundy-light) 100%
+  );
   border: none;
   color: white;
   padding: 8px 16px;
@@ -46,7 +50,11 @@
 }
 
 .btn-osus-primary:hover {
-  background: linear-gradient(135deg, var(--osus-burgundy-dark) 0%, var(--osus-burgundy) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--osus-burgundy-dark) 0%,
+    var(--osus-burgundy) 100%
+  );
   color: white;
   transform: translateY(-1px);
   box-shadow: var(--osus-shadow-md);
@@ -87,7 +95,11 @@
 }
 
 .o_payment_status_badge.posted {
-  background: linear-gradient(135deg, var(--osus-burgundy) 0%, var(--osus-burgundy-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--osus-burgundy) 0%,
+    var(--osus-burgundy-light) 100%
+  );
   color: white;
   border: none;
 }
@@ -96,7 +108,8 @@
 
 /* Main voucher container */
 .o_payment_voucher_container {
-  font-family: -webkit-system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -webkit-system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
   max-width: 800px;
   margin: 0 auto;
   background: white;
@@ -108,7 +121,11 @@
 
 /* Voucher header */
 .o_payment_voucher_header {
-  background: linear-gradient(135deg, var(--osus-burgundy) 0%, var(--osus-burgundy-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--osus-burgundy) 0%,
+    var(--osus-burgundy-light) 100%
+  );
   color: white;
   padding: 20px;
   text-align: center;
@@ -205,7 +222,11 @@
 
 /* Amount highlighting */
 .o_payment_voucher_amount {
-  background: linear-gradient(135deg, var(--osus-gold) 0%, var(--osus-gold-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--osus-gold) 0%,
+    var(--osus-gold-light) 100%
+  );
   color: var(--osus-burgundy);
   font-weight: 700;
   font-size: 16px;
@@ -276,17 +297,17 @@
     margin: 10px;
     border-radius: 0;
   }
-  
+
   .o_payment_voucher_meta {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .o_payment_voucher_signatures {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .o_payment_voucher_details th,
   .o_payment_voucher_details td {
     padding: 8px;
@@ -303,12 +324,12 @@
     max-width: none;
     margin: 0;
   }
-  
+
   .o_payment_voucher_header {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  
+
   .btn-osus-primary {
     display: none;
   }
