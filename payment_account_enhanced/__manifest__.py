@@ -47,6 +47,9 @@
         'data/sequence.xml',
         'data/mail_template_data.xml',
         
+        # Reports (Load early for external ID availability)
+        'reports/payment_voucher_report.xml',
+        
         # Views (Load actions before menus that reference them)
         'views/account_payment_views.xml',
         'views/account_move_views.xml',
