@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Optimized Paper Format for Payment Voucher -->
+        <!-- Paper Format for Payment Voucher -->
         <record id="paperformat_voucher_a4" model="report.paperformat">
-            <field name="name">Payment Voucher A4 Optimized</field>
+            <field name="name">Payment Voucher A4</field>
             <field name="default" eval="False"/>
             <field name="format">A4</field>
             <field name="orientation">Portrait</field>
@@ -14,20 +14,134 @@
             <field name="header_line" eval="False"/>
             <field name="header_spacing">0</field>
             <field name="dpi">96</field>
-            <field name="page_height">0</field>
-            <field name="page_width">0</field>
         </record>
         
-        <!-- Report Action -->
+        <!-- Payment Voucher Report Action -->
         <record id="action_report_payment_voucher" model="ir.actions.report">
             <field name="name">Payment Voucher</field>
             <field name="model">account.payment</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">payment_account_enhanced.report_payment_voucher</field>
-            <field name="report_file">payment_account_enhanced.report_payment_voucher</field>
+            <field name="report_name">payment_account_enhanced.payment_voucher_template</field>
+            <field name="report_file">payment_account_enhanced.payment_voucher_template</field>
             <field name="binding_model_id" ref="account.model_account_payment"/>
             <field name="binding_type">report</field>
             <field name="paperformat_id" ref="payment_account_enhanced.paperformat_voucher_a4"/>
         </record>
+
+        <!-- Payment Voucher Template -->
+        <template id="payment_voucher_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="payment">
+                    <t t-call="web.external_layout">
+                        <div class="page o_payment_voucher_container">
+                            <!-- Header -->
+                            <div class="o_payment_voucher_header">
+                                <div class="o_payment_voucher_title">
+                                    <h2>Payment Voucher</h2>
+                                </div>
+                                <div class="o_payment_voucher_subtitle">
+                                    <span t-field="payment.company_id.name"/>
+                                </div>
+                                
+                                <div class="o_payment_voucher_meta">
+                                    <div class="o_payment_voucher_number">
+                                        <strong>Voucher No.</strong>
+                                        <span t-field="payment.voucher_number"/>
+                                    </div>
+                                    <div class="o_payment_voucher_date">
+                                        <strong>Date</strong>
+                                        <span t-field="payment.date"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="o_payment_voucher_body">
+                                <!-- Payment Details -->
+                                <table class="o_payment_voucher_details">
+                                    <tr>
+                                        <th>Payment Type:</th>
+                                        <td><span t-field="payment.payment_type"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Partner:</th>
+                                        <td><span t-field="payment.partner_id"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Journal:</th>
+                                        <td><span t-field="payment.journal_id"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Reference:</th>
+                                        <td><span t-field="payment.ref"/></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Communication:</th>
+                                        <td><span t-field="payment.communication"/></td>
+                                    </tr>
+                                    <tr t-if="payment.remarks">
+                                        <th>Remarks:</th>
+                                        <td><span t-field="payment.remarks"/></td>
+                                    </tr>
+                                </table>
+
+                                <!-- Amount -->
+                                <div class="o_payment_voucher_amount">
+                                    <strong>Amount: <span t-field="payment.amount"/> <span t-field="payment.currency_id.symbol"/></strong>
+                                </div>
+
+                                <!-- QR Code Section (if enabled) -->
+                                <div t-if="payment.qr_code" class="o_payment_voucher_qr">
+                                    <img t-att-src="image_data_uri(payment.qr_code)" style="max-width: 150px;"/>
+                                    <div class="o_payment_voucher_qr_text">
+                                        Scan QR code to verify payment authenticity
+                                    </div>
+                                </div>
+
+                                <!-- Approval History -->
+                                <div t-if="payment.approval_history_ids" style="margin-top: 30px;">
+                                    <h4>Approval History</h4>
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Stage</th>
+                                                <th>Approved By</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="payment.approval_history_ids" t-as="history">
+                                                <td><span t-field="history.stage"/></td>
+                                                <td><span t-field="history.user_id"/></td>
+                                                <td><span t-field="history.approval_date"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Signatures -->
+                                <div class="o_payment_voucher_signatures">
+                                    <div class="o_payment_voucher_signature">
+                                        <div class="o_payment_voucher_signature_label">Prepared By</div>
+                                    </div>
+                                    <div class="o_payment_voucher_signature">
+                                        <div class="o_payment_voucher_signature_label">Approved By</div>
+                                    </div>
+                                    <div class="o_payment_voucher_signature">
+                                        <div class="o_payment_voucher_signature_label">Authorized By</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="o_payment_voucher_footer">
+                                This is a computer-generated document. 
+                                <span t-if="payment.qr_code">QR code verification available.</span>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
     </data>
 </odoo>

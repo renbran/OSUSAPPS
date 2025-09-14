@@ -61,8 +61,6 @@
         
         # Reports
         'reports/payment_voucher_report.xml',
-        'reports/payment_voucher_template.xml',
-        'reports/payment_voucher_template_fixed.xml',
         
         # Wizards
         'wizards/register_payment.xml',
