@@ -59,9 +59,6 @@
         # Menus (Load after views to ensure actions exist)
         'views/menus.xml',
         
-        # Reports
-        'reports/payment_voucher_report.xml',
-        
         # Wizards
         'wizards/register_payment.xml',
     ],

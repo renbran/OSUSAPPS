@@ -338,40 +338,28 @@ class Partner(models.Model):
         
         data = self.commission_statement_query(date_from, date_to)
         
-        # Use direct PDF generation instead of report action reference
-        report_obj = self.env['ir.actions.report']
-        template_name = 'commission_partner_statement.commission_partner_statement_template'
-        
+        # Use direct report action reference for Odoo 17 compatibility
         try:
-            # Generate PDF directly using the template
-            pdf_content, content_type = report_obj._render_qweb_pdf(template_name, [self.id], data=data)
-            
-            # Return as file download
-            return {
-                'type': 'ir.actions.act_url',
-                'url': '/web/content/?model=res.partner&id=%s&field=commission_statement_pdf&filename=Commission_Statement_%s.pdf' % (self.id, self.name.replace(' ', '_')),
-                'target': 'self',
-            }
+            # Get the report action
+            report_action = self.env.ref('commission_partner_statement.action_commission_partner_statement_pdf')
+            return report_action.report_action(self, data=data)
         except Exception as e:
-            # Fallback: create a simple report action if template exists
+            # Fallback to direct PDF generation
+            report_obj = self.env['ir.actions.report']
+            template_name = 'commission_partner_statement.commission_partner_statement_template'
+            
             try:
-                # Check if template exists
-                template = self.env['ir.ui.view'].search([('key', '=', template_name)], limit=1)
-                if template:
-                    # Create temporary report action
-                    report_action = {
-                        'type': 'ir.actions.report',
-                        'report_name': template_name,
-                        'model': 'res.partner',
-                        'report_type': 'qweb-pdf',
-                        'data': data,
-                        'context': self.env.context,
-                    }
-                    return report_action
-                else:
-                    raise UserError(_("Commission statement template not found. Please contact administrator."))
-            except:
-                raise UserError(_("Error generating commission statement: %s") % str(e))
+                # Generate PDF directly using the template
+                pdf_content, content_type = report_obj._render_qweb_pdf(template_name, self.ids, data=data)
+                
+                # Return as file download
+                return {
+                    'type': 'ir.actions.act_url',
+                    'url': '/web/content/?model=res.partner&id=%s&field=commission_statement_pdf&filename=Commission_Statement_%s.pdf' % (self.id, self.name.replace(' ', '_')),
+                    'target': 'self',
+                }
+            except Exception as pdf_error:
+                raise UserError(_("Error generating commission statement: %s") % str(pdf_error))
 
     def action_generate_commission_statement_excel(self):
         """Generate Excel commission statement report"""

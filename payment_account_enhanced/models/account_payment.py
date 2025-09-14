@@ -212,13 +212,17 @@ class AccountPayment(models.Model):
         return result
 
     # ============================================================================
-    # PRINT METHODS (Placeholder)
+    # ENHANCED METHODS
     # ============================================================================
 
-    def action_print_osus_voucher(self):
-        """Print OSUS payment voucher"""
+    def action_print_payment_voucher(self):
+        """Print payment voucher - simplified without report file"""
         return {
-            'type': 'ir.actions.report',
-            'report_name': 'payment_account_enhanced.payment_voucher_report',
-            'report_type': 'qweb-pdf',
+            'type': 'ir.actions.act_window',
+            'name': 'Payment Voucher',
+            'res_model': 'account.payment',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'target': 'new',
         }

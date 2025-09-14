@@ -40,7 +40,7 @@
                                                 <button name="action_reject_payment" string="Reject" type="object" class="btn-danger" invisible="approval_state not in ['under_review', 'for_approval', 'for_authorization']" confirm="Are you sure you want to reject this payment?"/>
 
                                                 <!-- Print Buttons - Show for posted payments -->
-                                                <button name="action_print_osus_voucher" string="Print Voucher" type="object" class="btn-outline-primary" invisible="approval_state not in ['approved', 'posted']"/>
+                                                <button name="action_print_payment_voucher" string="View Payment" type="object" class="btn-outline-primary" invisible="approval_state not in ['approved', 'posted']"/>
                                         </header>
                                 </xpath>
 

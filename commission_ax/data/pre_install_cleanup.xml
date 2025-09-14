@@ -3,10 +3,15 @@
     <data noupdate="0">
         <!-- Delete any problematic cached views -->
         <delete model="ir.ui.view" search="[('name', 'like', 'commission.enhanced'), ('model', '=', 'sale.order')]"/>
-        <delete model="ir.ui.view" search="[('xmlid', 'like', 'commission_ax.view_order_form_commission_enhanced')]"/>
-        <delete model="ir.ui.view" search="[('xmlid', '=', 'commission_ax.view_order_form_inherit_commission_enhanced_v2')]"/>
-
+        
         <!-- Clear view cache to ensure fresh loading -->
-        <function model="ir.ui.view" name="clear_caches"/>
+        <record id="clear_view_cache" model="ir.actions.server">
+            <field name="name">Clear View Cache</field>
+            <field name="model_id" ref="base.model_ir_ui_view"/>
+            <field name="state">code</field>
+            <field name="code">
+env['ir.ui.view'].clear_caches()
+            </field>
+        </record>
     </data>
 </odoo>

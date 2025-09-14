@@ -26,6 +26,12 @@ services:
         source: /d/RUNNING APPS/ready production/latest/OSUSAPPS/payment_account_enhanced
         target: /mnt/extra-addons/payment_account_enhanced
       - type: bind
+        source: /d/RUNNING APPS/ready production/latest/OSUSAPPS/commission_ax
+        target: /mnt/extra-addons/commission_ax
+      - type: bind
+        source: /d/RUNNING APPS/ready production/latest/OSUSAPPS/commission_partner_statement
+        target: /mnt/extra-addons/commission_partner_statement
+      - type: bind
         source: /d/RUNNING APPS/ready production/latest/OSUSAPPS/odoo.conf
         target: /etc/odoo/odoo.conf
       - odoo-data:/var/lib/odoo

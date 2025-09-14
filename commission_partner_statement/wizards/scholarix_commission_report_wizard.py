@@ -256,9 +256,8 @@ class ScholarixCommissionReportWizard(models.TransientModel):
     
     def _generate_pdf_report(self, report_data):
         """Generate PDF report"""
-        return self.env.ref('commission_partner_statement.action_scholarix_consolidated_report').report_action(
-            self, data=report_data
-        )
+        report = self.env.ref('commission_partner_statement.action_scholarix_consolidated_report')
+        return report.report_action(self, data=report_data)
     
     def _generate_excel_report(self, report_data):
         """Generate Excel report"""
