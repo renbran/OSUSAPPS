@@ -3,6 +3,12 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 import logging
+import qrcode
+import base64
+import json
+import uuid
+import hashlib
+from io import BytesIO
 
 _logger = logging.getLogger(__name__)
 
@@ -93,6 +99,26 @@ class AccountPayment(models.Model):
     )
 
     # ============================================================================
+    # QR CODE AND ACCESS TOKEN FIELDS
+    # ============================================================================
+
+    # QR Code for payment verification
+    qr_code = fields.Binary(
+        string='Payment QR Code',
+        compute='_compute_qr_code',
+        store=True,
+        help="QR code for payment voucher verification with access token"
+    )
+
+    # Secure access token for QR validation
+    access_token = fields.Char(
+        string='Access Token',
+        copy=False,
+        index=True,
+        help="Secure token for QR code validation and public access"
+    )
+
+    # ============================================================================
     # WORKFLOW METHODS
     # ============================================================================
 
@@ -108,8 +134,77 @@ class AccountPayment(models.Model):
         # Set initial approval state
         if not vals.get('approval_state'):
             vals['approval_state'] = 'draft'
+        
+        # Generate access token for QR verification
+        if not vals.get('access_token'):
+            vals['access_token'] = self._generate_access_token()
             
         return super(AccountPayment, self).create(vals)
+
+    def _generate_access_token(self):
+        """Generate secure access token for QR code validation"""
+        # Create unique token based on current time, random UUID, and some payment data
+        token_data = f"{uuid.uuid4().hex}-{fields.Datetime.now().isoformat()}"
+        return hashlib.sha256(token_data.encode()).hexdigest()[:32]
+
+    @api.depends('voucher_number', 'amount', 'approval_state', 'partner_id', 'payment_date', 'access_token')
+    def _compute_qr_code(self):
+        """Generate QR code for payment voucher verification with access token"""
+        for record in self:
+            if record.voucher_number and record.id and record.access_token:
+                try:
+                    # Get company QR settings
+                    company = record.company_id
+                    base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', default='')
+                    
+                    # Create comprehensive verification data with access token
+                    qr_data = {
+                        'type': 'payment_verification',
+                        'voucher_number': record.voucher_number,
+                        'amount': str(record.amount),
+                        'currency': record.currency_id.name,
+                        'partner': record.partner_id.name if record.partner_id else '',
+                        'date': str(record.payment_date) if record.payment_date else '',
+                        'approval_state': record.approval_state,
+                        'company': record.company_id.name,
+                        'payment_type': record.payment_type,
+                        'access_token': record.access_token,
+                        'verification_url': f"{base_url}/payment/verify/{record.access_token}" if base_url else '',
+                        'payment_id': record.id,
+                        'generated_at': fields.Datetime.now().isoformat(),
+                    }
+                    
+                    # Use custom verification URL if configured
+                    if company.qr_code_verification_url:
+                        qr_data['verification_url'] = f"{company.qr_code_verification_url}/{record.access_token}"
+                    
+                    # Convert to JSON for QR code
+                    qr_text = json.dumps(qr_data, ensure_ascii=False)
+                    
+                    # Generate QR code only if QR codes are enabled
+                    if company.enable_qr_codes:
+                        qr = qrcode.QRCode(
+                            version=1,
+                            error_correction=qrcode.constants.ERROR_CORRECT_L,
+                            box_size=10,
+                            border=4,
+                        )
+                        qr.add_data(qr_text)
+                        qr.make(fit=True)
+                        
+                        # Create image
+                        qr_img = qr.make_image(fill_color="black", back_color="white")
+                        buffer = BytesIO()
+                        qr_img.save(buffer, format='PNG')
+                        record.qr_code = base64.b64encode(buffer.getvalue())
+                    else:
+                        record.qr_code = False
+                        
+                except Exception as e:
+                    _logger.error("Error generating QR code for payment %s: %s", record.voucher_number, str(e))
+                    record.qr_code = False
+            else:
+                record.qr_code = False
 
     def action_submit_for_review(self):
         """Submit payment for review (Stage 1)"""
