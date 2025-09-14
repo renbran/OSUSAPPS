@@ -1,79 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Enhanced Payment Form View -->
-        <record id="view_account_payment_form_enhanced" model="ir.ui.view">
-            <field name="name">account.payment.form.enhanced</field>
-            <field name="model">account.payment</field>
-            <field name="inherit_id" ref="account.view_account_payment_form"/>
-            <field name="priority">99</field>
-            <field name="arch" type="xml">
-                
-                <!-- Replace entire header with custom approval workflow -->
-                <xpath expr="//header" position="replace">
-                    <header>
-                        <!-- Custom statusbar for 4-stage approval workflow -->
-                        <field name="approval_state" widget="statusbar" 
-                               statusbar_visible="draft,under_review,for_approval,for_authorization,approved,posted"/>
-                        
-                        <!-- Workflow buttons with direct state-based visibility -->
-                        <button name="action_submit_for_review" string="Submit for Review" type="object" 
-                                class="btn-primary" invisible="approval_state != 'draft'"/>
-                        
-                        <button name="action_review_payment" string="Review" type="object" 
-                                class="btn-primary" invisible="approval_state != 'under_review'"/>
-                        
-                        <button name="action_approve_payment" string="Approve" type="object" 
-                                class="btn-primary" invisible="approval_state != 'for_approval'"/>
-                        
-                        <button name="action_authorize_payment" string="Authorize" type="object" 
-                                class="btn-primary" invisible="approval_state != 'for_authorization'"/>
-                        
-                        <button name="action_reject_payment" string="Reject" type="object" 
-                                class="btn-secondary" invisible="approval_state not in ['under_review', 'for_approval', 'for_authorization']"/>
-                        
-                        <!-- Post button only when approved -->
-                        <button name="action_post" string="Confirm" type="object" 
-                                class="btn-primary" invisible="approval_state != 'approved'"/>
-                        
-                        <!-- Standard cancel button -->
-                        <button name="action_draft" string="Reset To Draft" type="object" 
-                                invisible="state != 'cancel'" groups="account.group_account_invoice"/>
-                    </header>
-                </xpath>
-
-                <!-- Add voucher number and approval fields after partner_id -->
-                <xpath expr="//field[@name='partner_id']" position="after">
-                    <field name="voucher_number" readonly="1"/>
-                    <field name="approval_state" invisible="1"/>
-                </xpath>
-
-                <!-- Add approval tracking fields in a group -->
-                <xpath expr="//group[@name='group_partner']" position="after">
-                    <group string="Approval Tracking" invisible="approval_state == 'draft'">
-                        <group>
-                            <field name="reviewer_id" readonly="1" invisible="not reviewer_id"/>
-                            <field name="reviewer_date" readonly="1" invisible="not reviewer_date"/>
-                        </group>
-                        <group>
-                            <field name="approver_id" readonly="1" invisible="not approver_id"/>
-                            <field name="approver_date" readonly="1" invisible="not approver_date"/>
-                        </group>
-                        <group>
-                            <field name="authorizer_id" readonly="1" invisible="not authorizer_id"/>
-                            <field name="authorizer_date" readonly="1" invisible="not authorizer_date"/>
-                        </group>
-                    </group>
-                </xpath>
-
-                <!-- Add remarks field before description -->
-                <xpath expr="//field[@name='ref']" position="after">
-                    <field name="remarks" placeholder="Additional remarks or memo for this payment"/>
-                </xpath>
-
-            </field>
-        </record>
-
         <!-- Payment Report Template -->
         <template id="payment_voucher_report_template">
             <t t-call="web.html_container">
@@ -81,7 +8,7 @@
                     <t t-call="web.external_layout">
                         <div class="page">
                             <div class="oe_structure"/>
-                            
+
                             <!-- Header -->
                             <div class="row mb-4">
                                 <div class="col-12 text-center">
@@ -94,10 +21,12 @@
                             <!-- Voucher Information -->
                             <div class="row mb-4">
                                 <div class="col-6">
-                                    <strong>Voucher Number:</strong> <span t-field="doc.voucher_number"/>
+                                    <strong>Voucher Number:</strong>
+                                    <span t-field="doc.voucher_number"/>
                                 </div>
                                 <div class="col-6 text-right">
-                                    <strong>Date:</strong> <span t-field="doc.date"/>
+                                    <strong>Date:</strong>
+                                    <span t-field="doc.date"/>
                                 </div>
                             </div>
 
@@ -106,30 +35,62 @@
                                 <div class="col-12">
                                     <table class="table table-bordered">
                                         <tr>
-                                            <td><strong>Payment Type:</strong></td>
-                                            <td><span t-field="doc.payment_type"/></td>
-                                            <td><strong>Journal:</strong></td>
-                                            <td><span t-field="doc.journal_id"/></td>
+                                            <td>
+                                                <strong>Payment Type:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.payment_type"/>
+                                            </td>
+                                            <td>
+                                                <strong>Journal:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.journal_id"/>
+                                            </td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Partner:</strong></td>
-                                            <td><span t-field="doc.partner_id"/></td>
-                                            <td><strong>Payment Method:</strong></td>
-                                            <td><span t-field="doc.payment_method_line_id"/></td>
+                                            <td>
+                                                <strong>Partner:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.partner_id"/>
+                                            </td>
+                                            <td>
+                                                <strong>Payment Method:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.payment_method_line_id"/>
+                                            </td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Amount:</strong></td>
-                                            <td><span t-field="doc.amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
-                                            <td><strong>Currency:</strong></td>
-                                            <td><span t-field="doc.currency_id"/></td>
+                                            <td>
+                                                <strong>Amount:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+                                            </td>
+                                            <td>
+                                                <strong>Currency:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.currency_id"/>
+                                            </td>
                                         </tr>
                                         <tr t-if="doc.ref">
-                                            <td><strong>Reference:</strong></td>
-                                            <td colspan="3"><span t-field="doc.ref"/></td>
+                                            <td>
+                                                <strong>Reference:</strong>
+                                            </td>
+                                            <td colspan="3">
+                                                <span t-field="doc.ref"/>
+                                            </td>
                                         </tr>
                                         <tr t-if="doc.remarks">
-                                            <td><strong>Remarks:</strong></td>
-                                            <td colspan="3"><span t-field="doc.remarks"/></td>
+                                            <td>
+                                                <strong>Remarks:</strong>
+                                            </td>
+                                            <td colspan="3">
+                                                <span t-field="doc.remarks"/>
+                                            </td>
                                         </tr>
                                     </table>
                                 </div>
@@ -141,20 +102,39 @@
                                     <h4>Approval Status</h4>
                                     <table class="table table-bordered">
                                         <tr>
-                                            <td><strong>Current Status:</strong></td>
-                                            <td><span t-field="doc.approval_state"/></td>
+                                            <td>
+                                                <strong>Current Status:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.approval_state"/>
+                                            </td>
                                         </tr>
                                         <tr t-if="doc.reviewer_id">
-                                            <td><strong>Reviewed By:</strong></td>
-                                            <td><span t-field="doc.reviewer_id"/> on <span t-field="doc.reviewer_date"/></td>
+                                            <td>
+                                                <strong>Reviewed By:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.reviewer_id"/>
+ on <span t-field="doc.reviewer_date"/>
+                                            </td>
                                         </tr>
                                         <tr t-if="doc.approver_id">
-                                            <td><strong>Approved By:</strong></td>
-                                            <td><span t-field="doc.approver_id"/> on <span t-field="doc.approver_date"/></td>
+                                            <td>
+                                                <strong>Approved By:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.approver_id"/>
+ on <span t-field="doc.approver_date"/>
+                                            </td>
                                         </tr>
                                         <tr t-if="doc.authorizer_id">
-                                            <td><strong>Authorized By:</strong></td>
-                                            <td><span t-field="doc.authorizer_id"/> on <span t-field="doc.authorizer_date"/></td>
+                                            <td>
+                                                <strong>Authorized By:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="doc.authorizer_id"/>
+ on <span t-field="doc.authorizer_date"/>
+                                            </td>
                                         </tr>
                                     </table>
                                 </div>
