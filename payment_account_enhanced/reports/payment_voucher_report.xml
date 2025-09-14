@@ -216,17 +216,17 @@
                                 <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50; font-size: 14px;">
                                     Voucher Verification QR Code
                                 </div>
-                                <img t-att-src="image_data_uri(payment.qr_code)" 
-                                     style="max-width: 150px; border: 2px solid #3498db; padding: 8px; background: white; border-radius: 4px;"/>
+                                <img t-att-src="image_data_uri(payment.qr_code)" style="max-width: 150px; border: 2px solid #3498db; padding: 8px; background: white; border-radius: 4px;"/>
                                 <div style="font-size: 11px; color: #7f8c8d; margin-top: 8px; line-height: 1.4;">
                                     <div>Scan this QR code to verify the authenticity</div>
-                                    <div>and approval status of this <span t-if="payment.payment_type == 'inbound'">receipt</span><span t-if="payment.payment_type == 'outbound'">payment</span> voucher</div>
+                                    <div>and approval status of this <span t-if="payment.payment_type == 'inbound'">receipt</span>
+                                        <span t-if="payment.payment_type == 'outbound'">payment</span> voucher</div>
                                     <div style="margin-top: 5px; font-size: 10px; color: #95a5a6;">
                                         Voucher: <span t-field="payment.voucher_number"/>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- QR Code Fallback (if QR not generated) -->
                             <div t-if="not payment.qr_code and payment.access_token" style="text-align: center; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
                                 <div style="font-weight: bold; margin-bottom: 10px; color: #e74c3c; font-size: 14px;">
@@ -235,7 +235,8 @@
                                 <div style="font-size: 11px; color: #7f8c8d; line-height: 1.4;">
                                     <div>Visit this URL to verify the voucher:</div>
                                     <div style="margin-top: 5px; font-family: monospace; background: white; padding: 5px; border: 1px solid #ddd; word-break: break-all; font-size: 9px;">
-                                        <span t-esc="request.httprequest.url_root"/>payment/verify/<span t-field="payment.access_token"/>
+                                        <span t-esc="request.httprequest.url_root"/>
+payment/verify/<span t-field="payment.access_token"/>
                                     </div>
                                 </div>
                             </div>
