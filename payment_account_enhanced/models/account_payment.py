@@ -205,6 +205,27 @@ class AccountPayment(models.Model):
         self._compute_qr_code()
         return True
 
+    @api.model
+    def generate_missing_qr_codes(self):
+        """Generate QR codes for all payments missing them"""
+        payments_without_qr = self.search([
+            ('qr_code', '=', False),
+            ('voucher_number', '!=', False),
+            ('voucher_number', '!=', '')
+        ])
+        
+        count = 0
+        for payment in payments_without_qr:
+            try:
+                if not payment.access_token:
+                    payment.access_token = payment._generate_access_token()
+                payment._compute_qr_code()
+                count += 1
+            except Exception as e:
+                _logger.error("Failed to generate QR for payment %s: %s", payment.voucher_number, str(e))
+        
+        return count
+
     def action_submit_for_review(self):
         """Submit payment for review (Stage 1)"""
         for record in self:

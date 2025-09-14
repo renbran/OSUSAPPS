@@ -1,4 +1,4 @@
-g<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
         <!-- Paper Format for Payment Voucher -->
@@ -227,17 +227,31 @@ g<?xml version="1.0" encoding="utf-8"?>
                                 </div>
                             </div>
 
-                            <!-- QR Code Fallback (if QR not generated) -->
-                            <div t-if="not payment.qr_code and payment.access_token" style="text-align: center; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                                <div style="font-weight: bold; margin-bottom: 10px; color: #e74c3c; font-size: 14px;">
-                                    QR Code Not Available
+                            <!-- QR Code Fallback (Enhanced messaging) -->
+                            <div t-if="not payment.qr_code and payment.access_token" style="text-align: center; margin-bottom: 25px; background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeaa7;">
+                                <div style="font-weight: bold; margin-bottom: 10px; color: #856404; font-size: 14px;">
+                                    <i class="fa fa-qrcode"/> QR Code Generation In Progress
                                 </div>
-                                <div style="font-size: 11px; color: #7f8c8d; line-height: 1.4;">
-                                    <div>Visit this URL to verify the voucher:</div>
-                                    <div style="margin-top: 5px; font-family: monospace; background: white; padding: 5px; border: 1px solid #ddd; word-break: break-all; font-size: 9px;">
-                                        <span t-esc="request.httprequest.url_root"/>
-payment/verify/<span t-field="payment.access_token"/>
+                                <div style="font-size: 11px; color: #856404; line-height: 1.4;">
+                                    <div>QR code is being generated. You can verify this voucher by visiting:</div>
+                                    <div style="margin-top: 8px; font-family: monospace; background: white; padding: 8px; border: 1px solid #ddd; word-break: break-all; font-size: 10px; border-radius: 4px;">
+                                        <strong>Verification URL:</strong><br/>
+                                        <span style="color: #0066cc;">http://localhost:8069/payment/verify/<span t-field="payment.access_token"/></span>
                                     </div>
+                                    <div style="margin-top: 8px; font-size: 10px; color: #6c757d;">
+                                        Voucher: <span t-field="payment.voucher_number"/> | Token: <span t-esc="payment.access_token[:8] if payment.access_token else 'N/A'"/>...
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- No verification available -->
+                            <div t-if="not payment.qr_code and not payment.access_token" style="text-align: center; margin-bottom: 25px; background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f1aeb5;">
+                                <div style="font-weight: bold; margin-bottom: 10px; color: #721c24; font-size: 14px;">
+                                    <i class="fa fa-exclamation-triangle"/> Verification Not Available
+                                </div>
+                                <div style="font-size: 11px; color: #721c24; line-height: 1.4;">
+                                    <div>This voucher does not have verification capabilities enabled.</div>
+                                    <div style="margin-top: 5px; font-size: 10px;">Please contact the finance department for manual verification.</div>
                                 </div>
                             </div>
 
