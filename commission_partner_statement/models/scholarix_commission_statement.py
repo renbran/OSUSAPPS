@@ -1,520 +1,241 @@
 # -*- coding: utf-8 -*-
 
-import base64
-import io
-import json
-import xlsxwriter
-from datetime import datetime, date, timedelta
-from dateutil.relativedelta import relativedelta
-
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError, UserError
-from odoo.tools import date_utils
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
-class Partner(models.Model):
-    """Extended Partner with Commission Statement capabilities"""
-    _inherit = 'res.partner'
+class ScholarixCommissionStatement(models.Model):
+    """SCHOLARIX Commission Statement Model for consolidated reporting"""
+    _name = "scholarix.commission.statement"
+    _description = "SCHOLARIX Commission Statement"
+    _order = "period_start desc, agent_id"
+    _rec_name = "display_name"
 
-    # Commission-related computed fields
-    commission_sale_order_ids = fields.Many2many(
-        'sale.order',
-        compute='_compute_commission_sale_orders',
-        store=True,
-        help='Sale Orders where this partner receives commission'
-    )
-    total_commission_amount = fields.Monetary(
-        string='Total Commission Amount',
-        compute='_compute_commission_totals',
-        store=True,
-        help='Total commission amount from all orders'
-    )
-    commission_order_count = fields.Integer(
-        string='Commission Orders Count',
-        compute='_compute_commission_totals',
-        store=True,
-        help='Number of orders with commission for this partner'
-    )
-    last_commission_date = fields.Date(
-        string='Last Commission Date',
-        compute='_compute_commission_totals',
-        store=True,
-        help='Date of last commission order'
+    # Core identification fields
+    display_name = fields.Char(
+        string="Statement Name",
+        compute="_compute_display_name",
+        store=True
     )
     
-    # Report configuration fields
+    # Period and agent information
+    agent_id = fields.Many2one(
+        "res.partner",
+        string="Agent",
+        required=True,
+        domain=[("is_company", "=", False)],
+        help="Commission agent/partner"
+    )
+    period_start = fields.Date(
+        string="Period Start",
+        required=True,
+        help="Start date for commission period"
+    )
+    period_end = fields.Date(
+        string="Period End", 
+        required=True,
+        help="End date for commission period"
+    )
+    
+    # Commission calculation fields
+    total_sales = fields.Monetary(
+        string="Total Sales",
+        help="Total sales amount for the period"
+    )
+    commission_rate = fields.Float(
+        string="Commission Rate (%)",
+        help="Commission rate percentage"
+    )
+    gross_commission = fields.Monetary(
+        string="Gross Commission",
+        help="Commission before deductions"
+    )
+    deductions = fields.Monetary(
+        string="Deductions",
+        help="Total deductions from commission"
+    )
+    net_commission = fields.Monetary(
+        string="Net Commission",
+        compute="_compute_net_commission",
+        store=True,
+        help="Final commission after deductions"
+    )
+    
+    # SCHOLARIX specific fields
+    direct_sales_commission = fields.Monetary(
+        string="Direct Sales Commission",
+        help="Commission from direct sales"
+    )
+    referral_bonus = fields.Monetary(
+        string="Referral Bonus",
+        help="Bonus from referrals"
+    )
+    team_override = fields.Monetary(
+        string="Team Override",
+        help="Team override commission"
+    )
+    
+    # Status fields
+    payment_status = fields.Selection([
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("partial", "Partially Paid"),
+        ("cancelled", "Cancelled")
+    ], string="Payment Status", default="pending")
+    
+    statement_status = fields.Selection([
+        ("draft", "Draft"),
+        ("confirmed", "Confirmed"),
+        ("approved", "Approved"),
+        ("paid", "Paid")
+    ], string="Statement Status", default="draft")
+    
+    # System fields
     currency_id = fields.Many2one(
-        'res.currency',
-        default=lambda self: self.env.company.currency_id.id,
+        "res.currency",
+        default=lambda self: self.env.company.currency_id,
         help="Currency for commission calculations"
     )
-    enable_auto_commission_statement = fields.Boolean(
-        string='Auto Commission Statement',
-        default=False,
-        help='Enable automatic monthly commission statement generation'
+    company_id = fields.Many2one(
+        "res.company",
+        default=lambda self: self.env.company,
+        help="Company"
+    )
+    
+    # Related fields for convenience
+    commission_line_ids = fields.One2many(
+        "scholarix.commission.line",
+        "statement_id",
+        string="Commission Lines"
+    )
+    order_count = fields.Integer(
+        string="Order Count",
+        compute="_compute_order_count"
+    )
+    
+    # Contact information
+    agent_email = fields.Char(
+        related="agent_id.email",
+        string="Agent Email",
+        readonly=True
+    )
+    agent_phone = fields.Char(
+        related="agent_id.phone",
+        string="Agent Phone",
+        readonly=True
     )
 
-    @api.depends('name')
-    def _compute_commission_sale_orders(self):
-        """Compute sale orders where this partner receives commission"""
-        for partner in self:
-            # DEFENSIVE FIX: Ensure partner.id is always an integer, never a list
-            partner_id = partner.id
-            if isinstance(partner_id, (list, tuple)):
-                # If somehow partner.id is a list, take the first element
-                partner_id = partner_id[0] if partner_id else False
-                # Log this as it should not happen
-                _logger.warning("Partner ID was unexpectedly a list: %s. Using %s", partner.id, partner_id)
-            
-            if not partner_id:
-                partner.commission_sale_order_ids = self.env['sale.order']
-                continue
-                
-            # Optimized query with proper field existence checks
-            domain = []
-            commission_fields = [
-                'broker_partner_id', 'referrer_partner_id', 'cashback_partner_id', 
-                'other_external_partner_id', 'agent1_partner_id', 'agent2_partner_id',
-                'manager_partner_id', 'director_partner_id', 'consultant_id',
-                'manager_id', 'second_agent_id', 'director_id'
-            ]
-            
-            # Check which fields actually exist on the sale.order model
-            SaleOrder = self.env['sale.order']
-            valid_fields = [field for field in commission_fields if hasattr(SaleOrder, field)]
-            
-            # Build domain with only existing fields
-            for field in valid_fields:
-                domain.append((field, '=', partner_id))
-            
-            if domain:
-                # Use OR operator for all conditions
-                commission_orders = self.env['sale.order'].search(['|'] * (len(domain) - 1) + domain)
-                partner.commission_sale_order_ids = commission_orders
+    @api.depends("agent_id", "period_start", "period_end")
+    def _compute_display_name(self):
+        """Compute display name for the statement"""
+        for record in self:
+            if record.agent_id and record.period_start and record.period_end:
+                record.display_name = f"{record.agent_id.name} - {record.period_start.strftime('%b %Y')}"
             else:
-                partner.commission_sale_order_ids = self.env['sale.order']
+                record.display_name = "New Statement"
 
-    @api.depends('commission_sale_order_ids', 'commission_sale_order_ids.broker_amount',
-                 'commission_sale_order_ids.referrer_amount', 'commission_sale_order_ids.cashback_amount',
-                 'commission_sale_order_ids.other_external_amount', 'commission_sale_order_ids.agent1_amount',
-                 'commission_sale_order_ids.agent2_amount', 'commission_sale_order_ids.manager_amount',
-                 'commission_sale_order_ids.director_amount', 'commission_sale_order_ids.salesperson_commission',
-                 'commission_sale_order_ids.manager_commission', 'commission_sale_order_ids.second_agent_commission',
-                 'commission_sale_order_ids.director_commission', 'commission_sale_order_ids.date_order')
-    def _compute_commission_totals(self):
-        """Compute commission totals and statistics"""
-        for partner in self:
-            orders = partner.commission_sale_order_ids
-            total_amount = 0.0
-            last_date = False
-            
-            for order in orders:
-                # Calculate partner's commission from this order
-                commission_amount = partner._get_partner_commission_from_order(order)
-                total_amount += commission_amount
-                
-                if order.date_order:
-                    order_date = order.date_order.date()
-                    if not last_date or order_date > last_date:
-                        last_date = order_date
-            
-            partner.total_commission_amount = total_amount
-            partner.commission_order_count = len(orders)
-            partner.last_commission_date = last_date
+    @api.depends("gross_commission", "deductions")
+    def _compute_net_commission(self):
+        """Compute net commission after deductions"""
+        for record in self:
+            record.net_commission = record.gross_commission - record.deductions
 
-    def _get_partner_commission_from_order(self, order):
-        """Get commission amount for this partner from a specific order"""
-        commission_amount = 0.0
-        
-        # External commissions
-        if hasattr(order, 'broker_partner_id') and order.broker_partner_id.id == self.id and hasattr(order, 'broker_amount'):
-            commission_amount += getattr(order, 'broker_amount', 0.0) or 0.0
-        if hasattr(order, 'referrer_partner_id') and order.referrer_partner_id.id == self.id and hasattr(order, 'referrer_amount'):
-            commission_amount += getattr(order, 'referrer_amount', 0.0) or 0.0
-        if hasattr(order, 'cashback_partner_id') and order.cashback_partner_id.id == self.id and hasattr(order, 'cashback_amount'):
-            commission_amount += getattr(order, 'cashback_amount', 0.0) or 0.0
-        if hasattr(order, 'other_external_partner_id') and order.other_external_partner_id.id == self.id and hasattr(order, 'other_external_amount'):
-            commission_amount += getattr(order, 'other_external_amount', 0.0) or 0.0
-            
-        # Internal commissions
-        if hasattr(order, 'agent1_partner_id') and order.agent1_partner_id.id == self.id and hasattr(order, 'agent1_amount'):
-            commission_amount += getattr(order, 'agent1_amount', 0.0) or 0.0
-        if hasattr(order, 'agent2_partner_id') and order.agent2_partner_id.id == self.id and hasattr(order, 'agent2_amount'):
-            commission_amount += getattr(order, 'agent2_amount', 0.0) or 0.0
-        if hasattr(order, 'manager_partner_id') and order.manager_partner_id.id == self.id and hasattr(order, 'manager_amount'):
-            commission_amount += getattr(order, 'manager_amount', 0.0) or 0.0
-        if hasattr(order, 'director_partner_id') and order.director_partner_id.id == self.id and hasattr(order, 'director_amount'):
-            commission_amount += getattr(order, 'director_amount', 0.0) or 0.0
-            
-        # Legacy commissions
-        if hasattr(order, 'consultant_id') and order.consultant_id.id == self.id and hasattr(order, 'salesperson_commission'):
-            commission_amount += getattr(order, 'salesperson_commission', 0.0) or 0.0
-        if hasattr(order, 'manager_id') and order.manager_id.id == self.id and hasattr(order, 'manager_commission'):
-            commission_amount += getattr(order, 'manager_commission', 0.0) or 0.0
-        if hasattr(order, 'second_agent_id') and order.second_agent_id.id == self.id and hasattr(order, 'second_agent_commission'):
-            commission_amount += getattr(order, 'second_agent_commission', 0.0) or 0.0
-        if hasattr(order, 'director_id') and order.director_id.id == self.id and hasattr(order, 'director_commission'):
-            commission_amount += getattr(order, 'director_commission', 0.0) or 0.0
-            
-        return commission_amount
+    @api.depends("commission_line_ids")
+    def _compute_order_count(self):
+        """Compute number of orders in this statement"""
+        for record in self:
+            record.order_count = len(record.commission_line_ids)
 
-    def _get_partner_commission_details_from_order(self, order):
-        """Get detailed commission information for this partner from an order"""
-        details = []
-        
-        # External commissions
-        if hasattr(order, 'broker_partner_id') and order.broker_partner_id.id == self.id and hasattr(order, 'broker_amount') and getattr(order, 'broker_amount', 0) > 0:
-            details.append({
-                'type': 'External',
-                'category': 'Broker',
-                'rate': getattr(order, 'broker_rate', 0) if hasattr(order, 'broker_rate') else 0,
-                'commission_type': getattr(order, 'broker_commission_type', 'fixed') if hasattr(order, 'broker_commission_type') else 'fixed',
-                'amount': getattr(order, 'broker_amount', 0),
-            })
-        if hasattr(order, 'referrer_partner_id') and order.referrer_partner_id.id == self.id and hasattr(order, 'referrer_amount') and getattr(order, 'referrer_amount', 0) > 0:
-            details.append({
-                'type': 'External',
-                'category': 'Referrer',
-                'rate': getattr(order, 'referrer_rate', 0) if hasattr(order, 'referrer_rate') else 0,
-                'commission_type': getattr(order, 'referrer_commission_type', 'fixed') if hasattr(order, 'referrer_commission_type') else 'fixed',
-                'amount': getattr(order, 'referrer_amount', 0),
-            })
-        if hasattr(order, 'cashback_partner_id') and order.cashback_partner_id.id == self.id and hasattr(order, 'cashback_amount') and getattr(order, 'cashback_amount', 0) > 0:
-            details.append({
-                'type': 'External',
-                'category': 'Cashback',
-                'rate': getattr(order, 'cashback_rate', 0) if hasattr(order, 'cashback_rate') else 0,
-                'commission_type': getattr(order, 'cashback_commission_type', 'fixed') if hasattr(order, 'cashback_commission_type') else 'fixed',
-                'amount': getattr(order, 'cashback_amount', 0),
-            })
-        if hasattr(order, 'other_external_partner_id') and order.other_external_partner_id.id == self.id and hasattr(order, 'other_external_amount') and getattr(order, 'other_external_amount', 0) > 0:
-            details.append({
-                'type': 'External',
-                'category': 'Other External',
-                'rate': getattr(order, 'other_external_rate', 0) if hasattr(order, 'other_external_rate') else 0,
-                'commission_type': getattr(order, 'other_external_commission_type', 'fixed') if hasattr(order, 'other_external_commission_type') else 'fixed',
-                'amount': getattr(order, 'other_external_amount', 0),
-            })
-            
-        # Internal commissions
-        if hasattr(order, 'agent1_partner_id') and order.agent1_partner_id.id == self.id and hasattr(order, 'agent1_amount') and getattr(order, 'agent1_amount', 0) > 0:
-            details.append({
-                'type': 'Internal',
-                'category': 'Agent 1',
-                'rate': getattr(order, 'agent1_rate', 0) if hasattr(order, 'agent1_rate') else 0,
-                'commission_type': getattr(order, 'agent1_commission_type', 'fixed') if hasattr(order, 'agent1_commission_type') else 'fixed',
-                'amount': getattr(order, 'agent1_amount', 0),
-            })
-        if hasattr(order, 'agent2_partner_id') and order.agent2_partner_id.id == self.id and hasattr(order, 'agent2_amount') and getattr(order, 'agent2_amount', 0) > 0:
-            details.append({
-                'type': 'Internal',
-                'category': 'Agent 2',
-                'rate': getattr(order, 'agent2_rate', 0) if hasattr(order, 'agent2_rate') else 0,
-                'commission_type': getattr(order, 'agent2_commission_type', 'fixed') if hasattr(order, 'agent2_commission_type') else 'fixed',
-                'amount': getattr(order, 'agent2_amount', 0),
-            })
-        if hasattr(order, 'manager_partner_id') and order.manager_partner_id.id == self.id and hasattr(order, 'manager_amount') and getattr(order, 'manager_amount', 0) > 0:
-            details.append({
-                'type': 'Internal',
-                'category': 'Manager',
-                'rate': getattr(order, 'manager_rate', 0) if hasattr(order, 'manager_rate') else 0,
-                'commission_type': getattr(order, 'manager_commission_type', 'fixed') if hasattr(order, 'manager_commission_type') else 'fixed',
-                'amount': getattr(order, 'manager_amount', 0),
-            })
-        if hasattr(order, 'director_partner_id') and order.director_partner_id.id == self.id and hasattr(order, 'director_amount') and getattr(order, 'director_amount', 0) > 0:
-            details.append({
-                'type': 'Internal',
-                'category': 'Director',
-                'rate': getattr(order, 'director_rate', 0) if hasattr(order, 'director_rate') else 0,
-                'commission_type': getattr(order, 'director_commission_type', 'fixed') if hasattr(order, 'director_commission_type') else 'fixed',
-                'amount': getattr(order, 'director_amount', 0),
-            })
-            
-        # Legacy commissions
-        if hasattr(order, 'consultant_id') and order.consultant_id.id == self.id and hasattr(order, 'salesperson_commission') and getattr(order, 'salesperson_commission', 0) > 0:
-            details.append({
-                'type': 'Legacy',
-                'category': 'Consultant',
-                'rate': getattr(order, 'consultant_comm_percentage', 0) if hasattr(order, 'consultant_comm_percentage') else 0,
-                'commission_type': getattr(order, 'consultant_commission_type', 'fixed') if hasattr(order, 'consultant_commission_type') else 'fixed',
-                'amount': getattr(order, 'salesperson_commission', 0),
-            })
-        if hasattr(order, 'manager_id') and order.manager_id.id == self.id and hasattr(order, 'manager_commission') and getattr(order, 'manager_commission', 0) > 0:
-            details.append({
-                'type': 'Legacy',
-                'category': 'Manager',
-                'rate': getattr(order, 'manager_comm_percentage', 0) if hasattr(order, 'manager_comm_percentage') else 0,
-                'commission_type': getattr(order, 'manager_legacy_commission_type', 'fixed') if hasattr(order, 'manager_legacy_commission_type') else 'fixed',
-                'amount': getattr(order, 'manager_commission', 0),
-            })
-        if hasattr(order, 'second_agent_id') and order.second_agent_id.id == self.id and hasattr(order, 'second_agent_commission') and getattr(order, 'second_agent_commission', 0) > 0:
-            details.append({
-                'type': 'Legacy',
-                'category': 'Second Agent',
-                'rate': getattr(order, 'second_agent_comm_percentage', 0) if hasattr(order, 'second_agent_comm_percentage') else 0,
-                'commission_type': getattr(order, 'second_agent_commission_type', 'fixed') if hasattr(order, 'second_agent_commission_type') else 'fixed',
-                'amount': getattr(order, 'second_agent_commission', 0),
-            })
-        if hasattr(order, 'director_id') and order.director_id.id == self.id and hasattr(order, 'director_commission') and getattr(order, 'director_commission', 0) > 0:
-            details.append({
-                'type': 'Legacy',
-                'category': 'Director',
-                'rate': getattr(order, 'director_comm_percentage', 0) if hasattr(order, 'director_comm_percentage') else 0,
-                'commission_type': getattr(order, 'director_legacy_commission_type', 'fixed') if hasattr(order, 'director_legacy_commission_type') else 'fixed',
-                'amount': getattr(order, 'director_commission', 0),
-            })
-            
-        return details
-
-    def commission_statement_query(self, date_from=None, date_to=None):
-        """Return commission statement data for this partner"""
-        if not date_from:
-            date_from = date.today().replace(day=1)  # First day of current month
-        if not date_to:
-            date_to = date.today()
-        
-        # DEFENSIVE FIX: Ensure self.id is always an integer, never a list
-        partner_id = self.id
-        if isinstance(partner_id, (list, tuple)):
-            partner_id = partner_id[0] if partner_id else False
-            _logger.warning("Partner ID was unexpectedly a list in commission_statement_query: %s. Using %s", self.id, partner_id)
-        
-        if not partner_id:
-            return {
-                'partner': self,
-                'date_from': date_from,
-                'date_to': date_to,
-                'statement_lines': [],
-                'total_amount': 0.0,
-                'orders_count': 0,
-                'currency': self.currency_id,
-            }
-            
-        # Build domain with only existing fields
-        domain = []
-        commission_fields = [
-            'broker_partner_id', 'referrer_partner_id', 'cashback_partner_id', 
-            'other_external_partner_id', 'agent1_partner_id', 'agent2_partner_id',
-            'manager_partner_id', 'director_partner_id', 'consultant_id',
-            'manager_id', 'second_agent_id', 'director_id'
-        ]
-        
-        # Check which fields actually exist on the sale.order model
-        SaleOrder = self.env['sale.order']
-        valid_fields = [field for field in commission_fields if hasattr(SaleOrder, field)]
-        
-        # Build domain with only existing fields
-        for field in valid_fields:
-            domain.append((field, '=', partner_id))
-        
-        # Add date range filter
-        domain.extend([
-            ('date_order', '>=', date_from),
-            ('date_order', '<=', date_to),
-            ('state', 'in', ['sale', 'done']),  # Only confirmed orders
-        ])
-        
-        if not domain:
-            return {
-                'partner': self,
-                'date_from': date_from,
-                'date_to': date_to,
-                'statement_lines': [],
-                'total_amount': 0.0,
-                'orders_count': 0,
-                'currency': self.currency_id,
-            }
-        
-        orders = self.env['sale.order'].search(domain, order='date_order desc')
-        
-        statement_lines = []
-        total_amount = 0.0
-        
-        for order in orders:
-            commission_details = self._get_partner_commission_details_from_order(order)
-            
-            for detail in commission_details:
-                statement_lines.append({
-                    'order_ref': order.name,
-                    'order_date': order.date_order,
-                    'customer_name': order.partner_id.name,
-                    'customer_ref': getattr(order, 'client_order_ref', '') or '',
-                    'commission_type': detail['type'],
-                    'commission_category': detail['category'],
-                    'commission_type_display': detail['commission_type'].title(),
-                    'rate': detail['rate'],
-                    'amount': detail['amount'],
-                    'order_total': order.amount_total,
-                    'order_state': order.state,
-                    'commission_status': getattr(order, 'commission_status', 'draft') if hasattr(order, 'commission_status') else 'draft',
-                })
-                total_amount += detail['amount']
-        
-        return {
-            'partner': self,
-            'date_from': date_from,
-            'date_to': date_to,
-            'statement_lines': statement_lines,
-            'total_amount': total_amount,
-            'orders_count': len(orders),
-            'currency': self.currency_id,
-        }
-
-    def action_view_commission_orders(self):
-        """Action to view commission sale orders"""
+    def generate_commission_data(self):
+        """Generate commission data for the period"""
         self.ensure_one()
-        action = self.env.ref('sale.action_orders').read()[0]
-        action['domain'] = [('id', 'in', self.commission_sale_order_ids.ids)]
-        action['context'] = {'search_default_partner_id': self.id}
-        return action
-
-    def action_generate_commission_statement_pdf(self):
-        """Generate PDF commission statement report"""
-        self.ensure_one()
-        if not self.commission_sale_order_ids:
-            raise UserError(_("No commission orders found for partner %s") % self.name)
-            
-        # Get date range (current month by default)
-        date_from = date.today().replace(day=1)
-        date_to = date.today()
         
-        # Get the report reference
-        report_ref = 'commission_partner_statement.action_commission_partner_statement_pdf'
-        report_action = self.env.ref(report_ref)
+        # Get commission data from the partner
+        commission_data = self.agent_id.commission_statement_query(
+            self.period_start, 
+            self.period_end
+        )
         
-        if not report_action:
-            raise UserError(_("Commission statement report not found. Please check module installation."))
+        # Update totals
+        self.total_sales = sum(line.get("order_total", 0) for line in commission_data["statement_lines"])
+        self.gross_commission = commission_data["total_amount"]
         
-        # Generate the report
-        return report_action.report_action(self)
-
-    def action_generate_commission_statement_excel(self):
-        """Generate Excel commission statement report"""
-        self.ensure_one()
-        data = self.commission_statement_query()
+        # Create commission lines
+        self.commission_line_ids.unlink()  # Clear existing lines
         
-        if not data['statement_lines']:
-            raise UserError(_("No commission data found for the selected period."))
-        
-        return {
-            'type': 'ir.actions.act_url',
-            'url': '/commission_partner_statement/excel_report/%s' % self.id,
-            'target': 'new',
-        }
-
-    def action_share_commission_statement(self):
-        """Share commission statement via email"""
-        self.ensure_one()
-        if not self.email:
-            raise UserError(_("Partner %s has no email address configured.") % self.name)
-            
-        # Create email template context
-        template = self.env.ref('commission_partner_statement.email_template_commission_statement', False)
-        if template:
-            return {
-                'type': 'ir.actions.act_window',
-                'res_model': 'mail.compose.message',
-                'view_mode': 'form',
-                'view_id': self.env.ref('mail.email_compose_message_wizard_form').id,
-                'target': 'new',
-                'context': {
-                    'default_model': 'res.partner',
-                    'default_res_id': self.id,
-                    'default_template_id': template.id,
-                    'default_composition_mode': 'comment',
-                }
-            }
-
-    @api.model
-    def _cron_generate_monthly_commission_statements(self):
-        """Cron job to generate monthly commission statements"""
-        # Get partners with auto statement enabled
-        partners = self.search([
-            ('enable_auto_commission_statement', '=', True),
-            ('email', '!=', False),
-        ])
-        
-        # Get last month date range
-        today = date.today()
-        first_day_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
-        last_day_last_month = today.replace(day=1) - timedelta(days=1)
-        
-        for partner in partners:
-            try:
-                data = partner.commission_statement_query(first_day_last_month, last_day_last_month)
-                if data['statement_lines']:
-                    # Send commission statement email
-                    partner._send_commission_statement_email(data)
-                    self.env.cr.commit()  # Commit after each partner
-            except Exception as e:
-                self.env.cr.rollback()
-                _logger.error("Error generating commission statement for partner %s: %s", partner.name, str(e))
-                continue
-
-    def _send_commission_statement_email(self, data):
-        """Send commission statement email to partner"""
-        template = self.env.ref('commission_partner_statement.email_template_commission_statement', False)
-        if template:
-            template.with_context(commission_data=data).send_mail(self.id, force_send=True)
-
-    # SCHOLARIX-specific methods
-    def action_view_scholarix_statements(self):
-        """View SCHOLARIX commission statements for this partner"""
-        if not hasattr(self.env, 'scholarix.commission.statement'):
-            raise UserError(_("SCHOLARIX commission statement model not available."))
-            
-        statements = self.env['scholarix.commission.statement'].search([
-            ('agent_id', '=', self.id)
-        ])
-        
-        return {
-            'name': f'SCHOLARIX Statements - {self.name}',
-            'type': 'ir.actions.act_window',
-            'res_model': 'scholarix.commission.statement',
-            'view_mode': 'tree,form',
-            'domain': [('id', 'in', statements.ids)],
-            'context': {
-                'default_agent_id': self.id,
-                'search_default_group_by_payment_status': 1,
-            }
-        }
-    
-    def action_generate_scholarix_statement(self):
-        """Generate SCHOLARIX statement for this partner"""
-        if not hasattr(self.env, 'scholarix.commission.statement'):
-            raise UserError(_("SCHOLARIX commission statement model not available."))
-            
-        # Get last month as default period
-        today = date.today()
-        first_day_last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
-        last_day_last_month = today.replace(day=1) - timedelta(days=1)
-        
-        # Check if statement already exists
-        existing = self.env['scholarix.commission.statement'].search([
-            ('agent_id', '=', self.id),
-            ('period_start', '=', first_day_last_month),
-            ('period_end', '=', last_day_last_month)
-        ], limit=1)
-        
-        if existing:
-            statement = existing
-            statement.generate_commission_data()
-        else:
-            statement = self.env['scholarix.commission.statement'].create({
-                'agent_id': self.id,
-                'period_start': first_day_last_month,
-                'period_end': last_day_last_month,
+        for line_data in commission_data["statement_lines"]:
+            self.env["scholarix.commission.line"].create({
+                "statement_id": self.id,
+                "order_ref": line_data["order_ref"],
+                "order_date": line_data["order_date"],
+                "customer_name": line_data["customer_name"],
+                "commission_type": line_data["commission_type"],
+                "commission_category": line_data["commission_category"],
+                "rate": line_data["rate"],
+                "amount": line_data["amount"],
+                "order_total": line_data["order_total"],
             })
-            statement.generate_commission_data()
-        
-        return {
-            'name': f'SCHOLARIX Statement - {self.name}',
-            'type': 'ir.actions.act_window',
-            'res_model': 'scholarix.commission.statement',
-            'res_id': statement.id,
-            'view_mode': 'form',
-            'target': 'current',
-        }
+
+    def action_confirm_statement(self):
+        """Confirm the commission statement"""
+        self.statement_status = "confirmed"
+
+    def action_approve_statement(self):
+        """Approve the commission statement"""
+        self.statement_status = "approved"
+
+    def action_mark_paid(self):
+        """Mark statement as paid"""
+        self.statement_status = "paid"
+        self.payment_status = "paid"
+
+
+class ScholarixCommissionLine(models.Model):
+    """SCHOLARIX Commission Line Model"""
+    _name = "scholarix.commission.line"
+    _description = "SCHOLARIX Commission Line"
+    _order = "order_date desc"
+
+    statement_id = fields.Many2one(
+        "scholarix.commission.statement",
+        string="Statement",
+        required=True,
+        ondelete="cascade"
+    )
+    order_ref = fields.Char(
+        string="Order Reference",
+        help="Sale order reference"
+    )
+    order_date = fields.Date(
+        string="Order Date",
+        help="Date of the sale order"
+    )
+    customer_name = fields.Char(
+        string="Customer",
+        help="Customer name"
+    )
+    commission_type = fields.Char(
+        string="Commission Type",
+        help="Type of commission (Internal/External/Legacy)"
+    )
+    commission_category = fields.Char(
+        string="Category",
+        help="Commission category (Agent, Manager, etc.)"
+    )
+    rate = fields.Float(
+        string="Rate (%)",
+        help="Commission rate percentage"
+    )
+    amount = fields.Monetary(
+        string="Commission Amount",
+        help="Commission amount for this line"
+    )
+    order_total = fields.Monetary(
+        string="Order Total",
+        help="Total amount of the sale order"
+    )
+    currency_id = fields.Many2one(
+        "res.currency",
+        related="statement_id.currency_id",
+        readonly=True
+    )
