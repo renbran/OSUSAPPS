@@ -102,60 +102,59 @@
                                     <strong>Amount: <span t-field="payment.amount"/> <span t-field="payment.currency_id.symbol"/></strong>
                                 </div>
 
-                                <!-- QR Code Section (if enabled) -->
-                                <div t-if="payment.qr_code" class="o_payment_voucher_qr">
-                                    <img t-att-src="image_data_uri(payment.qr_code)" style="max-width: 150px;"/>
-                                    <div class="o_payment_voucher_qr_text">
-                                        Scan QR code to verify payment authenticity
-                                    </div>
-                                </div>
-
-                                <!-- Approval History -->
-                                <div t-if="payment.approval_history_ids" style="margin-top: 30px;">
-                                    <h4>Approval History</h4>
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Stage</th>
-                                                <th>Approved By</th>
-                                                <th>Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr t-foreach="payment.approval_history_ids" t-as="history">
-                                                <td>
-                                                    <span t-field="history.stage"/>
-                                                </td>
-                                                <td>
-                                                    <span t-field="history.user_id"/>
-                                                </td>
-                                                <td>
-                                                    <span t-field="history.approval_date"/>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- Signatures -->
-                                <div class="o_payment_voucher_signatures">
-                                    <div class="o_payment_voucher_signature">
-                                        <div class="o_payment_voucher_signature_label">Prepared By</div>
-                                    </div>
-                                    <div class="o_payment_voucher_signature">
-                                        <div class="o_payment_voucher_signature_label">Approved By</div>
-                                    </div>
-                                    <div class="o_payment_voucher_signature">
-                                        <div class="o_payment_voucher_signature_label">Authorized By</div>
-                                    </div>
-                                </div>
-
-                                <!-- Footer -->
-                                <div class="o_payment_voucher_footer">
-                                    This is a computer-generated document. 
-                                    <span t-if="payment.qr_code">QR code verification available.</span>
+                            <!-- QR Code Section (if enabled) -->
+                            <div t-if="payment.qr_code" class="o_payment_voucher_qr">
+                                <img t-att-src="image_data_uri(payment.qr_code)" style="max-width: 150px;"/>
+                                <div class="o_payment_voucher_qr_text">
+                                    Scan QR code to verify payment authenticity
                                 </div>
                             </div>
+
+                            <!-- Approval History -->
+                            <div t-if="payment.approval_history_ids" style="margin-top: 30px;">
+                                <h4>Approval History</h4>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Stage</th>
+                                            <th>Approved By</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="payment.approval_history_ids" t-as="history">
+                                            <td>
+                                                <span t-field="history.stage"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="history.user_id"/>
+                                            </td>
+                                            <td>
+                                                <span t-field="history.approval_date"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Signatures -->
+                            <div class="o_payment_voucher_signatures">
+                                <div class="o_payment_voucher_signature">
+                                    <div class="o_payment_voucher_signature_label">Prepared By</div>
+                                </div>
+                                <div class="o_payment_voucher_signature">
+                                    <div class="o_payment_voucher_signature_label">Approved By</div>
+                                </div>
+                                <div class="o_payment_voucher_signature">
+                                    <div class="o_payment_voucher_signature_label">Authorized By</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="o_payment_voucher_footer">
+                            This is a computer-generated document. 
+                            <span t-if="payment.qr_code">QR code verification available.</span>
                         </div>
                     </t>
                 </t>
