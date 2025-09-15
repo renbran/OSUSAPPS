@@ -213,7 +213,7 @@
                                 'search_default_large_payments': 1,
                                 'search_default_this_quarter': 1
                         }</field>
-                        <field name="domain">[('amount', '>=', 1000)]</field>
+                        <field name="domain">[('amount', '&gt;=', 1000)]</field>
                         <field name="help" type="html">
                                 <p class="o_view_nocontent_smiling_face">
                                         Executive Payment Report
