@@ -185,5 +185,133 @@
                 </div>
             </t>
         </template>
+        <!-- Payment Not Found Template -->
+        <template id="payment_not_found" name="Payment Not Found">
+            <t t-call="website.layout">
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="card mt-5">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h4 class="mb-0">
+                                            <i class="fa fa-exclamation-triangle me-2"></i>
+                                            <span t-esc="error_message"/>
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="alert alert-warning">
+                                            <span t-esc="error_details"/>
+                                        </div>
+                                        <div class="mt-3">
+                                            <a href="/web" class="btn btn-primary">
+                                                <i class="fa fa-home me-2"></i>Return to Main System
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+
+        <!-- Bulk Verification Form Template -->
+        <template id="bulk_verification_form" name="Bulk Verification Form">
+            <t t-call="website.layout">
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="card mt-5">
+                                    <div class="card-header bg-primary text-white">
+                                        <h4 class="mb-0">
+                                            <i class="fa fa-list-check me-2"></i>
+                                            Bulk Payment Verification
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Enter voucher numbers (one per line) to verify multiple payments at once.</p>
+
+                                        <form method="post">
+                                            <div class="form-group mb-3">
+                                                <label for="voucher_numbers" class="form-label">Voucher Numbers:</label>
+                                                <textarea name="voucher_numbers" id="voucher_numbers" 
+                                                         class="form-control" rows="10" 
+                                                         placeholder="Enter voucher numbers, one per line..."></textarea>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fa fa-search me-2"></i>Verify Payments
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+
+        <!-- Bulk Verification Results Template -->
+        <template id="bulk_verification_results" name="Bulk Verification Results">
+            <t t-call="website.layout">
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-md-10">
+                                <div class="card mt-5">
+                                    <div class="card-header bg-success text-white">
+                                        <h4 class="mb-0">
+                                            <i class="fa fa-check-circle me-2"></i>
+                                            Bulk Verification Results
+                                        </h4>
+                                        <p class="mb-0 mt-2">
+                                            Checked: <span t-esc="total_checked"/> | Found: <span t-esc="found_count"/>
+                                        </p>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Voucher Number</th>
+                                                        <th>Status</th>
+                                                        <th>Partner</th>
+                                                        <th>Amount</th>
+                                                        <th>Date</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr t-foreach="results" t-as="result">
+                                                        <td><span t-esc="result.get('voucher_number')"/></td>
+                                                        <td>
+                                                            <span t-if="result.get('found')" class="badge bg-success">Found</span>
+                                                            <span t-else="" class="badge bg-danger">Not Found</span>
+                                                        </td>
+                                                        <td><span t-esc="result.get('partner', 'N/A')"/></td>
+                                                        <td><span t-esc="result.get('amount', 'N/A')"/></td>
+                                                        <td><span t-esc="result.get('date', 'N/A')"/></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <a href="/payment/bulk-verify" class="btn btn-primary">
+                                                <i class="fa fa-search me-2"></i>Verify More Payments
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+
     </data>
 </odoo>
