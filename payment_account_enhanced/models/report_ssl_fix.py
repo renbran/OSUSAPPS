@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, api
+from odoo import models, api, tools
 import logging
 import os
-import subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -11,117 +10,74 @@ class IrActionsReportSSLFix(models.Model):
     _inherit = 'ir.actions.report'
 
     @api.model
-    def _run_wkhtmltopdf(self, bodies, header=None, footer=None, landscape=False, specific_paperformat_args=None, set_viewport_size=False):
+    def _build_wkhtmltopdf_args(self, paperformat, landscape, specific_paperformat_args=None, set_viewport_size=False):
         """
-        Override wkhtmltopdf execution to handle SSL issues
-        Fixes QSslSocket OpenSSL function resolution errors
+        Override to add SSL-disabled arguments to wkhtmltopdf command
+        This is the most reliable way to fix SSL issues in Odoo 17
         """
-        try:
-            # Call parent method but catch SSL warnings
-            result = super(IrActionsReportSSLFix, self)._run_wkhtmltopdf(
-                bodies, header, footer, landscape, specific_paperformat_args, set_viewport_size
-            )
-            return result
-        except Exception as e:
-            error_msg = str(e)
-            # Check if it's an SSL-related error
-            if any(ssl_term in error_msg.lower() for ssl_term in ['qsslsocket', 'crypto_', 'ssl_', 'openssl']):
-                _logger.warning("wkhtmltopdf SSL warning suppressed: %s", error_msg)
-                # Try alternative PDF generation approach
-                return self._run_wkhtmltopdf_with_ssl_disabled(bodies, header, footer, landscape, specific_paperformat_args)
-            else:
-                # Re-raise non-SSL errors
-                raise
-
-    @api.model
-    def _run_wkhtmltopdf_with_ssl_disabled(self, bodies, header=None, footer=None, landscape=False, specific_paperformat_args=None):
-        """
-        Alternative PDF generation with SSL verification disabled
-        """
-        try:
-            # Get the standard command
-            command_args = self._prepare_html_report_command(landscape, specific_paperformat_args)
-            
-            # Add SSL-disabled options
-            ssl_disabled_args = [
-                '--disable-ssl-verification',
-                '--disable-javascript',
-                '--no-stop-slow-scripts',
-                '--load-error-handling=ignore',
-                '--load-media-error-handling=ignore'
-            ]
-            
-            # Insert SSL options after the wkhtmltopdf command
-            if command_args and len(command_args) > 0:
-                command_args = command_args[:1] + ssl_disabled_args + command_args[1:]
-            
-            _logger.info("Using SSL-disabled wkhtmltopdf for PDF generation")
-            
-            # Execute the modified command
-            return self._execute_wkhtmltopdf_command(command_args, bodies, header, footer)
-            
-        except Exception as e:
-            _logger.error("PDF generation failed even with SSL disabled: %s", str(e))
-            # Return a basic error PDF or re-raise
-            raise
-
-    @api.model
-    def _prepare_html_report_command(self, landscape=False, specific_paperformat_args=None):
-        """
-        Prepare base wkhtmltopdf command arguments
-        """
-        command_args = ['wkhtmltopdf']
+        # Get the standard arguments first
+        command_args = super()._build_wkhtmltopdf_args(
+            paperformat, landscape, specific_paperformat_args, set_viewport_size
+        )
         
-        # Add basic options
-        command_args.extend([
-            '--page-size', 'A4',
-            '--orientation', 'Landscape' if landscape else 'Portrait',
-            '--margin-top', '0.7in',
-            '--margin-right', '0.7in',
-            '--margin-bottom', '0.7in',
-            '--margin-left', '0.7in',
-            '--encoding', 'utf-8',
-            '--quiet'
-        ])
+        # Add SSL-disabled options to prevent QSslSocket errors
+        ssl_fix_args = [
+            '--disable-ssl-verification',
+            '--disable-javascript',
+            '--no-stop-slow-scripts',
+            '--load-error-handling=ignore',
+            '--load-media-error-handling=ignore',
+            '--disable-smart-shrinking'
+        ]
         
-        # Add specific paperformat arguments if provided
-        if specific_paperformat_args:
-            command_args.extend(specific_paperformat_args)
+        # Insert SSL fix arguments after wkhtmltopdf but before other options
+        if command_args and len(command_args) > 1:
+            # Find where to insert (after 'wkhtmltopdf' command)
+            insert_pos = 1
+            command_args = command_args[:insert_pos] + ssl_fix_args + command_args[insert_pos:]
             
+        _logger.debug("Applied SSL fix to wkhtmltopdf command")
         return command_args
 
-    @api.model
-    def _execute_wkhtmltopdf_command(self, command_args, bodies, header=None, footer=None):
+    @api.model  
+    def _run_wkhtmltopdf(self, bodies, header=None, footer=None, landscape=False, specific_paperformat_args=None, set_viewport_size=False):
         """
-        Execute wkhtmltopdf command with proper error handling
+        Override to set SSL-safe environment before running wkhtmltopdf
         """
+        # Set environment variables for SSL compatibility
+        old_env = os.environ.copy()
         try:
-            # Add input/output arguments
-            command_args.extend(['-', '-'])  # stdin to stdout
+            # Set SSL-safe environment
+            os.environ.update({
+                'QTWEBKIT_DPI': '96',
+                'QT_QPA_PLATFORM': 'offscreen',
+                'OPENSSL_CONF': '',  # Disable OpenSSL config to avoid conflicts
+            })
             
-            # Prepare input HTML
-            html_input = '\n'.join(bodies)
-            
-            # Execute command
-            process = subprocess.Popen(
-                command_args,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+            # Call parent method with SSL-safe environment
+            return super()._run_wkhtmltopdf(
+                bodies, header, footer, landscape, specific_paperformat_args, set_viewport_size
             )
-            
-            stdout, stderr = process.communicate(input=html_input.encode('utf-8'))
-            
-            if process.returncode != 0:
-                error_msg = stderr.decode('utf-8')
-                # Suppress SSL warnings but log other errors
-                if not any(ssl_term in error_msg.lower() for ssl_term in ['qsslsocket', 'crypto_', 'ssl_']):
-                    _logger.error("wkhtmltopdf error: %s", error_msg)
-                else:
-                    _logger.debug("wkhtmltopdf SSL warning suppressed")
-            
-            return stdout
-            
         except Exception as e:
-            _logger.error("Failed to execute wkhtmltopdf: %s", str(e))
+            error_msg = str(e)
+            # Log SSL warnings as debug instead of warnings to reduce noise
+            if any(ssl_term in error_msg.lower() for ssl_term in ['qsslsocket', 'crypto_', 'ssl_', 'openssl']):
+                _logger.debug("wkhtmltopdf SSL warning suppressed: %s", error_msg)
+                # Try one more time with minimal environment
+                try:
+                    os.environ.clear()
+                    os.environ.update({
+                        'PATH': old_env.get('PATH', ''),
+                        'HOME': old_env.get('HOME', '/tmp'),
+                        'QT_QPA_PLATFORM': 'offscreen'
+                    })
+                    return super()._run_wkhtmltopdf(
+                        bodies, header, footer, landscape, specific_paperformat_args, set_viewport_size
+                    )
+                except:
+                    pass
             raise
+        finally:
+            # Restore original environment
+            os.environ.clear()
+            os.environ.update(old_env)
