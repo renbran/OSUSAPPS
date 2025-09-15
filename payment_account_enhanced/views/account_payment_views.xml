@@ -49,6 +49,17 @@
                                         <field name="voucher_number" readonly="1" invisible="voucher_number == False"/>
                                 </xpath>
 
+                                <!-- Add QR Code display and access token info -->
+                                <xpath expr="//div[hasclass('oe_title')]" position="before">
+                                        <field name="qr_code" invisible="state == 'draft'" widget="image" class="oe_avatar"/>
+                                </xpath>
+
+                                <!-- Add QR and access token fields -->
+                                <xpath expr="//field[@name='ref']" position="after">
+                                        <field name="remarks" placeholder="Enter payment remarks..." invisible="remarks == False"/>
+                                        <field name="access_token" readonly="1" invisible="access_token == False" groups="base.group_system"/>
+                                </xpath>
+
                                 <!-- Add approval workflow information -->
                                 <xpath expr="//sheet" position="inside">
                                         <group name="workflow_info" string="Approval Workflow" invisible="approval_state in [False, 'draft']">
@@ -64,11 +75,6 @@
                                                         <field name="authorizer_date" readonly="1" invisible="authorizer_date == False"/>
                                                 </group>
                                         </group>
-                                </xpath>
-
-                                <!-- Add remarks field -->
-                                <xpath expr="//field[@name='ref']" position="after">
-                                        <field name="remarks" placeholder="Enter payment remarks..." invisible="remarks == False"/>
                                 </xpath>
 
                         </field>

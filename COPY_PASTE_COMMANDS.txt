@@ -1,0 +1,68 @@
+# INDIVIDUAL COPY-PASTE COMMANDS FOR PRODUCTION SERVER
+
+# ============================================================================
+# COMMAND 1: FIX MISSING FILESTORE ATTACHMENT
+# ============================================================================
+cd /var/odoo/staging-erposus.com && sudo -u odoo venv/bin/python3 src/odoo-bin shell -c odoo.conf << 'EOF'
+missing_hash = "abf07d417765a61ef36cdde9947cd6c37892fd3a"
+attachments = env['ir.attachment'].search([('store_fname', 'like', missing_hash)])
+print(f"Found {len(attachments)} orphaned attachments")
+for att in attachments:
+    print(f"Deleting: ID={att.id}, Name={att.name}")
+    att.unlink()
+env.cr.commit()
+print("✅ Filestore cleanup complete")
+EOF
+
+# ============================================================================
+# COMMAND 2: ADD SSL FIX TO CONFIG
+# ============================================================================
+sudo cp /var/odoo/staging-erposus.com/odoo.conf /var/odoo/staging-erposus.com/odoo.conf.backup.$(date +%Y%m%d_%H%M%S) && sudo tee -a /var/odoo/staging-erposus.com/odoo.conf << 'EOF'
+
+# PDF SSL Fix for CloudPepper
+report_url_timeout = 120
+workers = 0
+proxy_mode = True
+limit_time_cpu = 300
+limit_time_real = 600
+EOF
+
+# ============================================================================
+# COMMAND 3: UPDATE PAYMENT MODULE
+# ============================================================================
+cd /var/odoo/staging-erposus.com && sudo -u odoo venv/bin/python3 src/odoo-bin -c odoo.conf --no-http --stop-after-init --update payment_account_enhanced
+
+# ============================================================================
+# COMMAND 4: RESTART ODOO SERVICE
+# ============================================================================
+sudo systemctl restart odoo && sleep 10 && sudo systemctl status odoo
+
+# ============================================================================
+# COMMAND 5: VERIFY FIXES
+# ============================================================================
+# Check logs for errors
+tail -50 /var/odoo/staging-erposus.com/logs/odoo.log | grep -E "(ERROR|FileNotFoundError|SSL)"
+
+# Test QR generation
+cd /var/odoo/staging-erposus.com && sudo -u odoo venv/bin/python3 src/odoo-bin shell -c odoo.conf << 'EOF'
+try:
+    import qrcode
+    print("✅ QR code library available")
+    
+    # Test attachment cleanup
+    missing_count = env['ir.attachment'].search_count([('store_fname', 'like', 'abf07d417765a61ef36cdde9947cd6c37892fd3a')])
+    print(f"Remaining orphaned attachments: {missing_count}")
+    
+except Exception as e:
+    print(f"❌ Error: {e}")
+EOF
+
+# ============================================================================
+# OPTIONAL: INSTALL MISSING PACKAGES (IF NEEDED)
+# ============================================================================
+sudo -u odoo /var/odoo/staging-erposus.com/venv/bin/python3 -m pip install qrcode Pillow wkhtmltopdf
+
+# ============================================================================
+# EMERGENCY: UPDATE ALL MODULES (USE CAREFULLY)
+# ============================================================================
+# cd /var/odoo/staging-erposus.com && sudo -u odoo venv/bin/python3 src/odoo-bin -c odoo.conf --no-http --stop-after-init --update all

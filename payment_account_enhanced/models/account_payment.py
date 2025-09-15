@@ -234,11 +234,11 @@ class AccountPayment(models.Model):
                     if company.qr_code_verification_url:
                         verification_url = f"{company.qr_code_verification_url}/{record.access_token}"
                     
-                    # Generate QR code with verification URL (always generate)
+                    # Generate QR code with simpler settings like ingenuity module
                     qr = qrcode.QRCode(
                         version=1,
-                        error_correction=qrcode.constants.ERROR_CORRECT_M,
-                        box_size=10,
+                        error_correction=qrcode.constants.ERROR_CORRECT_L,  # Simpler error correction
+                        box_size=20,  # Larger box size for better readability
                         border=4,
                     )
                     qr.add_data(verification_url)
@@ -248,13 +248,21 @@ class AccountPayment(models.Model):
                     qr_img = qr.make_image(fill_color="black", back_color="white")
                     buffer = BytesIO()
                     qr_img.save(buffer, format='PNG')
-                    record.qr_code = base64.b64encode(buffer.getvalue())
+                    qr_data = base64.b64encode(buffer.getvalue())
+                    
+                    # Store the QR code
+                    record.qr_code = qr_data
+                    
+                    _logger.info("QR code generated successfully for payment %s with URL: %s", payment_ref, verification_url)
                         
                 except Exception as e:
                     _logger.error("Error generating QR code for payment %s: %s", payment_ref, str(e))
                     record.qr_code = False
             else:
                 record.qr_code = False
+                if not record.access_token and record.id:
+                    # Generate access token if missing
+                    record.access_token = record._generate_access_token()
 
     def action_regenerate_qr_code(self):
         """Force regenerate QR code for this payment"""
