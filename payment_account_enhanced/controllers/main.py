@@ -14,6 +14,11 @@ _logger = logging.getLogger(__name__)
 class PaymentVerificationController(http.Controller):
     """Professional payment verification controller with comprehensive security"""
 
+    @http.route('/payment/test', type='http', auth='public', website=True, csrf=False)
+    def test_controller(self, **kwargs):
+        """Simple test endpoint to verify controller routing works"""
+        return "<html><body><h1>Payment Controller Test - Working!</h1></body></html>"
+
     @http.route('/payment/verify/<int:payment_id>', type='http', auth='public', website=True, csrf=False)
     def verify_payment(self, payment_id, **kwargs):
         """Public payment verification page accessible via QR code"""

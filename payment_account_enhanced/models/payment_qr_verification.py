@@ -219,10 +219,26 @@ class PaymentQRVerification(models.Model):
         if not payment:
             return {'status': 'error', 'message': 'Invalid access token or payment not found'}
         
-        # Generate verification code
-        verification_code = self.env['ir.sequence'].next_by_code('payment.qr.verification') or 'VER-{}'.format(
-            len(str(self.search_count([]))) + 1
-        )
+        # Generate unique verification code
+        import uuid
+        import time
+        
+        # Try sequence first, then use timestamp-based unique code
+        verification_code = self.env['ir.sequence'].next_by_code('payment.qr.verification')
+        if not verification_code:
+            # Generate truly unique code using timestamp and UUID
+            timestamp = str(int(time.time() * 1000))  # milliseconds
+            unique_suffix = str(uuid.uuid4().hex)[:8].upper()
+            verification_code = f'VER-{timestamp[-6:]}-{unique_suffix}'
+        
+        # Ensure uniqueness by checking if code already exists
+        max_attempts = 10
+        attempt = 0
+        while self.search([('verification_code', '=', verification_code)]) and attempt < max_attempts:
+            attempt += 1
+            timestamp = str(int(time.time() * 1000))
+            unique_suffix = str(uuid.uuid4().hex)[:8].upper()
+            verification_code = f'VER-{timestamp[-6:]}-{unique_suffix}-{attempt}'
         
         # Create verification record
         verification = self.create({

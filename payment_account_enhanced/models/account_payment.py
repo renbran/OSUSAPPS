@@ -177,6 +177,42 @@ class AccountPayment(models.Model):
         token_data = f"{uuid.uuid4().hex}-{fields.Datetime.now().isoformat()}"
         return hashlib.sha256(token_data.encode()).hexdigest()[:32]
 
+    def _get_dynamic_base_url(self):
+        """Get dynamic base URL from current request or fallback to system parameter"""
+        try:
+            # Try to get base URL from current HTTP request context
+            from odoo.http import request
+            if request and hasattr(request, 'httprequest') and request.httprequest:
+                # Build dynamic URL from current request
+                scheme = request.httprequest.scheme or 'http'
+                host = request.httprequest.host
+                if host:
+                    # Handle port if not standard
+                    if ':' not in host:
+                        # Add default ports if needed
+                        if scheme == 'https' and request.httprequest.environ.get('SERVER_PORT') != '443':
+                            port = request.httprequest.environ.get('SERVER_PORT')
+                            if port and port != '80':
+                                host = f"{host}:{port}"
+                        elif scheme == 'http' and request.httprequest.environ.get('SERVER_PORT') not in ['80', '443']:
+                            port = request.httprequest.environ.get('SERVER_PORT')
+                            if port and port != '443':
+                                host = f"{host}:{port}"
+                    
+                    dynamic_url = f"{scheme}://{host}"
+                    _logger.debug("Generated dynamic base URL from request: %s", dynamic_url)
+                    return dynamic_url
+        except Exception as e:
+            _logger.debug("Could not get dynamic base URL from request context: %s", str(e))
+        
+        # Fallback to system parameter
+        fallback_url = self.env['ir.config_parameter'].sudo().get_param(
+            'web.base.url', 
+            default='http://localhost:8069'
+        )
+        _logger.debug("Using fallback base URL: %s", fallback_url)
+        return fallback_url
+
     @api.depends('voucher_number', 'amount', 'approval_state', 'partner_id', 'date', 'access_token', 'name')
     def _compute_qr_code(self):
         """Generate QR code for payment voucher verification with access token"""
@@ -187,7 +223,9 @@ class AccountPayment(models.Model):
                 try:
                     # Get company QR settings
                     company = record.company_id
-                    base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', default='http://localhost:8069')
+                    
+                    # Get dynamic base URL from current request or fallback to system parameter
+                    base_url = self._get_dynamic_base_url()
                     
                     # Create verification URL for QR code (simple URL, not JSON)
                     verification_url = f"{base_url}/payment/verify/{record.access_token}"
@@ -246,6 +284,33 @@ class AccountPayment(models.Model):
                 _logger.error("Failed to generate QR for payment %s: %s", payment.voucher_number, str(e))
         
         return count
+
+    @api.model
+    def regenerate_all_qr_codes_with_dynamic_url(self):
+        """Regenerate all QR codes with dynamic URL logic - useful after URL changes"""
+        payments_with_tokens = self.search([
+            ('access_token', '!=', False),
+            ('access_token', '!=', '')
+        ])
+        
+        count = 0
+        errors = 0
+        
+        for payment in payments_with_tokens:
+            try:
+                # Force regenerate QR code with new dynamic URL logic
+                payment._compute_qr_code()
+                count += 1
+                _logger.info("Regenerated QR code for payment %s with dynamic URL", payment.voucher_number or payment.name)
+            except Exception as e:
+                errors += 1
+                _logger.error("Failed to regenerate QR for payment %s: %s", payment.voucher_number or payment.name, str(e))
+        
+        return {
+            'regenerated': count,
+            'errors': errors,
+            'message': f"Regenerated {count} QR codes, {errors} errors"
+        }
 
     def action_submit_for_review(self):
         """Submit payment for review (Stage 1)"""
