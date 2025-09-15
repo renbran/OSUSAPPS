@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <menuitem id="menu_account_payment_approval_root" name="Payment Approval" parent="account.menu_finance" sequence="10"/>
-    <menuitem id="menu_account_payment_approval_payments" name="Payments" parent="menu_account_payment_approval_root" action="account.action_account_payments" sequence="20"/>
-</odoo>

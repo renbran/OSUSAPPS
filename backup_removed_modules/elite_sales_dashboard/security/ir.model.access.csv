@@ -1,7 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_elite_agent_type_user,elite.agent.type.user,model_elite_agent_type,base.group_user,1,0,0,0
-access_elite_agent_type_manager,elite.agent.type.manager,model_elite_agent_type,sales_team.group_sale_manager,1,1,1,1
-access_elite_agent_dashboard_user,elite.agent.dashboard.user,model_elite_agent_dashboard,base.group_user,1,0,0,0
-access_elite_agent_dashboard_manager,elite.agent.dashboard.manager,model_elite_agent_dashboard,sales_team.group_sale_manager,1,1,1,1
-access_elite_dashboard_settings_user,elite.dashboard.settings.user,model_elite_dashboard_settings,base.group_user,1,0,0,0
-access_elite_dashboard_settings_manager,elite.dashboard.settings.manager,model_elite_dashboard_settings,sales_team.group_sale_manager,1,1,1,1

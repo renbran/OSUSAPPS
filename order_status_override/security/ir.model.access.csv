@@ -1,6 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_sale_workflow_wizard,sale.workflow.wizard,model_sale_workflow_wizard,base.group_user,1,1,1,1
-access_order_status_history,order.status.history,model_order_status_history,base.group_user,1,1,1,0
-access_order_status_history_wizard,order.status.history.wizard,model_order_status_history_wizard,base.group_user,1,1,1,1
-access_order_status,order.status,model_order_status,base.group_user,1,0,0,0
-access_order_status_manager,order.status manager,model_order_status,sales_team.group_sale_manager,1,1,1,1

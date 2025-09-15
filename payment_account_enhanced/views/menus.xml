@@ -120,7 +120,7 @@
 
     <!-- Payment Reports Menu -->
     <menuitem id="menu_payment_reports" 
-              name="Reports & Analytics" 
+              name="Reports &amp; Analytics" 
               parent="menu_payment_management_root" 
               sequence="60" 
               groups="account.group_account_user"/>
