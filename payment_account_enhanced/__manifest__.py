@@ -58,6 +58,7 @@
         'views/payment_workflow_stage_views.xml',
         'views/website_verification_templates.xml',
         'views/payment_dashboard_views.xml',
+        'views/executive_views.xml',  # Executive-focused views and filters
         
         # Menus (Load after views to ensure actions exist)
         'views/menus.xml',

@@ -128,5 +128,102 @@
                         <field name="act_window_id" ref="action_account_payment_tree"/>
                 </record>
 
+                <!-- ========================================== -->
+                <!-- EXECUTIVE-LEVEL ACTIONS -->
+                <!-- ========================================== -->
+
+                <!-- Executive Payment Summary - High-level view for C-level executives -->
+                <record id="action_account_payment_executive_tree" model="ir.actions.act_window">
+                        <field name="name">Executive Payment Summary</field>
+                        <field name="res_model">account.payment</field>
+                        <field name="view_mode">tree,form,pivot,graph</field>
+                        <field name="view_id" ref="view_account_payment_tree_enhanced"/>
+                        <field name="context">{
+                                'create': False,
+                                'group_by': ['approval_state', 'payment_type', 'date'],
+                                'search_default_group_by_approval_state': 1,
+                                'search_default_this_month': 1
+                        }</field>
+                        <field name="domain">[('amount', '>', 0)]</field>
+                        <field name="help" type="html">
+                                <p class="o_view_nocontent_smiling_face">
+                                        Executive Payment Overview
+                                </p>
+                                <p>
+                                        High-level summary of all payment activities for executive review.
+                                        Use filters to analyze payment trends and approval workflow performance.
+                                </p>
+                        </field>
+                </record>
+
+                <!-- Pending Approvals Action - Quick access for managers -->
+                <record id="action_account_payment_pending_approvals" model="ir.actions.act_window">
+                        <field name="name">Payments Pending Approval</field>
+                        <field name="res_model">account.payment</field>
+                        <field name="view_mode">tree,form</field>
+                        <field name="view_id" ref="view_account_payment_tree_enhanced"/>
+                        <field name="context">{
+                                'create': False,
+                                'search_default_pending_review': 1,
+                                'search_default_pending_approval': 1,
+                                'search_default_pending_authorization': 1
+                        }</field>
+                        <field name="domain">[('approval_state', 'in', ['under_review', 'for_approval', 'for_authorization'])]</field>
+                        <field name="help" type="html">
+                                <p class="o_view_nocontent_smiling_face">
+                                        No payments pending approval
+                                </p>
+                                <p>
+                                        This view shows all payments that require your attention for review, approval, or authorization.
+                                        Stay on top of the approval workflow to ensure timely payment processing.
+                                </p>
+                        </field>
+                </record>
+
+                <!-- Payment Analytics Action -->
+                <record id="action_payment_analytics" model="ir.actions.act_window">
+                        <field name="name">Payment Analytics</field>
+                        <field name="res_model">account.payment</field>
+                        <field name="view_mode">graph,pivot,tree</field>
+                        <field name="context">{
+                                'group_by': ['approval_state', 'payment_type', 'partner_id', 'date:month'],
+                                'search_default_group_by_state': 1,
+                                'search_default_this_year': 1
+                        }</field>
+                        <field name="domain">[('amount', '>', 0)]</field>
+                        <field name="help" type="html">
+                                <p class="o_view_nocontent_smiling_face">
+                                        Payment Analytics Dashboard
+                                </p>
+                                <p>
+                                        Analyze payment trends, volumes, and approval workflow performance.
+                                        Use the graph and pivot views to gain insights into payment patterns.
+                                </p>
+                        </field>
+                </record>
+
+                <!-- Executive Payment Report Action -->
+                <record id="action_payment_executive_report" model="ir.actions.act_window">
+                        <field name="name">Executive Payment Report</field>
+                        <field name="res_model">account.payment</field>
+                        <field name="view_mode">pivot,graph,tree</field>
+                        <field name="context">{
+                                'group_by': ['approval_state', 'payment_type', 'date:month'],
+                                'search_default_group_by_approval': 1,
+                                'search_default_large_payments': 1,
+                                'search_default_this_quarter': 1
+                        }</field>
+                        <field name="domain">[('amount', '>=', 1000)]</field>
+                        <field name="help" type="html">
+                                <p class="o_view_nocontent_smiling_face">
+                                        Executive Payment Report
+                                </p>
+                                <p>
+                                        Comprehensive report focusing on significant payments for executive review.
+                                        Includes trend analysis and approval workflow metrics.
+                                </p>
+                        </field>
+                </record>
+
         </data>
 </odoo>
