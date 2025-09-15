@@ -71,19 +71,13 @@
         <field name="priority" eval="95"/>
         <field name="arch" type="xml">
             
-            <!-- Add executive-focused decorations -->
+            <!-- Add executive-focused decorations to the tree -->
             <xpath expr="//tree" position="attributes">
                 <attribute name="decoration-danger">amount &gt;= 100000 and approval_state in ['under_review', 'for_approval', 'for_authorization']</attribute>
                 <attribute name="decoration-warning">amount &gt;= 50000 and approval_state in ['under_review', 'for_approval']</attribute>
                 <attribute name="decoration-info">amount &gt;= 10000 and approval_state == 'approved'</attribute>
                 <attribute name="decoration-success">approval_state == 'posted'</attribute>
                 <attribute name="decoration-muted">approval_state == 'cancelled'</attribute>
-            </xpath>
-
-            <!-- Add executive-relevant fields -->
-            <xpath expr="//field[@name='amount']" position="attributes">
-                <attribute name="decoration-bold">amount &gt;= 50000</attribute>
-                <attribute name="sum">Total Amount</attribute>
             </xpath>
 
             <!-- Add approval timing fields for executive oversight -->
