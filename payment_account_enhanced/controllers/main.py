@@ -14,6 +14,11 @@ _logger = logging.getLogger(__name__)
 class PaymentVerificationController(http.Controller):
     """Professional payment verification controller with comprehensive security"""
 
+    @http.route('/payment/test', type='http', auth='public', website=True, csrf=False)
+    def test_controller(self, **kwargs):
+        """Simple test endpoint to verify controller routing works"""
+        return "<html><body><h1>Payment Controller Test - Working!</h1></body></html>"
+
     @http.route('/payment/verify/<int:payment_id>', type='http', auth='public', website=True, csrf=False)
     def verify_payment(self, payment_id, **kwargs):
         """Public payment verification page accessible via QR code"""
@@ -49,7 +54,7 @@ class PaymentVerificationController(http.Controller):
                 'verification_code': verification_log.verification_code if verification_log else None,
             }
             
-            return request.render('account_payment_final.payment_verification_page', context)
+            return request.render('payment_account_enhanced.payment_verification_success', context)
             
         except Exception as e:
             _logger.error(f"Error in payment verification for payment_id {payment_id}: {e}")
@@ -105,10 +110,95 @@ class PaymentVerificationController(http.Controller):
                 'message': _('An error occurred during verification')
             }
 
+    @http.route('/payment/verify/<string:access_token>', type='http', auth='public', website=True, csrf=False)
+    def verify_payment_by_token(self, access_token, **kwargs):
+        """Public payment verification page accessible via QR code with access token"""
+        try:
+            # Find payment by access token
+            payment = request.env['account.payment'].sudo().search([('access_token', '=', access_token)], limit=1)
+            
+            if not payment:
+                return request.render('payment_account_enhanced.payment_verification_error', {
+                    'error_message': _('Payment Not Found'),
+                    'error_details': _('The payment voucher you are trying to verify does not exist or has been removed.'),
+                })
+            
+            # Use QR verification model to create verification record
+            verification_result = request.env['payment.qr.verification'].sudo().verify_payment_by_token(access_token)
+            
+            if verification_result.get('status') != 'success':
+                return request.render('payment_account_enhanced.payment_verification_error', {
+                    'error_message': _('Verification Failed'),
+                    'error_details': verification_result.get('message', _('Unable to verify payment')),
+                })
+            
+            # Determine verification status and display information
+            status_info = self._get_payment_status_info(payment)
+            
+            # Get verification history for audit trail
+            verifications = request.env['payment.qr.verification'].sudo().search([
+                ('payment_id', '=', payment.id)
+            ], limit=10, order='verification_date desc')
+            
+            context = {
+                'payment': payment,
+                'verification_status': status_info['status'],
+                'status_message': status_info['message'],
+                'status_class': status_info['css_class'],
+                'verifications': verifications,
+                'company': payment.company_id,
+                'verification_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'qr_verification_count': len(verifications),
+                'verification_code': verification_result.get('verification_code'),
+                'access_token_verified': True,
+            }
+            
+            return request.render('payment_account_enhanced.payment_verification_success', context)
+            
+        except Exception as e:
+            _logger.error(f"Error in token payment verification for token {access_token}: {e}")
+            return request.render('payment_account_enhanced.payment_verification_error', {
+                'error_message': _('Verification Error'),
+                'error_details': _('An error occurred while verifying the payment. Please try again later.'),
+            })
+
+    @http.route('/payment/verify/token/<string:access_token>', type='json', auth='public', website=True, csrf=False)
+    def verify_payment_token_json(self, access_token, **kwargs):
+        """JSON API endpoint for payment verification by access token"""
+        try:
+            # Use QR verification model to verify payment
+            verification_result = request.env['payment.qr.verification'].sudo().verify_payment_by_token(access_token)
+            
+            if verification_result.get('status') != 'success':
+                return {
+                    'success': False,
+                    'error': 'verification_failed',
+                    'message': verification_result.get('message', _('Token verification failed'))
+                }
+            
+            # Get payment data from verification result
+            payment_data = verification_result.get('payment_data', {})
+            
+            return {
+                'success': True,
+                'payment_data': payment_data,
+                'verification_code': verification_result.get('verification_code'),
+                'verification_time': datetime.datetime.now().isoformat(),
+                'access_token_verified': True,
+            }
+            
+        except Exception as e:
+            _logger.error(f"Error in JSON token payment verification for token {access_token}: {e}")
+            return {
+                'success': False,
+                'error': 'verification_error',
+                'message': _('An error occurred during token verification')
+            }
+
     @http.route('/payment/bulk-verify', type='http', auth='user', website=True, methods=['GET', 'POST'])
     def bulk_verify_payments(self, **kwargs):
         """Bulk verification page for authorized users"""
-        if not request.env.user.has_group('account_payment_final.group_payment_verifier'):
+        if not request.env.user.has_group('payment_account_enhanced.group_payment_verifier'):
             raise AccessError(_('You do not have permission to access bulk verification'))
         
         if request.httprequest.method == 'POST':

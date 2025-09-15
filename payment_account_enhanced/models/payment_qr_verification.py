@@ -38,6 +38,13 @@ class PaymentQRVerification(models.Model):
         help="Unique verification code for this QR scan"
     )
 
+    access_token = fields.Char(
+        string='Access Token',
+        index=True,
+        copy=False,
+        help="Payment access token used for verification"
+    )
+
     verification_date = fields.Datetime(
         string='Verification Date',
         required=True,
@@ -200,6 +207,76 @@ class PaymentQRVerification(models.Model):
             'recent_count': recent_count,
             'total_count': total_count
         }
+
+    @api.model
+    def verify_payment_by_token(self, access_token):
+        """Verify payment using access token and create verification record"""
+        if not access_token:
+            return {'status': 'error', 'message': 'Access token is required'}
+        
+        # Find payment by access token
+        payment = self.env['account.payment'].search([('access_token', '=', access_token)], limit=1)
+        if not payment:
+            return {'status': 'error', 'message': 'Invalid access token or payment not found'}
+        
+        # Generate unique verification code
+        import uuid
+        import time
+        
+        # Try sequence first, then use timestamp-based unique code
+        verification_code = self.env['ir.sequence'].next_by_code('payment.qr.verification')
+        if not verification_code:
+            # Generate truly unique code using timestamp and UUID
+            timestamp = str(int(time.time() * 1000))  # milliseconds
+            unique_suffix = str(uuid.uuid4().hex)[:8].upper()
+            verification_code = f'VER-{timestamp[-6:]}-{unique_suffix}'
+        
+        # Ensure uniqueness by checking if code already exists
+        max_attempts = 10
+        attempt = 0
+        while self.search([('verification_code', '=', verification_code)]) and attempt < max_attempts:
+            attempt += 1
+            timestamp = str(int(time.time() * 1000))
+            unique_suffix = str(uuid.uuid4().hex)[:8].upper()
+            verification_code = f'VER-{timestamp[-6:]}-{unique_suffix}-{attempt}'
+        
+        # Create verification record
+        verification = self.create({
+            'payment_id': payment.id,
+            'verification_code': verification_code,
+            'access_token': access_token,
+            'verification_status': 'success',
+            'verification_method': 'qr_scan',
+            'additional_data': json.dumps({
+                'payment_verified': True,
+                'verification_timestamp': datetime.datetime.now().isoformat(),
+                'voucher_number': payment.voucher_number,
+            })
+        })
+        
+        return {
+            'status': 'success',
+            'message': 'Payment verification successful',
+            'verification_code': verification_code,
+            'payment_data': {
+                'voucher_number': payment.voucher_number,
+                'amount': payment.amount,
+                'currency': payment.currency_id.name,
+                'partner': payment.partner_id.name if payment.partner_id else '',
+                'date': str(payment.date) if payment.date else '',
+                'approval_state': payment.approval_state,
+                'company': payment.company_id.name,
+            }
+        }
+
+    @api.model
+    def validate_access_token(self, access_token):
+        """Validate access token without creating verification record"""
+        if not access_token:
+            return False
+        
+        payment = self.env['account.payment'].search([('access_token', '=', access_token)], limit=1)
+        return bool(payment)
 
     # ============================================================================
     # CONSTRAINTS AND SECURITY

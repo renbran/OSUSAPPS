@@ -39,7 +39,7 @@
         'python': ['qrcode', 'Pillow']
     },
     'data': [
-        # Security (Load first)
+        # Security (Load first) - Use the main security file
         'security/payment_security.xml',
         'security/ir.model.access.csv',
         
@@ -47,21 +47,20 @@
         'data/sequence.xml',
         'data/mail_template_data.xml',
         
-        # Views
+        # Reports (Load early for external ID availability)
+        'reports/payment_voucher_report.xml',
+        
+        # Views (Load actions before menus that reference them)
         'views/account_payment_views.xml',
         'views/account_move_views.xml',
         'views/payment_approval_history_views.xml',
         'views/payment_qr_verification_views.xml',
         'views/payment_workflow_stage_views.xml',
-        'views/res_config_settings_views.xml',
         'views/website_verification_templates.xml',
         'views/payment_dashboard_views.xml',
-        'reports/payment_voucher_template_fixed.xml',
         
-        # Reports
-        'reports/payment_voucher_report.xml',
-        'reports/payment_voucher_template.xml',
-        
+        # Menus (Load after views to ensure actions exist)
+        'views/menus.xml',
         
         # Wizards
         'wizards/register_payment.xml',
@@ -69,19 +68,11 @@
     'demo': [],
     'assets': {
         'web.assets_backend': [
-            'payment_account_enhanced/static/src/css/osus_backend.css',
-            'payment_account_enhanced/static/src/css/osus_report.css',
-            'payment_account_enhanced/static/src/css/payment_voucher_style.css',
-            'payment_account_enhanced/static/src/scss/payment_voucher_report.scss',
-            # Add JS widgets/components if present
-            # 'payment_account_enhanced/static/src/js/payment_widget.js',
+            'payment_account_enhanced/static/src/css/payment_enhanced.css',
         ],
         'web.assets_frontend': [
-            # Add portal/website CSS/SCSS if present
-            # 'payment_account_enhanced/static/src/css/verification_portal.css',
+            'payment_account_enhanced/static/src/css/payment_enhanced.css',
         ],
-        # QWeb templates (if any)
-        # 'payment_account_enhanced/static/src/xml/payment_templates.xml',
     },
     'installable': True,
     'application': True,

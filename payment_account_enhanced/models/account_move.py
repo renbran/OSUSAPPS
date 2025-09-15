@@ -256,8 +256,8 @@ class AccountMove(models.Model):
     def _check_approval_permissions(self, stage):
         """Check if user has permission for specific approval stage"""
         permission_map = {
-            'review': ['account.group_account_user', 'account_payment_final.group_payment_reviewer'],
-            'approve': ['account.group_account_manager', 'account_payment_final.group_payment_approver']
+            'review': ['account.group_account_user', 'payment_account_enhanced.group_payment_reviewer'],
+            'approve': ['account.group_account_manager', 'payment_account_enhanced.group_payment_approver']
         }
         
         required_groups = permission_map.get(stage, [])
@@ -266,12 +266,12 @@ class AccountMove(models.Model):
     def _check_posting_permissions(self):
         """Check if user has permission to post invoices/bills"""
         return (self.env.user.has_group('account.group_account_manager') or 
-               self.env.user.has_group('account_payment_final.group_payment_poster'))
+               self.env.user.has_group('payment_account_enhanced.group_payment_poster'))
 
     def _can_bypass_approval(self):
         """Check if user can bypass approval workflow"""
         return (self.env.user.has_group('account.group_account_manager') or
-                self.env.user.has_group('account_payment_final.group_payment_manager'))
+                self.env.user.has_group('payment_account_enhanced.group_payment_manager'))
 
     def _post_approval_message(self, action):
         """Post message to chatter about approval action"""
