@@ -103,7 +103,7 @@ class PaymentVerificationController(http.Controller):
             }
             
         except Exception as e:
-            _logger.error("Error in JSON payment verification for payment_id %s: %s", payment_id, e)
+            _logger.error(f"Error in JSON payment verification for payment_id {payment_id}: {e}")
             return {
                 'success': False,
                 'error': 'verification_error',
@@ -273,7 +273,7 @@ class PaymentVerificationController(http.Controller):
             return verification_record
             
         except Exception as e:
-            _logger.error("Error logging verification attempt: %s", e)
+            _logger.error(f"Error logging verification attempt: {e}")
             return None
 
     def _get_payment_status_info(self, payment):
