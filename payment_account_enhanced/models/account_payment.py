@@ -260,16 +260,35 @@ class AccountPayment(models.Model):
                     record.qr_code = False
             else:
                 record.qr_code = False
-                if not record.access_token and record.id:
-                    # Generate access token if missing
-                    record.access_token = record._generate_access_token()
+                # Don't auto-generate access token here to avoid recursion
+                # Access token should be generated separately via action_create_access_token
 
     def action_regenerate_qr_code(self):
         """Force regenerate QR code for this payment"""
         self.ensure_one()
         if not self.access_token:
-            self.access_token = self._generate_access_token()
+            # Generate access token first, outside of compute method to avoid recursion
+            self.write({'access_token': self._generate_access_token()})
         self._compute_qr_code()
+        return True
+
+    def action_ensure_access_token_and_qr(self):
+        """Ensure payment has both access token and QR code"""
+        self.ensure_one()
+        updated = False
+        
+        # Step 1: Ensure access token exists
+        if not self.access_token:
+            self.write({'access_token': self._generate_access_token()})
+            updated = True
+            
+        # Step 2: Force QR code regeneration
+        self._compute_qr_code()
+        
+        # Step 3: Commit if we made changes
+        if updated:
+            self.env.cr.commit()
+            
         return True
 
     @api.model
