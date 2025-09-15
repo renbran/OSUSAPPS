@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dashboard Action -->
+    <record id="action_sales_dashboard" model="ir.actions.act_window">
+        <field name="name">Premium Sales Dashboard</field>
+        <field name="res_model">sales.dashboard</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="target">current</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Premium Sales Dashboard!
+            </p>
+            <p>
+                Track your sales performance with real-time analytics, 
+                agent commissions, and comprehensive reporting.
+            </p>
+        </field>
+    </record>
+
+    <!-- Dashboard Kanban Action -->
+    <record id="action_sales_dashboard_kanban" model="ir.actions.act_window">
+        <field name="name">Sales Dashboard Overview</field>
+        <field name="res_model">sales.dashboard</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="view_sales_dashboard_kanban"/>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Top Performers Action -->
+    <record id="action_sales_top_performers" model="ir.actions.act_window">
+        <field name="name">Top Sales Performers</field>
+        <field name="res_model">sales.dashboard.performer</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+        <field name="context">{'search_default_group_by_dashboard': 1}</field>
+    </record>
+
+    <!-- Main Menu -->
+    <menuitem id="menu_sales_dashboard_main"
+              name="Premium Sales Dashboard"
+              parent="sale.sale_menu_root"
+              sequence="2"/>
+
+    <!-- Dashboard Sub-menu -->
+    <menuitem id="menu_sales_dashboard"
+              name="Dashboard Overview"
+              parent="menu_sales_dashboard_main"
+              action="action_sales_dashboard_kanban"
+              sequence="1"/>
+
+    <!-- Dashboard Management Sub-menu -->
+    <menuitem id="menu_sales_dashboard_management"
+              name="Dashboard Management"
+              parent="menu_sales_dashboard_main"
+              action="action_sales_dashboard"
+              sequence="2"/>
+
+    <!-- Top Performers Sub-menu -->
+    <menuitem id="menu_sales_top_performers"
+              name="Top Performers"
+              parent="menu_sales_dashboard_main"
+              action="action_sales_top_performers"
+              sequence="3"/>
+
+    <!-- Reports Sub-menu -->
+    <menuitem id="menu_sales_dashboard_reports"
+              name="Reports"
+              parent="menu_sales_dashboard_main"
+              sequence="4"/>
+</odoo>

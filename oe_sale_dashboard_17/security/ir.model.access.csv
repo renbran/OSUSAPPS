@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_sales_dashboard_user,Sales Dashboard User,sale.model_sale_order,base.group_user,1,0,0,0
-access_sales_dashboard_manager,Sales Dashboard Manager,sale.model_sale_order,sales_team.group_sale_manager,1,1,1,1
+access_sales_dashboard_user,sales.dashboard.user,model_sales_dashboard,sales_team.group_sale_salesman,1,1,1,0
+access_sales_dashboard_manager,sales.dashboard.manager,model_sales_dashboard,sales_team.group_sale_manager,1,1,1,1
+access_sales_dashboard_performer_user,sales.dashboard.performer.user,model_sales_dashboard_performer,sales_team.group_sale_salesman,1,0,0,0
+access_sales_dashboard_performer_manager,sales.dashboard.performer.manager,model_sales_dashboard_performer,sales_team.group_sale_manager,1,1,1,1
