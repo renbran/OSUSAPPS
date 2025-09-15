@@ -98,6 +98,11 @@
                                         <field name="voucher_number" optional="show"/>
                                 </xpath>
 
+                                <!-- Add amount field for executive decorations -->
+                                <xpath expr="//field[@name='approval_state']" position="after">
+                                        <field name="amount" optional="show"/>
+                                </xpath>
+
                         </field>
                 </record>
 
