@@ -3,8 +3,8 @@
         <data>
 
                 <!-- Enhanced Payment Form View with Direct Override -->
-                <record id="view_account_payment_form_enhanced" model="ir.ui.view">
-                        <field name="name">account.payment.form.enhanced</field>
+                <record id="view_account_payment_form_enhanced_final" model="ir.ui.view">
+                        <field name="name">account.payment.form.enhanced.final</field>
                         <field name="model">account.payment</field>
                         <field name="inherit_id" ref="account.view_account_payment_form"/>
                         <field name="priority" eval="99"/>
@@ -118,7 +118,7 @@
                 <record id="view_account_payment_form_action" model="ir.actions.act_window.view">
                         <field name="sequence" eval="2"/>
                         <field name="view_mode">form</field>
-                        <field name="view_id" ref="view_account_payment_form_enhanced"/>
+                        <field name="view_id" ref="view_account_payment_form_enhanced_final"/>
                         <field name="act_window_id" ref="action_account_payment_tree"/>
                 </record>
 
