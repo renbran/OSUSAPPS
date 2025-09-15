@@ -20,6 +20,10 @@ services:
       HOST: db
       USER: odoo
       PASSWORD: odoo
+      # SSL Fix for wkhtmltopdf
+      OPENSSL_CONF: /etc/ssl/
+      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+      SSL_CERT_DIR: /etc/ssl/certs
     volumes:
       - ./commission_ax:/mnt/extra-addons/commission_ax
       - ./commission_partner_statement:/mnt/extra-addons/commission_partner_statement

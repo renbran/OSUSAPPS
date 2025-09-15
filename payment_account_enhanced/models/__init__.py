@@ -8,3 +8,4 @@ from . import payment_workflow_stage
 from . import res_company
 from . import res_partner
 from . import payment_dashboard
+from . import report_ssl_fix
