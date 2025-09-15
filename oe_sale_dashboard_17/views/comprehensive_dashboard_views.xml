@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Enhanced Sales Dashboard Kanban View -->
+    <record id="view_sales_dashboard_kanban" model="ir.ui.view">
+        <field name="name">sales.dashboard.kanban</field>
+        <field name="model">sales.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" js_class="dashboard_kanban">
+                <field name="name"/>
+                <field name="total_revenue"/>
+                <field name="total_orders"/>
+                <field name="avg_order_value"/>
+                <field name="conversion_rate"/>
+                <field name="revenue_growth"/>
+                <field name="orders_growth"/>
+                <field name="currency_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_area o_dashboard_card">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <i class="fa fa-line-chart"/> <field name="name"/>
+                                    </div>
+                                    <div class="o_secondary">
+                                        <i class="fa fa-calendar"/> <field name="date_from"/> - <field name="date_to"/>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="container o_kanban_card_content">
+                                <!-- Sales Metrics Row -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-primary">
+                                                <field name="total_revenue" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Total Revenue</span>
+                                            <span class="o_kpi_growth text-success" t-if="record.revenue_growth.raw_value > 0">
+                                                ↗ <field name="revenue_growth"/>%
+                                            </span>
+                                            <span class="o_kpi_growth text-danger" t-if="record.revenue_growth.raw_value &lt; 0">
+                                                ↘ <field name="revenue_growth"/>%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-info">
+                                                <field name="total_orders"/>
+                                            </span>
+                                            <span class="o_kpi_label">Total Orders</span>
+                                            <span class="o_kpi_growth text-success" t-if="record.orders_growth.raw_value > 0">
+                                                ↗ <field name="orders_growth"/>%
+                                            </span>
+                                            <span class="o_kpi_growth text-danger" t-if="record.orders_growth.raw_value &lt; 0">
+                                                ↘ <field name="orders_growth"/>%
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Performance Metrics Row -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-warning">
+                                                <field name="avg_order_value" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Avg Order Value</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-purple">
+                                                <field name="conversion_rate"/>%
+                                            </span>
+                                            <span class="o_kpi_label">Conversion Rate</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button class="btn btn-primary btn-sm" name="action_view_sales_details" type="object">
+                                            <i class="fa fa-line-chart"/> View Details
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm ml-2" name="action_view_top_performers" type="object">
+                                            <i class="fa fa-trophy"/> Top Performers
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Invoice Analytics Kanban View -->
+    <record id="view_invoice_analytics_kanban" model="ir.ui.view">
+        <field name="name">sales.dashboard.invoice.kanban</field>
+        <field name="model">sales.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" js_class="dashboard_kanban">
+                <field name="name"/>
+                <field name="total_invoiced"/>
+                <field name="total_paid"/>
+                <field name="total_outstanding"/>
+                <field name="uninvoiced_amount"/>
+                <field name="currency_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_area o_dashboard_card">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <i class="fa fa-file-text-o"/> Invoice &amp; Payment Analytics
+                                    </div>
+                                    <div class="o_secondary">
+                                        <i class="fa fa-calendar"/> <field name="date_from"/> - <field name="date_to"/>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="container o_kanban_card_content">
+                                <!-- Invoice Metrics Row -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-primary">
+                                                <field name="total_invoiced" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Total Invoiced</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-success">
+                                                <field name="total_paid" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Payments Received</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Outstanding &amp; Uninvoiced Row -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-warning">
+                                                <field name="total_outstanding" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Outstanding</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-info">
+                                                <field name="uninvoiced_amount" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Uninvoiced Sales</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Rate Progress Bar -->
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="o_dashboard_progress">
+                                            <span class="o_progress_label">Payment Rate</span>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     t-att-style="'width: ' + Math.round((record.total_paid.raw_value / record.total_invoiced.raw_value * 100) || 0) + '%'"
+                                                     t-att-aria-valuenow="Math.round((record.total_paid.raw_value / record.total_invoiced.raw_value * 100) || 0)"
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                    <t t-esc="Math.round((record.total_paid.raw_value / record.total_invoiced.raw_value * 100) || 0)"/>%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button class="btn btn-primary btn-sm" name="action_view_invoice_details" type="object">
+                                            <i class="fa fa-file-text-o"/> Invoice Details
+                                        </button>
+                                        <button class="btn btn-success btn-sm ml-2" name="action_view_payment_details" type="object">
+                                            <i class="fa fa-money"/> Payment Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Balance Analytics Kanban View -->
+    <record id="view_balance_analytics_kanban" model="ir.ui.view">
+        <field name="name">sales.dashboard.balance.kanban</field>
+        <field name="model">sales.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" js_class="dashboard_kanban">
+                <field name="name"/>
+                <field name="total_receivables"/>
+                <field name="total_payables"/>
+                <field name="net_balance"/>
+                <field name="overdue_amount"/>
+                <field name="currency_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_area o_dashboard_card">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <i class="fa fa-balance-scale"/> Balance &amp; Receivables Analytics
+                                    </div>
+                                    <div class="o_secondary">
+                                        <i class="fa fa-calendar"/> <field name="date_from"/> - <field name="date_to"/>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="container o_kanban_card_content">
+                                <!-- Balance Metrics Row -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-success">
+                                                <field name="total_receivables" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Total Receivables</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-danger">
+                                                <field name="total_payables" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Total Payables</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Net Balance &amp; Overdue Row -->
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value" t-att-class="record.net_balance.raw_value >= 0 ? 'text-success' : 'text-danger'">
+                                                <field name="net_balance" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Net Balance</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_dashboard_kpi">
+                                            <span class="o_kpi_value text-warning">
+                                                <field name="overdue_amount" widget="monetary"/>
+                                            </span>
+                                            <span class="o_kpi_label">Overdue Amount</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Health Indicator -->
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <div class="o_dashboard_health">
+                                            <span class="o_health_label">Financial Health</span>
+                                            <div class="o_health_indicator">
+                                                <span class="badge badge-success" t-if="record.net_balance.raw_value > 0 and record.overdue_amount.raw_value == 0">
+                                                    <i class="fa fa-thumbs-up"/> Excellent
+                                                </span>
+                                                <span class="badge badge-warning" t-elif="record.net_balance.raw_value > 0 and record.overdue_amount.raw_value > 0">
+                                                    <i class="fa fa-exclamation-triangle"/> Good - Monitor Overdue
+                                                </span>
+                                                <span class="badge badge-danger" t-else="">
+                                                    <i class="fa fa-thumbs-down"/> Needs Attention
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button class="btn btn-primary btn-sm" name="action_view_receivables" type="object">
+                                            <i class="fa fa-money"/> View Receivables
+                                        </button>
+                                        <button class="btn btn-warning btn-sm ml-2" name="action_view_overdue" type="object">
+                                            <i class="fa fa-clock-o"/> Overdue Items
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Top Performers Kanban View -->
+    <record id="view_performer_revenue_kanban" model="ir.ui.view">
+        <field name="name">sales.dashboard.performer.kanban</field>
+        <field name="model">sales.dashboard.performer</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard">
+                <field name="partner_id"/>
+                <field name="rank"/>
+                <field name="total_revenue"/>
+                <field name="total_orders"/>
+                <field name="total_commission"/>
+                <field name="avg_order_value"/>
+                <field name="currency_id"/>
+                
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_area o_performer_card">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <span class="o_rank_badge" t-att-class="'rank-' + record.rank.raw_value">
+                                            #<field name="rank"/>
+                                        </span>
+                                        <field name="partner_id"/>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="container o_kanban_card_content">
+                                <!-- Revenue &amp; Orders Row -->
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <div class="o_performer_metric">
+                                            <span class="o_metric_value text-primary">
+                                                <field name="total_revenue" widget="monetary"/>
+                                            </span>
+                                            <span class="o_metric_label">Revenue</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_performer_metric">
+                                            <span class="o_metric_value text-info">
+                                                <field name="total_orders"/>
+                                            </span>
+                                            <span class="o_metric_label">Orders</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- AOV &amp; Commission Row -->
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="o_performer_metric">
+                                            <span class="o_metric_value text-warning">
+                                                <field name="avg_order_value" widget="monetary"/>
+                                            </span>
+                                            <span class="o_metric_label">AOV</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="o_performer_metric">
+                                            <span class="o_metric_value text-success">
+                                                <field name="total_commission" widget="monetary"/>
+                                            </span>
+                                            <span class="o_metric_label">Commission</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Enhanced Tree Views -->
+    <record id="view_sales_dashboard_tree" model="ir.ui.view">
+        <field name="name">sales.dashboard.tree</field>
+        <field name="model">sales.dashboard</field>
+        <field name="arch" type="xml">
+            <tree string="Sales Dashboard">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_revenue" widget="monetary"/>
+                <field name="total_orders"/>
+                <field name="total_invoiced" widget="monetary"/>
+                <field name="total_paid" widget="monetary"/>
+                <field name="total_outstanding" widget="monetary"/>
+                <field name="net_balance" widget="monetary"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_performer_tree" model="ir.ui.view">
+        <field name="name">sales.dashboard.performer.tree</field>
+        <field name="model">sales.dashboard.performer</field>
+        <field name="arch" type="xml">
+            <tree string="Top Performers" editable="false" decoration-bf="rank &lt;= 3">
+                <field name="rank"/>
+                <field name="partner_id"/>
+                <field name="total_revenue" widget="monetary"/>
+                <field name="total_orders"/>
+                <field name="avg_order_value" widget="monetary"/>
+                <field name="total_commission" widget="monetary"/>
+                <field name="dashboard_id"/>
+            </tree>
+        </field>
+    </record>
+
+</odoo>

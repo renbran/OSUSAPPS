@@ -1,0 +1,371 @@
+/* Enhanced Sales Dashboard Styles */
+
+/* Dashboard Card Base Styling */
+.o_dashboard_card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: none;
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.o_dashboard_card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Card Header Styling */
+.o_kanban_card_header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    margin: 0;
+}
+
+.o_kanban_card_header_title .o_primary {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.o_kanban_card_header_title .o_secondary {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+/* KPI Styling */
+.o_dashboard_kpi {
+    text-align: center;
+    padding: 15px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.o_dashboard_kpi:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.02);
+}
+
+.o_kpi_value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    line-height: 1.2;
+}
+
+.o_kpi_label {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.o_kpi_growth {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 3px;
+}
+
+/* Color Variations for KPIs */
+.text-purple {
+    color: #6f42c1 !important;
+}
+
+/* Progress Bar Styling */
+.o_dashboard_progress {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+}
+
+.o_progress_label {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.progress {
+    height: 12px;
+    border-radius: 10px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+    font-size: 10px;
+    line-height: 12px;
+    text-align: center;
+}
+
+/* Health Indicator */
+.o_dashboard_health {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+}
+
+.o_health_label {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.o_health_indicator .badge {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+/* Performer Card Styling */
+.o_performer_card {
+    background: linear-gradient(135deg, #fff 0%, #f1f3f4 100%);
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.o_performer_card .o_kanban_card_header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Rank Badge */
+.o_rank_badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 12px;
+    margin-right: 8px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.o_rank_badge.rank-1 {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #333;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.o_rank_badge.rank-2 {
+    background: linear-gradient(135deg, #c0c0c0 0%, #e5e5e5 100%);
+    color: #333;
+    box-shadow: 0 2px 8px rgba(192, 192, 192, 0.3);
+}
+
+.o_rank_badge.rank-3 {
+    background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
+}
+
+/* Performer Metrics */
+.o_performer_metric {
+    text-align: center;
+    padding: 10px 5px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.o_performer_metric:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.02);
+}
+
+.o_metric_value {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    line-height: 1.2;
+}
+
+.o_metric_label {
+    display: block;
+    font-size: 10px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* Button Styling */
+.o_dashboard_card .btn {
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 12px;
+    padding: 6px 15px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.o_dashboard_card .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .o_dashboard_card {
+        margin-bottom: 15px;
+    }
+    
+    .o_kpi_value {
+        font-size: 20px;
+    }
+    
+    .o_metric_value {
+        font-size: 16px;
+    }
+    
+    .o_kanban_card_header {
+        padding: 12px 15px;
+    }
+    
+    .o_dashboard_kpi,
+    .o_performer_metric {
+        padding: 12px 8px;
+    }
+}
+
+/* Chart Container Styling */
+.o_dashboard_chart_container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.o_chart_title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Animation Classes */
+.fadeInUp {
+    animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dashboard Kanban Specific */
+.o_kanban_dashboard .o_kanban_record {
+    width: 100%;
+    max-width: 400px;
+    margin: 10px;
+}
+
+/* Tree View Enhancements */
+.o_list_view .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.o_list_view tr[decoration-bf] {
+    font-weight: bold;
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+/* Loading Animation */
+.o_dashboard_loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+.o_loading_spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Card Hover Effects */
+.o_dashboard_card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.o_dashboard_card:hover::before {
+    opacity: 1;
+}
+
+/* Menu Item Styling */
+.o_main_navbar .dropdown-menu .dropdown-item {
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.o_main_navbar .dropdown-menu .dropdown-item:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Success/Error States */
+.o_dashboard_success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin: 10px 0;
+}
+
+.o_dashboard_warning {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin: 10px 0;
+}
+
+.o_dashboard_danger {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin: 10px 0;
+}

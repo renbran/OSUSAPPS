@@ -9,7 +9,7 @@ _logger = logging.getLogger(__name__)
 
 class SalesDashboard(models.Model):
     _name = 'sales.dashboard'
-    _description = 'Premium Sales Dashboard'
+    _description = 'Comprehensive Sales Dashboard'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'create_date desc'
 
@@ -39,6 +39,18 @@ class SalesDashboard(models.Model):
     total_orders = fields.Integer(string='Total Orders', compute='_compute_kpis', store=True)
     avg_order_value = fields.Monetary(string='Average Order Value', compute='_compute_kpis', store=True)
     conversion_rate = fields.Float(string='Conversion Rate (%)', compute='_compute_kpis', store=True)
+    
+    # Invoice & Payment KPIs
+    total_invoiced = fields.Monetary(string='Total Invoiced', compute='_compute_invoice_kpis', store=True)
+    total_paid = fields.Monetary(string='Total Payments Received', compute='_compute_invoice_kpis', store=True)
+    total_outstanding = fields.Monetary(string='Outstanding Invoices', compute='_compute_invoice_kpis', store=True)
+    uninvoiced_amount = fields.Monetary(string='Uninvoiced Sales', compute='_compute_invoice_kpis', store=True)
+    
+    # Balance Analytics
+    total_receivables = fields.Monetary(string='Total Receivables', compute='_compute_balance_kpis', store=True)
+    total_payables = fields.Monetary(string='Total Payables', compute='_compute_balance_kpis', store=True)
+    net_balance = fields.Monetary(string='Net Balance', compute='_compute_balance_kpis', store=True)
+    overdue_amount = fields.Monetary(string='Overdue Amount', compute='_compute_balance_kpis', store=True)
     
     # Growth Metrics
     revenue_growth = fields.Float(string='Revenue Growth (%)', compute='_compute_growth', store=True)
@@ -81,16 +93,18 @@ class SalesDashboard(models.Model):
             if record.sales_team_id:
                 domain.append(('team_id', '=', record.sales_team_id.id))
             if record.agent1_partner_id:
-                domain.append(('agent1_partner_id', '=', record.agent1_partner_id.id))
+                # Check if agent field exists
+                if 'agent1_partner_id' in self.env['sale.order']._fields:
+                    domain.append(('agent1_partner_id', '=', record.agent1_partner_id.id))
             
             # Get sale orders
             orders = self.env['sale.order'].search(domain)
             
-            # Calculate KPIs using correct field names
+            # Calculate KPIs using safe field access
             record.total_orders = len(orders)
             
-            # Use sale_value or amount_total for revenue calculation
-            record.total_revenue = sum(orders.mapped('sale_value') or orders.mapped('amount_total'))
+            # Use amount_total as the primary field
+            record.total_revenue = sum(orders.mapped('amount_total'))
             
             # Calculate average order value
             record.avg_order_value = record.total_revenue / record.total_orders if record.total_orders > 0 else 0
@@ -101,6 +115,378 @@ class SalesDashboard(models.Model):
             all_orders = self.env['sale.order'].search(all_orders_domain)
             total_quotes = len(all_orders)
             record.conversion_rate = (record.total_orders / total_quotes * 100) if total_quotes > 0 else 0
+    
+    @api.depends('date_from', 'date_to', 'sales_team_id')
+    def _compute_invoice_kpis(self):
+        """Compute invoice and payment KPIs"""
+        for record in self:
+            # Invoice analytics
+            invoice_domain = [
+                ('invoice_date', '>=', record.date_from),
+                ('invoice_date', '<=', record.date_to),
+                ('move_type', 'in', ['out_invoice', 'out_refund']),
+                ('state', '=', 'posted')
+            ]
+            
+            if record.sales_team_id:
+                # Link invoices through sales orders if possible
+                so_domain = [('team_id', '=', record.sales_team_id.id)]
+                sales_orders = self.env['sale.order'].search(so_domain)
+                if sales_orders:
+                    invoice_domain.append(('partner_id', 'in', sales_orders.mapped('partner_id').ids))
+            
+            invoices = self.env['account.move'].search(invoice_domain)
+            record.total_invoiced = sum(invoices.mapped('amount_total'))
+            
+            # Payment analytics
+            paid_invoices = invoices.filtered(lambda inv: inv.payment_state == 'paid')
+            record.total_paid = sum(paid_invoices.mapped('amount_total'))
+            
+            # Outstanding invoices
+            outstanding_invoices = invoices.filtered(lambda inv: inv.payment_state in ['not_paid', 'partial'])
+            record.total_outstanding = sum(outstanding_invoices.mapped('amount_residual'))
+            
+            # Uninvoiced sales orders
+            uninvoiced_domain = [
+                ('date_order', '>=', record.date_from),
+                ('date_order', '<=', record.date_to),
+                ('state', 'in', ['sale', 'done']),
+                ('invoice_status', 'in', ['to invoice', 'no'])
+            ]
+            
+            if record.sales_team_id:
+                uninvoiced_domain.append(('team_id', '=', record.sales_team_id.id))
+            
+            uninvoiced_orders = self.env['sale.order'].search(uninvoiced_domain)
+            record.uninvoiced_amount = sum(uninvoiced_orders.mapped('amount_total'))
+    
+    @api.depends('date_from', 'date_to', 'sales_team_id')
+    def _compute_balance_kpis(self):
+        """Compute balance and receivables KPIs"""
+        for record in self:
+            # Get partners related to sales team if specified
+            partner_domain = []
+            if record.sales_team_id:
+                so_domain = [('team_id', '=', record.sales_team_id.id)]
+                sales_orders = self.env['sale.order'].search(so_domain)
+                if sales_orders:
+                    partner_domain = [('id', 'in', sales_orders.mapped('partner_id').ids)]
+            
+            # Receivables analysis
+            receivable_domain = [
+                ('account_id.account_type', '=', 'asset_receivable'),
+                ('reconciled', '=', False),
+                ('company_id', '=', self.env.company.id)
+            ]
+            
+            if partner_domain:
+                receivable_domain.extend(partner_domain)
+            
+            receivable_lines = self.env['account.move.line'].search(receivable_domain)
+            record.total_receivables = sum(receivable_lines.mapped('amount_residual'))
+            
+            # Payables analysis  
+            payable_domain = [
+                ('account_id.account_type', '=', 'liability_payable'),
+                ('reconciled', '=', False),
+                ('company_id', '=', self.env.company.id)
+            ]
+            
+            if partner_domain:
+                payable_domain.extend(partner_domain)
+            
+            payable_lines = self.env['account.move.line'].search(payable_domain)
+            record.total_payables = sum(payable_lines.mapped('amount_residual'))
+            
+            # Net balance
+            record.net_balance = record.total_receivables - record.total_payables
+            
+            # Overdue analysis
+            today = fields.Date.today()
+            overdue_domain = receivable_domain + [
+                ('date_maturity', '<', today)
+            ]
+            overdue_lines = self.env['account.move.line'].search(overdue_domain)
+            record.overdue_amount = sum(overdue_lines.mapped('amount_residual'))
+    
+    @api.depends('date_from', 'date_to', 'sales_team_id')
+    def _compute_top_performers(self):
+        """Compute top performing agents and revenue generators"""
+        TopPerformer = self.env['sales.dashboard.performer']
+        for record in self:
+            # Clear existing performers
+            record.top_performers_ids.unlink()
+            
+            domain = [
+                ('date_order', '>=', record.date_from),
+                ('date_order', '<=', record.date_to),
+                ('state', 'in', ['sale', 'done'])
+            ]
+            
+            if record.sales_team_id:
+                domain.append(('team_id', '=', record.sales_team_id.id))
+            
+            # Check if agent field exists
+            if 'agent1_partner_id' in self.env['sale.order']._fields:
+                domain.append(('agent1_partner_id', '!=', False))
+            
+            # Get all orders
+            orders = self.env['sale.order'].search(domain)
+            
+            # Analyze by sales person or agent
+            agent_performance = {}
+            for order in orders:
+                agent = None
+                commission = 0
+                
+                # Try different agent fields
+                if hasattr(order, 'agent1_partner_id') and order.agent1_partner_id:
+                    agent = order.agent1_partner_id
+                    commission = getattr(order, 'agent1_amount', 0) or 0
+                elif hasattr(order, 'user_id') and order.user_id.partner_id:
+                    agent = order.user_id.partner_id
+                    commission = 0
+                
+                if agent:
+                    if agent.id not in agent_performance:
+                        agent_performance[agent.id] = {
+                            'partner': agent,
+                            'total_revenue': 0,
+                            'total_orders': 0,
+                            'total_commission': 0
+                        }
+                    
+                    agent_performance[agent.id]['total_revenue'] += order.amount_total
+                    agent_performance[agent.id]['total_orders'] += 1
+                    agent_performance[agent.id]['total_commission'] += commission
+            
+            # Create top performer records sorted by revenue
+            sorted_performers = sorted(agent_performance.values(), 
+                                     key=lambda x: x['total_revenue'], reverse=True)
+            
+            for i, performer_data in enumerate(sorted_performers[:10]):  # Top 10
+                TopPerformer.create({
+                    'dashboard_id': record.id,
+                    'partner_id': performer_data['partner'].id,
+                    'rank': i + 1,
+                    'total_revenue': performer_data['total_revenue'],
+                    'total_orders': performer_data['total_orders'],
+                    'total_commission': performer_data['total_commission'],
+                    'avg_order_value': performer_data['total_revenue'] / performer_data['total_orders'] if performer_data['total_orders'] > 0 else 0
+                })
+    
+    # Helper methods for dashboard data
+    def get_sales_trend_data(self):
+        """Get sales trend data for charts"""
+        self.ensure_one()
+        
+        # Calculate daily sales for the period
+        daily_sales = {}
+        current_date = self.date_from
+        
+        while current_date <= self.date_to:
+            domain = [
+                ('date_order', '=', current_date),
+                ('state', 'in', ['sale', 'done'])
+            ]
+            
+            if self.sales_team_id:
+                domain.append(('team_id', '=', self.sales_team_id.id))
+            
+            orders = self.env['sale.order'].search(domain)
+            daily_sales[current_date.strftime('%Y-%m-%d')] = sum(orders.mapped('amount_total'))
+            current_date += timedelta(days=1)
+        
+        return daily_sales
+    
+    def get_invoice_payment_data(self):
+        """Get invoice vs payment data for charts"""
+        self.ensure_one()
+        
+        # Monthly invoice vs payment data
+        monthly_data = {}
+        start_date = self.date_from.replace(day=1)
+        
+        while start_date <= self.date_to:
+            month_key = start_date.strftime('%Y-%m')
+            
+            # Get month end
+            if start_date.month == 12:
+                month_end = start_date.replace(year=start_date.year + 1, month=1) - timedelta(days=1)
+            else:
+                month_end = start_date.replace(month=start_date.month + 1) - timedelta(days=1)
+            
+            month_end = min(month_end, self.date_to)
+            
+            # Invoice data
+            invoice_domain = [
+                ('invoice_date', '>=', start_date),
+                ('invoice_date', '<=', month_end),
+                ('move_type', 'in', ['out_invoice', 'out_refund']),
+                ('state', '=', 'posted')
+            ]
+            
+            invoices = self.env['account.move'].search(invoice_domain)
+            invoiced = sum(invoices.mapped('amount_total'))
+            paid = sum(invoices.filtered(lambda inv: inv.payment_state == 'paid').mapped('amount_total'))
+            
+            monthly_data[month_key] = {
+                'invoiced': invoiced,
+                'paid': paid,
+                'outstanding': invoiced - paid
+            }
+            
+            # Move to next month
+            if start_date.month == 12:
+                start_date = start_date.replace(year=start_date.year + 1, month=1)
+            else:
+                start_date = start_date.replace(month=start_date.month + 1)
+        
+        return monthly_data
+    
+    # Action Methods for Dashboard Navigation
+    def action_view_sales_details(self):
+        """Action to view detailed sales orders"""
+        self.ensure_one()
+        
+        domain = [
+            ('date_order', '>=', self.date_from),
+            ('date_order', '<=', self.date_to),
+            ('state', 'in', ['sale', 'done'])
+        ]
+        
+        if self.sales_team_id:
+            domain.append(('team_id', '=', self.sales_team_id.id))
+        if self.agent1_partner_id:
+            domain.append(('agent1_partner_id', '=', self.agent1_partner_id.id))
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Sales Orders - Details',
+            'res_model': 'sale.order',
+            'view_mode': 'tree,form',
+            'domain': domain,
+            'context': {'search_default_group_by_date': 1}
+        }
+    
+    def action_view_top_performers(self):
+        """Action to view top performers"""
+        self.ensure_one()
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Top Performers',
+            'res_model': 'sales.dashboard.performer',
+            'view_mode': 'kanban,tree,form',
+            'domain': [('dashboard_id', '=', self.id)],
+            'context': {'search_default_group_by_rank': 1}
+        }
+    
+    def action_view_invoice_details(self):
+        """Action to view invoice details"""
+        self.ensure_one()
+        
+        domain = [
+            ('invoice_date', '>=', self.date_from),
+            ('invoice_date', '<=', self.date_to),
+            ('move_type', 'in', ['out_invoice', 'out_refund']),
+            ('state', '=', 'posted')
+        ]
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Invoices - Details',
+            'res_model': 'account.move',
+            'view_mode': 'tree,form',
+            'domain': domain,
+            'context': {'search_default_group_by_date': 1}
+        }
+    
+    def action_view_payment_details(self):
+        """Action to view payment details"""
+        self.ensure_one()
+        
+        # Get invoices in the period
+        invoice_domain = [
+            ('invoice_date', '>=', self.date_from),
+            ('invoice_date', '<=', self.date_to),
+            ('move_type', 'in', ['out_invoice', 'out_refund']),
+            ('state', '=', 'posted'),
+            ('payment_state', '=', 'paid')
+        ]
+        
+        invoices = self.env['account.move'].search(invoice_domain)
+        
+        # Get payments related to these invoices
+        payment_domain = [
+            ('reconciled_invoice_ids', 'in', invoices.ids),
+            ('state', '=', 'posted')
+        ]
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Payments - Details',
+            'res_model': 'account.payment',
+            'view_mode': 'tree,form',
+            'domain': payment_domain,
+            'context': {'search_default_group_by_date': 1}
+        }
+    
+    def action_view_receivables(self):
+        """Action to view receivables details"""
+        self.ensure_one()
+        
+        domain = [
+            ('account_id.account_type', '=', 'asset_receivable'),
+            ('reconciled', '=', False),
+            ('company_id', '=', self.env.company.id)
+        ]
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Receivables - Details',
+            'res_model': 'account.move.line',
+            'view_mode': 'tree,form',
+            'domain': domain,
+            'context': {'search_default_group_by_partner': 1}
+        }
+    
+    def action_view_overdue(self):
+        """Action to view overdue items"""
+        self.ensure_one()
+        
+        today = fields.Date.today()
+        domain = [
+            ('account_id.account_type', '=', 'asset_receivable'),
+            ('reconciled', '=', False),
+            ('date_maturity', '<', today),
+            ('company_id', '=', self.env.company.id)
+        ]
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Overdue Items',
+            'res_model': 'account.move.line',
+            'view_mode': 'tree,form',
+            'domain': domain,
+            'context': {'search_default_group_by_partner': 1}
+        }
+
+
+class SalesDashboardPerformer(models.Model):
+    _name = 'sales.dashboard.performer'
+    _description = 'Sales Dashboard Top Performer'
+    _order = 'rank asc'
+    
+    dashboard_id = fields.Many2one('sales.dashboard', string='Dashboard', required=True, ondelete='cascade')
+    partner_id = fields.Many2one('res.partner', string='Salesperson/Agent', required=True)
+    rank = fields.Integer(string='Rank')
+    total_revenue = fields.Monetary(string='Total Revenue')
+    total_orders = fields.Integer(string='Total Orders')
+    total_commission = fields.Monetary(string='Total Commission')
+    avg_order_value = fields.Monetary(string='Average Order Value')
+    currency_id = fields.Many2one('res.currency', string='Currency', 
+                                 default=lambda self: self.env.company.currency_id)
     
     @api.depends('date_from', 'date_to', 'sales_team_id', 'agent1_partner_id')
     def _compute_commissions(self):
@@ -114,18 +500,30 @@ class SalesDashboard(models.Model):
             
             if record.sales_team_id:
                 domain.append(('team_id', '=', record.sales_team_id.id))
-            if record.agent1_partner_id:
+            if record.agent1_partner_id and 'agent1_partner_id' in self.env['sale.order']._fields:
                 domain.append(('agent1_partner_id', '=', record.agent1_partner_id.id))
             
             orders = self.env['sale.order'].search(domain)
             
-            # Calculate commission totals using correct field names
-            record.total_agent1_commission = sum(orders.mapped('agent1_amount'))
-            record.total_agent2_commission = sum(orders.mapped('agent2_amount'))
-            record.total_consultant_commission = sum(orders.mapped('salesperson_commission'))
+            # Calculate commission totals using safe field access
+            so_fields = self.env['sale.order']._fields
+            agent1_amount = 0
+            agent2_amount = 0
+            salesperson_commission = 0
+            
+            if 'agent1_amount' in so_fields:
+                agent1_amount = sum(orders.mapped('agent1_amount'))
+            if 'agent2_amount' in so_fields:
+                agent2_amount = sum(orders.mapped('agent2_amount'))
+            if 'salesperson_commission' in so_fields:
+                salesperson_commission = sum(orders.mapped('salesperson_commission'))
+            
+            record.total_agent1_commission = agent1_amount
+            record.total_agent2_commission = agent2_amount
+            record.total_consultant_commission = salesperson_commission
             
             # Calculate average commission rate
-            total_sales = sum(orders.mapped('sale_value') or orders.mapped('amount_total'))
+            total_sales = sum(orders.mapped('amount_total'))
             total_commissions = record.total_agent1_commission + record.total_agent2_commission + record.total_consultant_commission
             record.avg_commission_rate = (total_commissions / total_sales * 100) if total_sales > 0 else 0
     
