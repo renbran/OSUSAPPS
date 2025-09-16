@@ -129,42 +129,65 @@
                                     .page-break { page-break-before: always; }
                                 }
                             </style>
-                            
+
                             <!-- Report Header -->
                             <div class="report-header">
                                 <h1 class="report-title">Comprehensive Deals Commission Report</h1>
                                 <p class="report-subtitle">Complete overview of deals with commission details, payment status, and project information</p>
                             </div>
-                            
+
                             <!-- Filter Information -->
                             <div class="filter-info">
-                                <strong>Report Filters:</strong><br/>
-                                <span><strong>Date Range:</strong> <t t-esc="data.get('date_from')"/> to <t t-esc="data.get('date_to')"/></span> |
-                                <span><strong>Partner:</strong> <t t-esc="data.get('partner_filter', 'All Partners')"/></span> |
-                                <span><strong>Project:</strong> <t t-esc="data.get('project_filter', 'All Projects')"/></span><br/>
-                                <span><strong>Generated on:</strong> <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/></span>
+                                <strong>Report Filters:</strong>
+                                <br/>
+                                <span>
+                                    <strong>Date Range:</strong>
+                                    <t t-esc="data.get('date_from')"/>
+ to <t t-esc="data.get('date_to')"/>
+                                </span> |
+                                <span>
+                                    <strong>Partner:</strong>
+                                    <t t-esc="data.get('partner_filter', 'All Partners')"/>
+                                </span> |
+                                <span>
+                                    <strong>Project:</strong>
+                                    <t t-esc="data.get('project_filter', 'All Projects')"/>
+                                </span>
+                                <br/>
+                                <span>
+                                    <strong>Generated on:</strong>
+                                    <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/>
+                                </span>
                             </div>
-                            
+
                             <!-- Summary Statistics -->
                             <div class="summary-stats">
                                 <div class="summary-item">
-                                    <div class="summary-value"><t t-esc="data.get('total_deals', 0)"/></div>
+                                    <div class="summary-value">
+                                        <t t-esc="data.get('total_deals', 0)"/>
+                                    </div>
                                     <div>Total Deals</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-value"><t t-esc="'{:,.2f}'.format(data.get('total_eligible_amount', 0))"/></div>
+                                    <div class="summary-value">
+                                        <t t-esc="'{:,.2f}'.format(data.get('total_eligible_amount', 0))"/>
+                                    </div>
                                     <div>Total Eligible Commission</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-value"><t t-esc="'{:,.2f}'.format(data.get('total_processed_amount', 0))"/></div>
+                                    <div class="summary-value">
+                                        <t t-esc="'{:,.2f}'.format(data.get('total_processed_amount', 0))"/>
+                                    </div>
                                     <div>Total Processed</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-value"><t t-esc="'{:,.2f}'.format(data.get('total_paid_amount', 0))"/></div>
+                                    <div class="summary-value">
+                                        <t t-esc="'{:,.2f}'.format(data.get('total_paid_amount', 0))"/>
+                                    </div>
                                     <div>Total Paid</div>
                                 </div>
                             </div>
-                            
+
                             <!-- Deals Table -->
                             <table class="deals-table">
                                 <thead>
@@ -194,28 +217,44 @@
                                             <t t-set="current_project" t-value="deal['project_name']"/>
                                             <tr class="project-group">
                                                 <td colspan="15">
-                                                    <strong>Project: <t t-esc="deal['project_name']"/></strong>
+                                                    <strong>Project: <t t-esc="deal['project_name']"/>
+                                                    </strong>
                                                 </td>
                                             </tr>
                                         </t>
-                                        
+
                                         <!-- Deal Row -->
                                         <tr>
-                                            <td><t t-esc="deal['order_name']"/></td>
-                                            <td><t t-esc="deal['customer_name']"/></td>
+                                            <td>
+                                                <t t-esc="deal['order_name']"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="deal['customer_name']"/>
+                                            </td>
                                             <td class="center">
                                                 <t t-if="deal['booking_date']">
                                                     <t t-esc="deal['booking_date'].strftime('%Y-%m-%d') if deal['booking_date'] else ''"/>
                                                 </t>
                                             </td>
-                                            <td><t t-esc="deal['project_name']"/></td>
-                                            <td><t t-esc="deal['unit_reference']"/></td>
-                                            <td class="number">
-                                                <t t-esc="deal['currency_symbol']"/><t t-esc="'{:,.2f}'.format(deal['order_amount'])"/>
+                                            <td>
+                                                <t t-esc="deal['project_name']"/>
                                             </td>
-                                            <td><t t-esc="deal['partner_name']"/></td>
-                                            <td><t t-esc="deal['commission_role']"/></td>
-                                            <td><t t-esc="deal['commission_type']"/></td>
+                                            <td>
+                                                <t t-esc="deal['unit_reference']"/>
+                                            </td>
+                                            <td class="number">
+                                                <t t-esc="deal['currency_symbol']"/>
+                                                <t t-esc="'{:,.2f}'.format(deal['order_amount'])"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="deal['partner_name']"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="deal['commission_role']"/>
+                                            </td>
+                                            <td>
+                                                <t t-esc="deal['commission_type']"/>
+                                            </td>
                                             <td class="number">
                                                 <t t-if="deal['commission_rate']">
                                                     <t t-esc="'{:.1f}%'.format(deal['commission_rate'])"/>
@@ -223,22 +262,26 @@
                                             </td>
                                             <td class="number">
                                                 <span t-attf-class="#{deal['eligible_amount'] > 0 and 'amount-positive' or 'amount-zero'}">
-                                                    <t t-esc="deal['currency_symbol']"/><t t-esc="'{:,.2f}'.format(deal['eligible_amount'])"/>
+                                                    <t t-esc="deal['currency_symbol']"/>
+                                                    <t t-esc="'{:,.2f}'.format(deal['eligible_amount'])"/>
                                                 </span>
                                             </td>
                                             <td class="number">
                                                 <span t-attf-class="#{deal['commission_processed'] > 0 and 'amount-positive' or 'amount-zero'}">
-                                                    <t t-esc="deal['currency_symbol']"/><t t-esc="'{:,.2f}'.format(deal['commission_processed'])"/>
+                                                    <t t-esc="deal['currency_symbol']"/>
+                                                    <t t-esc="'{:,.2f}'.format(deal['commission_processed'])"/>
                                                 </span>
                                             </td>
                                             <td class="number">
                                                 <span t-attf-class="#{deal['commission_paid'] > 0 and 'amount-positive' or 'amount-zero'}">
-                                                    <t t-esc="deal['currency_symbol']"/><t t-esc="'{:,.2f}'.format(deal['commission_paid'])"/>
+                                                    <t t-esc="deal['currency_symbol']"/>
+                                                    <t t-esc="'{:,.2f}'.format(deal['commission_paid'])"/>
                                                 </span>
                                             </td>
                                             <td class="number">
                                                 <span t-attf-class="#{deal['commission_pending'] > 0 and 'amount-positive' or 'amount-zero'}">
-                                                    <t t-esc="deal['currency_symbol']"/><t t-esc="'{:,.2f}'.format(deal['commission_pending'])"/>
+                                                    <t t-esc="deal['currency_symbol']"/>
+                                                    <t t-esc="'{:,.2f}'.format(deal['commission_pending'])"/>
                                                 </span>
                                             </td>
                                             <td class="center">
@@ -250,7 +293,7 @@
                                     </t>
                                 </tbody>
                             </table>
-                            
+
                             <!-- Additional Details Section (if show_payment_details is enabled) -->
                             <t t-if="o.show_payment_details">
                                 <div style="margin-top: 20px;">
@@ -270,18 +313,29 @@
                                         <tbody>
                                             <t t-foreach="data.get('deals_data', [])" t-as="deal">
                                                 <tr>
-                                                    <td><t t-esc="deal['order_name']"/></td>
-                                                    <td class="center"><t t-esc="deal['state_display']"/></td>
-                                                    <td class="number">
-                                                        <t t-esc="deal['currency_symbol']"/><t t-esc="'{:,.2f}'.format(deal['total_invoiced'])"/>
+                                                    <td>
+                                                        <t t-esc="deal['order_name']"/>
+                                                    </td>
+                                                    <td class="center">
+                                                        <t t-esc="deal['state_display']"/>
                                                     </td>
                                                     <td class="number">
-                                                        <t t-esc="deal['currency_symbol']"/><t t-esc="'{:,.2f}'.format(deal['total_paid'])"/>
+                                                        <t t-esc="deal['currency_symbol']"/>
+                                                        <t t-esc="'{:,.2f}'.format(deal['total_invoiced'])"/>
                                                     </td>
-                                                    <td class="center"><t t-esc="deal['invoice_count']"/></td>
-                                                    <td class="center"><t t-esc="deal['payment_count']"/></td>
                                                     <td class="number">
-                                                        <t t-esc="deal['currency_symbol']"/><t t-esc="'{:,.2f}'.format(deal['total_invoiced'] - deal['total_paid'])"/>
+                                                        <t t-esc="deal['currency_symbol']"/>
+                                                        <t t-esc="'{:,.2f}'.format(deal['total_paid'])"/>
+                                                    </td>
+                                                    <td class="center">
+                                                        <t t-esc="deal['invoice_count']"/>
+                                                    </td>
+                                                    <td class="center">
+                                                        <t t-esc="deal['payment_count']"/>
+                                                    </td>
+                                                    <td class="number">
+                                                        <t t-esc="deal['currency_symbol']"/>
+                                                        <t t-esc="'{:,.2f}'.format(deal['total_invoiced'] - deal['total_paid'])"/>
                                                     </td>
                                                 </tr>
                                             </t>
@@ -289,7 +343,7 @@
                                     </table>
                                 </div>
                             </t>
-                            
+
                             <!-- Footer -->
                             <div style="margin-top: 30px; font-size: 8px; color: #6c757d; text-align: center; border-top: 1px solid #ddd; padding-top: 10px;">
                                 <p>This report was generated automatically from the Commission Management System</p>
