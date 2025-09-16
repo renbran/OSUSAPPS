@@ -74,7 +74,6 @@ Professional Output:
     'data': [
         'security/security.xml',  # Basic security groups first
         'security/ir.model.access.csv',
-        'data/cleanup_views.xml',  # Clean up problematic views first
         'data/ir_cron_data.xml',
         'security/model_security.xml',  # Model-dependent security rules
         'views/res_partner_views.xml',

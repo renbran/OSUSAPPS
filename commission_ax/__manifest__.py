@@ -1,6 +1,6 @@
 {
     'name': 'Advanced Commission Management',
-    'version': '17.0.3.0.0',
+    'version': '17.0.2.0.0',
     'category': 'Sales',
     'summary': 'Advanced commission management with business logic constraints, professional reporting and commission statements',
     'description': """
@@ -58,15 +58,15 @@ Technical Features:
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
+        'data/comprehensive_cleanup.xml',
         'data/cron_data.xml',
-        'data/paperformat_data.xml',
         'data/commission_report_wizard_action.xml',
         'data/commission_purchase_orders_action.xml',
         'data/commission_report_template.xml',
-        'views/commission_menu.xml',
         'views/sale_order.xml',
         'views/purchase_order.xml',
         'views/commission_wizard_views.xml',
+        'views/commission_statement_wizard_views.xml',
         'views/deals_commission_report_wizard_views.xml',
         'reports/commission_report.xml',
         'reports/commission_report_template.xml',
@@ -75,11 +75,6 @@ Technical Features:
         'reports/per_order_commission_report.xml',
         'reports/deals_commission_report.xml',
     ],
-    'assets': {
-        'web.assets_backend': [
-            # Base JS & CSS assets
-        ]
-    },
     'demo': [],
     'installable': True,
     'auto_install': False,
