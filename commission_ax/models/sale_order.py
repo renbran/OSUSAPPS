@@ -440,6 +440,12 @@ class SaleOrder(models.Model):
                 raise UserError("Cannot process commissions for %s:\n%s" % (order.name, order.commission_blocked_reason))
             order._create_commission_purchase_orders()
         return True
+        
+    def action_force_process_commissions(self):
+        """Force process commissions without prerequisite checks"""
+        for order in self:
+            order._create_commission_purchase_orders()
+        return True
 
     def action_cancel(self):
         """Override cancel with enhanced cascade logic and user notification"""
