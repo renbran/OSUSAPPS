@@ -401,10 +401,6 @@ class SaleOrder(models.Model):
         """Alternative method name for commission report access."""
         return self.action_open_commission_report_wizard()
 
-    def action_commission_details(self):
-        """Another compatibility method for commission details."""
-        return self.action_view_commission_details()
-
     def action_confirm_commissions(self):
         """Confirm calculated commissions."""
         self.commission_status = 'confirmed'

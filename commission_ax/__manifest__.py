@@ -58,8 +58,7 @@ Technical Features:
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
-        'data/pre_install_cleanup.xml',
-        'data/cleanup_problematic_fields.xml',
+        'data/comprehensive_cleanup.xml',
         'data/cron_data.xml',
         'data/commission_report_wizard_action.xml',
         'data/commission_purchase_orders_action.xml',
