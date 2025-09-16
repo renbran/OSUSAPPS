@@ -354,6 +354,9 @@ class AccountPayment(models.Model):
                 body=_("Payment submitted for review by %s") % self.env.user.name,
                 subtype_xmlid='mail.mt_note'
             )
+            
+            # Send email notification
+            record._send_workflow_email('payment_account_enhanced.mail_template_payment_submitted')
 
     def action_review_payment(self):
         """Review payment (Stage 2)"""
@@ -372,6 +375,9 @@ class AccountPayment(models.Model):
                 body=_("Payment reviewed by %s") % self.env.user.name,
                 subtype_xmlid='mail.mt_note'
             )
+            
+            # Send email notification
+            record._send_workflow_email('payment_account_enhanced.mail_template_payment_approved_authorization')
 
     def action_approve_payment(self):
         """Approve payment (Stage 3)"""
@@ -390,6 +396,9 @@ class AccountPayment(models.Model):
                 body=_("Payment approved by %s") % self.env.user.name,
                 subtype_xmlid='mail.mt_note'
             )
+            
+            # Send email notification
+            record._send_workflow_email('payment_account_enhanced.mail_template_payment_approved_authorization')
 
     def action_authorize_payment(self):
         """Authorize payment (Final Stage)"""
@@ -408,6 +417,9 @@ class AccountPayment(models.Model):
                 body=_("Payment authorized by %s") % self.env.user.name,
                 subtype_xmlid='mail.mt_note'
             )
+            
+            # Send email notification
+            record._send_workflow_email('payment_account_enhanced.mail_template_payment_fully_approved')
 
     def action_reject_payment(self):
         """Reject payment at any stage"""
@@ -424,6 +436,9 @@ class AccountPayment(models.Model):
                 body=_("Payment rejected by %s") % self.env.user.name,
                 subtype_xmlid='mail.mt_note'
             )
+            
+            # Send email notification
+            record._send_workflow_email('payment_account_enhanced.mail_template_payment_rejected')
 
     def action_post(self):
         """Override action_post to enforce workflow"""
@@ -440,12 +455,84 @@ class AccountPayment(models.Model):
         # Call original post method
         result = super(AccountPayment, self).action_post()
         
-        # Update approval state to posted
+        # Update approval state to posted and send email
         for record in self:
             if hasattr(record, 'approval_state'):
                 record.approval_state = 'posted'
+                # Send email notification
+                record._send_workflow_email('payment_account_enhanced.mail_template_payment_posted')
         
         return result
+
+    # ============================================================================
+    # EMAIL AUTOMATION HELPER METHODS
+    # ============================================================================
+
+    def _get_pending_approver_emails(self):
+        """Get email addresses of users who can approve at current stage"""
+        emails = []
+        
+        if self.approval_state == 'under_review':
+            # Get reviewers group emails
+            reviewer_group = self.env.ref('payment_account_enhanced.group_payment_reviewer', raise_if_not_found=False)
+            if reviewer_group:
+                emails.extend([user.email for user in reviewer_group.users if user.email])
+        
+        elif self.approval_state == 'for_approval':
+            # Get approvers group emails
+            approver_group = self.env.ref('payment_account_enhanced.group_payment_approver', raise_if_not_found=False)
+            if approver_group:
+                emails.extend([user.email for user in approver_group.users if user.email])
+        
+        elif self.approval_state == 'for_authorization':
+            # Get authorizers group emails
+            authorizer_group = self.env.ref('payment_account_enhanced.group_payment_authorizer', raise_if_not_found=False)
+            if authorizer_group:
+                emails.extend([user.email for user in authorizer_group.users if user.email])
+        
+        return list(set(emails))  # Remove duplicates
+
+    def _get_current_approver_name(self):
+        """Get name of the approver at current stage"""
+        if self.approval_state == 'under_review':
+            return "Reviewer"
+        elif self.approval_state == 'for_approval':
+            return "Approver" 
+        elif self.approval_state == 'for_authorization':
+            return "Authorizer"
+        return "Approver"
+
+    def _send_workflow_email(self, template_external_id, additional_emails=None):
+        """Send email using specified template"""
+        try:
+            template = self.env.ref(template_external_id, raise_if_not_found=False)
+            if template:
+                # Get recipient emails
+                recipient_emails = additional_emails or []
+                
+                # Add current approver emails if applicable
+                if template_external_id in ['payment_account_enhanced.mail_template_payment_submitted',
+                                          'payment_account_enhanced.mail_template_payment_approved_authorization']:
+                    recipient_emails.extend(self._get_pending_approver_emails())
+                
+                # Add payment creator email for status updates
+                if self.create_uid and self.create_uid.email:
+                    recipient_emails.append(self.create_uid.email)
+                
+                # Remove duplicates and empty emails
+                recipient_emails = list(set([email for email in recipient_emails if email]))
+                
+                if recipient_emails:
+                    # Send individual emails to avoid exposure
+                    for email in recipient_emails:
+                        template.send_mail(self.id, email_values={
+                            'email_to': email,
+                            'auto_delete': False,
+                        })
+                        
+        except Exception as e:
+            # Log error but don't break workflow
+            _logger.warning(f"Failed to send email for payment {self.id}: {str(e)}")
 
     # ============================================================================
     # ENHANCED METHODS

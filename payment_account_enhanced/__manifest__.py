@@ -46,6 +46,7 @@
         # Data
         'data/sequence.xml',
         'data/mail_template_data.xml',
+        'data/cron_data.xml',
         
         # Reports (Load early for external ID availability)
         'reports/payment_voucher_report.xml',

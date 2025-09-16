@@ -4,6 +4,7 @@ from . import account_payment
 from . import account_payment_register
 from . import payment_approval_history
 from . import payment_qr_verification
+from . import payment_reminder
 from . import payment_workflow_stage
 from . import res_company
 from . import res_partner
