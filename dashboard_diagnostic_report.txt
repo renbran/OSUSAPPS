@@ -1,0 +1,29 @@
+OE SALE DASHBOARD 17 - DIAGNOSTIC REPORT
+========================================
+Date: Tue, Sep 16, 2025  7:33:21 AM
+
+STRUCTURE CHECK:
+- Directory structure: PASS
+- __init__.py files: PASS
+- Security files: PASS
+
+INSTALLATION CHECK:
+- Installation errors: PASS
+- External URLs in manifest: WARNING
+
+JAVASCRIPT ASSETS:
+- JS files present: PASS
+- chart.min.js: PASS
+- dashboard_merged.js: PASS
+
+XML TEMPLATES:
+- XML files present: PASS
+- QWeb templates found: PASS
+
+IDENTIFIED ISSUES:
+2. External URLs in manifest can cause issues with asset loading
+    'website': 'https://www.yourcompany.com',
+            'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js',
+
+RECOMMENDED FIXES:
+- Replace external URLs with local assets

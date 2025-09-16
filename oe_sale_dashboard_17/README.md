@@ -1,38 +1,107 @@
-# OSUS Executive Sales Dashboard
+# Comprehensive Sales Dashboard for Odoo 17
 
-## Version 17.0.0.3.0
+## Version 17.0.1.1.0
 
-A beautiful, modern executive dashboard for Odoo 17 with advanced visualizations and business intelligence capabilities.
-
-This module is under copyright of 'OdooElevate'
+A professional, feature-rich dashboard for Odoo 17 providing comprehensive analytics for sales, invoices, payments, and performance metrics.
 
 ## ✨ Key Features
 
 ### 🎨 Modern Visual Design
-- **Executive-Grade Interface**: Professional gradient backgrounds and modern card layouts
-- **Interactive Charts**: Custom chart implementation with doughnut and line charts
-- **Animated Components**: Smooth transitions and loading animations
+
+- **Executive-Grade Interface**: Professional gradient backgrounds with modern card layouts
+- **Interactive Charts**: Built on Chart.js with multiple visualization types
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- **Animated Components**: Smooth transitions and visual feedback
 
 ### 📊 Advanced Analytics
-- **KPI Cards**: Key performance indicators with trend indicators
-  - Total Pipeline Value
-  - Revenue Realized
-  - Conversion Rate
-  - Average Deal Size
 
-### 1. Date Range Filtering
-- **Start Date & End Date**: Select custom date ranges for filtering sales data
-- **Booking Date Reference**: All filtering is now based on `booking_date` instead of `order_date`
+- **Sales Analytics**:
+  - Total Revenue, Orders, Average Order Value
+  - Sales Trends Over Time
+  - Conversion Rate & Growth Metrics
+  - Sales Team Performance
 
-### 2. Amount Field Selection
-- **Total Amount**: Uses the standard `amount_total` field from sale orders
-- **Sale Value**: Uses a custom `sale_value` field that can be customized based on business logic
+- **Financial Insights**:
+  - Invoice vs Payment Analysis
+  - Outstanding Receivables Monitoring
+  - Balance and Cash Flow Visualization
+  - Overdue Payment Alerts
 
-### 3. Enhanced Sale Order Model
-- **booking_date**: New datetime field to track when sales were booked
-- **sale_value**: New monetary field for alternative amount calculations
-- **Automatic Migration**: Existing orders will have their booking_date initialized from date_order
+- **Performance Rankings**:
+  - Top Sales Performers by Revenue
+  - Best Agents by Order Volume
+  - Commission Leaderboards
+  - Customer Ranking Analytics
+
+### 🔍 Advanced Filtering Options
+
+- **Date Range Selection**: Custom date ranges with presets
+- **Team & Agent Filters**: Filter by sales teams and personnel
+- **Category Filtering**: Filter by sales types and categories
+- **Advanced Export**: PDF, Excel, and CSV export capabilities
+
+### 🔄 Real-time Updates
+
+- **Auto-refresh Capability**: Configurable auto-refresh intervals
+- **Performance Monitoring**: KPI trend indicators show performance direction
+- **Status Indicators**: Visual indicators for performance metrics
+
+## 🚀 Installation
+
+1. **Copy Module**
+   - Place the module folder in your Odoo addons directory
+
+2. **Install Dependencies**
+   - This module has built-in Chart.js support with CDN and local fallbacks
+   - No additional Python packages are required
+
+3. **Update Module List**
+   - Go to Apps → Update Apps List
+
+4. **Install Module**
+   - Search for "Sales Dashboard 17" and click Install
+
+## ⚙️ Configuration
+
+### Dashboard Settings
+
+1. **Access Dashboard**
+   - Go to Sales → Dashboard → Sales Analytics Hub
+
+2. **Filter Options**
+   - Use the date range selector to focus on specific time periods
+   - Filter by sales teams and personnel as needed
+   - Use category filters to segment data by sales types
+
+3. **Dashboard Customization**
+   - Click "Dashboard Settings" to configure display preferences
+   - Set auto-refresh intervals in the settings panel
+   - Configure which KPIs and charts appear on your dashboard
+
+### Technical Configuration
+
+For advanced users, the module can be configured to integrate with:
+
+- `payment_account_enhanced`: Enhanced payment tracking features
+- `base_accounting_kit`: Additional accounting metrics
+- `dynamic_accounts_report`: Integration with dynamic reporting
+- `om_account_followup`: Integration with followup features
+
+## 🔄 Changelog
+
+### v17.0.1.1.0 (2025-09-15)
+
+- Consolidated multiple JS/CSS files for better performance
+- Fixed view reference issues in dashboard menu
+- Improved asset loading with proper CDN integration
+- Enhanced documentation and streamlined module structure
+
+### v17.0.1.0.1 (2025-08-02)
+
+- Fixed ParseError during module installation (view validation)
+- Resolved Odoo 17 compliance issues with label tags
+- Fixed assets loading issues
+- Corrected security model references
 
 ## Changes Made
 

@@ -31,7 +31,7 @@
         <field name="name">Invoice &amp; Payment Analytics</field>
         <field name="res_model">sales.dashboard</field>
         <field name="view_mode">kanban,form</field>
-        <field name="view_id" ref="view_invoice_analytics_kanban"/>
+        <field name="view_id" ref="view_sales_dashboard_kanban"/>
         <field name="target">current</field>
         <field name="context">{'default_show_invoice_analytics': True}</field>
     </record>
@@ -41,7 +41,7 @@
         <field name="name">Balance &amp; Receivables Analytics</field>
         <field name="res_model">sales.dashboard</field>
         <field name="view_mode">kanban,form</field>
-        <field name="view_id" ref="view_balance_analytics_kanban"/>
+        <field name="view_id" ref="view_sales_dashboard_kanban"/>
         <field name="target">current</field>
         <field name="context">{'default_show_balance_analytics': True}</field>
     </record>

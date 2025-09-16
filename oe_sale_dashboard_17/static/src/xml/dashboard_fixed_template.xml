@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="oe_sale_dashboard_17.SaleDashboardTemplate" owl="1">
+        <div class="o_dashboard_container p-3">
+            <div class="o_dashboard_header d-flex justify-content-between align-items-center mb-4">
+                <h2>Sales Dashboard <small class="text-muted">(Simplified Version)</small></h2>
+                <div class="o_dashboard_buttons">
+                    <button class="btn btn-primary" t-on-click="updateDashboard">
+                        <i class="fa fa-refresh mr-2"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Loading state -->
+            <div t-if="state.isLoading" class="o_dashboard_loading text-center p-5">
+                <i class="fa fa-spinner fa-spin fa-2x mb-3"></i>
+                <div>Loading dashboard data...</div>
+            </div>
+            
+            <!-- Error state -->
+            <div t-if="state.error" class="alert alert-danger">
+                <i class="fa fa-exclamation-triangle mr-2"></i>
+                <span t-esc="state.error"/>
+            </div>
+            
+            <!-- Dashboard content -->
+            <div t-if="!state.isLoading &amp;&amp; !state.error" class="row">
+                <!-- Summary cards -->
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-muted">Draft Orders</h5>
+                            <div class="d-flex align-items-center">
+                                <div class="h2 mb-0 mr-3" t-esc="state.dashboardData.totals.draft_count"/>
+                                <div class="text-muted">orders</div>
+                            </div>
+                            <div class="text-success mt-2">
+                                $ <span t-esc="state.dashboardData.totals.draft_amount"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-muted">Sales Orders</h5>
+                            <div class="d-flex align-items-center">
+                                <div class="h2 mb-0 mr-3" t-esc="state.dashboardData.totals.sales_order_count"/>
+                                <div class="text-muted">orders</div>
+                            </div>
+                            <div class="text-success mt-2">
+                                $ <span t-esc="state.dashboardData.totals.sales_order_amount"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-muted">Invoices</h5>
+                            <div class="d-flex align-items-center">
+                                <div class="h2 mb-0 mr-3" t-esc="state.dashboardData.totals.invoice_count"/>
+                                <div class="text-muted">invoices</div>
+                            </div>
+                            <div class="text-success mt-2">
+                                $ <span t-esc="state.dashboardData.totals.invoice_amount"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-muted">Total</h5>
+                            <div class="d-flex align-items-center">
+                                <div class="h2 mb-0 mr-3" t-esc="state.dashboardData.totals.total_count"/>
+                                <div class="text-muted">records</div>
+                            </div>
+                            <div class="text-success mt-2">
+                                $ <span t-esc="state.dashboardData.totals.total_amount"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Sales by Category</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas t-ref="mainChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data table -->
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Category Details</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th class="text-right">Count</th>
+                                        <th class="text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="Object.entries(state.dashboardData.categories)" t-as="category" t-key="category[0]">
+                                        <tr>
+                                            <td><t t-esc="category[0]"/></td>
+                                            <td class="text-right"><t t-esc="category[1].count"/></td>
+                                            <td class="text-right">$ <t t-esc="category[1].amount"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-active">
+                                        <th>Total</th>
+                                        <th class="text-right"><t t-esc="state.dashboardData.totals.total_count"/></th>
+                                        <th class="text-right">$ <t t-esc="state.dashboardData.totals.total_amount"/></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="o_dashboard_footer text-center text-muted mt-4">
+                <small>This is a simplified fallback dashboard. Some features may be limited.</small>
+            </div>
+        </div>
+    </t>
+</templates>

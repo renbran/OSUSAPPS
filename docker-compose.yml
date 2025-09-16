@@ -1,4 +1,3 @@
-version: '3.1'
 services:
   db:
     image: postgres:15
@@ -25,6 +24,7 @@ services:
       SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
       SSL_CERT_DIR: /etc/ssl/certs
     volumes:
+      - ./oe_sale_dashboard_17:/mnt/extra-addons/oe_sale_dashboard_17
       - ./commission_ax:/mnt/extra-addons/commission_ax
       - ./commission_partner_statement:/mnt/extra-addons/commission_partner_statement
       - ./enhanced_status:/mnt/extra-addons/enhanced_status

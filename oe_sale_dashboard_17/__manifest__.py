@@ -77,11 +77,13 @@ comprehensive visibility into business performance.
     ],
     'assets': {
         'web.assets_backend': [
-            'oe_sale_dashboard_17/static/src/js/dashboard.js',
-            'oe_sale_dashboard_17/static/src/js/comprehensive_dashboard.js',
-            'oe_sale_dashboard_17/static/src/css/dashboard.css',
-            'oe_sale_dashboard_17/static/src/css/comprehensive_dashboard.css',
-            'oe_sale_dashboard_17/static/src/xml/dashboard_template.xml',
+            ('include', 'web._assets_helpers'),
+            'oe_sale_dashboard_17/static/src/css/dashboard_merged.css',
+            'oe_sale_dashboard_17/static/src/js/chart.min.js',
+            'oe_sale_dashboard_17/static/src/js/compatibility.js',
+            'oe_sale_dashboard_17/static/src/js/field_mapping.js',
+            'oe_sale_dashboard_17/static/src/js/dashboard_fixed.js',
+            'oe_sale_dashboard_17/static/src/xml/dashboard_fixed_template.xml',
         ],
     },
     'installable': True,
