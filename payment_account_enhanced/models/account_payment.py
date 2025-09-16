@@ -9,6 +9,7 @@ import json
 import uuid
 import hashlib
 from io import BytesIO
+from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -146,7 +147,8 @@ class AccountPayment(models.Model):
         try:
             payment._compute_qr_code()
         except Exception as e:
-            _logger.warning("Could not generate QR code immediately for payment %s: %s", payment.voucher_number, str(e))
+                        _logger.warning("Failed to send email for payment %s: %s", self.id, str(e))
+            return False
             
         return payment
 
@@ -291,6 +293,37 @@ class AccountPayment(models.Model):
             
         return True
 
+    def get_pending_days(self):
+        """Calculate how many days payment has been pending"""
+        if not self.create_date:
+            return 0
+        
+        check_date = self.create_date
+        if self.approval_state == 'for_approval' and self.reviewer_date:
+            check_date = self.reviewer_date
+        elif self.approval_state == 'for_authorization' and self.approver_date:
+            check_date = self.approver_date
+        
+        delta = datetime.now() - check_date
+        return delta.days
+        
+    def send_workflow_email(self, template_external_id, additional_emails=None):
+        """
+        Public method to send workflow emails
+        
+        This public method serves as a wrapper for the protected _send_workflow_email
+        method, allowing other models like payment_reminder.py to send emails
+        without directly accessing protected methods.
+        
+        Args:
+            template_external_id (str): The XML ID of the email template
+            additional_emails (list, optional): Additional recipient emails
+        
+        Returns:
+            bool: Success status of the email sending operation
+        """
+        return self._send_workflow_email(template_external_id, additional_emails)
+        
     @api.model
     def generate_missing_qr_codes(self):
         """Generate QR codes for all payments missing them"""
@@ -356,7 +389,7 @@ class AccountPayment(models.Model):
             )
             
             # Send email notification
-            record._send_workflow_email('payment_account_enhanced.mail_template_payment_submitted')
+            record.send_workflow_email('payment_account_enhanced.mail_template_payment_submitted')
 
     def action_review_payment(self):
         """Review payment (Stage 2)"""
@@ -503,7 +536,20 @@ class AccountPayment(models.Model):
         return "Approver"
 
     def _send_workflow_email(self, template_external_id, additional_emails=None):
-        """Send email using specified template"""
+        """
+        Send email using specified template
+        
+        This is a core utility method used by:
+        1. Workflow state transition methods in account_payment.py
+        2. Payment reminder system in payment_reminder.py
+        
+        Args:
+            template_external_id (str): The XML ID of the email template
+            additional_emails (list, optional): Additional recipient emails
+            
+        Returns:
+            bool: True if email was sent successfully, False otherwise
+        """
         try:
             template = self.env.ref(template_external_id, raise_if_not_found=False)
             if template:

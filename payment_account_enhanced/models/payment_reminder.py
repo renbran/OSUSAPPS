@@ -9,12 +9,28 @@ _logger = logging.getLogger(__name__)
 
 
 class PaymentReminderManager(models.Model):
+    """
+    Payment Approval Reminder Manager
+    
+    This model manages the automatic sending of reminder emails for payments
+    that have been pending approval for too long.
+    
+    Dependencies:
+    - Uses AccountPayment._send_workflow_email method from account_payment.py
+    - Uses email templates defined in mail_template_data.xml
+    """
     _name = 'payment.reminder.manager'
     _description = 'Payment Approval Reminder Manager'
 
     @api.model
     def send_approval_reminders(self):
-        """Cron job method to send approval reminders"""
+        """
+        Cron job method to send approval reminders
+        
+        This method is triggered by a scheduled action defined in cron_data.xml
+        to automatically send reminder emails for payments that have been
+        pending in the approval workflow for too long.
+        """
         try:
             # Get current time
             now = datetime.now()
@@ -55,21 +71,21 @@ class PaymentReminderManager(models.Model):
                 if check_date <= escalation_cutoff:
                     # Send escalation email
                     if self._should_send_escalation(payment):
-                        payment._send_workflow_email('payment_account_enhanced.mail_template_approval_escalation')
+                        payment.send_workflow_email('payment_account_enhanced.mail_template_approval_escalation')
                         self._log_reminder_sent(payment, 'escalation')
                         escalation_count += 1
                         
                 elif check_date <= reminder_cutoff:
                     # Send reminder email
                     if self._should_send_reminder(payment):
-                        payment._send_workflow_email('payment_account_enhanced.mail_template_approval_reminder')
+                        payment.send_workflow_email('payment_account_enhanced.mail_template_approval_reminder')
                         self._log_reminder_sent(payment, 'reminder')
                         reminder_count += 1
             
-            _logger.info(f"Sent {reminder_count} reminders and {escalation_count} escalations")
+            _logger.info("Sent %s reminders and %s escalations", reminder_count, escalation_count)
             
-        except Exception as e:
-            _logger.error(f"Error in send_approval_reminders: {str(e)}")
+        except (ValueError, TypeError, AttributeError) as e:
+            _logger.error("Error in send_approval_reminders: %s", str(e))
 
     def _should_send_reminder(self, payment):
         """Check if reminder should be sent (avoid spam)"""
@@ -103,21 +119,3 @@ class PaymentReminderManager(models.Model):
             body=_("Automatic %s sent for pending approval") % reminder_type.title(),
             subtype_xmlid='mail.mt_note'
         )
-
-
-class AccountPayment(models.Model):
-    _inherit = 'account.payment'
-
-    def get_pending_days(self):
-        """Calculate how many days payment has been pending"""
-        if not self.create_date:
-            return 0
-        
-        check_date = self.create_date
-        if self.approval_state == 'for_approval' and self.reviewer_date:
-            check_date = self.reviewer_date
-        elif self.approval_state == 'for_authorization' and self.approver_date:
-            check_date = self.approver_date
-        
-        delta = datetime.now() - check_date
-        return delta.days
