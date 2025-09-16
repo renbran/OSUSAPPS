@@ -59,6 +59,7 @@ Technical Features:
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/cron_data.xml',
+        'data/paperformat_data.xml',
         'data/commission_report_wizard_action.xml',
         'data/commission_purchase_orders_action.xml',
         'data/commission_report_template.xml',
