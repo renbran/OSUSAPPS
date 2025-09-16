@@ -147,8 +147,7 @@ class AccountPayment(models.Model):
         try:
             payment._compute_qr_code()
         except Exception as e:
-                        _logger.warning("Failed to send email for payment %s: %s", self.id, str(e))
-            return False
+            _logger.warning("Failed to generate QR code for payment %s: %s", payment.id, str(e))
             
         return payment
 
