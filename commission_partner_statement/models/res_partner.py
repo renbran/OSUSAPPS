@@ -327,7 +327,7 @@ class Partner(models.Model):
         return action
 
     def action_generate_commission_statement_pdf(self):
-        """Generate PDF commission statement report"""
+        """Generate PDF commission statement report - FIXED VERSION"""
         self.ensure_one()
         if not self.commission_sale_order_ids:
             raise UserError(_("No commission orders found for partner %s") % self.name)
@@ -336,42 +336,29 @@ class Partner(models.Model):
         date_from = date.today().replace(day=1)
         date_to = date.today()
         
+        # Prepare data for report
         data = self.commission_statement_query(date_from, date_to)
         
-        # Use direct PDF generation instead of report action reference
-        report_obj = self.env['ir.actions.report']
-        template_name = 'commission_partner_statement.commission_partner_statement_template'
+        # Check if template exists first
+        template_xml_id = 'commission_partner_statement.commission_partner_statement_template'
+        template = self.env.ref(template_xml_id, raise_if_not_found=False)
+        if not template:
+            raise UserError(_("Commission statement template not found. Please check template '%s' exists.") % template_xml_id)
         
-        try:
-            # Generate PDF directly using the template
-            pdf_content, content_type = report_obj._render_qweb_pdf(template_name, [self.id], data=data)
-            
-            # Return as file download
-            return {
-                'type': 'ir.actions.act_url',
-                'url': '/web/content/?model=res.partner&id=%s&field=commission_statement_pdf&filename=Commission_Statement_%s.pdf' % (self.id, self.name.replace(' ', '_')),
-                'target': 'self',
-            }
-        except Exception as e:
-            # Fallback: create a simple report action if template exists
-            try:
-                # Check if template exists
-                template = self.env['ir.ui.view'].search([('key', '=', template_name)], limit=1)
-                if template:
-                    # Create temporary report action
-                    report_action = {
-                        'type': 'ir.actions.report',
-                        'report_name': template_name,
-                        'model': 'res.partner',
-                        'report_type': 'qweb-pdf',
-                        'data': data,
-                        'context': self.env.context,
-                    }
-                    return report_action
-                else:
-                    raise UserError(_("Commission statement template not found. Please contact administrator."))
-            except:
-                raise UserError(_("Error generating commission statement: %s") % str(e))
+        # Use standard report action - simpler and more reliable
+        action = self.env.ref('commission_partner_statement.action_commission_partner_statement_pdf')
+        if not action:
+            raise UserError(_("Commission statement report action not found."))
+        
+        # Return simple report action
+        return {
+            'type': 'ir.actions.report',
+            'report_name': 'commission_partner_statement.commission_partner_statement_template',
+            'report_type': 'qweb-pdf',
+            'data': data,
+            'model': 'res.partner',
+            'context': self.env.context,
+        }
 
     def action_generate_commission_statement_excel(self):
         """Generate Excel commission statement report"""
@@ -387,6 +374,51 @@ class Partner(models.Model):
             'target': 'new',
         }
 
+    def action_diagnose_report_templates(self):
+        """Diagnostic method to identify issues with report templates"""
+        self.ensure_one()
+        result = []
+        
+        # Check all templates related to commission reports
+        templates = self.env['ir.ui.view'].search([
+            ('key', 'like', 'commission_partner_statement%')
+        ])
+        
+        result.append("=== Template Diagnostic Results ===")
+        result.append(f"Found {len(templates)} templates:")
+        
+        for template in templates:
+            result.append(f"- Template: {template.key} (ID: {template.id}, Name: {template.name})")
+        
+        # Check all report actions
+        reports = self.env['ir.actions.report'].search([
+            ('report_name', 'like', 'commission_partner_statement%')
+        ])
+        
+        result.append("\n=== Report Actions Diagnostic Results ===")
+        result.append(f"Found {len(reports)} report actions:")
+        
+        for report in reports:
+            result.append(f"- Report: {report.name} (Model: {report.model}, Template: {report.report_name})")
+            # Check if paperformat exists
+            if report.paperformat_id:
+                result.append(f"  * Paper Format: {report.paperformat_id.name} (ID: {report.paperformat_id.id})")
+            else:
+                result.append(f"  * WARNING: No paper format defined!")
+        
+        # Display results in a notification
+        message = "\n".join(result)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Report Templates Diagnostic',
+                'message': message,
+                'sticky': True,
+                'type': 'info'
+            }
+        }
+        
     def action_share_commission_statement(self):
         """Share commission statement via email"""
         self.ensure_one()

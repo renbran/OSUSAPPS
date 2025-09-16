@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- SCHOLARIX Consolidated Commission Report Definition -->
-        <report id="action_scholarix_consolidated_report" model="scholarix.commission.report.wizard" string="SCHOLARIX Commission Report" report_type="qweb-pdf" name="commission_partner_statement.scholarix_consolidated_commission_report" file="commission_partner_statement.scholarix_consolidated_commission_report" print_report_name="'SCHOLARIX Commission Report - %s to %s' % (object.period_start, object.period_end)" paperformat="base.paperformat_euro" />
+        <!-- SCHOLARIX Consolidated Commission Report Definition - Updated for Odoo 17 -->
+        <record id="action_scholarix_consolidated_report" model="ir.actions.report">
+            <field name="name">SCHOLARIX Commission Report</field>
+            <field name="model">scholarix.commission.report.wizard</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">commission_partner_statement.scholarix_consolidated_commission_report</field>
+            <field name="report_file">commission_partner_statement.scholarix_consolidated_commission_report</field>
+            <field name="print_report_name">'SCHOLARIX Commission Report - %s to %s' % (object.period_start, object.period_end)</field>
+            <field name="paperformat_id" ref="commission_partner_reports.paperformat_commission_a4"/>
+            <field name="binding_model_id" ref="model_scholarix_commission_report_wizard"/>
+            <field name="binding_type">report</field>
+        </record>
 
-        <!-- Individual Agent Commission Statement Report -->
-        <report id="action_scholarix_agent_statement" model="scholarix.commission.statement" string="Agent Commission Statement" report_type="qweb-pdf" name="commission_partner_statement.scholarix_agent_statement_template" file="commission_partner_statement.scholarix_agent_statement_template" print_report_name="'Commission Statement - %s - %s to %s' % (object.agent_id.name, object.period_start, object.period_end)" paperformat="base.paperformat_euro" />
+        <!-- Individual Agent Commission Statement Report - Updated for Odoo 17 -->
+        <record id="action_scholarix_agent_statement" model="ir.actions.report">
+            <field name="name">Agent Commission Statement</field>
+            <field name="model">scholarix.commission.statement</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">commission_partner_statement.scholarix_agent_statement_template</field>
+            <field name="report_file">commission_partner_statement.scholarix_agent_statement_template</field>
+            <field name="print_report_name">'Commission Statement - %s - %s to %s' % (object.agent_id.name, object.period_start, object.period_end)</field>
+            <field name="paperformat_id" ref="commission_partner_reports.paperformat_commission_a4"/>
+            <field name="binding_model_id" ref="model_scholarix_commission_statement"/>
+            <field name="binding_type">report</field>
+        </record>
     </data>
 </odoo>
