@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="0">
-        
+
         <!-- Clean up any problematic views for commission_partner_statement -->
         <delete model="ir.ui.view" search="[('name', 'like', 'scholarix.commission'), ('model', '=', 'scholarix.commission.statement')]"/>
-        
+
         <!-- Clean up any cached views that might have invalid action references -->
         <delete model="ir.ui.view" search="[('arch_db', 'like', 'action_send_statement')]"/>
         <delete model="ir.ui.view" search="[('arch_db', 'like', 'action_confirm_statement')]"/>
         <delete model="ir.ui.view" search="[('arch_db', 'like', 'action_mark_paid')]"/>
-        
+
         <!-- Refresh view cache -->
         <function model="ir.ui.view" name="clear_caches"/>
-        
+
     </data>
 </odoo>
