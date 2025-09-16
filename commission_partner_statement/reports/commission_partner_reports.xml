@@ -17,7 +17,7 @@
             <field name="header_spacing">35</field>
             <field name="dpi">90</field>
         </record>
-        
+
         <!-- Commission Partner Statement PDF Report - Updated with Odoo 17 format -->
         <record id="action_commission_partner_statement_pdf" model="ir.actions.report">
             <field name="name">Commission Statement</field>
@@ -30,7 +30,7 @@
             <field name="binding_model_id" ref="base.model_res_partner"/>
             <field name="binding_type">report</field>
         </record>
-        
+
         <!-- Minimal Fallback Commission Report - Simplified version as backup -->
         <record id="action_commission_partner_statement_pdf_minimal" model="ir.actions.report">
             <field name="name">Minimal Commission Statement</field>

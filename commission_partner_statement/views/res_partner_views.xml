@@ -42,7 +42,7 @@
                         <button name="action_share_commission_statement" string="Share Statement" type="object" class="btn-info" invisible="commission_order_count == 0 or not email"/>
                         <button name="action_view_commission_orders" string="View Commission Orders" type="object" class="btn-secondary" invisible="commission_order_count == 0"/>
                     </group>
-                    
+
                     <!-- Diagnostic Tool (only visible in debug mode) -->
                     <group string="Diagnostic Tools" groups="base.group_no_one">
                         <button name="action_diagnose_report_templates" string="Diagnose Report Templates" type="object" class="btn-info"/>
