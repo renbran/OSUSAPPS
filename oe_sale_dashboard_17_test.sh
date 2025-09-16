@@ -48,18 +48,18 @@ run_test() {
 
 # 1. Test Component Registration
 echo "[TEST 1] Checking component registration..."
-test_cmd1="grep -n \"registry.category(\\\"actions\\\").add(\\\"oe_sale_dashboard_17_action\\\"\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_merged.js"
+test_cmd1="grep -n \"registry.category(\\\"actions\\\").add(\\\"oe_sale_dashboard_17_action\\\"\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_fixed.js"
 run_test "Component Registration" "$test_cmd1" "registry.category(\"actions\").add(\"oe_sale_dashboard_17_action\""
 
 # 2. Test Missing Functions
 echo "[TEST 2] Checking for previously missing functions..."
-test_cmd2a="grep -n \"renderChart(\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_merged.js"
+test_cmd2a="grep -n \"renderChart(\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_fixed.js"
 run_test "renderChart Function" "$test_cmd2a" "renderChart("
 
-test_cmd2b="grep -n \"updateDashboard(\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_merged.js"
+test_cmd2b="grep -n \"updateDashboard(\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_fixed.js"
 run_test "updateDashboard Function" "$test_cmd2b" "updateDashboard("
 
-test_cmd2c="grep -n \"fetchData(\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_merged.js"
+test_cmd2c="grep -n \"fetchData(\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_fixed.js"
 run_test "fetchData Function" "$test_cmd2c" "fetchData("
 
 # 3. Test Manifest
@@ -73,7 +73,7 @@ fi
 
 # 4. Test Template Match
 echo "[TEST 4] Checking template name match..."
-test_cmd4="grep -n \"static template = \\\"oe_sale_dashboard_17.SaleDashboardTemplate\\\"\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_merged.js"
+test_cmd4="grep -n \"static template = \\\"oe_sale_dashboard_17.SaleDashboardTemplate\\\"\" /mnt/extra-addons/oe_sale_dashboard_17/static/src/js/dashboard_fixed.js"
 run_test "Template Name Match" "$test_cmd4" "static template = \"oe_sale_dashboard_17.SaleDashboardTemplate\""
 
 # 5. Test XML Template
