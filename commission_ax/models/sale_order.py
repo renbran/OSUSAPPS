@@ -441,7 +441,7 @@ class SaleOrder(models.Model):
         """Enhanced commission processing with prerequisite checks"""
         for order in self:
             if not order._check_commission_prerequisites():
-                raise UserError(f"Cannot process commissions for {order.name}:\n{order.commission_blocked_reason}")
+                raise UserError("Cannot process commissions for %s:\n%s" % (order.name, order.commission_blocked_reason))
             order._create_commission_purchase_orders()
         return True
 
@@ -629,7 +629,7 @@ class SaleOrder(models.Model):
                 )
                 po = self.env['purchase.order'].create(po_vals)
                 created_pos.append(po)
-                _logger.info(f"Created commission PO: {po.name}")
+                _logger.info("Created commission PO: %s", po.name)
 
             # Mark as processed
             self.commission_processed = True
@@ -654,8 +654,8 @@ class SaleOrder(models.Model):
                 
         except Exception as e:
             self.commission_status = 'draft'
-            _logger.error(f"Error creating commission purchase orders: {str(e)}")
-            raise UserError(f"Failed to process commissions: {str(e)}")
+            _logger.error("Error creating commission purchase orders: %s", str(e))
+            raise UserError("Failed to process commissions: %s" % str(e)) from e
 
     def _execute_cancellation(self):
         """Execute the actual cancellation with cascade logic"""
@@ -670,7 +670,7 @@ class SaleOrder(models.Model):
                         po.button_cancel()
                         po.message_post(body=f"Automatically cancelled due to sale order {order.name} cancellation")
                 except Exception as e:
-                    _logger.warning(f"Could not cancel PO {po.name}: {str(e)}")
+                    _logger.warning("Could not cancel PO %s: %s", po.name, str(e))
             
             # Reset commission status
             order.commission_status = 'draft'
@@ -798,7 +798,7 @@ class SaleOrder(models.Model):
                 'purchase_ok': True,
                 'detailed_type': 'service',
             })
-            _logger.info(f"Created commission product: {commission_type}")
+            _logger.info("Created commission product: %s", commission_type)
         
         return product
 

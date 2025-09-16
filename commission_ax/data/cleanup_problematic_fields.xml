@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+        <!-- Clean up any problematic custom fields that may exist in database -->
+        <function model="ir.model.fields" name="search_unlink" eval="[('name', '=', 'x_lead_id'), ('model_id.model', '=', 'crm.lead')]"/>
+        
+        <!-- Clean up any problematic views that reference non-existent fields -->
+        <delete model="ir.ui.view" search="[('arch_db', 'like', 'x_lead_id')]"/>
+        
+        <!-- Refresh view cache -->
+        <function model="ir.ui.view" name="clear_caches"/>
+        
+    </data>
+</odoo>

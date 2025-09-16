@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
-import base64
-import io
 import json
-import xlsxwriter
-from datetime import datetime, date, timedelta
-from dateutil.relativedelta import relativedelta
+from datetime import datetime
 
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError, UserError
-from odoo.tools import date_utils
 
 
 class ScholarixCommissionStatement(models.Model):
