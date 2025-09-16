@@ -2,7 +2,6 @@ from . import account_journal
 from . import account_move
 from . import account_payment
 from . import account_payment_register
-from . import fix_pdf_error
 from . import ir_actions_report
 from . import payment_approval_history
 from . import payment_dashboard

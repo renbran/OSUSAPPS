@@ -66,7 +66,6 @@ Technical Features:
         'views/sale_order.xml',
         'views/purchase_order.xml',
         'views/commission_wizard_views.xml',
-        'views/commission_statement_wizard_views.xml',
         'views/deals_commission_report_wizard_views.xml',
         'reports/commission_report.xml',
         'reports/commission_report_template.xml',
