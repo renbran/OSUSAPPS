@@ -1,6 +1,6 @@
 {
     'name': 'Advanced Commission Management',
-    'version': '17.0.2.0.0',
+    'version': '17.0.3.0.0',
     'category': 'Sales',
     'summary': 'Advanced commission management with business logic constraints, professional reporting and commission statements',
     'description': """
@@ -74,6 +74,11 @@ Technical Features:
         'reports/per_order_commission_report.xml',
         'reports/deals_commission_report.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            # Base JS & CSS assets
+        ]
+    },
     'demo': [],
     'installable': True,
     'auto_install': False,
