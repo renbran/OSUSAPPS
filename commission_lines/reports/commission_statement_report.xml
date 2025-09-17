@@ -28,26 +28,30 @@
                         <!-- Partner Information -->
                         <div class="row mb-3">
                             <div class="col-6">
-                                <strong>Partner Name:</strong> <span t-field="wizard.partner_id.name"/>
+                                <strong>Partner Name:</strong>
+                                <span t-field="wizard.partner_id.name"/>
                             </div>
                             <div class="col-6">
-                                <strong>Date Range:</strong> 
-                                <span t-field="wizard.date_from"/> - <span t-field="wizard.date_to"/>
+                                <strong>Date Range:</strong>
+                                <span t-field="wizard.date_from"/>
+ -                                <span t-field="wizard.date_to"/>
                             </div>
                         </div>
 
                         <div class="row mb-4">
                             <div class="col-6">
-                                <strong>Partner Email:</strong> <span t-field="wizard.partner_id.email"/>
+                                <strong>Partner Email:</strong>
+                                <span t-field="wizard.partner_id.email"/>
                             </div>
                             <div class="col-6">
-                                <strong>Report Generated:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/>
+                                <strong>Report Generated:</strong>
+                                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/>
                             </div>
                         </div>
 
                         <!-- Commission Lines Table -->
                         <t t-set="commission_data" t-value="wizard._get_commission_lines_data()"/>
-                        
+
                         <div class="row">
                             <div class="col-12">
                                 <table class="table table-bordered table-sm">
@@ -65,14 +69,18 @@
                                     <tbody>
                                         <t t-set="total_sale_value" t-value="0"/>
                                         <t t-set="total_commission" t-value="0"/>
-                                        
+
                                         <t t-foreach="commission_data" t-as="line">
                                             <tr>
                                                 <td>
                                                     <span t-esc="line['booking_date'].strftime('%Y-%m-%d')" t-if="line['booking_date']"/>
                                                 </td>
-                                                <td><span t-esc="line['order_ref']"/></td>
-                                                <td><span t-esc="line['customer_reference']"/></td>
+                                                <td>
+                                                    <span t-esc="line['order_ref']"/>
+                                                </td>
+                                                <td>
+                                                    <span t-esc="line['customer_reference']"/>
+                                                </td>
                                                 <td class="text-right">
                                                     <span t-esc="'{:,.2f}'.format(line['sale_value'] or 0)" t-if="line['sale_value']"/>
                                                     <span t-if="not line['sale_value']">-</span>
@@ -85,8 +93,7 @@
                                                     <span t-esc="'{:,.2f}'.format(line['commission_amount'] or 0)"/>
                                                 </td>
                                                 <td>
-                                                    <span class="badge" 
-                                                          t-attf-class="badge-#{
+                                                    <span class="badge" t-attf-class="badge-#{
                                                               'success' if line['state'] == 'paid' else
                                                               'primary' if line['state'] == 'billed' else
                                                               'info' if line['state'] == 'approved' else
@@ -98,12 +105,12 @@
                                                     </span>
                                                 </td>
                                             </tr>
-                                            
+
                                             <!-- Update totals -->
                                             <t t-set="total_sale_value" t-value="total_sale_value + (line['sale_value'] or 0)"/>
                                             <t t-set="total_commission" t-value="total_commission + (line['commission_amount'] or 0)"/>
                                         </t>
-                                        
+
                                         <!-- No data row -->
                                         <tr t-if="not commission_data">
                                             <td colspan="7" class="text-center text-muted">
@@ -152,30 +159,33 @@
                                 <h5>Status Legend:</h5>
                                 <p>
                                     <span class="badge badge-secondary">Draft</span> - Commission not yet calculated<br/>
-                                    <span class="badge badge-warning">Calculated</span> - Commission calculated but not approved<br/>
-                                    <span class="badge badge-info">Approved</span> - Commission approved for payment<br/>
-                                    <span class="badge badge-primary">Billed</span> - Purchase order created for commission<br/>
-                                    <span class="badge badge-success">Paid</span> - Commission has been paid<br/>
-                                    <span class="badge badge-danger">Cancelled</span> - Commission cancelled
-                                </p>
-                            </div>
-                        </div>
+                                <span class="badge badge-warning">Calculated</span> - Commission calculated but not approved<br/>
+                            <span class="badge badge-info">Approved</span> - Commission approved for payment<br/>
+                        <span class="badge badge-primary">Billed</span> - Purchase order created for commission<br/>
+                    <span class="badge badge-success">Paid</span> - Commission has been paid<br/>
+                <span class="badge badge-danger">Cancelled</span> - Commission cancelled
+            </p>
+        </div>
+    </div>
 
-                        <!-- Footer Notes -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <hr/>
-                                <p class="text-muted small">
+    <!-- Footer Notes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <hr/>
+            <p class="text-muted small">
                                     This commission statement was generated on 
-                                    <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d at %H:%M:%S')"/>
-                                    for the period from <span t-field="wizard.date_from"/> to <span t-field="wizard.date_to"/>.
-                                    All amounts are displayed in <span t-field="wizard.currency_id.name"/>.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </t>
-            </t>
-        </t>
-    </template>
+                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d at %H:%M:%S')"/>
+                                    for the period from <span t-field="wizard.date_from"/>
+ to <span t-field="wizard.date_to"/>
+.
+                                    All amounts are displayed in <span t-field="wizard.currency_id.name"/>
+.
+    </p>
+</div>
+</div>
+</div>
+</t>
+</t>
+</t>
+</template>
 </odoo>

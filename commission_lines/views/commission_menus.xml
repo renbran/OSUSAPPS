@@ -17,28 +17,15 @@
     </record>
 
     <!-- Main Menu -->
-    <menuitem id="menu_commission_lines_root"
-              name="Commission Lines"
-              web_icon="commission_lines,static/description/icon.png"
-              sequence="60"/>
+    <menuitem id="menu_commission_lines_root" name="Commission Lines" web_icon="commission_lines,static/description/icon.png" sequence="60"/>
 
     <!-- Commission Lines Sub Menu -->
-    <menuitem id="menu_commission_lines"
-              name="Commission Lines"
-              parent="menu_commission_lines_root"
-              action="action_commission_line"
-              sequence="10"/>
+    <menuitem id="menu_commission_lines" name="Commission Lines" parent="menu_commission_lines_root" action="action_commission_line" sequence="10"/>
 
     <!-- Reports Menu -->
-    <menuitem id="menu_commission_reports"
-              name="Reports"
-              parent="menu_commission_lines_root"
-              sequence="20"/>
+    <menuitem id="menu_commission_reports" name="Reports" parent="menu_commission_lines_root" sequence="20"/>
 
     <!-- Configuration Menu -->
-    <menuitem id="menu_commission_config"
-              name="Configuration"
-              parent="menu_commission_lines_root"
-              sequence="90"/>
+    <menuitem id="menu_commission_config" name="Configuration" parent="menu_commission_lines_root" sequence="90"/>
 
 </odoo>

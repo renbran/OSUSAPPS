@@ -19,39 +19,27 @@
                             <field name="commission_amount_this_year" readonly="1" widget="monetary"/>
                         </group>
                     </group>
-                    
+
                     <div class="oe_button_box" name="commission_buttons">
-                        <button name="action_view_commission_lines" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-list-ul"
-                                attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                        <button name="action_view_commission_lines" type="object" class="oe_stat_button" icon="fa-list-ul" attrs="{'invisible': [('commission_line_count', '=', 0)]}">
                             <field name="commission_line_count" widget="statinfo" string="Commission Lines"/>
                         </button>
-                        
-                        <button name="action_generate_commission_statement" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-file-text-o"
-                                attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+
+                        <button name="action_generate_commission_statement" type="object" class="oe_stat_button" icon="fa-file-text-o" attrs="{'invisible': [('commission_line_count', '=', 0)]}">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_text">Commission</span>
                                 <span class="o_stat_text">Statement</span>
                             </div>
                         </button>
-                        
-                        <button name="action_commission_summary" 
-                                type="object" 
-                                class="oe_stat_button" 
-                                icon="fa-bar-chart"
-                                attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+
+                        <button name="action_commission_summary" type="object" class="oe_stat_button" icon="fa-bar-chart" attrs="{'invisible': [('commission_line_count', '=', 0)]}">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_text">Commission</span>
                                 <span class="o_stat_text">Summary</span>
                             </div>
                         </button>
                     </div>
-                    
+
                     <field name="commission_line_ids" nolabel="1" readonly="1">
                         <tree string="Commission Lines" create="false" edit="false" delete="false">
                             <field name="name"/>
@@ -61,12 +49,7 @@
                             <field name="commission_type"/>
                             <field name="commission_rate"/>
                             <field name="commission_amount" widget="monetary"/>
-                            <field name="state" widget="badge" 
-                                   decoration-success="state == 'paid'"
-                                   decoration-primary="state == 'billed'"
-                                   decoration-info="state == 'approved'" 
-                                   decoration-warning="state == 'calculated'"
-                                   decoration-danger="state == 'cancelled'"/>
+                            <field name="state" widget="badge" decoration-success="state == 'paid'" decoration-primary="state == 'billed'" decoration-info="state == 'approved'" decoration-warning="state == 'calculated'" decoration-danger="state == 'cancelled'"/>
                         </tree>
                     </field>
                 </page>

@@ -1,22 +1,22 @@
 /* Commission Lines CSS */
 
 .commission_line_highlight {
-    background-color: #e8f5e8;
-    border-left: 3px solid #28a745;
-    padding: 5px;
+  background-color: #e8f5e8;
+  border-left: 3px solid #28a745;
+  padding: 5px;
 }
 
 .commission_amount {
-    font-weight: bold;
-    color: #28a745;
+  font-weight: bold;
+  color: #28a745;
 }
 
 .commission_status_paid {
-    color: #28a745;
-    font-weight: bold;
+  color: #28a745;
+  font-weight: bold;
 }
 
 .commission_status_cancelled {
-    color: #dc3545;
-    font-weight: bold;
+  color: #dc3545;
+  font-weight: bold;
 }

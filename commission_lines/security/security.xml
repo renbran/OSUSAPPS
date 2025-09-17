@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Security Groups -->
-    
+
     <!-- Commission User Group -->
     <record id="group_commission_user" model="res.groups">
         <field name="name">Commission User</field>
