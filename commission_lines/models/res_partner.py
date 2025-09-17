@@ -43,6 +43,19 @@ class ResPartner(models.Model):
         currency_field='currency_id',
         help='Commission amount this year'
     )
+    
+    # Commission Agent Fields
+    is_commission_agent = fields.Boolean(
+        string='Is Commission Agent',
+        default=False,
+        help='Check if this partner is a commission agent'
+    )
+    
+    commission_rate = fields.Float(
+        string='Default Commission Rate (%)',
+        default=0.0,
+        help='Default commission rate percentage for this agent'
+    )
 
     # ============================================================================
     # COMPUTE METHODS
