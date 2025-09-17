@@ -44,7 +44,8 @@ Website: https://www.osusproperties.com
         'security/ir.model.access.csv',
         
         # Data
-        'data/commission_data.xml',
+        'data/commission_data.xml
+        'commission_types_data.xml',
         
         # Wizards
         'views/commission_statement_wizard_views.xml',
