@@ -6,4 +6,16 @@
             <button class="btn btn-primary commission-calculate">Calculate Commission</button>
         </div>
     </t>
+
+    <t t-name="CommissionDashboard">
+        <div class="commission-dashboard">
+            <div class="dashboard-header">
+                <h3>Commission Dashboard</h3>
+                <button class="btn btn-secondary commission_refresh">Refresh</button>
+            </div>
+            <div class="commission_dashboard_content">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </t>
 </templates>

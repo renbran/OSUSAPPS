@@ -1,58 +1,59 @@
-odoo.define('commission_lines.dashboard', function (require) {
-"use strict";
+/** @odoo-module */
 
-var AbstractAction = require('web.AbstractAction');
-var core = require('web.core');
-var rpc = require('web.rpc');
+import { Component } from "@odoo/owl";
+import { registry } from "@web/core/registry";
+import { useService } from "@web/core/utils/hooks";
 
-var CommissionDashboard = AbstractAction.extend({
-    template: 'CommissionDashboard',
-    
-    init: function(parent, context) {
-        this._super(parent, context);
+export class CommissionDashboard extends Component {
+    static template = "CommissionDashboard";
+    static props = {};
+
+    setup() {
+        this.rpc = useService("rpc");
+        this.commission_data = {};
         this.dashboards_templates = ['CommissionDashboard'];
-    },
-    
-    willStart: function() {
-        var self = this;
-        return this._super().then(function() {
-            return self.fetch_data();
-        });
-    },
-    
-    start: function() {
-        var self = this;
-        return this._super().then(function() {
-            self.$('.commission_refresh').click(function() {
-                self.fetch_data().then(function() {
-                    self.render_dashboard();
-                });
+    }
+
+    async mounted() {
+        await this.fetch_data();
+        this.render_dashboard();
+        
+        const refreshBtn = this.el.querySelector('.commission_refresh');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', async () => {
+                await this.fetch_data();
+                this.render_dashboard();
             });
-        });
-    },
-    
-    fetch_data: function() {
-        var self = this;
-        return rpc.query({
-            model: 'commission.line',
-            method: 'get_dashboard_data',
-        }).then(function(result) {
-            self.commission_data = result;
-        });
-    },
-    
-    render_dashboard: function() {
-        var self = this;
-        this.$('.commission_dashboard_content').html(core.qweb.render('CommissionDashboardContent', {
-            widget: self,
-            data: self.commission_data
-        }));
-    },
-    
-});
+        }
+    }
 
-core.action_registry.add('commission_dashboard', CommissionDashboard);
+    async fetch_data() {
+        try {
+            this.commission_data = await this.rpc("/web/dataset/call_kw", {
+                model: 'commission.line',
+                method: 'get_dashboard_data',
+                args: [],
+                kwargs: {},
+            });
+        } catch (error) {
+            console.error('Error fetching commission data:', error);
+            this.commission_data = {};
+        }
+    }
 
-return CommissionDashboard;
+    render_dashboard() {
+        const contentEl = this.el.querySelector('.commission_dashboard_content');
+        if (contentEl) {
+            // For now, just display basic data
+            // In a full implementation, you'd use a proper template
+            contentEl.innerHTML = `
+                <div class="commission-summary">
+                    <h3>Commission Dashboard</h3>
+                    <p>Data loaded: ${JSON.stringify(this.commission_data)}</p>
+                </div>
+            `;
+        }
+    }
+}
 
-});
+registry.category("actions").add("commission_dashboard", CommissionDashboard);

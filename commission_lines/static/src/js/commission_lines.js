@@ -1,36 +1,35 @@
-odoo.define("commission_lines.commission_lines_widget", function (require) {
-  "use strict";
+/** @odoo-module */
 
-  var Widget = require("web.Widget");
-  var core = require("web.core");
+import { Component } from "@odoo/owl";
+import { registry } from "@web/core/registry";
 
-  var CommissionLinesWidget = Widget.extend({
-    template: "commission_lines.CommissionWidget",
+export class CommissionLinesWidget extends Component {
+    static template = "commission_lines.CommissionWidget";
+    static props = {
+        options: { type: Object, optional: true },
+    };
 
-    init: function (parent, options) {
-      this._super(parent);
-      this.options = options || {};
-    },
+    setup() {
+        this.options = this.props.options || {};
+    }
 
-    start: function () {
-      var self = this;
-      return this._super().then(function () {
-        self._bindEvents();
-      });
-    },
+    mounted() {
+        this._bindEvents();
+    }
 
-    _bindEvents: function () {
-      var self = this;
-      this.$(".commission-calculate").on("click", function () {
-        self._calculateCommission();
-      });
-    },
+    _bindEvents() {
+        const calculateBtn = this.el.querySelector(".commission-calculate");
+        if (calculateBtn) {
+            calculateBtn.addEventListener("click", () => {
+                this._calculateCommission();
+            });
+        }
+    }
 
-    _calculateCommission: function () {
-      // Commission calculation logic here
-      console.log("Calculating commission...");
-    },
-  });
+    _calculateCommission() {
+        // Commission calculation logic here
+        console.log("Calculating commission...");
+    }
+}
 
-  return CommissionLinesWidget;
-});
+registry.category("components").add("CommissionLinesWidget", CommissionLinesWidget);
