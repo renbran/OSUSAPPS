@@ -7,19 +7,19 @@
             <field name="name">External Commission</field>
             <field name="code">EXTERNAL</field>
         </record>
-        
+
         <record id="commission_type_internal" model="commission.type">
             <field name="sequence">20</field>
             <field name="name">Internal Commission</field>
             <field name="code">INTERNAL</field>
         </record>
-        
+
         <record id="commission_type_referral" model="commission.type">
             <field name="sequence">30</field>
             <field name="name">Referral Commission</field>
             <field name="code">REFERRAL</field>
         </record>
-        
+
         <record id="commission_type_bonus" model="commission.type">
             <field name="sequence">40</field>
             <field name="name">Bonus Commission</field>
