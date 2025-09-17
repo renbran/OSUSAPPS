@@ -45,16 +45,15 @@ Website: https://www.osusproperties.com
         
         # Data
         'data/commission_data.xml',
-        'data/commission_types_data.xml',
-        
-        # Wizards
-        'views/commission_statement_wizard_views.xml',
         
         # Views
         'views/commission_lines_views.xml',
         'views/commission_menus.xml',
         'views/commission_reports.xml',
         'views/res_partner_views.xml',
+        
+        # Wizards
+        'views/commission_statement_wizard_views.xml',
         
         # Reports
         'reports/commission_statement_report.xml',
