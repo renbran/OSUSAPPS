@@ -67,8 +67,15 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.res_partner_kanban_view"/>
         <field name="arch" type="xml">
+            <!-- Add invisible fields to ensure they're loaded -->
+            <xpath expr="//field[@name='display_name']" position="after">
+                <field name="supplier_rank" invisible="1"/>
+                <field name="commission_line_count" invisible="1"/>
+                <field name="total_commission_amount" invisible="1"/>
+            </xpath>
+            
             <xpath expr="//div[hasclass('oe_kanban_details')]" position="inside">
-                <div t-if="record.supplier_rank.raw_value and record.commission_line_count.raw_value > 0" class="row">
+                <div t-if="record.supplier_rank and record.supplier_rank.raw_value > 0 and record.commission_line_count and record.commission_line_count.raw_value > 0" class="row">
                     <div class="col-8">
                         <span>Commission Lines:</span>
                     </div>
@@ -76,7 +83,7 @@
                         <field name="commission_line_count"/>
                     </div>
                 </div>
-                <div t-if="record.supplier_rank.raw_value and record.total_commission_amount.raw_value > 0" class="row">
+                <div t-if="record.supplier_rank and record.supplier_rank.raw_value > 0 and record.total_commission_amount and record.total_commission_amount.raw_value > 0" class="row">
                     <div class="col-8">
                         <span>Total Commission:</span>
                     </div>

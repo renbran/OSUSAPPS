@@ -18,6 +18,10 @@
                         <span class="o_stat_text">Commission Lines</span>
                     </div>
                 </button>
+                
+                <button name="action_view_commission_purchase_orders" type="object" class="oe_stat_button" icon="fa-shopping-cart" invisible="commission_purchase_order_count == 0">
+                    <field name="commission_purchase_order_count" widget="statinfo" string="Commission POs"/>
+                </button>
             </xpath>
 
             <!-- Add Commission Lines tab -->
@@ -35,6 +39,19 @@
                         </tree>
                     </field>
                 </page>
+                
+                <page string="Commission Purchase Orders" name="commission_purchase_orders" invisible="commission_purchase_order_count == 0">
+                    <field name="commission_purchase_order_ids" nolabel="1">
+                        <tree string="Commission Purchase Orders" create="false" edit="false">
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="date_order"/>
+                            <field name="amount_total" widget="monetary"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="state" widget="badge" decoration-success="state == 'purchase'" decoration-primary="state == 'done'" decoration-info="state == 'to approve'" decoration-warning="state == 'draft'" decoration-danger="state == 'cancel'"/>
+                        </tree>
+                    </field>
+                </page>
             </xpath>
 
             <!-- Add computed fields -->
@@ -42,6 +59,8 @@
                 <field name="commission_line_count" invisible="1"/>
                 <field name="has_commission_lines" invisible="1"/>
                 <field name="is_fully_invoiced" invisible="1"/>
+                <field name="commission_purchase_order_count" invisible="1"/>
+                <field name="has_commission_purchase_orders" invisible="1"/>
             </xpath>
         </field>
     </record>

@@ -30,6 +30,26 @@ class SaleOrder(models.Model):
         compute='_compute_commission_line_count',
         help='Whether this order has commission lines'
     )
+    
+    # Purchase Order Integration for Commissions
+    commission_purchase_order_ids = fields.One2many(
+        'purchase.order',
+        'origin_sale_order_id',
+        string='Commission Purchase Orders',
+        help='Purchase orders created for commission payments'
+    )
+    
+    commission_purchase_order_count = fields.Integer(
+        string='Commission PO Count',
+        compute='_compute_commission_purchase_order_count',
+        help='Number of commission purchase orders'
+    )
+    
+    has_commission_purchase_orders = fields.Boolean(
+        string='Has Commission POs',
+        compute='_compute_commission_purchase_order_count',
+        help='Whether this order has commission purchase orders'
+    )
 
     # ============================================================================
     # COMPUTE METHODS
@@ -41,6 +61,13 @@ class SaleOrder(models.Model):
         for order in self:
             order.commission_line_count = len(order.commission_line_ids)
             order.has_commission_lines = bool(order.commission_line_ids)
+    
+    @api.depends('commission_purchase_order_ids')
+    def _compute_commission_purchase_order_count(self):
+        """Compute commission purchase order count"""
+        for order in self:
+            order.commission_purchase_order_count = len(order.commission_purchase_order_ids)
+            order.has_commission_purchase_orders = bool(order.commission_purchase_order_ids)
 
     # ============================================================================
     # ACTION METHODS
@@ -55,6 +82,20 @@ class SaleOrder(models.Model):
             'default_sale_order_id': self.id,
             'create': False,  # Don't allow manual creation
         }
+        return action
+    
+    def action_view_commission_purchase_orders(self):
+        """View commission purchase orders for this sale order"""
+        self.ensure_one()
+        action = self.env.ref('purchase.purchase_order_action_generic').read()[0]
+        action['domain'] = [('origin_sale_order_id', '=', self.id)]
+        action['context'] = {
+            'default_origin_sale_order_id': self.id,
+            'create': False,  # Don't allow manual creation
+        }
+        if len(self.commission_purchase_order_ids) == 1:
+            action['views'] = [(False, 'form')]
+            action['res_id'] = self.commission_purchase_order_ids.id
         return action
     
     def action_generate_commission_lines(self):

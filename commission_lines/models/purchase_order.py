@@ -24,6 +24,13 @@ class PurchaseOrder(models.Model):
         compute='_compute_commission_line_count',
         help='Number of commission lines linked to this PO'
     )
+    
+    # Sale Order Integration
+    origin_sale_order_id = fields.Many2one(
+        'sale.order',
+        string='Origin Sale Order',
+        help='Sale order that originated this commission purchase order'
+    )
 
     # ============================================================================
     # COMPUTE METHODS
