@@ -45,7 +45,7 @@ Website: https://www.osusproperties.com
         
         # Data
         'data/commission_data.xml',
-        'commission_types_data.xml',
+        'data/commission_types_data.xml',
         
         # Wizards
         'views/commission_statement_wizard_views.xml',
