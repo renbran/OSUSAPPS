@@ -8,11 +8,11 @@
         <field name="arch" type="xml">
             <!-- Add Commission Lines button to button box -->
             <xpath expr="//div[@name='button_box']" position="inside">
-                <button name="action_view_commission_lines" type="object" class="oe_stat_button" icon="fa-list-ul" invisible="commission_line_count == 0">>
+                <button name="action_view_commission_lines" type="object" class="oe_stat_button" icon="fa-list-ul" invisible="commission_line_count == 0">
                     <field name="commission_line_count" widget="statinfo" string="Commission Lines"/>
                 </button>
 
-                <button name="action_generate_commission_lines" type="object" class="oe_stat_button" icon="fa-plus-square" invisible="has_commission_lines or not is_fully_invoiced">>
+                <button name="action_generate_commission_lines" type="object" class="oe_stat_button" icon="fa-plus-square" invisible="has_commission_lines or not is_fully_invoiced">
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_text">Generate</span>
                         <span class="o_stat_text">Commission Lines</span>
@@ -22,7 +22,7 @@
 
             <!-- Add Commission Lines tab -->
             <xpath expr="//notebook" position="inside">
-                <page string="Commission Lines" name="commission_lines" invisible="commission_line_count == 0">>
+                <page string="Commission Lines" name="commission_lines" invisible="commission_line_count == 0">
                     <field name="commission_line_ids" nolabel="1">
                         <tree string="Commission Lines" create="false" edit="false">
                             <field name="name"/>
@@ -41,6 +41,7 @@
             <xpath expr="//field[@name='amount_total']" position="after">
                 <field name="commission_line_count" invisible="1"/>
                 <field name="has_commission_lines" invisible="1"/>
+                <field name="is_fully_invoiced" invisible="1"/>
             </xpath>
         </field>
     </record>
