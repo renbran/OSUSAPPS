@@ -11,6 +11,7 @@ class CommissionLine(models.Model):
     """Commission Line Model for managing commission entries integrated with commission_ax"""
     _name = 'commission.line'
     _description = 'Commission Line'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'booking_date desc, id desc'
     _rec_name = 'display_name'
 

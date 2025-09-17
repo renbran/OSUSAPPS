@@ -36,6 +36,7 @@ Website: https://www.osusproperties.com
         'base',
         'sale',
         'account',
+        'mail',
         'commission_ax',
     ],
     'data': [
