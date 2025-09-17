@@ -73,7 +73,7 @@
                 <field name="commission_line_count" invisible="1"/>
                 <field name="total_commission_amount" invisible="1"/>
             </xpath>
-            
+
             <xpath expr="//div[hasclass('oe_kanban_details')]" position="inside">
                 <div t-if="record.supplier_rank and record.supplier_rank.raw_value > 0 and record.commission_line_count and record.commission_line_count.raw_value > 0" class="row">
                     <div class="col-8">

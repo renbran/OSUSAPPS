@@ -18,7 +18,7 @@
                         <span class="o_stat_text">Commission Lines</span>
                     </div>
                 </button>
-                
+
                 <button name="action_view_commission_purchase_orders" type="object" class="oe_stat_button" icon="fa-shopping-cart" invisible="commission_purchase_order_count == 0">
                     <field name="commission_purchase_order_count" widget="statinfo" string="Commission POs"/>
                 </button>
@@ -39,7 +39,7 @@
                         </tree>
                     </field>
                 </page>
-                
+
                 <page string="Commission Purchase Orders" name="commission_purchase_orders" invisible="commission_purchase_order_count == 0">
                     <field name="commission_purchase_order_ids" nolabel="1">
                         <tree string="Commission Purchase Orders" create="false" edit="false">
