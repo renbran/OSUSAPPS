@@ -44,7 +44,7 @@
         <!-- Sample Commission Lines (Demo Data) -->
         <record id="demo_commission_line_1" model="commission.line">
             <field name="name">COMM00001</field>
-            <field name="date">2025-08-18</field>
+            <field name="booking_date">2025-08-18</field>
             <field name="partner_id" ref="partner_commission_agent_1"/>
             <field name="salesperson_id" ref="base.user_admin"/>
             <field name="commission_type">sale</field>
@@ -57,7 +57,7 @@
 
         <record id="demo_commission_line_2" model="commission.line">
             <field name="name">COMM00002</field>
-            <field name="date">2025-09-02</field>
+            <field name="booking_date">2025-09-02</field>
             <field name="partner_id" ref="partner_commission_agent_2"/>
             <field name="salesperson_id" ref="base.user_admin"/>
             <field name="commission_type">referral</field>
@@ -70,7 +70,7 @@
 
         <record id="demo_commission_line_3" model="commission.line">
             <field name="name">COMM00003</field>
-            <field name="date">2025-09-17</field>
+            <field name="booking_date">2025-09-17</field>
             <field name="partner_id" ref="partner_commission_agent_3"/>
             <field name="salesperson_id" ref="base.user_admin"/>
             <field name="commission_type">target</field>
