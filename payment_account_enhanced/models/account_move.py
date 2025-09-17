@@ -50,6 +50,14 @@ class AccountMove(models.Model):
         help="QR code for invoice/bill verification"
     )
 
+    # QR Code URLs for report templates (consistent store configuration)
+    qr_code_urls = fields.Char(
+        string='QR Code Data URL',
+        compute='_compute_qr_code_urls',
+        store=True,
+        help="QR code as data URL for use in report templates"
+    )
+
     # ============================================================================
     # COMPUTED FIELDS
     # ============================================================================
@@ -158,6 +166,21 @@ class AccountMove(models.Model):
                     record.qr_code_invoice = False
             else:
                 record.qr_code_invoice = False
+
+    @api.depends('qr_code_invoice')
+    def _compute_qr_code_urls(self):
+        """Generate QR code data URLs for report templates"""
+        for record in self:
+            if record.qr_code_invoice:
+                try:
+                    # Convert binary QR code to data URL for templates
+                    record.qr_code_urls = f"data:image/png;base64,{record.qr_code_invoice.decode('utf-8')}"
+                except Exception as e:
+                    _logger.error("Error converting QR code to data URL for invoice %s: %s", 
+                                record.name, str(e))
+                    record.qr_code_urls = False
+            else:
+                record.qr_code_urls = False
 
     # ============================================================================
     # WORKFLOW METHODS

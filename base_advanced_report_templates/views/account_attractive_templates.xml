@@ -323,11 +323,11 @@
                           t-field="o.invoice_incoterm_id.name"/>
                 </p>
                 <div id="qrcode" t-if="o.display_qr_code and o.amount_residual > 0">
-                    <p t-if="qr_code_urls.get(o.id)">
+                    <p t-if="o.qr_code_urls">
                         <strong class="text-center">Scan me with your banking app.</strong>
                         <br/>
                         <br/>
-                        <img class="border border-dark rounded" t-att-src="qr_code_urls[o.id]"/>
+                        <img class="border border-dark rounded" t-att-src="o.qr_code_urls"/>
                     </p>
                 </div>
             </div>

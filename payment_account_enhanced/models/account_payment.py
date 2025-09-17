@@ -111,6 +111,14 @@ class AccountPayment(models.Model):
         help="QR code for payment voucher verification with access token"
     )
 
+    # QR Code URLs for report templates (consistent store configuration)
+    qr_code_urls = fields.Char(
+        string='QR Code Data URL',
+        compute='_compute_qr_code_urls',
+        store=True,
+        help="QR code as data URL for use in report templates"
+    )
+
     # Secure access token for QR validation
     access_token = fields.Char(
         string='Access Token',
@@ -263,6 +271,21 @@ class AccountPayment(models.Model):
                 record.qr_code = False
                 # Don't auto-generate access token here to avoid recursion
                 # Access token should be generated separately via action_create_access_token
+
+    @api.depends('qr_code')
+    def _compute_qr_code_urls(self):
+        """Generate QR code data URLs for report templates"""
+        for record in self:
+            if record.qr_code:
+                try:
+                    # Convert binary QR code to data URL for templates
+                    record.qr_code_urls = f"data:image/png;base64,{record.qr_code.decode('utf-8')}"
+                except Exception as e:
+                    _logger.error("Error converting QR code to data URL for payment %s: %s", 
+                                record.voucher_number or record.name, str(e))
+                    record.qr_code_urls = False
+            else:
+                record.qr_code_urls = False
 
     def action_regenerate_qr_code(self):
         """Force regenerate QR code for this payment"""
