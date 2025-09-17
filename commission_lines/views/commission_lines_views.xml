@@ -33,12 +33,12 @@
         <field name="arch" type="xml">
             <form string="Commission Line">
                 <header>
-                    <button name="action_calculate" type="object" string="Calculate" class="oe_highlight" states="draft"/>
-                    <button name="action_approve" type="object" string="Approve" class="oe_highlight" states="calculated"/>
-                    <button name="action_bill" type="object" string="Bill" class="oe_highlight" states="approved"/>
-                    <button name="action_mark_paid" type="object" string="Mark Paid" class="oe_highlight" states="billed"/>
-                    <button name="action_cancel" type="object" string="Cancel" states="draft,calculated,approved,billed"/>
-                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" states="cancelled"/>
+                    <button name="action_calculate" type="object" string="Calculate" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'calculated'"/>
+                    <button name="action_bill" type="object" string="Bill" class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_mark_paid" type="object" string="Mark Paid" class="oe_highlight" invisible="state != 'billed'"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state not in ['draft', 'calculated', 'approved', 'billed']"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state != 'cancelled'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,calculated,approved,billed,paid"/>
                 </header>
                 <sheet>

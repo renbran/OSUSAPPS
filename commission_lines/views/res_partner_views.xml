@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <!-- Add Commission tab after Sales & Purchase tab -->
             <xpath expr="//notebook" position="inside">
-                <page string="Commission" name="commission" attrs="{'invisible': [('supplier_rank', '=', 0)]}">
+                <page string="Commission" name="commission" invisible="supplier_rank == 0">>
                     <group>
                         <group name="commission_summary">
                             <field name="commission_line_count" readonly="1"/>
@@ -21,18 +21,18 @@
                     </group>
 
                     <div class="oe_button_box" name="commission_buttons">
-                        <button name="action_view_commission_lines" type="object" class="oe_stat_button" icon="fa-list-ul" attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                        <button name="action_view_commission_lines" type="object" class="oe_stat_button" icon="fa-list-ul" invisible="commission_line_count == 0">>
                             <field name="commission_line_count" widget="statinfo" string="Commission Lines"/>
                         </button>
 
-                        <button name="action_generate_commission_statement" type="object" class="oe_stat_button" icon="fa-file-text-o" attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                        <button name="action_generate_commission_statement" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="commission_line_count == 0">>
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_text">Commission</span>
                                 <span class="o_stat_text">Statement</span>
                             </div>
                         </button>
 
-                        <button name="action_commission_summary" type="object" class="oe_stat_button" icon="fa-bar-chart" attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                        <button name="action_commission_summary" type="object" class="oe_stat_button" icon="fa-bar-chart" invisible="commission_line_count == 0">>
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_text">Commission</span>
                                 <span class="o_stat_text">Summary</span>
