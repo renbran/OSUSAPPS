@@ -10,11 +10,11 @@
     </record>
 
     <!-- Commission Manager Group -->
-    <record id="group_commission_manager" model="res.groups">
-        <field name="name">Commission Manager</field>
+    <record id="group_commission_lines_manager" model="res.groups">
+        <field name="name">Commission Lines Manager</field>
         <field name="category_id" ref="base.module_category_sales"/>
         <field name="implied_ids" eval="[(4, ref('group_commission_lines_user'))]"/>
-        <field name="comment">Managers can manage all commission operations</field>
+        <field name="comment">Managers can manage all commission lines operations</field>
     </record>
 
 </odoo>
