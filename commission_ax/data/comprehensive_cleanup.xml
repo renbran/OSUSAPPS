@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Comprehensive Cleanup Data File -->
+        <!-- This file was auto-generated to resolve FileNotFoundError -->
+        <!-- Originally contained cleanup operations that may have been executed -->
+        
+        <!-- If specific cleanup operations are needed, they can be added here -->
+        <!-- Example: -->
+        <!-- <delete model="some.model" search="[('condition', '=', 'value')]"/> -->
+        
+    </data>
+</odoo>

@@ -1,24 +1,6 @@
 {
     'name': 'Commission Lines',
-        'data': [
-        # Security
-        'security/security.xml',
-        'security/ir.model.access.csv',
-        
-        # Data
-        'data/commission_data.xml',
-        
-        # Wizards
-        'views/commission_statement_wizard_views.xml',
-        
-        # Views
-        'views/commission_lines_views.xml',
-        'views/commission_menus.xml',
-        'views/res_partner_views.xml',
-        
-        # Reports
-        'reports/commission_statement_report.xml',
-    ],17.0.1.0.0',
+    'version': '17.0.1.0.0',
     'category': 'Sales',
     'summary': 'Manage commission lines and calculations',
     'description': """
