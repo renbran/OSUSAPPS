@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ============================================================================ -->
+        <!-- COMMISSION LINE VIEWS -->
+        <!-- ============================================================================ -->
+        
+        <!-- Commission Line Tree View -->
+        <record id="view_commission_line_tree" model="ir.ui.view">
+            <field name="name">commission.line.tree</field>
+            <field name="model">commission.line</field>
+            <field name="arch" type="xml">
+                <tree string="Commission Lines" decoration-success="state=='paid'" 
+                      decoration-warning="state=='confirmed'" decoration-muted="state=='cancelled'">
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="partner_id"/>
+                    <field name="salesperson_id"/>
+                    <field name="client_order_ref"/>
+                    <field name="commission_type"/>
+                    <field name="commission_rate"/>
+                    <field name="base_amount"/>
+                    <field name="commission_amount" sum="Total"/>
+                    <field name="state"/>
+                    <field name="currency_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Commission Line Form View -->
+        <record id="view_commission_line_form" model="ir.ui.view">
+            <field name="name">commission.line.form</field>
+            <field name="model">commission.line</field>
+            <field name="arch" type="xml">
+                <form string="Commission Line">
+                    <header>
+                        <button name="action_confirm" string="Confirm" 
+                                type="object" class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_mark_paid" string="Mark as Paid" 
+                                type="object" class="oe_highlight"
+                                invisible="state not in ['confirmed', 'invoiced']"/>
+                        <button name="action_cancel" string="Cancel" 
+                                type="object"
+                                invisible="state in ['paid', 'cancelled']"/>
+                        <field name="state" widget="statusbar" 
+                               statusbar_visible="draft,confirmed,invoiced,paid"/>
+                    </header>
+                    
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="display_name" readonly="1"/>
+                            </h1>
+                        </div>
+                        
+                        <group>
+                            <group string="Basic Information">
+                                <field name="date"/>
+                                <field name="commission_type"/>
+                                <field name="partner_id"/>
+                                <field name="salesperson_id"/>
+                            </group>
+                            
+                            <group string="Commission Details">
+                                <field name="base_amount"/>
+                                <field name="commission_rate"/>
+                                <field name="commission_amount"/>
+                                <field name="currency_id"/>
+                            </group>
+                        </group>
+                        
+                        <group>
+                            <group string="Related Documents">
+                                <field name="sale_order_id"/>
+                                <field name="client_order_ref"/>
+                                <field name="invoice_id"/>
+                            </group>
+                            
+                            <group string="Additional Information">
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="user_id"/>
+                            </group>
+                        </group>
+                        
+                        <group string="Description">
+                            <field name="description" placeholder="Commission description..."/>
+                            <field name="notes" placeholder="Additional notes..."/>
+                        </group>
+                    </sheet>
+                    
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Commission Line Search View -->
+        <record id="view_commission_line_search" model="ir.ui.view">
+            <field name="name">commission.line.search</field>
+            <field name="model">commission.line</field>
+            <field name="arch" type="xml">
+                <search string="Commission Lines">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="salesperson_id"/>
+                    <field name="commission_type"/>
+                    <field name="client_order_ref"/>
+                    
+                    <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                    <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]"/>
+                    <filter name="paid" string="Paid" domain="[('state', '=', 'paid')]"/>
+                    <filter name="unpaid" string="Unpaid" domain="[('state', 'in', ['draft', 'confirmed'])]"/>
+                    
+                    <separator/>
+                    <filter name="this_month" string="This Month" 
+                            domain="[('date', '>=', datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0))]"/>
+                    <filter name="last_month" string="Last Month" 
+                            domain="[('date', '>=', (datetime.datetime.now() - relativedelta(months=1)).replace(day=1, hour=0, minute=0, second=0)),
+                                     ('date', '&lt;', datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0))]"/>
+                    
+                    <group expand="0" string="Group By">
+                        <filter name="group_partner" string="Commission Partner" context="{'group_by': 'partner_id'}"/>
+                        <filter name="group_type" string="Commission Type" context="{'group_by': 'commission_type'}"/>
+                        <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                        <filter name="group_order" string="Sale Order" context="{'group_by': 'sale_order_id'}"/>
+                        <filter name="group_month" string="Date Month" context="{'group_by': 'date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Commission Line Action -->
+        <record id="action_commission_line" model="ir.actions.act_window">
+            <field name="name">Commission Lines</field>
+            <field name="res_model">commission.line</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_commission_line_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first commission line!
+                </p>
+                <p>
+                    Commission lines track individual commission transactions.
+                    Each commission earned from a sale order is recorded as a separate line.
+                </p>
+            </field>
+        </record>
+
+        <!-- ============================================================================ -->
+        <!-- COMMISSION TYPE VIEWS -->
+        <!-- ============================================================================ -->
+
+        <!-- Commission Type Tree View -->
+        <record id="view_commission_type_tree" model="ir.ui.view">
+            <field name="name">commission.type.tree</field>
+            <field name="model">commission.type</field>
+            <field name="arch" type="xml">
+                <tree string="Commission Types" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="category"/>
+                    <field name="default_rate"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Commission Type Form View -->
+        <record id="view_commission_type_form" model="ir.ui.view">
+            <field name="name">commission.type.form</field>
+            <field name="model">commission.type</field>
+            <field name="arch" type="xml">
+                <form string="Commission Type">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="code"/>
+                                <field name="category"/>
+                                <field name="sequence"/>
+                            </group>
+                            <group>
+                                <field name="default_rate"/>
+                                <field name="active"/>
+                            </group>
+                        </group>
+                        
+                        <group string="Description">
+                            <field name="description" nolabel="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Commission Type Action -->
+        <record id="action_commission_type" model="ir.actions.act_window">
+            <field name="name">Commission Types</field>
+            <field name="res_model">commission.type</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- ============================================================================ -->
+        <!-- SALE ORDER ENHANCED VIEWS -->
+        <!-- ============================================================================ -->
+
+        <!-- Sale Order Form View - Commission Tab -->
+        <record id="view_sale_order_form_commission" model="ir.ui.view">
+            <field name="name">sale.order.form.commission</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Commissions" name="commissions">
+                        <div class="row">
+                            <div class="col-6">
+                                <group string="Commission Summary">
+                                    <field name="commission_count"/>
+                                    <field name="total_commission_amount"/>
+                                    <field name="commission_status"/>
+                                </group>
+                            </div>
+                            <div class="col-6">
+                                <group string="Quick Actions">
+                                    <button name="action_create_commission_lines" 
+                                            string="Create Commission Lines" 
+                                            type="object" 
+                                            class="btn-primary"
+                                            invisible="commission_count > 0"/>
+                                    <button name="action_view_commission_lines" 
+                                            string="View Commission Lines" 
+                                            type="object" 
+                                            class="btn-secondary"
+                                            invisible="commission_count == 0"/>
+                                </group>
+                            </div>
+                        </div>
+                        
+                        <field name="commission_line_ids">
+                            <tree string="Commission Lines" editable="bottom">
+                                <field name="partner_id"/>
+                                <field name="commission_type"/>
+                                <field name="commission_rate"/>
+                                <field name="base_amount"/>
+                                <field name="commission_amount"/>
+                                <field name="state"/>
+                            </tree>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Sale Order Tree View - Add Commission Columns -->
+        <record id="view_sale_order_tree_commission" model="ir.ui.view">
+            <field name="name">sale.order.tree.commission</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+                <field name="amount_total" position="after">
+                    <field name="commission_count" string="Commissions"/>
+                    <field name="total_commission_amount" string="Total Commission" sum="Total"/>
+                    <field name="commission_status" string="Commission Status"/>
+                </field>
+            </field>
+        </record>
+
+        <!-- ============================================================================ -->
+        <!-- PARTNER ENHANCED VIEWS -->
+        <!-- ============================================================================ -->
+
+        <!-- Partner Form View - Commission Information -->
+        <record id="view_partner_form_commission" model="ir.ui.view">
+            <field name="name">res.partner.form.commission</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Commission Information" name="commission_info">
+                        <group>
+                            <group string="Commission Statistics">
+                                <field name="commission_count"/>
+                                <field name="total_commission_amount"/>
+                                <field name="last_commission_date"/>
+                            </group>
+                            
+                            <group string="Quick Actions">
+                                <button name="action_view_commission_lines" 
+                                        string="View Commission Lines" 
+                                        type="object" 
+                                        class="btn-primary"
+                                        invisible="commission_count == 0"/>
+                                <button name="action_generate_commission_statement" 
+                                        string="Generate Statement" 
+                                        type="object" 
+                                        class="btn-secondary"
+                                        invisible="commission_count == 0"/>
+                            </group>
+                        </group>
+                        
+                        <separator string="Recent Commission Lines"/>
+                        <field name="commission_line_ids" readonly="1">
+                            <tree string="Commission Lines" limit="10">
+                                <field name="name"/>
+                                <field name="date"/>
+                                <field name="commission_type"/>
+                                <field name="client_order_ref"/>
+                                <field name="commission_amount"/>
+                                <field name="state"/>
+                            </tree>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- ============================================================================ -->
+        <!-- MENUS -->
+        <!-- ============================================================================ -->
+
+        <!-- Main Commission Menu -->
+        <menuitem id="menu_commission_main" 
+                  name="Commissions" 
+                  parent="sale.sale_menu_root" 
+                  sequence="20"/>
+
+        <!-- Commission Lines Menu -->
+        <menuitem id="menu_commission_lines" 
+                  name="Commission Lines" 
+                  parent="menu_commission_main" 
+                  action="action_commission_line" 
+                  sequence="10"/>
+
+        <!-- Commission Types Menu -->
+        <menuitem id="menu_commission_types" 
+                  name="Commission Types" 
+                  parent="menu_commission_main" 
+                  action="action_commission_type" 
+                  sequence="20"/>
+
+        <!-- Commission Reports Menu -->
+        <menuitem id="menu_commission_reports" 
+                  name="Reports" 
+                  parent="menu_commission_main" 
+                  sequence="30"/>
+
+    </data>
+</odoo>

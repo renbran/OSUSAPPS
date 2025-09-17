@@ -1,0 +1,69 @@
+/* Commission Lines Module Styles */
+
+.commission_line_dashboard {
+    padding: 20px;
+}
+
+.commission_stat_card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.commission_stat_card h3 {
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.commission_stat_card .stat_value {
+    font-size: 2em;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.commission_line_tree .o_list_table td {
+    vertical-align: middle;
+}
+
+.commission_status_draft {
+    color: #6c757d;
+}
+
+.commission_status_confirmed {
+    color: #007bff;
+}
+
+.commission_status_paid {
+    color: #28a745;
+}
+
+.commission_status_cancelled {
+    color: #dc3545;
+}
+
+/* Commission Report Styles */
+.commission_report_header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.commission_report_summary {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.commission_amount_highlight {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-weight: bold;
+}
