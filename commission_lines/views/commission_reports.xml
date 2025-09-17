@@ -16,7 +16,7 @@
         <field name="model">commission.line</field>
         <field name="arch" type="xml">
             <graph string="Commission Analysis" type="bar">
-                <field name="date" type="row" interval="month"/>
+                <field name="booking_date" type="row" interval="month"/>
                 <field name="commission_amount" type="measure"/>
             </graph>
         </field>
@@ -29,9 +29,9 @@
         <field name="arch" type="xml">
             <pivot string="Commission Analysis">
                 <field name="partner_id" type="row"/>
-                <field name="date" type="col" interval="month"/>
+                <field name="booking_date" type="col" interval="month"/>
                 <field name="commission_amount" type="measure"/>
-                <field name="base_amount" type="measure"/>
+                <field name="sale_value" type="measure"/>
             </pivot>
         </field>
     </record>
@@ -43,11 +43,9 @@
     </record>
 
     <!-- Menu Items for Reports -->
-    <menuitem id="menu_commission_reports" name="Reports" 
-              parent="menu_commission_lines_root" sequence="90"/>
-    
-    <menuitem id="menu_commission_analysis" name="Commission Analysis" 
-              parent="menu_commission_reports" action="action_commission_report" sequence="10"/>
+    <menuitem id="menu_commission_reports" name="Reports" parent="menu_commission_lines_root" sequence="90"/>
+
+    <menuitem id="menu_commission_analysis" name="Commission Analysis" parent="menu_commission_reports" action="action_commission_report" sequence="10"/>
 
     <!-- Commission Statement Report -->
     <record id="action_report_commission_statement" model="ir.actions.report">
