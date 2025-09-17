@@ -53,6 +53,7 @@ Website: https://www.osusproperties.com
         # Views
         'views/commission_lines_views.xml',
         'views/commission_menus.xml',
+        'views/commission_reports.xml',
         'views/res_partner_views.xml',
         
         # Reports
@@ -62,13 +63,11 @@ Website: https://www.osusproperties.com
         'web.assets_backend': [
             'commission_lines/static/src/css/commission_lines.css',
             'commission_lines/static/src/js/commission_lines.js',
-        ],
-        'web.assets_frontend': [
-            'commission_lines/static/src/css/commission_lines_frontend.css',
+            'commission_lines/static/src/js/commission_dashboard.js',
+            'commission_lines/static/src/xml/commission_templates.xml',
         ],
     },
     'demo': [],
-    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
     'application': False,
