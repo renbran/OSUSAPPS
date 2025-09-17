@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Commission Configuration Parameters -->
+        <record id="commission_auto_generate" model="ir.config_parameter">
+            <field name="key">commission_lines.auto_generate_commission</field>
+            <field name="value">True</field>
+        </record>
+
+        <record id="commission_default_rate" model="ir.config_parameter">
+            <field name="key">commission_lines.default_commission_rate</field>
+            <field name="value">5.0</field>
+        </record>
+
+        <!-- Sample Commission Agents (Demo Data) -->
+        <record id="partner_commission_agent_1" model="res.partner">
+            <field name="name">John Smith</field>
+            <field name="is_company">False</field>
+            <field name="is_commission_agent">True</field>
+            <field name="commission_rate">7.5</field>
+            <field name="email">john.smith@example.com</field>
+            <field name="phone">+1-555-0101</field>
+        </record>
+
+        <record id="partner_commission_agent_2" model="res.partner">
+            <field name="name">Sarah Johnson</field>
+            <field name="is_company">False</field>
+            <field name="is_commission_agent">True</field>
+            <field name="commission_rate">8.0</field>
+            <field name="email">sarah.johnson@example.com</field>
+            <field name="phone">+1-555-0102</field>
+        </record>
+
+        <record id="partner_commission_agent_3" model="res.partner">
+            <field name="name">Mike Wilson</field>
+            <field name="is_company">False</field>
+            <field name="is_commission_agent">True</field>
+            <field name="commission_rate">6.0</field>
+            <field name="email">mike.wilson@example.com</field>
+            <field name="phone">+1-555-0103</field>
+        </record>
+
+        <!-- Sample Commission Lines (Demo Data) -->
+        <record id="demo_commission_line_1" model="commission.line">
+            <field name="name">COMM00001</field>
+            <field name="date">2025-08-18</field>
+            <field name="partner_id" ref="partner_commission_agent_1"/>
+            <field name="salesperson_id" ref="base.user_admin"/>
+            <field name="commission_type">sale</field>
+            <field name="base_amount">10000.00</field>
+            <field name="commission_rate">7.5</field>
+            <field name="commission_amount">750.00</field>
+            <field name="state">confirmed</field>
+            <field name="description">Commission for Q3 sales performance</field>
+        </record>
+
+        <record id="demo_commission_line_2" model="commission.line">
+            <field name="name">COMM00002</field>
+            <field name="date">2025-09-02</field>
+            <field name="partner_id" ref="partner_commission_agent_2"/>
+            <field name="salesperson_id" ref="base.user_admin"/>
+            <field name="commission_type">referral</field>
+            <field name="base_amount">5000.00</field>
+            <field name="commission_rate">8.0</field>
+            <field name="commission_amount">400.00</field>
+            <field name="state">paid</field>
+            <field name="description">Referral commission for new client acquisition</field>
+        </record>
+
+        <record id="demo_commission_line_3" model="commission.line">
+            <field name="name">COMM00003</field>
+            <field name="date">2025-09-17</field>
+            <field name="partner_id" ref="partner_commission_agent_3"/>
+            <field name="salesperson_id" ref="base.user_admin"/>
+            <field name="commission_type">target</field>
+            <field name="base_amount">15000.00</field>
+            <field name="commission_rate">6.0</field>
+            <field name="commission_amount">900.00</field>
+            <field name="state">draft</field>
+            <field name="description">Target achievement bonus for exceeding monthly goals</field>
+        </record>
+
+        <!-- Email Templates -->
+        <record id="email_template_commission_confirmed" model="mail.template">
+            <field name="name">Commission Confirmed</field>
+            <field name="model_id" ref="model_commission_line"/>
+            <field name="subject">Commission Confirmed - ${object.name}</field>
+            <field name="body_html" type="html">
+                <div>
+                    <h3>Commission Confirmed</h3>
+                    <p>Dear ${object.partner_id.name},</p>
+                    <p>Your commission has been confirmed with the following details:</p>
+                    <ul>
+                        <li><strong>Commission Reference:</strong> ${object.name}</li>
+                        <li><strong>Date:</strong> ${object.date}</li>
+                        <li><strong>Commission Type:</strong> ${dict(object._fields['commission_type'].selection)[object.commission_type]}</li>
+                        <li><strong>Base Amount:</strong> ${object.base_amount} ${object.currency_id.name}</li>
+                        <li><strong>Commission Rate:</strong> ${object.commission_rate}%</li>
+                        <li><strong>Commission Amount:</strong> ${object.commission_amount} ${object.currency_id.name}</li>
+                    </ul>
+                    <p>Thank you for your excellent work!</p>
+                    <p>Best regards,<br/>
+                    ${user.name}</p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="email_template_commission_paid" model="mail.template">
+            <field name="name">Commission Paid</field>
+            <field name="model_id" ref="model_commission_line"/>
+            <field name="subject">Commission Paid - ${object.name}</field>
+            <field name="body_html" type="html">
+                <div>
+                    <h3>Commission Payment Notification</h3>
+                    <p>Dear ${object.partner_id.name},</p>
+                    <p>Your commission payment has been processed:</p>
+                    <ul>
+                        <li><strong>Commission Reference:</strong> ${object.name}</li>
+                        <li><strong>Amount Paid:</strong> ${object.commission_amount} ${object.currency_id.name}</li>
+                        <li><strong>Payment Date:</strong> ${object.write_date}</li>
+                    </ul>
+                    <p>The payment should appear in your account within 1-2 business days.</p>
+                    <p>Best regards,<br/>
+                    ${user.name}</p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

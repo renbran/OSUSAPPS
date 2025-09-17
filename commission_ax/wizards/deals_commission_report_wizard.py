@@ -2,10 +2,40 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 import logging
 import io
-import xlsxwriter
 import base64
 
 _logger = logging.getLogger(__name__)
+
+# Check for xlsxwriter dependency
+try:
+    import xlsxwriter
+    XLSXWRITER_AVAILABLE = True
+except ImportError:
+    XLSXWRITER_AVAILABLE = False
+    _logger.warning("xlsxwriter not available. Excel export will be disabled.")
+
+# Constants for commission status and types
+COMMISSION_STATUS_FILTER_OPTIONS = [
+    ('all', 'All Statuses'),
+    ('eligible', 'Eligible Only'),
+    ('processed', 'Processed Only'),
+    ('paid', 'Paid Only'),
+    ('pending', 'Pending Only')
+]
+
+ORDER_STATES_EXCLUDE_DRAFT = ['draft', 'cancel']
+ORDER_STATES_CONFIRMED = ['sale', 'done']
+ORDER_STATES_PENDING = ['draft', 'sent']
+
+INVOICE_STATE_POSTED = 'posted'
+PO_STATES_CONFIRMED = ['purchase', 'done']
+PAYMENT_STATES_PAID = ['in_payment', 'paid']
+
+# Excel formatting constants
+EXCEL_HEADER_BG_COLOR = '#800020'
+EXCEL_FONT_SIZE_HEADER = 12
+EXCEL_FONT_SIZE_DATA = 10
+EXCEL_COLUMN_WIDTH_DEFAULT = 15
 
 class DealsCommissionReportWizard(models.TransientModel):
     _name = 'deals.commission.report.wizard'
@@ -23,21 +53,32 @@ class DealsCommissionReportWizard(models.TransientModel):
     include_draft_orders = fields.Boolean(string='Include Draft Orders', default=False)
     group_by_project = fields.Boolean(string='Group by Project', default=True)
     show_payment_details = fields.Boolean(string='Show Payment Details', default=True)
+    excel_available = fields.Boolean(string='Excel Export Available', default=XLSXWRITER_AVAILABLE)
     
     # Status filters
-    commission_status_filter = fields.Selection([
-        ('all', 'All Statuses'),
-        ('eligible', 'Eligible Only'),
-        ('processed', 'Processed Only'),
-        ('paid', 'Paid Only'),
-        ('pending', 'Pending Only')
-    ], string='Commission Status Filter', default='all')
+    commission_status_filter = fields.Selection(
+        COMMISSION_STATUS_FILTER_OPTIONS,
+        string='Commission Status Filter', 
+        default='all'
+    )
 
     @api.constrains('date_from', 'date_to')
     def _check_dates(self):
         for wizard in self:
             if wizard.date_from > wizard.date_to:
                 raise ValidationError("Date From cannot be later than Date To")
+    
+    @api.constrains('date_from', 'date_to')
+    def _check_date_range(self):
+        """Validate date range is reasonable (not more than 2 years)"""
+        for wizard in self:
+            if wizard.date_from and wizard.date_to:
+                delta = wizard.date_to - wizard.date_from
+                if delta.days > 730:  # 2 years
+                    raise ValidationError(
+                        "Date range cannot exceed 2 years. "
+                        "Please select a smaller date range for better performance."
+                    )
 
     def _get_deals_data(self):
         """Get comprehensive deals data with commission information"""
@@ -62,9 +103,40 @@ class DealsCommissionReportWizard(models.TransientModel):
             domain.append(('id', '=', self.sale_order_id.id))
             
         if not self.include_draft_orders:
-            domain.append(('state', 'not in', ['draft', 'cancel']))
+            domain.append(('state', 'not in', ORDER_STATES_EXCLUDE_DRAFT))
 
+        # Prefetch related data in batch to improve performance
         sale_orders = self.env['sale.order'].search(domain, order='date_order desc, name')
+        
+        # Optimize query with prefetch for related fields to avoid N+1 queries
+        if sale_orders:
+            sale_orders.read([
+                'name', 'partner_id', 'date_order', 'project_id', 'amount_total', 
+                'amount_untaxed', 'currency_id', 'state', 'consultant_id', 
+                'manager_id', 'director_id', 'commission_partner_ids',
+                'consultant_commission_type', 'manager_legacy_commission_type',
+                'director_legacy_commission_type', 'consultant_comm_percentage',
+                'manager_comm_percentage', 'director_comm_percentage',
+                'salesperson_commission', 'manager_commission', 'director_commission'
+            ])
+            
+            # Prefetch invoice and purchase order data for all orders at once
+            all_order_ids = sale_orders.ids
+            
+            # Prefetch invoice data
+            invoices = self.env['account.move'].search([
+                ('invoice_origin', 'in', sale_orders.mapped('name')),
+                ('state', '=', INVOICE_STATE_POSTED)
+            ])
+            if invoices:
+                invoices.read(['amount_total', 'amount_residual', 'invoice_origin'])
+            
+            # Prefetch commission purchase orders
+            commission_pos = self.env['purchase.order'].search([
+                ('origin_so_id', 'in', all_order_ids)
+            ])
+            if commission_pos:
+                commission_pos.read(['origin_so_id', 'partner_id', 'amount_total', 'state', 'commission_posted'])
         
         deals_data = []
         
@@ -189,11 +261,11 @@ class DealsCommissionReportWizard(models.TransientModel):
 
     def _get_commission_status(self, order, role):
         """Determine commission status based on order state and payments"""
-        if order.state in ['draft', 'sent']:
+        if order.state in ORDER_STATES_PENDING:
             return 'Pending'
         elif order.state == 'cancel':
             return 'Cancelled'
-        elif order.state in ['sale', 'done']:
+        elif order.state in ORDER_STATES_CONFIRMED:
             # Check if commission has been processed/paid
             # Role parameter can be used for role-specific status logic
             _logger.debug("Checking commission status for order %s and role %s", order.name, role)
@@ -201,18 +273,66 @@ class DealsCommissionReportWizard(models.TransientModel):
         return 'Unknown'
 
     def _get_processed_amount(self, order, partner):
-        """Get processed commission amount for partner - placeholder for actual logic"""
-        # This should be implemented based on your commission processing system
-        # Using parameters for future enhancement
-        _logger.debug("Getting processed amount for order %s and partner %s", order.name, partner.name)
-        return 0.0
+        """Get processed commission amount for partner based on commission purchase orders"""
+        if not order or not partner:
+            return 0.0
+            
+        try:
+            # Find commission purchase orders for this partner and sale order
+            commission_pos = self.env['purchase.order'].search([
+                ('origin_so_id', '=', order.id),
+                ('partner_id', '=', partner.id),
+                ('state', 'in', PO_STATES_CONFIRMED),
+            ])
+            
+            total_processed = 0.0
+            for po in commission_pos:
+                # Sum amounts from confirmed purchase orders
+                total_processed += po.amount_total
+                
+            return total_processed
+            
+        except (ValueError, TypeError, AttributeError) as e:
+            _logger.warning("Error getting processed amount for order %s and partner %s: %s", 
+                          order.name if order else 'Unknown', partner.name if partner else 'Unknown', str(e))
+            return 0.0
 
     def _get_paid_amount(self, order, partner):
-        """Get paid commission amount for partner - placeholder for actual logic"""
-        # This should be implemented based on your commission payment system  
-        # Using parameters for future enhancement
-        _logger.debug("Getting paid amount for order %s and partner %s", order.name, partner.name)
-        return 0.0
+        """Get paid commission amount for partner based on posted purchase orders and payments"""
+        if not order or not partner:
+            return 0.0
+            
+        try:
+            # Find commission purchase orders for this partner and sale order
+            commission_pos = self.env['purchase.order'].search([
+                ('origin_so_id', '=', order.id),
+                ('partner_id', '=', partner.id),
+                ('commission_posted', '=', True),  # Only posted commissions
+            ])
+            
+            total_paid = 0.0
+            for po in commission_pos:
+                # Check for actual payments through vendor bills
+                invoice_lines = self.env['account.move.line'].search([
+                    ('purchase_line_id', 'in', po.order_line.ids)
+                ])
+                
+                if invoice_lines:
+                    invoices = invoice_lines.mapped('move_id').filtered(
+                        lambda inv: inv.move_type == 'in_invoice' and inv.state == INVOICE_STATE_POSTED
+                    )
+                    
+                    # Sum paid amounts from invoices
+                    for invoice in invoices:
+                        if invoice.payment_state in PAYMENT_STATES_PAID:
+                            total_paid += invoice.amount_total - invoice.amount_residual
+                
+            return total_paid
+            
+        except (ValueError, TypeError, AttributeError) as e:
+            _logger.warning("Error getting paid amount for order %s and partner %s: %s", 
+                          order.name if order else 'Unknown', partner.name if partner else 'Unknown', str(e))
+            return 0.0
 
     def _get_unit_reference(self, order):
         """Get unit reference from order lines or related data"""
@@ -224,11 +344,13 @@ class DealsCommissionReportWizard(models.TransientModel):
 
     def _get_payment_info_for_order(self, order):
         """Get payment and invoice information for order"""
-        total_invoiced = sum(order.invoice_ids.filtered(lambda inv: inv.state == 'posted').mapped('amount_total'))
+        total_invoiced = sum(order.invoice_ids.filtered(
+            lambda inv: inv.state == INVOICE_STATE_POSTED
+        ).mapped('amount_total'))
         
         # Get total paid amount from invoice payments
         total_paid = 0.0
-        for invoice in order.invoice_ids.filtered(lambda inv: inv.state == 'posted'):
+        for invoice in order.invoice_ids.filtered(lambda inv: inv.state == INVOICE_STATE_POSTED):
             total_paid += invoice.amount_total - invoice.amount_residual
             
         return {
@@ -292,97 +414,129 @@ class DealsCommissionReportWizard(models.TransientModel):
         return self.env.ref('commission_ax.action_report_deals_commission').report_action(self, data=data)
 
     def action_generate_excel_report(self):
-        """Generate Excel deals commission report"""
+        """Generate Excel deals commission report with enhanced error handling"""
         self.ensure_one()
+        
+        # Check if Excel export is available
+        if not XLSXWRITER_AVAILABLE:
+            raise UserError(
+                "Excel export is not available. Please install the 'xlsxwriter' Python package."
+            )
+        
         deals_data = self._get_deals_data()
         
         if not deals_data:
             raise UserError("No deals found for the selected criteria.")
         
-        # Create Excel file
-        output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        worksheet = workbook.add_worksheet('Deals Commission Report')
-        
-        # Define formats
-        header_format = workbook.add_format({
-            'bold': True,
-            'font_size': 12,
-            'bg_color': '#800020',
-            'font_color': 'white',
-            'border': 1,
-            'align': 'center',
-            'valign': 'vcenter'
-        })
-        
-        data_format = workbook.add_format({
-            'font_size': 10,
-            'border': 1,
-            'align': 'left',
-            'valign': 'vcenter'
-        })
-        
-        currency_format = workbook.add_format({
-            'font_size': 10,
-            'border': 1,
-            'align': 'right',
-            'valign': 'vcenter',
-            'num_format': '#,##0.00'
-        })
-        
-        # Write headers
-        headers = [
+        try:
+            # Create Excel file
+            output = io.BytesIO()
+            workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+            worksheet = workbook.add_worksheet('Deals Commission Report')
+            
+            # Define formats using constants
+            header_format = workbook.add_format({
+                'bold': True,
+                'font_size': EXCEL_FONT_SIZE_HEADER,
+                'bg_color': EXCEL_HEADER_BG_COLOR,
+                'font_color': 'white',
+                'border': 1,
+                'align': 'center',
+                'valign': 'vcenter'
+            })
+            
+            data_format = workbook.add_format({
+                'font_size': EXCEL_FONT_SIZE_DATA,
+                'border': 1,
+                'align': 'left',
+                'valign': 'vcenter'
+            })
+            
+            currency_format = workbook.add_format({
+                'font_size': EXCEL_FONT_SIZE_DATA,
+                'border': 1,
+                'align': 'right',
+                'valign': 'vcenter',
+                'num_format': '#,##0.00'
+            })
+            
+            # Write headers
+            headers = self._get_excel_headers()
+            
+            for col, header in enumerate(headers):
+                worksheet.write(0, col, header, header_format)
+            
+            # Write data
+            self._write_excel_data(worksheet, deals_data, data_format, currency_format)
+            
+            # Auto-adjust column widths
+            for col in range(len(headers)):
+                worksheet.set_column(col, col, EXCEL_COLUMN_WIDTH_DEFAULT)
+            
+            workbook.close()
+            
+            # Create attachment
+            report_data = base64.b64encode(output.getvalue())
+            filename = f"Deals_Commission_Report_{self.date_from}_{self.date_to}.xlsx"
+            
+            attachment = self.env['ir.attachment'].create({
+                'name': filename,
+                'type': 'binary',
+                'datas': report_data,
+                'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            })
+            
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}?download=true',
+                'target': 'new',
+            }
+            
+        except MemoryError:
+            raise UserError(
+                "Not enough memory to generate Excel report. "
+                "Please try with a smaller date range or fewer records."
+            )
+        except (IOError, OSError) as e:
+            _logger.error("File I/O error during Excel generation: %s", str(e))
+            raise UserError("Failed to generate Excel file due to system error.")
+        except Exception as e:
+            _logger.error("Unexpected error during Excel generation: %s", str(e))
+            raise UserError(f"Failed to generate Excel report: {str(e)}")
+    
+    def _get_excel_headers(self):
+        """Get Excel headers as a separate method for better organization"""
+        return [
             'Deal/Order', 'Customer', 'Booking Date', 'Project', 'Unit/Reference',
             'Order Amount', 'Partner', 'Role', 'Commission Type', 'Rate (%)',
             'Eligible Amount', 'Processed Amount', 'Paid Amount', 'Pending Amount',
             'Status', 'Total Invoiced', 'Total Paid', 'Order State'
         ]
-        
-        for col, header in enumerate(headers):
-            worksheet.write(0, col, header, header_format)
-        
-        # Write data
+    
+    def _write_excel_data(self, worksheet, deals_data, data_format, currency_format):
+        """Write data to Excel worksheet"""
         row = 1
         for deal in deals_data:
-            worksheet.write(row, 0, deal['order_name'], data_format)
-            worksheet.write(row, 1, deal['customer_name'], data_format)
-            worksheet.write(row, 2, deal['booking_date'].strftime('%Y-%m-%d') if deal['booking_date'] else '', data_format)
-            worksheet.write(row, 3, deal['project_name'], data_format)
-            worksheet.write(row, 4, deal['unit_reference'], data_format)
-            worksheet.write(row, 5, deal['order_amount'], currency_format)
-            worksheet.write(row, 6, deal['partner_name'], data_format)
-            worksheet.write(row, 7, deal['commission_role'], data_format)
-            worksheet.write(row, 8, deal['commission_type'], data_format)
-            worksheet.write(row, 9, deal['commission_rate'], data_format)
-            worksheet.write(row, 10, deal['eligible_amount'], currency_format)
-            worksheet.write(row, 11, deal['commission_processed'], currency_format)
-            worksheet.write(row, 12, deal['commission_paid'], currency_format)
-            worksheet.write(row, 13, deal['commission_pending'], currency_format)
-            worksheet.write(row, 14, deal['commission_status'], data_format)
-            worksheet.write(row, 15, deal['total_invoiced'], currency_format)
-            worksheet.write(row, 16, deal['total_paid'], currency_format)
-            worksheet.write(row, 17, deal['state_display'], data_format)
-            row += 1
-        
-        # Auto-adjust column widths
-        for col in range(len(headers)):
-            worksheet.set_column(col, col, 15)
-        
-        workbook.close()
-        
-        # Create attachment
-        report_data = base64.b64encode(output.getvalue())
-        filename = f"Deals_Commission_Report_{self.date_from}_{self.date_to}.xlsx"
-        
-        attachment = self.env['ir.attachment'].create({
-            'name': filename,
-            'type': 'binary',
-            'datas': report_data,
-            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        })
-        
-        return {
-            'type': 'ir.actions.act_url',
-            'url': f'/web/content/{attachment.id}?download=true',
-            'target': 'new',
-        }
+            try:
+                worksheet.write(row, 0, deal['order_name'], data_format)
+                worksheet.write(row, 1, deal['customer_name'], data_format)
+                worksheet.write(row, 2, deal['booking_date'].strftime('%Y-%m-%d') if deal['booking_date'] else '', data_format)
+                worksheet.write(row, 3, deal['project_name'], data_format)
+                worksheet.write(row, 4, deal['unit_reference'], data_format)
+                worksheet.write(row, 5, deal['order_amount'], currency_format)
+                worksheet.write(row, 6, deal['partner_name'], data_format)
+                worksheet.write(row, 7, deal['commission_role'], data_format)
+                worksheet.write(row, 8, deal['commission_type'], data_format)
+                worksheet.write(row, 9, deal['commission_rate'], data_format)
+                worksheet.write(row, 10, deal['eligible_amount'], currency_format)
+                worksheet.write(row, 11, deal['commission_processed'], currency_format)
+                worksheet.write(row, 12, deal['commission_paid'], currency_format)
+                worksheet.write(row, 13, deal['commission_pending'], currency_format)
+                worksheet.write(row, 14, deal['commission_status'], data_format)
+                worksheet.write(row, 15, deal['total_invoiced'], currency_format)
+                worksheet.write(row, 16, deal['total_paid'], currency_format)
+                worksheet.write(row, 17, deal['state_display'], data_format)
+                row += 1
+            except (KeyError, TypeError) as e:
+                _logger.warning("Error writing Excel row %d: %s", row, str(e))
+                continue  # Skip problematic rows rather than failing entirely

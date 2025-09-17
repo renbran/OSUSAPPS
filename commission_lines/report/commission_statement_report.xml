@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Commission Statement Report Template -->
+        <template id="commission_statement_report">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            
+                            <!-- Header Section -->
+                            <div class="row mb-4">
+                                <div class="col-8">
+                                    <h2>Commission Statement</h2>
+                                    <t t-if="data.get('wizard') and data['wizard'].partner_id">
+                                        <h3 t-esc="data['wizard'].partner_id.name"/>
+                                    </t>
+                                    <t t-else="">
+                                        <h3>All Commission Partners</h3>
+                                    </t>
+                                </div>
+                                <div class="col-4 text-right">
+                                    <p>
+                                        <strong>Period:</strong><br/>
+                                        <span t-esc="data.get('date_from')"/> to <span t-esc="data.get('date_to')"/>
+                                    </p>
+                                    <p>
+                                        <strong>Generated:</strong><br/>
+                                        <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M')"/>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Summary Section -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <table class="table table-sm table-bordered">
+                                        <tr style="background-color: #f8f9fa;">
+                                            <td><strong>Total Commission Lines:</strong></td>
+                                            <td><span t-esc="data.get('total_count', 0)"/></td>
+                                            <td><strong>Total Commission Amount:</strong></td>
+                                            <td class="text-right">
+                                                <strong t-esc="'{:,.2f}'.format(data.get('total_amount', 0))"/>
+                                                <t t-if="data.get('commission_lines') and data['commission_lines']">
+                                                    <span t-esc="data['commission_lines'][0].currency_id.symbol"/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Commission Lines Details -->
+                            <t t-if="data.get('grouped_data')">
+                                <!-- Grouped by Partner -->
+                                <t t-foreach="data['grouped_data'].items()" t-as="partner_data">
+                                    <t t-set="partner" t-value="partner_data[0]"/>
+                                    <t t-set="partner_info" t-value="partner_data[1]"/>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <h4 style="color: #2c5aa0; border-bottom: 2px solid #2c5aa0; padding-bottom: 5px;">
+                                                <span t-esc="partner.name"/>
+                                                <small class="float-right">
+                                                    <span t-esc="partner_info['count']"/> lines - 
+                                                    <span t-esc="'{:,.2f}'.format(partner_info['total_amount'])"/>
+                                                    <t t-if="partner_info['lines']">
+                                                        <span t-esc="partner_info['lines'][0].currency_id.symbol"/>
+                                                    </t>
+                                                </small>
+                                            </h4>
+                                            
+                                            <table class="table table-sm table-striped">
+                                                <thead style="background-color: #e9ecef;">
+                                                    <tr>
+                                                        <th>Order Ref</th>
+                                                        <th>Date</th>
+                                                        <th>Customer</th>
+                                                        <th>Commission Type</th>
+                                                        <th class="text-right">Rate %</th>
+                                                        <th class="text-right">Base Amount</th>
+                                                        <th class="text-right">Commission</th>
+                                                        <th class="text-center">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="partner_info['lines']" t-as="line">
+                                                        <tr>
+                                                            <td><span t-esc="line.order_reference"/></td>
+                                                            <td><span t-esc="line.order_date.strftime('%Y-%m-%d') if line.order_date else ''"/></td>
+                                                            <td><span t-esc="line.customer_id.name"/></td>
+                                                            <td><span t-esc="line.commission_type_id.name"/></td>
+                                                            <td class="text-right">
+                                                                <span t-esc="'{:.2f}'.format(line.rate)" t-if="line.rate"/>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <span t-esc="'{:,.2f}'.format(line.base_amount)"/>
+                                                            </td>
+                                                            <td class="text-right">
+                                                                <strong t-esc="'{:,.2f}'.format(line.commission_amount)"/>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                <span t-esc="dict(line._fields['state'].selection)[line.state]" 
+                                                                      t-attf-class="badge badge-#{line.state == 'paid' and 'success' or line.state == 'confirmed' and 'warning' or 'secondary'}"/>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                                <tfoot style="background-color: #f8f9fa;">
+                                                    <tr>
+                                                        <td colspan="6" class="text-right"><strong>Partner Total:</strong></td>
+                                                        <td class="text-right">
+                                                            <strong t-esc="'{:,.2f}'.format(partner_info['total_amount'])"/>
+                                                        </td>
+                                                        <td></td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+                            
+                            <!-- Ungrouped Details -->
+                            <t t-if="not data.get('grouped_data') and data.get('commission_lines')">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <h4>Commission Line Details</h4>
+                                        <table class="table table-sm table-striped">
+                                            <thead style="background-color: #e9ecef;">
+                                                <tr>
+                                                    <th>Order Ref</th>
+                                                    <th>Date</th>
+                                                    <th>Customer</th>
+                                                    <th>Commission Partner</th>
+                                                    <th>Commission Type</th>
+                                                    <th class="text-right">Rate %</th>
+                                                    <th class="text-right">Base Amount</th>
+                                                    <th class="text-right">Commission</th>
+                                                    <th class="text-center">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="data['commission_lines']" t-as="line">
+                                                    <tr>
+                                                        <td><span t-esc="line.order_reference"/></td>
+                                                        <td><span t-esc="line.order_date.strftime('%Y-%m-%d') if line.order_date else ''"/></td>
+                                                        <td><span t-esc="line.customer_id.name"/></td>
+                                                        <td><span t-esc="line.partner_id.name"/></td>
+                                                        <td><span t-esc="line.commission_type_id.name"/></td>
+                                                        <td class="text-right">
+                                                            <span t-esc="'{:.2f}'.format(line.rate)" t-if="line.rate"/>
+                                                        </td>
+                                                        <td class="text-right">
+                                                            <span t-esc="'{:,.2f}'.format(line.base_amount)"/>
+                                                        </td>
+                                                        <td class="text-right">
+                                                            <strong t-esc="'{:,.2f}'.format(line.commission_amount)"/>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span t-esc="dict(line._fields['state'].selection)[line.state]" 
+                                                                  t-attf-class="badge badge-#{line.state == 'paid' and 'success' or line.state == 'confirmed' and 'warning' or 'secondary'}"/>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </t>
+                            
+                            <!-- Footer Section -->
+                            <div class="row mt-5">
+                                <div class="col-6">
+                                    <h5>Payment Status Legend:</h5>
+                                    <ul class="list-unstyled">
+                                        <li><span class="badge badge-secondary">Draft</span> - Commission calculated but not confirmed</li>
+                                        <li><span class="badge badge-warning">Confirmed</span> - Commission confirmed, pending payment</li>
+                                        <li><span class="badge badge-info">Invoiced</span> - Commission invoice created</li>
+                                        <li><span class="badge badge-success">Paid</span> - Commission payment completed</li>
+                                    </ul>
+                                </div>
+                                <div class="col-6">
+                                    <t t-if="data.get('wizard') and data['wizard'].partner_id">
+                                        <h5>Statement Summary for <span t-esc="data['wizard'].partner_id.name"/>:</h5>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <td>Total Commissions:</td>
+                                                <td class="text-right">
+                                                    <strong t-esc="'{:,.2f}'.format(data.get('total_amount', 0))"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Number of Transactions:</td>
+                                                <td class="text-right">
+                                                    <strong t-esc="data.get('total_count', 0)"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </t>
+                                </div>
+                            </div>
+                            
+                            <!-- Signature Section -->
+                            <div class="row mt-5">
+                                <div class="col-6">
+                                    <div style="border-top: 1px solid #000; width: 200px; margin-top: 50px;">
+                                        <p class="text-center mt-2"><small>Prepared By</small></p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div style="border-top: 1px solid #000; width: 200px; margin-top: 50px; float: right;">
+                                        <p class="text-center mt-2"><small>Approved By</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+        
+        <!-- Report Action -->
+        <record id="action_commission_statement_report" model="ir.actions.report">
+            <field name="name">Commission Statement</field>
+            <field name="model">commission.statement.wizard</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">commission_lines.commission_statement_report</field>
+            <field name="report_file">commission_statement_report</field>
+            <field name="print_report_name">'Commission Statement - %s to %s' % (object.date_from, object.date_to)</field>
+            <field name="paperformat_id" ref="base.paperformat_euro"/>
+        </record>
+        
+    </data>
+</odoo>

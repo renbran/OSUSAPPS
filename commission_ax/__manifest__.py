@@ -58,11 +58,13 @@ Technical Features:
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
+        'data/commission_type_data.xml',
         'data/cron_data.xml',
         'data/commission_report_wizard_action.xml',
         'data/commission_purchase_orders_action.xml',
         'data/commission_report_template.xml',
         'views/commission_menu.xml',
+        'views/commission_type_views.xml',
         'views/sale_order.xml',
         'views/purchase_order.xml',
         'views/commission_wizard_views.xml',

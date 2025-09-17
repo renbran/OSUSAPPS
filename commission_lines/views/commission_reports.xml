@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Commission Report Action -->
+    <record id="action_commission_report" model="ir.actions.act_window">
+        <field name="name">Commission Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">commission.line</field>
+        <field name="view_mode">graph,pivot</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Commission Graph View -->
+    <record id="view_commission_line_graph" model="ir.ui.view">
+        <field name="name">commission.line.graph</field>
+        <field name="model">commission.line</field>
+        <field name="arch" type="xml">
+            <graph string="Commission Analysis" type="bar">
+                <field name="date" type="row" interval="month"/>
+                <field name="commission_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Commission Pivot View -->
+    <record id="view_commission_line_pivot" model="ir.ui.view">
+        <field name="name">commission.line.pivot</field>
+        <field name="model">commission.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Commission Analysis">
+                <field name="partner_id" type="row"/>
+                <field name="date" type="col" interval="month"/>
+                <field name="commission_amount" type="measure"/>
+                <field name="base_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Commission Dashboard Action -->
+    <record id="action_commission_dashboard" model="ir.actions.client">
+        <field name="name">Commission Dashboard</field>
+        <field name="tag">commission_dashboard</field>
+    </record>
+
+    <!-- Menu Items for Reports -->
+    <menuitem id="menu_commission_reports" name="Reports" 
+              parent="menu_commission_lines_root" sequence="90"/>
+    
+    <menuitem id="menu_commission_analysis" name="Commission Analysis" 
+              parent="menu_commission_reports" action="action_commission_report" sequence="10"/>
+
+    <!-- Commission Statement Report -->
+    <record id="action_report_commission_statement" model="ir.actions.report">
+        <field name="name">Commission Statement</field>
+        <field name="model">commission.line</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">commission_lines.report_commission_statement</field>
+        <field name="report_file">commission_lines.report_commission_statement</field>
+        <field name="print_report_name">'Commission Statement - %s' % object.partner_id.name</field>
+        <field name="binding_model_id" ref="model_commission_line"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

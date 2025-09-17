@@ -1,0 +1,62 @@
+# Commission Lines Management Module
+
+This module provides a comprehensive commission management system for Odoo.
+
+## Features
+
+- **Centralized Commission Lines**: Manage all commissions in a single, normalized model
+- **Multiple Commission Types**: Support for sales, referral, target achievement, and bonus commissions
+- **Partner Integration**: Extended partner model with commission agent functionality
+- **Sales Order Integration**: Automatic commission generation from sale orders
+- **Flexible Reporting**: Built-in reports and dashboard for commission analysis
+- **Workflow Management**: Draft → Confirmed → Paid workflow with proper state management
+
+## Installation
+
+1. Copy this module to your Odoo addons directory
+2. Update the module list in Odoo
+3. Install the "Commission Lines Management" module
+
+## Usage
+
+### Setting up Commission Agents
+
+1. Go to Contacts
+2. Create or edit a contact
+3. Check "Is Commission Agent"
+4. Set the default commission rate
+
+### Creating Commission Lines
+
+Commission lines can be created:
+- Manually from the Commission Lines menu
+- Automatically when confirming sale orders (if auto-generation is enabled)
+- Through the commission generation wizard
+
+### Generating Reports
+
+1. Go to Commissions → Reports → Commission Statement
+2. Select partner, date range, and filters
+3. Generate PDF report or view detailed lines
+
+## Configuration
+
+The module includes several configuration options accessible through system parameters:
+- `commission_lines.auto_generate_commission`: Auto-generate commissions on sale order confirmation
+- `commission_lines.default_commission_rate`: Default commission rate for new partners
+
+## Technical Details
+
+### Models
+- `commission.line`: Main commission line model
+- Extended `sale.order`: Added commission tracking
+- Extended `res.partner`: Added commission agent fields
+
+### Security
+- User: Read, Write, Create (no delete)
+- Sales Manager: Full access
+- Salesperson: Read-only access
+
+## Support
+
+For questions or issues, please contact the module maintainer.
