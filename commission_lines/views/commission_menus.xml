@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Commission Lines Action -->
+    <record id="action_commission_line" model="ir.actions.act_window">
+        <field name="name">Commission Lines</field>
+        <field name="res_model">commission.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Commission Line
+            </p>
+            <p>
+                Commission lines allow you to track and manage commission payments to partners.
+            </p>
+        </field>
+    </record>
+
+    <!-- Main Menu -->
+    <menuitem id="menu_commission_lines_root"
+              name="Commission Lines"
+              web_icon="commission_lines,static/description/icon.png"
+              sequence="60"/>
+
+    <!-- Commission Lines Sub Menu -->
+    <menuitem id="menu_commission_lines"
+              name="Commission Lines"
+              parent="menu_commission_lines_root"
+              action="action_commission_line"
+              sequence="10"/>
+
+    <!-- Reports Menu -->
+    <menuitem id="menu_commission_reports"
+              name="Reports"
+              parent="menu_commission_lines_root"
+              sequence="20"/>
+
+    <!-- Configuration Menu -->
+    <menuitem id="menu_commission_config"
+              name="Configuration"
+              parent="menu_commission_lines_root"
+              sequence="90"/>
+
+</odoo>

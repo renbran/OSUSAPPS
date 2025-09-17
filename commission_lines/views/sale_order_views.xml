@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sale Order Form View Extension -->
+    <record id="view_order_form_commission_lines" model="ir.ui.view">
+        <field name="name">sale.order.form.commission.lines</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Commission Lines button to button box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_commission_lines" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-list-ul"
+                        attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                    <field name="commission_line_count" widget="statinfo" string="Commission Lines"/>
+                </button>
+                
+                <button name="action_generate_commission_lines" 
+                        type="object" 
+                        class="oe_stat_button" 
+                        icon="fa-plus-square"
+                        attrs="{'invisible': ['|', ('has_commission_lines', '=', True), ('is_fully_invoiced', '=', False)]}">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Generate</span>
+                        <span class="o_stat_text">Commission Lines</span>
+                    </div>
+                </button>
+            </xpath>
+            
+            <!-- Add Commission Lines tab -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Commission Lines" name="commission_lines" attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                    <field name="commission_line_ids" nolabel="1">
+                        <tree string="Commission Lines" create="false" edit="false">
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="commission_category"/>
+                            <field name="commission_type"/>
+                            <field name="commission_rate"/>
+                            <field name="commission_amount" widget="monetary"/>
+                            <field name="state" widget="badge" 
+                                   decoration-success="state == 'paid'"
+                                   decoration-primary="state == 'billed'"
+                                   decoration-info="state == 'approved'" 
+                                   decoration-warning="state == 'calculated'"
+                                   decoration-danger="state == 'cancelled'"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            
+            <!-- Add computed fields -->
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="commission_line_count" invisible="1"/>
+                <field name="has_commission_lines" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

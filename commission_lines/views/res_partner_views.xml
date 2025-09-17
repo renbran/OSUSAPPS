@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Partner Form View Extension -->
+    <record id="view_res_partner_form_commission" model="ir.ui.view">
+        <field name="name">res.partner.form.commission</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Commission tab after Sales & Purchase tab -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Commission" name="commission" attrs="{'invisible': [('supplier_rank', '=', 0)]}">
+                    <group>
+                        <group name="commission_summary">
+                            <field name="commission_line_count" readonly="1"/>
+                            <field name="total_commission_amount" readonly="1" widget="monetary"/>
+                        </group>
+                        <group name="commission_this_year">
+                            <field name="commission_lines_this_year" readonly="1"/>
+                            <field name="commission_amount_this_year" readonly="1" widget="monetary"/>
+                        </group>
+                    </group>
+                    
+                    <div class="oe_button_box" name="commission_buttons">
+                        <button name="action_view_commission_lines" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-list-ul"
+                                attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                            <field name="commission_line_count" widget="statinfo" string="Commission Lines"/>
+                        </button>
+                        
+                        <button name="action_generate_commission_statement" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-file-text-o"
+                                attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Commission</span>
+                                <span class="o_stat_text">Statement</span>
+                            </div>
+                        </button>
+                        
+                        <button name="action_commission_summary" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-bar-chart"
+                                attrs="{'invisible': [('commission_line_count', '=', 0)]}">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Commission</span>
+                                <span class="o_stat_text">Summary</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <field name="commission_line_ids" nolabel="1" readonly="1">
+                        <tree string="Commission Lines" create="false" edit="false" delete="false">
+                            <field name="name"/>
+                            <field name="booking_date"/>
+                            <field name="order_ref"/>
+                            <field name="customer_reference"/>
+                            <field name="commission_type"/>
+                            <field name="commission_rate"/>
+                            <field name="commission_amount" widget="monetary"/>
+                            <field name="state" widget="badge" 
+                                   decoration-success="state == 'paid'"
+                                   decoration-primary="state == 'billed'"
+                                   decoration-info="state == 'approved'" 
+                                   decoration-warning="state == 'calculated'"
+                                   decoration-danger="state == 'cancelled'"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Partner Kanban View Extension -->
+    <record id="view_res_partner_kanban_commission" model="ir.ui.view">
+        <field name="name">res.partner.kanban.commission</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.res_partner_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_kanban_details')]" position="inside">
+                <div t-if="record.supplier_rank.raw_value and record.commission_line_count.raw_value > 0" class="row">
+                    <div class="col-8">
+                        <span>Commission Lines:</span>
+                    </div>
+                    <div class="col-4">
+                        <field name="commission_line_count"/>
+                    </div>
+                </div>
+                <div t-if="record.supplier_rank.raw_value and record.total_commission_amount.raw_value > 0" class="row">
+                    <div class="col-8">
+                        <span>Total Commission:</span>
+                    </div>
+                    <div class="col-4">
+                        <field name="total_commission_amount" widget="monetary"/>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

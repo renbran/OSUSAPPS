@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="commission_lines.CommissionWidget">
+        <div class="commission-widget">
+            <h4>Commission Calculator</h4>
+            <button class="btn btn-primary commission-calculate">Calculate Commission</button>
+        </div>
+    </t>
+</templates>

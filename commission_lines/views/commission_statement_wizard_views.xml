@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Commission Statement Wizard View -->
+    <record id="view_commission_statement_wizard_form" model="ir.ui.view">
+        <field name="name">commission.statement.wizard.form</field>
+        <field name="model">commission.statement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Commission Statement">
+                <div class="oe_title">
+                    <h1>Generate Commission Statement</h1>
+                </div>
+                
+                <group>
+                    <group name="partner_selection">
+                        <field name="partner_id" options="{'no_create': True}"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                    <group name="date_range">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                
+                <group>
+                    <group name="filters">
+                        <field name="commission_category"/>
+                        <field name="state_filter"/>
+                        <field name="include_cancelled"/>
+                    </group>
+                    <group name="report_options">
+                        <field name="report_format"/>
+                    </group>
+                </group>
+                
+                <!-- Summary Information -->
+                <group name="summary" string="Summary">
+                    <group>
+                        <field name="commission_line_count" readonly="1"/>
+                        <field name="total_commission_amount" readonly="1" widget="monetary"/>
+                    </group>
+                </group>
+                
+                <footer>
+                    <button string="Preview Lines" name="action_preview_lines" type="object" class="btn-secondary"/>
+                    <button string="Generate Report" name="action_generate_report" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Commission Statement Wizard Action -->
+    <record id="action_commission_statement_wizard" model="ir.actions.act_window">
+        <field name="name">Commission Statement</field>
+        <field name="res_model">commission.statement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Commission Statement Menu Item -->
+    <menuitem id="menu_commission_statement"
+              name="Commission Statement"
+              parent="commission_lines.menu_commission_reports"
+              action="action_commission_statement_wizard"
+              sequence="10"/>
+</odoo>

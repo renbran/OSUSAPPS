@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_commission_line_user,Commission Line User Access,commission_lines.model_commission_line,commission_lines.group_commission_user,1,1,1,0
+access_commission_line_manager,Commission Line Manager Access,commission_lines.model_commission_line,commission_lines.group_commission_manager,1,1,1,1
+access_commission_statement_wizard_user,Commission Statement Wizard User Access,commission_lines.model_commission_statement_wizard,commission_lines.group_commission_user,1,1,1,1
+access_commission_statement_wizard_manager,Commission Statement Wizard Manager Access,commission_lines.model_commission_statement_wizard,commission_lines.group_commission_manager,1,1,1,1

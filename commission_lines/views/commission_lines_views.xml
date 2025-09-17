@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Commission Line Tree View -->
+    <record id="view_commission_line_tree" model="ir.ui.view">
+        <field name="name">commission.line.tree</field>
+        <field name="model">commission.line</field>
+        <field name="arch" type="xml">
+            <tree string="Commission Lines" decoration-success="state == 'paid'" 
+                  decoration-primary="state == 'billed'" decoration-info="state == 'approved'" 
+                  decoration-warning="state == 'calculated'" decoration-danger="state == 'cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="booking_date"/>
+                <field name="order_ref"/>
+                <field name="customer_reference"/>
+                <field name="commission_category"/>
+                <field name="commission_type"/>
+                <field name="sale_value" widget="monetary"/>
+                <field name="commission_rate"/>
+                <field name="commission_amount" widget="monetary"/>
+                <field name="state" widget="badge"/>
+                <field name="sale_order_id"/>
+                <field name="po_ref"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="company_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Commission Line Form View -->
+    <record id="view_commission_line_form" model="ir.ui.view">
+        <field name="name">commission.line.form</field>
+        <field name="model">commission.line</field>
+        <field name="arch" type="xml">
+            <form string="Commission Line">
+                <header>
+                    <button name="action_calculate" type="object" string="Calculate" 
+                            class="oe_highlight" states="draft"/>
+                    <button name="action_approve" type="object" string="Approve" 
+                            class="oe_highlight" states="calculated"/>
+                    <button name="action_bill" type="object" string="Bill" 
+                            class="oe_highlight" states="approved"/>
+                    <button name="action_mark_paid" type="object" string="Mark Paid" 
+                            class="oe_highlight" states="billed"/>
+                    <button name="action_cancel" type="object" string="Cancel" 
+                            states="draft,calculated,approved,billed"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" 
+                            states="cancelled"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,calculated,approved,billed,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Smart buttons can be added here -->
+                    </div>
+                    <group>
+                        <group name="commission_info">
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="commission_category"/>
+                            <field name="commission_type"/>
+                            <field name="booking_date"/>
+                            <field name="commission_date"/>
+                        </group>
+                        <group name="amounts">
+                            <field name="sale_value" widget="monetary"/>
+                            <field name="commission_rate"/>
+                            <field name="commission_amount" widget="monetary"/>
+                            <field name="currency_id"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group name="sale_order_info" string="Sale Order Information">
+                            <field name="sale_order_id"/>
+                            <field name="order_ref"/>
+                            <field name="customer_reference"/>
+                            <field name="is_invoiced"/>
+                            <field name="commission_processed"/>
+                        </group>
+                        <group name="purchase_order_info" string="Purchase Order Information">
+                            <field name="purchase_order_id"/>
+                            <field name="po_ref"/>
+                            <field name="vendor_reference"/>
+                        </group>
+                    </group>
+                    <group name="additional_info" string="Additional Information">
+                        <field name="description"/>
+                        <field name="notes"/>
+                        <field name="source_commission_field"/>
+                    </group>
+                    <group name="partner_details" string="Partner Details">
+                        <field name="partner_email"/>
+                        <field name="partner_phone"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Commission Line Search View -->
+    <record id="view_commission_line_search" model="ir.ui.view">
+        <field name="name">commission.line.search</field>
+        <field name="model">commission.line</field>
+        <field name="arch" type="xml">
+            <search string="Commission Lines">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="sale_order_id"/>
+                <field name="order_ref"/>
+                <field name="customer_reference"/>
+                <field name="commission_type"/>
+                <field name="commission_category"/>
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Calculated" name="calculated" domain="[('state', '=', 'calculated')]"/>
+                <filter string="Approved" name="approved" domain="[('state', '=', 'approved')]"/>
+                <filter string="Billed" name="billed" domain="[('state', '=', 'billed')]"/>
+                <filter string="Paid" name="paid" domain="[('state', '=', 'paid')]"/>
+                <filter string="Cancelled" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter string="Internal Commission" name="internal" domain="[('commission_category', '=', 'internal')]"/>
+                <filter string="External Commission" name="external" domain="[('commission_category', '=', 'external')]"/>
+                <filter string="Legacy Commission" name="legacy" domain="[('commission_category', '=', 'legacy')]"/>
+                <separator/>
+                <filter string="Invoiced Orders" name="invoiced" domain="[('is_invoiced', '=', True)]"/>
+                <filter string="This Month" name="this_month" 
+                        domain="[('booking_date', '>=', (context_today().replace(day=1)).strftime('%Y-%m-%d')),
+                                 ('booking_date', '&lt;', (context_today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'state'}"/>
+                    <filter string="Commission Category" name="group_category" context="{'group_by': 'commission_category'}"/>
+                    <filter string="Commission Type" name="group_type" context="{'group_by': 'commission_type'}"/>
+                    <filter string="Booking Date" name="group_booking_date" context="{'group_by': 'booking_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>
