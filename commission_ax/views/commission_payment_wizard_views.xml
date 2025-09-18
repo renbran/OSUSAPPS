@@ -37,22 +37,6 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <strong>Total Commission:</strong>
-                                <span class="text-muted">
-                                    <field name="commission_amount" readonly="1" nolabel="1" class="oe_inline"/>
-                                    <field name="currency_id" readonly="1" nolabel="1" class="oe_inline"/>
-                                </span>
-                            </div>
-                            <div class="col-md-6">
-                                <strong>Previously Paid:</strong>
-                                <span class="text-muted">
-                                    <field name="paid_amount_current" readonly="1" nolabel="1" class="oe_inline"/>
-                                    <field name="currency_id" readonly="1" nolabel="1" class="oe_inline"/>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Total Commission:</strong>
                                 <span class="text-info">
                                     <field name="commission_amount" readonly="1" nolabel="1" class="oe_inline"/>
                                     <field name="currency_id" readonly="1" nolabel="1" class="oe_inline"/>

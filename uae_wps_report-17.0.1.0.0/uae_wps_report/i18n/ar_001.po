@@ -93,6 +93,7 @@ msgstr "الإعلانات #"
 #. module: oh_employee_documents_expiry
 #: model:ir.model.fields,field_description:oh_employee_documents_expiry.field_hr_employee__document_count
 msgid "# Documents"
+msgstr "مستندات #"
 msgstr "مستندات#"
 
 #. module: oh_hr_lawsuit_management

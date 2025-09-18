@@ -20,18 +20,20 @@
                             </group>
                             <group string="Filters">
                                 <field name="partner_id" options="{'no_create': True}"/>
-                                <field name="sale_order_id" options="{'no_create': True}"/>
-                                <field name="commission_type_filter"/>
+                                <field name="commission_category"/>
+                                <field name="state_filter"/>
                             </group>
                         </group>
 
                         <group string="Report Options">
                             <group>
-                                <field name="include_zero_commissions"/>
-                                <field name="group_by_partner"/>
+                                <field name="report_format"/>
+                                <field name="include_cancelled"/>
                             </group>
                             <group>
-                                <field name="show_customer_details"/>
+                                <field name="commission_line_count" readonly="1"/>
+                                <field name="total_commission_amount" readonly="1"/>
+                                <field name="currency_id" invisible="1"/>
                             </group>
                         </group>
                     </sheet>
