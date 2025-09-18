@@ -20,28 +20,39 @@ class CommissionPaymentWizard(models.TransientModel):
         readonly=True
     )
 
+    currency_id = fields.Many2one(
+        'res.currency',
+        related='commission_line_id.currency_id',
+        string='Currency',
+        readonly=True
+    )
+
     commission_amount = fields.Monetary(
         related='commission_line_id.commission_amount',
         string='Total Commission',
-        readonly=True
+        readonly=True,
+        currency_field='currency_id'
     )
 
     paid_amount_current = fields.Monetary(
         related='commission_line_id.paid_amount',
         string='Previously Paid',
-        readonly=True
+        readonly=True,
+        currency_field='currency_id'
     )
 
     outstanding_amount = fields.Monetary(
         related='commission_line_id.outstanding_amount',
         string='Outstanding',
-        readonly=True
+        readonly=True,
+        currency_field='currency_id'
     )
 
     payment_amount = fields.Monetary(
         string='Payment Amount',
         required=True,
-        help='Amount being paid in this transaction'
+        help='Amount being paid in this transaction',
+        currency_field='currency_id'
     )
 
     payment_date = fields.Date(
