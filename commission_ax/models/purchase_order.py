@@ -67,14 +67,14 @@ class PurchaseOrder(models.Model):
     @api.depends('origin_so_id')
     def _compute_display_name(self):
         """Override display name for commission purchase orders."""
-        super(PurchaseOrder, self)._compute_display_name()
+        super()._compute_display_name()
         for po in self:
             if po.origin_so_id:
                 po.display_name = f"{po.name} (Commission from {po.origin_so_id.name})"
 
     def _prepare_account_move_line(self, line, move):
         """Override to add commission-specific account configuration."""
-        result = super(PurchaseOrder, self)._prepare_account_move_line(line, move)
+        result = super()._prepare_account_move_line(line, move)
         
         # If this is a commission PO, we might want to use specific accounts
         if self.origin_so_id:
@@ -158,7 +158,7 @@ class PurchaseOrder(models.Model):
 
     def action_view_picking(self):
         """Override to trigger commission posting check."""
-        result = super(PurchaseOrder, self).action_view_picking()
+        result = super().action_view_picking()
         self._post_commission_on_receipt_validation()
         return result
 
@@ -193,7 +193,7 @@ class PurchaseOrder(models.Model):
 
     def button_confirm(self):
         """Override confirm to add commission-specific logic."""
-        result = super(PurchaseOrder, self).button_confirm()
+        result = super().button_confirm()
         
         # For commission POs, we might want to auto-create receipts or handle differently
         for order in self.filtered('origin_so_id'):
@@ -212,7 +212,7 @@ class PurchaseOrder(models.Model):
                     "because it has already been posted."
                 )
         
-        result = super(PurchaseOrder, self).button_cancel()
+        result = super().button_cancel()
         
         # Reset commission status on source sale order if needed
         for order in self.filtered('origin_so_id'):
@@ -232,7 +232,7 @@ class PurchaseOrder(models.Model):
                     "because it has been posted."
                 )
         
-        return super(PurchaseOrder, self).unlink()
+        return super().unlink()
 
     @api.model
     def _cron_check_commission_purchase_orders(self):
@@ -263,7 +263,7 @@ class PurchaseOrder(models.Model):
 
     def write(self, vals):
         """Override write to track important changes."""
-        result = super(PurchaseOrder, self).write(vals)
+        result = super().write(vals)
         
         # Track state changes for commission POs
         if 'state' in vals:

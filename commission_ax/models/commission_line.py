@@ -215,10 +215,10 @@ class CommissionLine(models.Model):
     )
 
     # Invoice tracking from purchase order
-    invoice_ids = fields.One2many(
+    invoice_ids = fields.Many2many(
         'account.move',
-        compute='_compute_invoice_info',
         string='Related Invoices',
+        compute='_compute_invoice_info',
         help='Invoices created from commission purchase order'
     )
 
@@ -228,10 +228,10 @@ class CommissionLine(models.Model):
     )
 
     # Payment tracking from invoices
-    payment_ids = fields.One2many(
+    payment_ids = fields.Many2many(
         'account.payment',
-        compute='_compute_payment_info',
         string='Related Payments',
+        compute='_compute_payment_info',
         help='Payments made for commission invoices'
     )
 
@@ -355,7 +355,7 @@ class CommissionLine(models.Model):
             else:
                 line.payment_status = 'pending'
 
-    @api.depends('purchase_order_id')
+    @api.depends('purchase_order_id', 'purchase_order_id.date_order', 'partner_id.property_supplier_payment_term_id')
     def _compute_expected_payment_date(self):
         """Compute expected payment date based on purchase order and payment terms"""
         for line in self:
@@ -407,10 +407,10 @@ class CommissionLine(models.Model):
                     ('move_type', '=', 'in_invoice'),
                     ('state', '!=', 'cancel')
                 ])
-                line.invoice_ids = invoices
+                line.invoice_ids = [(6, 0, invoices.ids)]
                 line.invoice_count = len(invoices)
             else:
-                line.invoice_ids = False
+                line.invoice_ids = [(6, 0, [])]
                 line.invoice_count = 0
 
     @api.depends('invoice_ids')
@@ -426,10 +426,10 @@ class CommissionLine(models.Model):
                     )
                     payments |= invoice_payments
 
-                line.payment_ids = payments
+                line.payment_ids = [(6, 0, payments.ids)]
                 line.payment_count = len(payments)
             else:
-                line.payment_ids = False
+                line.payment_ids = [(6, 0, [])]
                 line.payment_count = 0
 
     @api.constrains('rate', 'calculation_method')
@@ -837,7 +837,7 @@ class CommissionLine(models.Model):
                 'commission_amount', 'state', 'sale_order_id'
             ]
 
-        return super(CommissionLine, self).search_read(domain, search_fields, offset, limit, order)
+        return super().search_read(domain, search_fields, offset, limit, order)
 
     @api.model
     def update_payment_status_from_invoices(self):
@@ -925,13 +925,13 @@ class CommissionLine(models.Model):
     def read(self, fields=None, load='_classic_read'):
         """Override read to handle orphaned Many2one references safely"""
         try:
-            return super(CommissionLine, self).read(fields, load)
+            return super().read(fields, load)
         except AttributeError as e:
             if "'_unknown' object has no attribute 'id'" in str(e):
                 # Handle orphaned references by cleaning them up
                 _logger.warning("Found orphaned references in commission lines, cleaning up...")
                 self._cleanup_orphaned_records()
                 # Try reading again with cleaned data
-                return super(CommissionLine, self).read(fields, load)
+                return super().read(fields, load)
             else:
                 raise

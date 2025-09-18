@@ -667,7 +667,7 @@ class SaleOrder(models.Model):
                     order.commission_processed = False
                     order.commission_blocked_reason = False
         
-        return super(SaleOrder, self).action_draft()
+        return super().action_draft()
 
     # ============== HELPER METHODS ==============
     
@@ -857,7 +857,7 @@ class SaleOrder(models.Model):
                 )
         
         # Call original cancel method
-        return super(SaleOrder, self).action_cancel()
+        return super().action_cancel()
 
     def _get_commission_entries(self):
         """Get all commission entries that need purchase orders."""

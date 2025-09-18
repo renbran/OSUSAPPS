@@ -118,7 +118,7 @@ class CommissionType(models.Model):
             ] + args, limit=limit)
             if commission_types:
                 return commission_types.name_get()
-        return super(CommissionType, self)._name_search(
+        return super()._name_search(
             name, args, operator, limit, name_get_uid
         )
 
