@@ -34,19 +34,20 @@ class CommissionPaymentWizard(models.TransientModel):
         currency_field='currency_id'
     )
 
-    paid_amount_current = fields.Monetary(
-        related='commission_line_id.paid_amount',
-        string='Previously Paid',
-        readonly=True,
-        currency_field='currency_id'
-    )
+    # Temporarily disabled related fields for debugging
+    # paid_amount_current = fields.Monetary(
+    #     related='commission_line_id.paid_amount',
+    #     string='Previously Paid',
+    #     readonly=True,
+    #     currency_field='currency_id'
+    # )
 
-    outstanding_amount = fields.Monetary(
-        related='commission_line_id.outstanding_amount',
-        string='Outstanding',
-        readonly=True,
-        currency_field='currency_id'
-    )
+    # outstanding_amount = fields.Monetary(
+    #     related='commission_line_id.outstanding_amount',
+    #     string='Outstanding',
+    #     readonly=True,
+    #     currency_field='currency_id'
+    # )
 
     payment_amount = fields.Monetary(
         string='Payment Amount',
