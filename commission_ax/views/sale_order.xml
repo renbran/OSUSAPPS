@@ -68,6 +68,9 @@
                                     <button name="action_process_commissions" string="Process Commissions" type="object" class="btn-primary" invisible="commission_processed == True"/>
                                 </div>
                                 <div>
+                                    <button name="action_force_process_commissions" string="Force Process (Override Invoice Check)" type="object" class="btn-warning" invisible="commission_processed == True"/>
+                                </div>
+                                <div>
                                     <button name="action_confirm_commissions" string="Confirm Commissions" type="object" class="btn-success" invisible="commission_status != 'calculated' or commission_processed == False"/>
                                 </div>
                                 <div>

@@ -8,6 +8,7 @@ class CommissionLine(models.Model):
     """Enhanced Commission Line Model for optimized performance and better data structure"""
     _name = 'commission.line'
     _description = 'Commission Line'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'sale_order_id, sequence, id'
     _rec_name = 'display_name'
 
@@ -24,12 +25,14 @@ class CommissionLine(models.Model):
         string='Commission Partner',
         required=True,
         domain=[('supplier_rank', '>', 0)],
+        ondelete='restrict',
         index=True
     )
     commission_type_id = fields.Many2one(
         'commission.type',
         string='Commission Type',
         required=True,
+        ondelete='restrict',
         index=True
     )
 
@@ -95,6 +98,7 @@ class CommissionLine(models.Model):
         'purchase.order',
         string='Commission Purchase Order',
         readonly=True,
+        ondelete='set null',
         copy=False
     )
 
@@ -102,6 +106,7 @@ class CommissionLine(models.Model):
         'purchase.order.line',
         string='Commission Purchase Line',
         readonly=True,
+        ondelete='set null',
         copy=False
     )
 
@@ -128,21 +133,24 @@ class CommissionLine(models.Model):
         'res.currency',
         related='sale_order_id.currency_id',
         store=True,
-        string='Currency'
+        string='Currency',
+        ondelete='restrict'
     )
 
     company_currency_id = fields.Many2one(
         'res.currency',
         related='sale_order_id.company_id.currency_id',
         store=True,
-        string='Company Currency'
+        string='Company Currency',
+        ondelete='restrict'
     )
 
     company_id = fields.Many2one(
         'res.company',
         related='sale_order_id.company_id',
         store=True,
-        string='Company'
+        string='Company',
+        ondelete='restrict'
     )
 
     # Additional fields
@@ -185,8 +193,8 @@ class CommissionLine(models.Model):
     _sql_constraints = [
         ('rate_positive', 'CHECK(rate >= 0)', 'Commission rate must be positive!'),
         ('unique_partner_type_order',
-         'UNIQUE(sale_order_id, partner_id, commission_type_id, role)',
-         'Cannot have duplicate commission for same partner, type and role on one order!'),
+         'UNIQUE(sale_order_id, partner_id, commission_type_id)',
+         'Cannot have duplicate commission for same partner and type on one order!'),
     ]
 
     @api.depends('partner_id', 'commission_type_id', 'sale_order_id')
@@ -259,6 +267,23 @@ class CommissionLine(models.Model):
                     _("Commission rate cannot be negative.")
                 )
 
+    @api.constrains('partner_id', 'commission_type_id', 'sale_order_id')
+    def _check_required_references(self):
+        """Validate that all required Many2one references exist"""
+        for line in self:
+            if line.partner_id and not line.partner_id.exists():
+                raise ValidationError(
+                    _("The commission partner for this line no longer exists.")
+                )
+            if line.commission_type_id and not line.commission_type_id.exists():
+                raise ValidationError(
+                    _("The commission type for this line no longer exists.")
+                )
+            if line.sale_order_id and not line.sale_order_id.exists():
+                raise ValidationError(
+                    _("The sale order for this line no longer exists.")
+                )
+
     @api.onchange('commission_type_id')
     def _onchange_commission_type(self):
         """Auto-fill fields from commission type"""
@@ -266,6 +291,42 @@ class CommissionLine(models.Model):
             self.calculation_method = self.commission_type_id.calculation_method or 'percentage_total'
             self.rate = self.commission_type_id.default_rate or 0.0
             self.commission_category = self.commission_type_id.commission_category or 'internal'
+
+    @api.model
+    def _cleanup_orphaned_records(self):
+        """Clean up commission lines with orphaned references"""
+        _logger.info("Starting cleanup of orphaned commission lines...")
+        
+        # Find lines with non-existent partners
+        orphaned_lines = self.search([])
+        to_delete = []
+        
+        for line in orphaned_lines:
+            try:
+                # Test if referenced records exist
+                if line.partner_id and not line.partner_id.exists():
+                    to_delete.append(line.id)
+                    continue
+                if line.commission_type_id and not line.commission_type_id.exists():
+                    to_delete.append(line.id)
+                    continue
+                if line.sale_order_id and not line.sale_order_id.exists():
+                    to_delete.append(line.id)
+                    continue
+                # Check optional references
+                if line.purchase_order_id and not line.purchase_order_id.exists():
+                    line.purchase_order_id = False
+                    line.purchase_line_id = False
+            except Exception as e:
+                _logger.warning("Error checking commission line %s: %s", line.id, str(e))
+                to_delete.append(line.id)
+        
+        if to_delete:
+            orphaned_records = self.browse(to_delete)
+            orphaned_records.unlink()
+            _logger.info("Deleted %s orphaned commission lines", len(to_delete))
+        
+        return len(to_delete)
 
     def action_calculate(self):
         """Calculate commission amounts"""
@@ -314,6 +375,22 @@ class CommissionLine(models.Model):
             line.purchase_order_id = False
             line.purchase_line_id = False
         return True
+
+    def action_view_purchase_order(self):
+        """View the related purchase order"""
+        self.ensure_one()
+        
+        if not self.purchase_order_id:
+            raise UserError(_("No purchase order found for this commission line."))
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Purchase Order'),
+            'res_model': 'purchase.order',
+            'res_id': self.purchase_order_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     def _create_purchase_order(self):
         """Create purchase order for commission payment"""
@@ -485,12 +562,37 @@ class CommissionLine(models.Model):
 
     # Performance optimization methods
     @api.model
-    def search_read_optimized(self, domain=None, fields=None, offset=0, limit=None, order=None):
+    def search_read_optimized(self, domain=None, search_fields=None, offset=0, limit=None, order=None):
         """Optimized search_read for commission lines with proper indexing"""
         if not domain:
             domain = []
 
         # Add company domain for multi-company support
         domain += [('company_id', '=', self.env.company.id)]
+        
+        # Limit default results to prevent URI too long errors
+        if limit is None:
+            limit = 80
+        
+        # Define essential fields only to reduce payload
+        if search_fields is None:
+            search_fields = [
+                'id', 'display_name', 'partner_id', 'commission_type_id', 
+                'commission_amount', 'state', 'sale_order_id'
+            ]
 
-        return super(CommissionLine, self).search_read(domain, fields, offset, limit, order)
+        return super(CommissionLine, self).search_read(domain, search_fields, offset, limit, order)
+
+    def read(self, fields=None, load='_classic_read'):
+        """Override read to handle orphaned Many2one references safely"""
+        try:
+            return super(CommissionLine, self).read(fields, load)
+        except AttributeError as e:
+            if "'_unknown' object has no attribute 'id'" in str(e):
+                # Handle orphaned references by cleaning them up
+                _logger.warning("Found orphaned references in commission lines, cleaning up...")
+                self._cleanup_orphaned_records()
+                # Try reading again with cleaned data
+                return super(CommissionLine, self).read(fields, load)
+            else:
+                raise

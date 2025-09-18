@@ -1,6 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Commission Line Tree View -->
+    <!-- Commissio                                                    type="objec                    <group string="Processing Information"
+                           invisible="state in ['draft', 'calculated']">
+                                class="oe_stat_button"
+                                          <header>
+                    <button name="action_acknowledge" string="Acknowledge" type="object"
+                            class="btn-warning" invisible="state != 'new'"/>
+                    <button name="action_resolve" string="Resolve" type="object"
+                            class="btn-success" invisible="state not in ['new', 'acknowledged']"/>
+                    <button name="action_dismiss" string="Dismiss" type="object"
+                            class="btn-secondary" invisible="state in ['resolved', 'dismissed']"/>con="fa-shopping-cart"
+                                invisible="purchase_order_id == False">                      icon="f                    <group string="Processing Information"
+                           invisible="state in ['draft', 'calculated']">shopping-cart"
+                                invisible="purchase_order_id == Fals                <header>
+                    <button name="action_acknowledge" string="Acknowledge" type="object"
+                            class="btn-warning" invisible="state != 'new'"/>
+                    <button name="action_resolve" string="Resolve" type="object"
+                            class="btn-success" invisible="state not in ['new', 'acknowledged']"/>
+                    <button name="action_dismiss" string="Dismiss" type="object"
+                            class="btn-secondary" invisible="state in ['resolved', 'dismissed']"/>    <button name="action_                    <group string="Processing Information"
+                           invisible="state in ['draft', 'calculated']">ew_purchase_order"
+                                type="object"
+                                 <header>
+                    <button name="action_acknowledge" string="Acknowledge" type="object"
+                            class="btn-warning" invisible="state != 'new'"/>
+                    <button name="action_resolve" string="Resolve" type="object"
+                            class="btn-success" invisible="state not in ['new', 'acknowledged']"/>
+                    <button name="action_dismiss" string="Dismiss" type="object"
+                            class="btn-secondary" invisible="state in ['resolved', 'dismissed']"/>        class="oe_stat_button"
+                                icon="fa-shopping-cart"
+                                invisible="purchase_order_id == False">e Tree View -->
     <record id="view_commission_line_tree" model="ir.ui.view">
         <field name="name">commission.line.tree</field>
         <field name="model">commission.line</field>
@@ -9,7 +38,9 @@
                   decoration-info="state == 'draft'"
                   decoration-warning="state == 'calculated'"
                   decoration-success="state in ['processed', 'paid']"
-                  decoration-muted="state == 'cancelled'">
+                  decoration-muted="state == 'cancelled'"
+                  default_order="create_date desc"
+                  limit="50">
                 <field name="sequence" widget="handle"/>
                 <field name="sale_order_id"/>
                 <field name="partner_id"/>
@@ -41,25 +72,25 @@
                             type="object"
                             string="Calculate"
                             class="btn-primary"
-                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                            invisible="state != 'draft'"/>
                     <button name="action_confirm"
                             type="object"
                             string="Confirm"
                             class="btn-primary"
-                            attrs="{'invisible': [('state', 'not in', ['draft', 'calculated'])]}"/>
+                            invisible="state not in ['draft', 'calculated']"/>
                     <button name="action_process"
                             type="object"
                             string="Process"
                             class="btn-primary"
-                            attrs="{'invisible': [('state', '!=', 'confirmed')]}"/>
+                            invisible="state != 'confirmed'"/>
                     <button name="action_cancel"
                             type="object"
                             string="Cancel"
-                            attrs="{'invisible': [('state', 'in', ['cancelled', 'paid'])]}"/>
+                            invisible="state in ['cancelled', 'paid']"/>
                     <button name="action_reset_to_draft"
                             type="object"
                             string="Reset to Draft"
-                            attrs="{'invisible': [('state', 'not in', ['calculated', 'confirmed'])]}"/>
+                            invisible="state not in ['calculated', 'confirmed']"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,calculated,confirmed,processed,paid"/>
                 </header>
                 <sheet>
@@ -86,7 +117,7 @@
                             <field name="commission_category"/>
                             <field name="role"/>
                             <field name="calculation_method"/>
-                            <field name="rate" attrs="{'readonly': [('state', 'not in', ['draft'])]}"/>
+                            <field name="rate" readonly="state not in ['draft']"/>
                         </group>
                     </group>
 
@@ -361,6 +392,8 @@
         <field name="res_model">commission.line</field>
         <field name="view_mode">tree,form,kanban</field>
         <field name="search_view_id" ref="view_commission_line_search"/>
+        <field name="limit">50</field>
+        <field name="context">{'search_default_this_month': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create your first commission line

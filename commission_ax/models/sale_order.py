@@ -66,6 +66,12 @@ class SaleOrder(models.Model):
         default=True,
         help="Use modern commission lines structure instead of legacy fields"
     )
+
+    force_commission_processing = fields.Boolean(
+        string='Force Commission Processing',
+        default=False,
+        help="Temporary flag to bypass invoice validation when force processing commissions"
+    )
     
     # Project fields (if project module is installed)
     project_id = fields.Many2one('project.project', string='Project')
@@ -319,13 +325,21 @@ class SaleOrder(models.Model):
             total = sum(order.purchase_order_ids.mapped('amount_total'))
             order.purchase_order_total_amount = total
 
-    @api.depends('invoice_ids', 'invoice_ids.state', 'invoice_status')
+    @api.depends('invoice_ids', 'invoice_ids.state', 'invoice_status', 'amount_total')
     def _compute_invoice_status(self):
-        """Compute invoice-related status fields"""
+        """Compute invoice-related status fields with better logic"""
         for order in self:
             posted_invoices = order.invoice_ids.filtered(lambda inv: inv.state == 'posted' and inv.move_type == 'out_invoice')
             order.has_posted_invoices = bool(posted_invoices)
-            order.is_fully_invoiced = order.invoice_status == 'invoiced' and bool(posted_invoices)
+            
+            # More flexible check for fully invoiced status
+            if posted_invoices:
+                total_invoiced = sum(posted_invoices.mapped('amount_total'))
+                # Allow small rounding differences (0.01)
+                is_amounts_match = abs(total_invoiced - order.amount_total) <= 0.01
+                order.is_fully_invoiced = (order.invoice_status == 'invoiced' or is_amounts_match) and bool(posted_invoices)
+            else:
+                order.is_fully_invoiced = False
 
     @api.depends('purchase_order_ids')
     def _compute_purchase_order_count(self):
@@ -540,6 +554,32 @@ class SaleOrder(models.Model):
             }
         }
 
+    def action_force_process_commissions(self):
+        """Force commission processing even if invoice check fails"""
+        for order in self:
+            # Set force flag to bypass invoice validation
+            order.force_commission_processing = True
+            try:
+                if order.use_commission_lines:
+                    order._process_commission_lines()
+                else:
+                    order._create_commission_purchase_orders()
+                
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Commission Force Processed',
+                        'message': f'Commissions have been force processed for order {order.name}',
+                        'type': 'success',
+                    }
+                }
+            except Exception as e:
+                raise UserError(f"Failed to force process commissions: {str(e)}")
+            finally:
+                # Always reset the force flag
+                order.force_commission_processing = False
+
     def action_cancel(self):
         """Override cancel with enhanced cascade logic and user notification"""
         commission_orders = self.filtered('purchase_order_ids')
@@ -672,9 +712,12 @@ class SaleOrder(models.Model):
         if self.state not in ['sale', 'done']:
             errors.append("Sale order must be confirmed before processing commissions.")
         
-        # Check if order is fully invoiced
+        # Check if order is fully invoiced (more flexible check)
         if not self.is_fully_invoiced:
-            errors.append("Sale order must be fully invoiced with posted invoices before processing commissions.")
+            # Allow manual override if user confirms it's invoiced
+            if not getattr(self, 'force_commission_processing', False):
+                errors.append("Sale order must be fully invoiced with posted invoices before processing commissions. "
+                            "Use 'Force Process' if you're certain the order is properly invoiced.")
         
         # Check if order has positive amount
         if self.amount_total <= 0:
