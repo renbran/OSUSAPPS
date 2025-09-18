@@ -15,23 +15,26 @@ class CommissionPaymentWizard(models.TransientModel):
 
     partner_id = fields.Many2one(
         'res.partner',
-        related='commission_line_id.partner_id',
         string='Commission Partner',
-        readonly=True
+        readonly=True,
+        compute='_compute_commission_line_fields',
+        store=True
     )
 
     currency_id = fields.Many2one(
         'res.currency',
-        related='commission_line_id.currency_id',
         string='Currency',
-        readonly=True
+        readonly=True,
+        compute='_compute_commission_line_fields',
+        store=True
     )
 
     commission_amount = fields.Monetary(
-        related='commission_line_id.commission_amount',
         string='Total Commission',
         readonly=True,
-        currency_field='currency_id'
+        currency_field='currency_id',
+        compute='_compute_commission_line_fields',
+        store=True
     )
 
     # Temporarily disabled related fields for debugging
@@ -93,6 +96,19 @@ class CommissionPaymentWizard(models.TransientModel):
         help='Maximum amount that can be paid'
     )
 
+    @api.depends('commission_line_id')
+    def _compute_commission_line_fields(self):
+        """Compute fields from commission line"""
+        for wizard in self:
+            if wizard.commission_line_id:
+                wizard.partner_id = wizard.commission_line_id.partner_id.id
+                wizard.currency_id = wizard.commission_line_id.currency_id.id
+                wizard.commission_amount = wizard.commission_line_id.commission_amount
+            else:
+                wizard.partner_id = False
+                wizard.currency_id = False
+                wizard.commission_amount = 0.0
+
     @api.constrains('payment_amount')
     def _check_payment_amount(self):
         """Validate payment amount"""
@@ -100,10 +116,10 @@ class CommissionPaymentWizard(models.TransientModel):
             if wizard.payment_amount <= 0:
                 raise ValidationError(_("Payment amount must be positive."))
 
-            if wizard.payment_amount > wizard.outstanding_amount:
+            if wizard.commission_amount and wizard.payment_amount > wizard.commission_amount:
                 raise ValidationError(
-                    _("Payment amount cannot exceed outstanding amount of %s") %
-                    wizard.outstanding_amount
+                    _("Payment amount cannot exceed commission amount of %s") %
+                    wizard.commission_amount
                 )
 
     def action_record_payment(self):
