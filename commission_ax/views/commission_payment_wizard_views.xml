@@ -16,15 +16,11 @@
                         <group string="Commission Information">
                             <field name="commission_line_id" readonly="1"/>
                             <field name="commission_amount" readonly="1"/>
-                            <field name="paid_amount_current" readonly="1"/>
-                            <field name="outstanding_amount" readonly="1"/>
                             <field name="currency_id" invisible="1"/>
                             <field name="max_amount" invisible="1"/>
                         </group>
                         <group string="Payment Details">
-                            <field name="payment_amount"
-                                   decoration-danger="payment_amount > outstanding_amount"
-                                   decoration-success="payment_amount == outstanding_amount"/>
+                            <field name="payment_amount"/>
                             <field name="payment_date"/>
                             <field name="payment_method"/>
                             <field name="payment_reference" placeholder="Enter payment reference..."/>
@@ -55,9 +51,9 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>Outstanding:</strong>
-                                <span class="text-warning">
-                                    <field name="outstanding_amount" readonly="1" nolabel="1" class="oe_inline"/>
+                                <strong>Total Commission:</strong>
+                                <span class="text-info">
+                                    <field name="commission_amount" readonly="1" nolabel="1" class="oe_inline"/>
                                     <field name="currency_id" readonly="1" nolabel="1" class="oe_inline"/>
                                 </span>
                             </div>
@@ -115,7 +111,6 @@
                                 <field name="partner_id"/>
                                 <field name="sale_order_id"/>
                                 <field name="commission_amount"/>
-                                <field name="outstanding_amount"/>
                                 <field name="currency_id"/>
                             </tree>
                         </field>
