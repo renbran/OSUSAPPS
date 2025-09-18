@@ -8,7 +8,8 @@
             <form string="Record Commission Payment">
                 <sheet>
                     <div class="alert alert-info" role="alert">
-                        <strong>Recording Payment for Commission</strong><br/>
+                        <strong>Recording Payment for Commission</strong>
+                        <br/>
                         Partner: <field name="partner_id" readonly="1" nolabel="1" class="oe_inline"/>
                     </div>
 
@@ -84,7 +85,8 @@
             <form string="Bulk Commission Payment">
                 <sheet>
                     <div class="alert alert-warning" role="alert">
-                        <strong>Bulk Payment Processing</strong><br/>
+                        <strong>Bulk Payment Processing</strong>
+                        <br/>
                         This will mark all selected commission lines as fully paid.
                     </div>
 
