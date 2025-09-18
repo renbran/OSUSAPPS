@@ -141,12 +141,12 @@ class CommissionReportWizard(models.TransientModel):
         if self.agent_id:
             commission_lines = [line for line in commission_lines if 
                               line['partner_name'] == self.agent_id.name or
-                              any(partner_field and partner_field.id == self.agent_id.id 
+                              any(partner_field and hasattr(partner_field, 'id') and partner_field.id == self.agent_id.id 
                                   for partner_field in [
                                       getattr(order, 'internal_commission_partner_id', None),
                                       getattr(order, 'external_commission_partner_id', None),
                                       getattr(order, 'legacy_commission_partner_id', None)
-                                  ])]
+                                  ] if partner_field)]
         
         return {
             'commission_lines': commission_lines,

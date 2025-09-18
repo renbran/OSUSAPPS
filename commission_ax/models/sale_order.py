@@ -540,6 +540,15 @@ class SaleOrder(models.Model):
                 raise UserError("Cannot process commissions for %s:\n%s" % (order.name, order.commission_blocked_reason))
 
             if order.use_commission_lines:
+                # Auto-create commission lines if they don't exist
+                if not order.commission_line_ids:
+                    lines_created = order._create_commission_lines_from_legacy()
+                    if lines_created == 0:
+                        raise UserError(
+                            f"No commission lines found for order {order.name} and no legacy commission data available to create them. "
+                            "Please add commission partners and rates in the Commission Management section first."
+                        )
+
                 order._process_commission_lines()
             else:
                 order._create_commission_purchase_orders()
@@ -711,31 +720,56 @@ class SaleOrder(models.Model):
         """Check if order meets all prerequisites for commission processing"""
         self.ensure_one()
         errors = []
-        
+
         # Check if order is confirmed
         if self.state not in ['sale', 'done']:
-            errors.append("Sale order must be confirmed before processing commissions.")
-        
+            errors.append("❌ Sale order must be confirmed before processing commissions.")
+
         # Check if order is fully invoiced (more flexible check)
         if not self.is_fully_invoiced:
             # Allow manual override if user confirms it's invoiced
             if not getattr(self, 'force_commission_processing', False):
-                errors.append("Sale order must be fully invoiced with posted invoices before processing commissions. "
+                errors.append("❌ Sale order must be fully invoiced with posted invoices before processing commissions. "
                             "Use 'Force Process' if you're certain the order is properly invoiced.")
-        
+
         # Check if order has positive amount
         if self.amount_total <= 0:
-            errors.append("Sale order must have a positive total amount.")
-        
-        # Check if any commissions are defined
-        commissions = self._get_commission_entries()
-        if not commissions:
-            errors.append("No commission partners or amounts are defined for this order.")
-        
+            errors.append("❌ Sale order must have a positive total amount.")
+
+        # Check if any commissions are defined (either in commission lines or legacy fields)
+        has_commission_data = False
+
+        if self.use_commission_lines and self.commission_line_ids:
+            has_commission_data = True
+        else:
+            # Check legacy commission fields
+            legacy_partners = [
+                self.consultant_id, self.manager_id, self.director_id, self.second_agent_id,
+                self.broker_partner_id, self.referrer_partner_id, self.cashback_partner_id,
+                self.other_external_partner_id, self.agent1_partner_id, self.agent2_partner_id,
+                self.manager_partner_id, self.director_partner_id
+            ]
+
+            legacy_rates = [
+                self.consultant_comm_percentage, self.manager_comm_percentage,
+                self.director_comm_percentage, self.second_agent_comm_percentage,
+                self.broker_rate, self.referrer_rate, self.cashback_rate,
+                self.other_external_rate, self.agent1_rate, self.agent2_rate,
+                self.manager_rate, self.director_rate
+            ]
+
+            for partner, rate in zip(legacy_partners, legacy_rates):
+                if partner and rate > 0:
+                    has_commission_data = True
+                    break
+
+        if not has_commission_data:
+            errors.append("❌ No commission partners or rates are defined. Please add commission information in the Legacy Commission, External Commission, or Internal Commission tabs.")
+
         if errors:
             self.commission_blocked_reason = "\n".join(errors)
             return False
-        
+
         self.commission_blocked_reason = False
         return True
 

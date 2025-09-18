@@ -36,6 +36,7 @@
                     <field name="internal_commission_lines_amount" invisible="1"/>
                     <field name="external_commission_lines_amount" invisible="1"/>
                     <field name="commission_calculation_time" invisible="1"/>
+                    <field name="commission_blocked_reason" invisible="1"/>
                 </xpath>
             </field>
         </record>
@@ -48,8 +49,16 @@
             <field name="arch" type="xml">
                 <xpath expr="//form/sheet/notebook" position="inside">
                     <page string="Commission Management" name="commission_management">
+                        <!-- Commission Workflow Help -->
+                        <div class="alert alert-success" role="alert" invisible="commission_processed == True">
+                            <strong>Commission Workflow:</strong><br/>
+                            1. Fill in commission partner information in the tabs below<br/>
+                            2. Click "Process Commissions" to automatically create commission lines and purchase orders<br/>
+                            3. Track payment status in the Commission Lines tab
+                        </div>
+
                         <!-- Commission Status Header -->
-                        <div class="alert alert-info" role="alert" invisible="commission_blocked_reason == False">
+                        <div class="alert alert-warning" role="alert" invisible="commission_blocked_reason == False">
                             <strong>Commission Blocked:</strong>
                             <field name="commission_blocked_reason" nolabel="1"/>
                         </div>
@@ -189,6 +198,60 @@
                                         <field name="director_amount" widget="monetary"/>
                                     </group>
                                 </group>
+                            </page>
+
+                            <!-- Commission Lines Tab -->
+                            <page string="Commission Lines" name="commission_lines">
+                                <div class="alert alert-info" role="alert" invisible="commission_line_ids">
+                                    <strong>No Commission Lines Found</strong><br/>
+                                    Commission lines will be automatically created when you process commissions, or you can create them manually using the button below.
+                                </div>
+
+                                <div class="oe_button_box mb16" invisible="commission_line_ids">
+                                    <button name="action_create_commission_lines" string="Create Commission Lines" type="object" class="btn-primary" icon="fa-plus-circle"/>
+                                </div>
+
+                                <field name="commission_line_ids" nolabel="1" invisible="not commission_line_ids">
+                                    <tree decoration-info="state == 'draft'" decoration-warning="state == 'calculated'" decoration-success="state in ['processed', 'paid']" decoration-muted="state == 'cancelled'">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="partner_id"/>
+                                        <field name="commission_type_id"/>
+                                        <field name="role"/>
+                                        <field name="calculation_method"/>
+                                        <field name="rate"/>
+                                        <field name="commission_amount" widget="monetary"/>
+                                        <field name="state"/>
+                                        <field name="payment_status"/>
+                                        <field name="currency_id" invisible="1"/>
+                                        <button name="action_calculate" string="Calculate" type="object" icon="fa-calculator" invisible="state != 'draft'"/>
+                                        <button name="action_confirm" string="Confirm" type="object" icon="fa-check" invisible="state not in ['draft', 'calculated']"/>
+                                        <button name="action_process" string="Process" type="object" icon="fa-cog" invisible="state != 'confirmed'"/>
+                                    </tree>
+                                    <form>
+                                        <header>
+                                            <button name="action_calculate" type="object" string="Calculate" class="btn-primary" invisible="state != 'draft'"/>
+                                            <button name="action_confirm" type="object" string="Confirm" class="btn-primary" invisible="state not in ['draft', 'calculated']"/>
+                                            <button name="action_process" type="object" string="Process" class="btn-primary" invisible="state != 'confirmed'"/>
+                                            <field name="state" widget="statusbar" statusbar_visible="draft,calculated,confirmed,processed,paid"/>
+                                        </header>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="partner_id"/>
+                                                    <field name="commission_type_id"/>
+                                                    <field name="role"/>
+                                                    <field name="commission_category"/>
+                                                </group>
+                                                <group>
+                                                    <field name="calculation_method"/>
+                                                    <field name="rate"/>
+                                                    <field name="commission_amount" widget="monetary"/>
+                                                    <field name="currency_id" invisible="1"/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
                             </page>
 
                             <!-- Purchase Orders Tab -->
