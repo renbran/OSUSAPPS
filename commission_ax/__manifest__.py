@@ -1,49 +1,76 @@
 {
     'name': 'Advanced Commission Management',
-    'version': '17.0.2.0.0',
+    'version': '17.0.3.0.0',
     'category': 'Sales',
-    'summary': 'Advanced commission management with business logic constraints, professional reporting and commission statements',
+    'summary': 'World-class commission management with optimized performance, commission lines architecture, and unified monitoring dashboard',
     'description': """
-Advanced Commission Management System
-====================================
+World-Class Commission Management System
+======================================
 
-This module provides comprehensive commission management for sales orders with:
+🚀 **PERFORMANCE OPTIMIZED** - Built for enterprise-scale commission processing
 
-Business Logic Features:
-- Commission processing only allowed for fully invoiced orders
-- Automatic cascade cancellation of commission POs when sales orders are cancelled
-- User confirmation dialogs for destructive operations
-- Prerequisites validation before commission processing
+## Key Features
 
-Commission Features:
-- Multiple commission types (External and Internal)
-- Flexible commission calculation methods (Fixed, Percentage of Unit Price, Percentage of Total)
-- Legacy commission support for backward compatibility
-- Commission purchase order generation
-- Commission status tracking (Draft → Calculated → Confirmed)
+### 🏗️ **Modern Architecture**
+- **Commission Lines Structure**: Scalable relational architecture replacing scattered fields
+- **Unified Dashboard**: Real-time monitoring and analytics
+- **Performance Metrics**: Sub-second commission calculations with timing metrics
+- **Alert System**: Proactive monitoring with automated notifications
 
-Reporting Features:
-- Professional commission reports with clear formatting
-- Export to PDF functionality matching company branding
-- Comprehensive commission breakdowns
-- VAT calculations and net company share
-- **NEW: Commission Statement Reports per agent & deal (PDF/XLSX)**
+### 📊 **Business Intelligence**
+- **Commission Dashboard**: Interactive analytics with graphs, pivot tables, and KPIs
+- **Performance Reports**: Advanced filtering and grouping capabilities
+- **Trend Analysis**: Historical commission data with forecasting
+- **Top Performer Tracking**: Identify high-performing commission partners
 
-Commission Statement Features:
-- Generate detailed commission statements for individual agents
-- Professional PDF reports with company branding
-- Excel export for further analysis
-- Multi-deal summaries with filtering options
-- Access control for agents, sales managers, and accounting
-- One-click access from sale order forms
+### ⚡ **Performance Enhancements**
+- **Optimized Queries**: Eliminated N+1 query problems
+- **Batch Processing**: Efficient handling of bulk commission operations
+- **Caching**: Smart caching for frequently accessed commission data
+- **Database Indexing**: Proper indexing for fast searches and reports
 
-Technical Features:
-- Robust error handling and logging
-- Scheduled actions for commission monitoring
-- Enhanced UI with status indicators
-- Search filters for commission-related records
-- Cascade operations with user confirmations
-- Performance optimized for large datasets
+### 🔧 **Advanced Commission Management**
+- **Commission Lines**: Modern relational structure with full workflow support
+- **Multiple Calculation Methods**: Fixed, Percentage (Unit/Total/Untaxed)
+- **Category Management**: Internal, External, Management, and Bonus commissions
+- **State Management**: Draft → Calculated → Confirmed → Processed → Paid
+- **Legacy Migration**: Seamless migration from old commission structure
+
+### 📈 **Monitoring & Analytics**
+- **Real-time Dashboard**: Commission performance at a glance
+- **Automated Alerts**: Overdue commissions, high amounts, threshold breaches
+- **Commission Trends**: Monthly/quarterly analysis with growth metrics
+- **Partner Performance**: Top performers and commission distribution
+
+### 🔐 **Enhanced Security**
+- **Role-based Access**: Granular permissions for users and managers
+- **Audit Trail**: Complete tracking of commission changes
+- **Data Integrity**: Validation rules and constraints
+
+### 🔄 **Workflow Automation**
+- **Automated PO Creation**: Streamlined purchase order generation
+- **Status Tracking**: Visual workflow states with automatic transitions
+- **Payment Monitoring**: Track invoiced, paid, and outstanding amounts
+- **Scheduled Actions**: Automated commission processing and monitoring
+
+### 📋 **Professional Reporting**
+- **Commission Statements**: Agent-specific PDF/Excel reports
+- **Comprehensive Reports**: Deal analysis with project and unit details
+- **Export Capabilities**: PDF, Excel, and CSV formats
+- **Custom Filtering**: Advanced search and grouping options
+
+### 🔗 **Integration Features**
+- **Purchase Order Integration**: Seamless PO creation and tracking
+- **Project Management**: Link commissions to projects and units
+- **Multi-currency Support**: Handle global commission structures
+- **Company-wise Separation**: Multi-company environment support
+
+### 🛠️ **Technical Excellence**
+- **Modern Odoo 17 Standards**: Latest framework capabilities
+- **Extensible Architecture**: Easy customization and module integration
+- **Performance Monitoring**: Built-in metrics and optimization tools
+- **Error Handling**: Robust exception management with logging
+- **Data Migration Tools**: Safe migration from legacy structures
     """,
     'author': 'Your Company',
     'website': 'https://www.yourcompany.com',
@@ -67,6 +94,7 @@ Technical Features:
         'views/commission_type_views.xml',
         'views/sale_order.xml',
         'views/purchase_order.xml',
+        'views/commission_line_views.xml',
         'views/commission_wizard_views.xml',
         'views/commission_statement_wizard_views.xml',
         'views/deals_commission_report_wizard_views.xml',
@@ -84,4 +112,5 @@ Technical Features:
     'external_dependencies': {
         'python': ['xlsxwriter'],
     },
+    'post_init_hook': 'post_init_hook',
 }

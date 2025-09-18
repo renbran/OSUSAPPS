@@ -66,68 +66,30 @@
     </record>
 
     <!-- Main Menu -->
-    <menuitem id="menu_sales_dashboard_main"
-              name="📊 Sales Analytics Hub"
-              parent="sale.sale_menu_root"
-              sequence="2"/>
+    <menuitem id="menu_sales_dashboard_main" name="📊 Sales Analytics Hub" parent="sale.sale_menu_root" sequence="2"/>
 
     <!-- Dashboard Sub-menus -->
-    <menuitem id="menu_sales_analytics"
-              name="📈 Analytics Dashboard"
-              parent="menu_sales_dashboard_main"
-              action="action_sales_analytics_dashboard"
-              sequence="1"/>
+    <menuitem id="menu_sales_analytics" name="📈 Analytics Dashboard" parent="menu_sales_dashboard_main" action="action_sales_analytics_dashboard" sequence="1"/>
 
-    <menuitem id="menu_invoice_analytics"
-              name="🧾 Invoice &amp; Payment Analytics"
-              parent="menu_sales_dashboard_main"
-              action="action_invoice_analytics"
-              sequence="2"/>
+    <menuitem id="menu_invoice_analytics" name="🧾 Invoice &amp; Payment Analytics" parent="menu_sales_dashboard_main" action="action_invoice_analytics" sequence="2"/>
 
-    <menuitem id="menu_balance_analytics"
-              name="💰 Balance &amp; Receivables"
-              parent="menu_sales_dashboard_main"
-              action="action_balance_analytics"
-              sequence="3"/>
+    <menuitem id="menu_balance_analytics" name="💰 Balance &amp; Receivables" parent="menu_sales_dashboard_main" action="action_balance_analytics" sequence="3"/>
 
-    <menuitem id="menu_top_performers"
-              name="🏆 Top Performers"
-              parent="menu_sales_dashboard_main"
-              action="action_sales_top_performers"
-              sequence="4"/>
+    <menuitem id="menu_top_performers" name="🏆 Top Performers" parent="menu_sales_dashboard_main" action="action_sales_top_performers" sequence="4"/>
 
-    <menuitem id="menu_revenue_rankings"
-              name="🚀 Revenue Rankings"
-              parent="menu_sales_dashboard_main"
-              action="action_revenue_rankings"
-              sequence="5"/>
+    <menuitem id="menu_revenue_rankings" name="🚀 Revenue Rankings" parent="menu_sales_dashboard_main" action="action_revenue_rankings" sequence="5"/>
 
     <!-- Configuration Sub-menu -->
-    <menuitem id="menu_dashboard_config"
-              name="⚙️ Dashboard Configuration"
-              parent="menu_sales_dashboard_main"
-              action="action_sales_dashboard"
-              sequence="10"/>
+    <menuitem id="menu_dashboard_config" name="⚙️ Dashboard Configuration" parent="menu_sales_dashboard_main" action="action_sales_dashboard" sequence="10"/>
 
 </odoo>
 
-    <!-- Dashboard Management Sub-menu -->
-    <menuitem id="menu_sales_dashboard_management"
-              name="Dashboard Management"
-              parent="menu_sales_dashboard_main"
-              action="action_sales_dashboard"
-              sequence="2"/>
+<!-- Dashboard Management Sub-menu -->
+<menuitem id="menu_sales_dashboard_management" name="Dashboard Management" parent="menu_sales_dashboard_main" action="action_sales_dashboard" sequence="2"/>
 
-    <!-- Top Performers Sub-menu -->
-    <menuitem id="menu_sales_top_performers"
-              name="Top Performers"
-              parent="menu_sales_dashboard_main"
-              action="action_sales_top_performers"
-              sequence="3"/>
+<!-- Top Performers Sub-menu -->
+<menuitem id="menu_sales_top_performers" name="Top Performers" parent="menu_sales_dashboard_main" action="action_sales_top_performers" sequence="3"/>
 
-    <!-- Reports Sub-menu -->
-    <menuitem id="menu_sales_dashboard_reports"
-              name="Reports"
-              parent="menu_sales_dashboard_main"
-              sequence="4"/>
+<!-- Reports Sub-menu -->
+<menuitem id="menu_sales_dashboard_reports" name="Reports" parent="menu_sales_dashboard_main" sequence="4"/>
 </odoo>

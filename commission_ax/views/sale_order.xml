@@ -7,18 +7,35 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <!-- Add Commission Statement smart button to button box -->
+                <!-- Add Enhanced Commission smart buttons to button box -->
                 <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
                     <button name="action_view_commission_statement" type="object" class="oe_stat_button" icon="fa-file-text-o" groups="base.group_user" invisible="commission_statement_count == 0">
                         <div class="o_stat_info">
                             <field name="commission_statement_count" widget="statinfo" string="Statements"/>
                         </div>
                     </button>
+                    <button name="action_view_commission_lines" type="object" class="oe_stat_button" icon="fa-list" groups="base.group_user" invisible="commission_lines_count == 0">
+                        <div class="o_stat_info">
+                            <field name="commission_lines_count" widget="statinfo" string="Lines"/>
+                        </div>
+                    </button>
+                    <button name="action_view_commission_dashboard" type="object" class="oe_stat_button" icon="fa-dashboard" groups="base.group_user" invisible="commission_lines_count == 0">
+                        <div class="o_stat_info">
+                            <span class="o_stat_text">Commission</span>
+                            <span class="o_stat_text">Dashboard</span>
+                        </div>
+                    </button>
                 </xpath>
 
-                <!-- Add invisible commission statement count field -->
+                <!-- Add invisible commission fields -->
                 <xpath expr="//form/sheet" position="inside">
                     <field name="commission_statement_count" invisible="1"/>
+                    <field name="commission_lines_count" invisible="1"/>
+                    <field name="use_commission_lines" invisible="1"/>
+                    <field name="total_commission_lines_amount" invisible="1"/>
+                    <field name="internal_commission_lines_amount" invisible="1"/>
+                    <field name="external_commission_lines_amount" invisible="1"/>
+                    <field name="commission_calculation_time" invisible="1"/>
                 </xpath>
             </field>
         </record>

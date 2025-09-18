@@ -5,14 +5,66 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class SaleOrder(models.Model):
-    """Extended Sale Order with comprehensive commission management"""
+    """Extended Sale Order with comprehensive commission management and optimized commission lines"""
     _inherit = 'sale.order'  # This MUST be at the top of the class
+
+    # ============== COMMISSION LINES INTEGRATION ==============
+
+    commission_line_ids = fields.One2many(
+        'commission.line',
+        'sale_order_id',
+        string='Commission Lines',
+        copy=False,
+        help="Modern commission structure using commission lines"
+    )
+
+    commission_lines_count = fields.Integer(
+        string='Commission Lines Count',
+        compute='_compute_commission_lines_count',
+        help="Number of commission lines for this order"
+    )
+
+    # Performance optimized commission totals
+    total_commission_lines_amount = fields.Monetary(
+        string='Total Commission (Lines)',
+        compute='_compute_commission_lines_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Total commission amount from commission lines"
+    )
+
+    internal_commission_lines_amount = fields.Monetary(
+        string='Internal Commission (Lines)',
+        compute='_compute_commission_lines_totals',
+        store=True,
+        currency_field='currency_id'
+    )
+
+    external_commission_lines_amount = fields.Monetary(
+        string='External Commission (Lines)',
+        compute='_compute_commission_lines_totals',
+        store=True,
+        currency_field='currency_id'
+    )
     
-    # Commission Statement fields
+    # Commission Statement fields (Enhanced)
     commission_statement_count = fields.Integer(
         string='Commission Statement Count',
         compute='_compute_commission_statement_count',
         help="Number of commission partners eligible for statements"
+    )
+
+    # Performance monitoring fields
+    commission_calculation_time = fields.Float(
+        string='Last Calculation Time (ms)',
+        readonly=True,
+        help="Time taken for last commission calculation in milliseconds"
+    )
+
+    use_commission_lines = fields.Boolean(
+        string='Use Commission Lines Structure',
+        default=True,
+        help="Use modern commission lines structure instead of legacy fields"
     )
     
     # Project fields (if project module is installed)
@@ -205,33 +257,60 @@ class SaleOrder(models.Model):
     has_posted_invoices = fields.Boolean(string="Has Posted Invoices", compute="_compute_invoice_status", store=True)
     commission_blocked_reason = fields.Text(string="Commission Blocked Reason", readonly=True)
 
-    # ============== COMPUTE METHODS ==============
-    
-    @api.depends('agent1_partner_id', 'agent2_partner_id', 'broker_partner_id', 
+    # ============== COMPUTE METHODS - ENHANCED ==============
+
+    @api.depends('commission_line_ids')
+    def _compute_commission_lines_count(self):
+        """Compute commission lines count"""
+        for order in self:
+            order.commission_lines_count = len(order.commission_line_ids)
+
+    @api.depends('commission_line_ids.commission_amount', 'commission_line_ids.commission_category')
+    def _compute_commission_lines_totals(self):
+        """Optimized commission totals calculation using commission lines"""
+        for order in self:
+            lines = order.commission_line_ids.filtered(lambda l: l.state != 'cancelled')
+
+            order.total_commission_lines_amount = sum(lines.mapped('commission_amount'))
+            order.internal_commission_lines_amount = sum(
+                lines.filtered(lambda l: l.commission_category == 'internal').mapped('commission_amount')
+            )
+            order.external_commission_lines_amount = sum(
+                lines.filtered(lambda l: l.commission_category == 'external').mapped('commission_amount')
+            )
+
+    @api.depends('agent1_partner_id', 'agent2_partner_id', 'broker_partner_id',
                  'referrer_partner_id', 'cashback_partner_id', 'other_external_partner_id',
                  'consultant_id', 'manager_id', 'second_agent_id', 'director_id',
-                 'manager_partner_id', 'director_partner_id')
+                 'manager_partner_id', 'director_partner_id', 'commission_line_ids.partner_id')
     def _compute_commission_statement_count(self):
-        """Compute number of commission partners for this order."""
+        """Compute number of commission partners for this order (Enhanced with commission lines)."""
         for order in self:
             partners = set()
-            commission_partners = [
-                order.agent1_partner_id,
-                order.agent2_partner_id,
-                order.broker_partner_id,
-                order.referrer_partner_id,
-                order.cashback_partner_id,
-                order.other_external_partner_id,
-                order.consultant_id,
-                order.manager_id,
-                order.second_agent_id,
-                order.director_id,
-                order.manager_partner_id,
-                order.director_partner_id,
-            ]
-            for partner in commission_partners:
-                if partner:
-                    partners.add(partner.id)
+
+            # Modern commission lines approach
+            if order.use_commission_lines and order.commission_line_ids:
+                partners.update(order.commission_line_ids.mapped('partner_id').ids)
+            else:
+                # Legacy approach for backward compatibility
+                commission_partners = [
+                    order.agent1_partner_id,
+                    order.agent2_partner_id,
+                    order.broker_partner_id,
+                    order.referrer_partner_id,
+                    order.cashback_partner_id,
+                    order.other_external_partner_id,
+                    order.consultant_id,
+                    order.manager_id,
+                    order.second_agent_id,
+                    order.director_id,
+                    order.manager_partner_id,
+                    order.director_partner_id,
+                ]
+                for partner in commission_partners:
+                    if partner:
+                        partners.add(partner.id)
+
             order.commission_statement_count = len(partners)
 
     @api.depends('purchase_order_ids')
@@ -434,12 +513,32 @@ class SaleOrder(models.Model):
         }
 
     def action_process_commissions(self):
-        """Enhanced commission processing with prerequisite checks"""
+        """Enhanced commission processing with commission lines support"""
+        import time
+        start_time = time.time()
+
         for order in self:
             if not order._check_commission_prerequisites():
                 raise UserError("Cannot process commissions for %s:\n%s" % (order.name, order.commission_blocked_reason))
-            order._create_commission_purchase_orders()
-        return True
+
+            if order.use_commission_lines:
+                order._process_commission_lines()
+            else:
+                order._create_commission_purchase_orders()
+
+        # Record performance metric
+        calculation_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+        self.commission_calculation_time = calculation_time
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Commission Processing Complete',
+                'message': f'Processed commissions in {calculation_time:.2f}ms',
+                'type': 'success',
+            }
+        }
 
     def action_cancel(self):
         """Override cancel with enhanced cascade logic and user notification"""
@@ -593,17 +692,48 @@ class SaleOrder(models.Model):
         self.commission_blocked_reason = False
         return True
 
-    def _create_commission_purchase_orders(self):
-        """Enhanced commission PO creation with prerequisites check"""
+    def _process_commission_lines(self):
+        """Process commission lines - create/update purchase orders"""
         self.ensure_one()
-        
+
+        if not self.commission_line_ids:
+            raise UserError("No commission lines found. Please create commission lines first.")
+
+        lines_to_process = self.commission_line_ids.filtered(
+            lambda l: l.state == 'confirmed' and not l.purchase_order_id
+        )
+
+        if not lines_to_process:
+            raise UserError("No confirmed commission lines ready for processing.")
+
+        # Process commission lines
+        processed_count = 0
+        for line in lines_to_process:
+            try:
+                line.action_process()
+                processed_count += 1
+            except Exception as e:
+                _logger.error(f"Error processing commission line {line.id}: {str(e)}")
+                continue
+
+        # Update order status
+        if processed_count > 0:
+            self.commission_status = 'calculated'
+            self.commission_processed = True
+
+        return processed_count
+
+    def _create_commission_purchase_orders(self):
+        """Enhanced commission PO creation with prerequisites check (Legacy support)"""
+        self.ensure_one()
+
         # Check prerequisites
         if not self._check_commission_prerequisites():
             raise UserError(f"Cannot process commissions:\n{self.commission_blocked_reason}")
-        
+
         if self.commission_processed:
             raise UserError("Commissions have already been processed for this order.")
-        
+
         # Update status
         self.commission_status = 'calculated'
         
@@ -776,6 +906,145 @@ class SaleOrder(models.Model):
 
         return commissions
 
+    # ============== COMMISSION LINES MANAGEMENT ==============
+
+    def action_create_commission_lines(self):
+        """Create commission lines from current commission configuration"""
+        self.ensure_one()
+
+        if self.commission_line_ids:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': 'Confirm Replace Commission Lines',
+                'res_model': 'commission.lines.replace.wizard',
+                'view_mode': 'form',
+                'target': 'new',
+                'context': {'default_sale_order_id': self.id},
+            }
+
+        lines_created = self._create_commission_lines_from_legacy()
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Commission Lines Created',
+                'message': f'Created {lines_created} commission lines',
+                'type': 'success',
+            }
+        }
+
+    def _create_commission_lines_from_legacy(self):
+        """Create commission lines from legacy commission fields"""
+        self.ensure_one()
+
+        commission_lines = []
+
+        # Mapping legacy fields to commission lines
+        legacy_mappings = [
+            ('consultant_id', 'consultant_comm_percentage', 'consultant_commission_type', 'consultant', 'internal'),
+            ('manager_id', 'manager_comm_percentage', 'manager_legacy_commission_type', 'manager', 'internal'),
+            ('director_id', 'director_comm_percentage', 'director_legacy_commission_type', 'director', 'internal'),
+            ('second_agent_id', 'second_agent_comm_percentage', 'second_agent_commission_type', 'agent', 'internal'),
+            ('broker_partner_id', 'broker_rate', 'broker_commission_type', 'broker', 'external'),
+            ('referrer_partner_id', 'referrer_rate', 'referrer_commission_type', 'referrer', 'external'),
+            ('cashback_partner_id', 'cashback_rate', 'cashback_commission_type', 'agent', 'external'),
+            ('agent1_partner_id', 'agent1_rate', 'agent1_commission_type', 'agent', 'internal'),
+            ('agent2_partner_id', 'agent2_rate', 'agent2_commission_type', 'agent', 'internal'),
+            ('manager_partner_id', 'manager_rate', 'manager_commission_type', 'manager', 'internal'),
+            ('director_partner_id', 'director_rate', 'director_commission_type', 'director', 'internal'),
+        ]
+
+        for partner_field, rate_field, type_field, role, category in legacy_mappings:
+            partner = getattr(self, partner_field, None)
+            rate = getattr(self, rate_field, 0.0)
+            comm_type = getattr(self, type_field, 'percent_untaxed_total')
+
+            if partner and rate > 0:
+                # Map calculation method
+                calc_method = self._map_legacy_calc_method(comm_type)
+
+                # Get or create commission type
+                commission_type = self._get_or_create_commission_type_for_role(role, category)
+
+                commission_lines.append({
+                    'sale_order_id': self.id,
+                    'partner_id': partner.id,
+                    'commission_type_id': commission_type.id,
+                    'calculation_method': calc_method,
+                    'rate': rate,
+                    'commission_category': category,
+                    'role': role,
+                    'state': 'calculated' if self.commission_processed else 'draft',
+                    'sequence': len(commission_lines) * 10,
+                })
+
+        # Create commission lines
+        if commission_lines:
+            created_lines = self.env['commission.line'].create(commission_lines)
+            self.use_commission_lines = True
+            return len(created_lines)
+
+        return 0
+
+    def _map_legacy_calc_method(self, legacy_method):
+        """Map legacy calculation method to new format"""
+        mapping = {
+            'fixed': 'fixed',
+            'percent_unit_price': 'percentage_unit',
+            'percent_untaxed_total': 'percentage_untaxed',
+        }
+        return mapping.get(legacy_method, 'percentage_total')
+
+    def _get_or_create_commission_type_for_role(self, role, category):
+        """Get or create commission type for specific role and category"""
+        type_name = f"{role.title()} {category.title()} Commission"
+        commission_type = self.env['commission.type'].search([
+            ('name', '=', type_name)
+        ], limit=1)
+
+        if not commission_type:
+            commission_type = self.env['commission.type'].create({
+                'name': type_name,
+                'code': f"{role.upper()}_{category.upper()}",
+                'calculation_method': 'percentage',
+                'commission_category': category if category in ['sales', 'referral', 'management', 'bonus'] else 'sales',
+                'default_rate': 0.0,
+            })
+
+        return commission_type
+
+    def action_view_commission_lines(self):
+        """View commission lines for this order"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Commission Lines',
+            'res_model': 'commission.line',
+            'view_mode': 'tree,form',
+            'domain': [('sale_order_id', '=', self.id)],
+            'context': {'default_sale_order_id': self.id},
+        }
+
+    def action_calculate_commission_lines(self):
+        """Calculate amounts for all commission lines"""
+        self.ensure_one()
+
+        lines_to_calculate = self.commission_line_ids.filtered(lambda l: l.state == 'draft')
+
+        for line in lines_to_calculate:
+            line.action_calculate()
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Commission Lines Calculated',
+                'message': f'Calculated {len(lines_to_calculate)} commission lines',
+                'type': 'success',
+            }
+        }
+
     def _get_or_create_commission_product(self, commission_type="Sales Commission"):
         """Get or create commission product."""
         product = self.env['product.product'].search([
@@ -797,6 +1066,30 @@ class SaleOrder(models.Model):
             _logger.info("Created commission product: %s", commission_type)
         
         return product
+
+    def action_migrate_to_commission_lines(self):
+        """Migrate order from legacy commission structure to commission lines"""
+        self.ensure_one()
+
+        if self.commission_line_ids:
+            raise UserError("This order already has commission lines.")
+
+        lines_created = self._create_commission_lines_from_legacy()
+
+        if lines_created > 0:
+            # Optionally disable legacy fields to prevent confusion
+            # This would require careful consideration in production
+            pass
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Migration Complete',
+                'message': f'Successfully migrated to commission lines structure. Created {lines_created} commission lines.',
+                'type': 'success',
+            }
+        }
 
     def _prepare_purchase_order_vals(self, partner, product, amount, description):
         """Prepare values for purchase order creation with vendor reference auto-population."""
@@ -824,4 +1117,40 @@ class SaleOrder(models.Model):
                 'price_unit': amount,
                 'taxes_id': [(6, 0, product.supplier_taxes_id.ids)],
             })]
+        }
+
+    def action_commission_performance_report(self):
+        """Open commission performance report for this order's timeframe"""
+        self.ensure_one()
+
+        # Set date range around this order's date
+        order_date = self.date_order.date() if self.date_order else fields.Date.today()
+        date_from = order_date.replace(day=1)  # First day of month
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Commission Performance Report',
+            'res_model': 'commission.performance.report',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_date_from': date_from,
+                'default_date_to': order_date,
+            }
+        }
+
+    def action_view_commission_dashboard(self):
+        """View commission dashboard filtered for this order"""
+        self.ensure_one()
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Commission Dashboard',
+            'res_model': 'commission.dashboard',
+            'view_mode': 'graph,pivot,list',
+            'domain': [('sale_order_id', '=', self.id)],
+            'context': {
+                'search_default_group_by_partner': 1,
+            }
+        }
         }
