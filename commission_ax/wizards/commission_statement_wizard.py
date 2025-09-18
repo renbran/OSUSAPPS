@@ -111,8 +111,8 @@ class CommissionStatementWizard(models.TransientModel):
         """Get domain for commission lines based on wizard filters"""
         domain = [
             ('partner_id', '=', self.partner_id.id),
-            ('booking_date', '>=', self.date_from),
-            ('booking_date', '<=', self.date_to),
+            ('date_commission', '>=', self.date_from),
+            ('date_commission', '<=', self.date_to),
         ]
         
         if self.commission_category != 'all':
@@ -129,22 +129,22 @@ class CommissionStatementWizard(models.TransientModel):
     def _get_commission_lines_data(self):
         """Get commission lines data for the report"""
         domain = self._get_commission_lines_domain()
-        commission_lines = self.env['commission.line'].search(domain, order='booking_date desc, id desc')
+        commission_lines = self.env['commission.line'].search(domain, order='date_commission desc, id desc')
         
         data = []
         for line in commission_lines:
             data.append({
-                'booking_date': line.booking_date,
-                'order_ref': line.order_ref or '',
-                'customer_reference': line.customer_reference or '',
-                'sale_value': line.sale_value,
-                'commission_rate': line.commission_rate,
+                'booking_date': line.date_commission,
+                'order_ref': line.sale_order_id.name or '',
+                'customer_reference': line.sale_order_id.client_order_ref or '',
+                'sale_value': line.base_amount,
+                'commission_rate': line.rate,
                 'commission_amount': line.commission_amount,
                 'state': line.state,
-                'commission_type': line.commission_type,
+                'commission_type': line.commission_type_id.name or '',
                 'commission_category': line.commission_category,
-                'po_ref': line.po_ref or '',
-                'vendor_reference': line.vendor_reference or '',
+                'po_ref': line.purchase_order_id.name or '',
+                'vendor_reference': line.purchase_order_id.partner_ref or '',
             })
         
         return data
