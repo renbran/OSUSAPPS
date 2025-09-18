@@ -85,8 +85,10 @@ class CommissionPaymentWizard(models.TransientModel):
 
     currency_id = fields.Many2one(
         'res.currency',
-        related='commission_line_id.currency_id',
-        readonly=True
+        string='Currency',
+        readonly=True,
+        compute='_compute_commission_line_fields',
+        store=True
     )
 
     # Validation fields
