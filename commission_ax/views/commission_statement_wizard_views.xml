@@ -47,7 +47,8 @@
             </field>
         </record>
 
-        <!-- Commission Statement Preview Form View -->
+        <!-- Commission Statement Preview Form View - DISABLED: Missing model -->
+        <!--
         <record id="view_commission_statement_preview_form" model="ir.ui.view">
             <field name="name">commission.statement.preview.form</field>
             <field name="model">commission.statement.preview</field>
@@ -87,6 +88,7 @@
                 </form>
             </field>
         </record>
+        -->
 
         <!-- Menu Items -->
         <!-- Commission Statement Report Menu Item -->
