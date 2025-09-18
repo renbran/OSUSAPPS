@@ -86,7 +86,7 @@ class CommissionDashboard(models.Model):
                     so.state AS order_state,
                     CASE
                         WHEN cl.state = 'processed' AND cl.date_commission IS NOT NULL
-                        THEN DATE_PART('day', cl.date_commission - so.date_order::date)
+                        THEN (cl.date_commission::date - so.date_order::date)
                         ELSE NULL
                     END AS days_to_process,
                     CASE

@@ -88,10 +88,7 @@
         </record>
 
         <!-- Menu Items -->
-        <!-- Main Commission Reports Menu -->
-        <menuitem id="menu_commission_reports" name="Commission Reports" parent="sale.sale_menu_root" sequence="50"/>
-
-        <!-- Action for Commission Partner Statement Wizard -->
+        <!-- Commission Statement Report Menu Item -->
         <record id="action_commission_partner_statement_wizard" model="ir.actions.act_window">
             <field name="name">Compact Commission Statement</field>
             <field name="res_model">commission.partner.statement.wizard</field>

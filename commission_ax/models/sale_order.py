@@ -1153,4 +1153,3 @@ class SaleOrder(models.Model):
                 'search_default_group_by_partner': 1,
             }
         }
-        }
