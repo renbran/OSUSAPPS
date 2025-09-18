@@ -219,10 +219,9 @@
         <field name="name">commission.dashboard.graph</field>
         <field name="model">commission.dashboard</field>
         <field name="arch" type="xml">
-            <graph string="Commission Analysis" type="bar" stacked="True">
+            <graph string="Commission Analysis" type="bar">
                 <field name="commission_category" type="col"/>
                 <field name="commission_amount" type="measure"/>
-                <field name="month" type="row"/>
             </graph>
         </field>
     </record>

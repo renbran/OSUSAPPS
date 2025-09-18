@@ -178,7 +178,7 @@ class CommissionStatementWizard(models.TransientModel):
     
     def _generate_pdf_report(self):
         """Generate PDF commission statement report"""
-        return self.env.ref('commission_lines.action_commission_statement_report').report_action(self)
+        return self.env.ref('commission_ax.action_commission_statement_report').report_action(self)
     
     def _generate_xlsx_report(self):
         """Generate Excel commission statement report"""
