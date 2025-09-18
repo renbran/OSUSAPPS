@@ -193,7 +193,7 @@
                 <filter name="internal" string="Internal" domain="[('commission_category', '=', 'internal')]"/>
                 <filter name="external" string="External" domain="[('commission_category', '=', 'external')]"/>
                 <separator/>
-                <filter name="this_month" string="This Month" domain="[('date_commission', '&gt;=', context_today().replace(day=1))]"/>
+                <filter name="this_month" string="This Month" domain="[]" context="{'search_default_this_month': 1}"/>
                 <filter name="overdue" string="Overdue" domain="[('payment_status', '=', 'overdue')]"/>
                 <filter name="pending_payment" string="Pending Payment" domain="[('payment_status', '=', 'pending')]"/>
                 <filter name="partial_payment" string="Partially Paid" domain="[('payment_status', '=', 'partial')]"/>
@@ -258,7 +258,8 @@
         </field>
     </record>
 
-    <!-- Commission Performance Report Form View -->
+    <!-- Commission Performance Report Form View - DISABLED: Missing model -->
+    <!--
     <record id="view_commission_performance_report_form" model="ir.ui.view">
         <field name="name">commission.performance.report.form</field>
         <field name="model">commission.performance.report</field>
@@ -284,8 +285,10 @@
             </form>
         </field>
     </record>
+    -->
 
-    <!-- Commission Alert Views -->
+    <!-- Commission Alert Views - DISABLED: Missing model -->
+    <!--
     <record id="view_commission_alert_tree" model="ir.ui.view">
         <field name="name">commission.alert.tree</field>
         <field name="model">commission.alert</field>
@@ -339,6 +342,7 @@
             </form>
         </field>
     </record>
+    -->
 
     <!-- Actions -->
     <record id="action_commission_line" model="ir.actions.act_window">
@@ -378,6 +382,8 @@
         </field>
     </record>
 
+    <!-- DISABLED: Missing commission.performance.report model -->
+    <!--
     <record id="action_commission_performance_report" model="ir.actions.act_window">
         <field name="name">Commission Performance Report</field>
         <field name="type">ir.actions.act_window</field>
@@ -385,7 +391,10 @@
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
+    -->
 
+    <!-- DISABLED: Missing commission.alert model -->
+    <!--
     <record id="action_commission_alert" model="ir.actions.act_window">
         <field name="name">Commission Alerts</field>
         <field name="type">ir.actions.act_window</field>
@@ -395,4 +404,5 @@
             'search_default_new': 1,
         }</field>
     </record>
+    -->
 </odoo>

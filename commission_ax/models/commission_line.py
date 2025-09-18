@@ -462,6 +462,32 @@ class CommissionLine(models.Model):
                     _("The sale order for this line no longer exists.")
                 )
 
+    def _validate_for_processing(self):
+        """Validate commission line is ready for processing"""
+        self.ensure_one()
+
+        if self.state != 'confirmed':
+            raise UserError(_("Commission line must be confirmed before processing."))
+
+        if self.commission_amount <= 0:
+            raise UserError(_("Commission amount must be greater than zero."))
+
+        if not self.partner_id:
+            raise UserError(_("Commission partner is required."))
+
+        if not self.partner_id.supplier_rank:
+            raise UserError(_("Commission partner must be configured as a vendor."))
+
+        if not self.sale_order_id:
+            raise UserError(_("Sale order is required."))
+
+        if self.sale_order_id.state not in ['sale', 'done']:
+            raise UserError(_("Sale order must be confirmed before processing commissions."))
+
+        # Check if partner has necessary payment configuration
+        if not self.partner_id.property_supplier_payment_term_id:
+            _logger.warning(f"Partner {self.partner_id.name} has no payment terms configured")
+
     @api.onchange('commission_type_id')
     def _onchange_commission_type(self):
         """Auto-fill fields from commission type"""
@@ -522,12 +548,59 @@ class CommissionLine(models.Model):
 
     def action_process(self):
         """Process commission (create purchase order)"""
+        processed_count = 0
+        errors = []
+
         for line in self.filtered(lambda l: l.state == 'confirmed'):
-            if not line.purchase_order_id:
-                line._create_purchase_order()
-            line.state = 'processed'
-            line.date_commission = fields.Date.today()
-        return True
+            try:
+                # Validate commission line before processing
+                line._validate_for_processing()
+
+                if not line.purchase_order_id:
+                    line._create_purchase_order()
+
+                line.state = 'processed'
+                line.date_commission = fields.Date.today()
+                processed_count += 1
+
+                line.message_post(
+                    body=f"Commission processed successfully. Purchase order: {line.purchase_order_id.name if line.purchase_order_id else 'N/A'}"
+                )
+
+            except Exception as e:
+                error_msg = f"Error processing commission line {line.id}: {str(e)}"
+                errors.append(error_msg)
+                _logger.error(error_msg)
+
+                line.message_post(
+                    body=f"Failed to process commission: {str(e)}",
+                    message_type='comment'
+                )
+
+        if errors:
+            if processed_count == 0:
+                raise UserError(f"Failed to process all commission lines:\n" + "\n".join(errors))
+            else:
+                # Partial success - show warning
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Partial Success',
+                        'message': f'Processed {processed_count} commission lines. {len(errors)} failed.',
+                        'type': 'warning',
+                    }
+                }
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success',
+                'message': f'Successfully processed {processed_count} commission lines.',
+                'type': 'success',
+            }
+        }
 
     def action_mark_paid(self):
         """Mark commission as fully paid"""
@@ -701,15 +774,44 @@ class CommissionLine(models.Model):
         ], limit=1)
 
         if not product:
+            # Try to get service category or use default
+            try:
+                categ_id = self.env.ref('product.product_category_5').id  # Service category
+            except:
+                try:
+                    categ_id = self.env.ref('product.product_category_all').id
+                except:
+                    # Create a service category if none exists
+                    service_category = self.env['product.category'].search([
+                        ('name', 'ilike', 'service')
+                    ], limit=1)
+                    if not service_category:
+                        service_category = self.env['product.category'].create({
+                            'name': 'Services',
+                        })
+                    categ_id = service_category.id
+
+            # Get default UOM for services
+            try:
+                uom_id = self.env.ref('uom.product_uom_unit').id
+            except:
+                uom_id = self.env['uom.uom'].search([('name', '=', 'Units')], limit=1).id
+
             product = self.env['product.product'].create({
                 'name': 'Commission Payment',
                 'type': 'service',
-                'categ_id': self.env.ref('product.product_category_all').id,
+                'categ_id': categ_id,
+                'uom_id': uom_id,
+                'uom_po_id': uom_id,
                 'list_price': 0.0,
                 'standard_price': 0.0,
                 'sale_ok': False,
                 'purchase_ok': True,
+                'detailed_type': 'service',
+                'description': 'Service product for commission payments to partners',
             })
+
+            _logger.info(f"Created commission product: {product.name} (ID: {product.id})")
 
         return product
 
