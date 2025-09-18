@@ -39,9 +39,8 @@
                     </sheet>
 
                     <footer>
-                        <button name="action_preview_data" string="Preview Data" type="object" class="btn-secondary"/>
-                        <button name="action_generate_pdf_report" string="Generate PDF" type="object" class="btn-primary"/>
-                        <button name="action_generate_excel_report" string="Generate Excel" type="object" class="btn-success"/>
+                        <button name="action_preview_lines" string="Preview Lines" type="object" class="btn-secondary"/>
+                        <button name="action_generate_report" string="Generate Report" type="object" class="btn-primary"/>
                         <button string="Cancel" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
