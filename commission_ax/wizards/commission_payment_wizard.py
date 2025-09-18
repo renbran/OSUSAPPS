@@ -101,8 +101,8 @@ class CommissionPaymentWizard(models.TransientModel):
         """Compute fields from commission line"""
         for wizard in self:
             if wizard.commission_line_id:
-                wizard.partner_id = wizard.commission_line_id.partner_id.id
-                wizard.currency_id = wizard.commission_line_id.currency_id.id
+                wizard.partner_id = wizard.commission_line_id.partner_id
+                wizard.currency_id = wizard.commission_line_id.currency_id
                 wizard.commission_amount = wizard.commission_line_id.commission_amount
             else:
                 wizard.partner_id = False
