@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
+from datetime import datetime, timedelta
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -161,17 +162,19 @@ class CommissionLine(models.Model):
         index=True
     )
 
-    # Payment tracking
+    # Enhanced Payment tracking
     invoice_amount = fields.Monetary(
         string='Invoiced Amount',
         currency_field='currency_id',
-        help='Amount invoiced for this commission'
+        help='Amount invoiced for this commission',
+        tracking=True
     )
 
     paid_amount = fields.Monetary(
         string='Paid Amount',
         currency_field='currency_id',
-        help='Amount paid for this commission'
+        help='Amount paid for this commission',
+        tracking=True
     )
 
     outstanding_amount = fields.Monetary(
@@ -181,6 +184,76 @@ class CommissionLine(models.Model):
         currency_field='currency_id',
         help='Outstanding commission amount'
     )
+
+    # Payment status tracking
+    payment_status = fields.Selection([
+        ('pending', 'Pending Payment'),
+        ('partial', 'Partially Paid'),
+        ('paid', 'Fully Paid'),
+        ('overdue', 'Overdue'),
+        ('cancelled', 'Cancelled')
+    ], string='Payment Status', compute='_compute_payment_status', store=True, index=True)
+
+    payment_date = fields.Date(
+        string='Payment Date',
+        help='Date when commission was fully paid',
+        tracking=True
+    )
+
+    expected_payment_date = fields.Date(
+        string='Expected Payment Date',
+        compute='_compute_expected_payment_date',
+        store=True,
+        help='Expected payment date based on payment terms'
+    )
+
+    days_overdue = fields.Integer(
+        string='Days Overdue',
+        compute='_compute_payment_amounts',
+        store=True,
+        help='Number of days payment is overdue'
+    )
+
+    # Invoice tracking from purchase order
+    invoice_ids = fields.One2many(
+        'account.move',
+        compute='_compute_invoice_info',
+        string='Related Invoices',
+        help='Invoices created from commission purchase order'
+    )
+
+    invoice_count = fields.Integer(
+        string='Invoice Count',
+        compute='_compute_invoice_info'
+    )
+
+    # Payment tracking from invoices
+    payment_ids = fields.One2many(
+        'account.payment',
+        compute='_compute_payment_info',
+        string='Related Payments',
+        help='Payments made for commission invoices'
+    )
+
+    payment_count = fields.Integer(
+        string='Payment Count',
+        compute='_compute_payment_info'
+    )
+
+    # Commission aging
+    aging_days = fields.Integer(
+        string='Aging (Days)',
+        compute='_compute_aging',
+        store=True,
+        help='Days since commission was processed'
+    )
+
+    aging_category = fields.Selection([
+        ('current', 'Current (0-30 days)'),
+        ('30_days', '31-60 days'),
+        ('60_days', '61-90 days'),
+        ('90_days', '90+ days')
+    ], string='Aging Category', compute='_compute_aging', store=True)
 
     # Performance optimization fields
     is_legacy = fields.Boolean(
@@ -248,11 +321,116 @@ class CommissionLine(models.Model):
             else:
                 line.commission_amount_company_currency = line.commission_amount
 
-    @api.depends('commission_amount', 'invoice_amount', 'paid_amount')
+    @api.depends('commission_amount', 'invoice_amount', 'paid_amount', 'expected_payment_date')
     def _compute_payment_amounts(self):
-        """Compute payment-related amounts"""
+        """Enhanced computation of payment-related amounts and status"""
+        today = fields.Date.today()
+
         for line in self:
             line.outstanding_amount = line.commission_amount - line.paid_amount
+
+            # Calculate days overdue
+            if line.expected_payment_date and line.outstanding_amount > 0:
+                if today > line.expected_payment_date:
+                    line.days_overdue = (today - line.expected_payment_date).days
+                else:
+                    line.days_overdue = 0
+            else:
+                line.days_overdue = 0
+
+    @api.depends('outstanding_amount', 'commission_amount', 'paid_amount', 'days_overdue', 'state')
+    def _compute_payment_status(self):
+        """Compute payment status based on amounts and dates"""
+        for line in self:
+            if line.state in ['draft', 'calculated', 'confirmed']:
+                line.payment_status = 'pending'
+            elif line.state == 'cancelled':
+                line.payment_status = 'cancelled'
+            elif line.outstanding_amount <= 0:
+                line.payment_status = 'paid'
+            elif line.paid_amount > 0:
+                line.payment_status = 'partial'
+            elif line.days_overdue > 0:
+                line.payment_status = 'overdue'
+            else:
+                line.payment_status = 'pending'
+
+    @api.depends('purchase_order_id')
+    def _compute_expected_payment_date(self):
+        """Compute expected payment date based on purchase order and payment terms"""
+        for line in self:
+            if line.purchase_order_id and line.purchase_order_id.date_order:
+                # Default to 30 days from PO date if no payment terms specified
+                payment_days = 30
+
+                # Check if partner has specific payment terms
+                if line.partner_id.property_supplier_payment_term_id:
+                    payment_term = line.partner_id.property_supplier_payment_term_id
+                    if payment_term.line_ids:
+                        # Get the maximum days from payment terms
+                        payment_days = max(payment_term.line_ids.mapped('days'))
+
+                line.expected_payment_date = line.purchase_order_id.date_order.date() + timedelta(days=payment_days)
+            else:
+                line.expected_payment_date = False
+
+    @api.depends('date_commission', 'state')
+    def _compute_aging(self):
+        """Compute commission aging in days"""
+        today = fields.Date.today()
+
+        for line in self:
+            if line.state in ['processed', 'paid'] and line.date_commission:
+                line.aging_days = (today - line.date_commission).days
+
+                # Categorize aging
+                if line.aging_days <= 30:
+                    line.aging_category = 'current'
+                elif line.aging_days <= 60:
+                    line.aging_category = '30_days'
+                elif line.aging_days <= 90:
+                    line.aging_category = '60_days'
+                else:
+                    line.aging_category = '90_days'
+            else:
+                line.aging_days = 0
+                line.aging_category = 'current'
+
+    @api.depends('purchase_order_id')
+    def _compute_invoice_info(self):
+        """Compute invoice information from purchase order"""
+        for line in self:
+            if line.purchase_order_id:
+                # Find invoices related to this purchase order
+                invoices = self.env['account.move'].search([
+                    ('purchase_id', '=', line.purchase_order_id.id),
+                    ('move_type', '=', 'in_invoice'),
+                    ('state', '!=', 'cancel')
+                ])
+                line.invoice_ids = invoices
+                line.invoice_count = len(invoices)
+            else:
+                line.invoice_ids = False
+                line.invoice_count = 0
+
+    @api.depends('invoice_ids')
+    def _compute_payment_info(self):
+        """Compute payment information from invoices"""
+        for line in self:
+            if line.invoice_ids:
+                payments = self.env['account.payment']
+                for invoice in line.invoice_ids:
+                    # Get payments for each invoice
+                    invoice_payments = invoice.payment_ids.filtered(
+                        lambda p: p.state == 'posted'
+                    )
+                    payments |= invoice_payments
+
+                line.payment_ids = payments
+                line.payment_count = len(payments)
+            else:
+                line.payment_ids = False
+                line.payment_count = 0
 
     @api.constrains('rate', 'calculation_method')
     def _check_rate_consistency(self):
@@ -348,7 +526,85 @@ class CommissionLine(models.Model):
             if not line.purchase_order_id:
                 line._create_purchase_order()
             line.state = 'processed'
+            line.date_commission = fields.Date.today()
         return True
+
+    def action_mark_paid(self):
+        """Mark commission as fully paid"""
+        for line in self:
+            if line.state == 'processed':
+                line.paid_amount = line.commission_amount
+                line.payment_date = fields.Date.today()
+                line.state = 'paid'
+                line.message_post(
+                    body=f"Commission marked as fully paid: {line.commission_amount} {line.currency_id.name}"
+                )
+        return True
+
+    def action_record_partial_payment(self):
+        """Open wizard to record partial payment"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Record Partial Payment',
+            'res_model': 'commission.payment.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_commission_line_id': self.id,
+                'default_max_amount': self.outstanding_amount,
+            }
+        }
+
+    def action_view_invoices(self):
+        """View related invoices"""
+        self.ensure_one()
+        if not self.invoice_ids:
+            raise UserError(_("No invoices found for this commission line."))
+
+        if len(self.invoice_ids) == 1:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Commission Invoice'),
+                'res_model': 'account.move',
+                'res_id': self.invoice_ids[0].id,
+                'view_mode': 'form',
+                'target': 'current',
+            }
+        else:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Commission Invoices'),
+                'res_model': 'account.move',
+                'view_mode': 'tree,form',
+                'domain': [('id', 'in', self.invoice_ids.ids)],
+                'target': 'current',
+            }
+
+    def action_view_payments(self):
+        """View related payments"""
+        self.ensure_one()
+        if not self.payment_ids:
+            raise UserError(_("No payments found for this commission line."))
+
+        if len(self.payment_ids) == 1:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Commission Payment'),
+                'res_model': 'account.payment',
+                'res_id': self.payment_ids[0].id,
+                'view_mode': 'form',
+                'target': 'current',
+            }
+        else:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Commission Payments'),
+                'res_model': 'account.payment',
+                'view_mode': 'tree,form',
+                'domain': [('id', 'in', self.payment_ids.ids)],
+                'target': 'current',
+            }
 
     def action_cancel(self):
         """Cancel commission line"""
@@ -582,6 +838,89 @@ class CommissionLine(models.Model):
             ]
 
         return super(CommissionLine, self).search_read(domain, search_fields, offset, limit, order)
+
+    @api.model
+    def update_payment_status_from_invoices(self):
+        """Update commission payment status based on related invoices"""
+        _logger.info("Updating commission payment status from invoices...")
+
+        processed_lines = self.search([
+            ('state', 'in', ['processed']),
+            ('purchase_order_id', '!=', False)
+        ])
+
+        updated_count = 0
+        for line in processed_lines:
+            try:
+                # Get total invoiced amount
+                total_invoiced = 0
+                total_paid = 0
+
+                for invoice in line.invoice_ids:
+                    if invoice.state == 'posted':
+                        total_invoiced += invoice.amount_total
+                        if invoice.payment_state == 'paid':
+                            total_paid += invoice.amount_total
+                        elif invoice.payment_state == 'partial':
+                            # Calculate partial payment amount
+                            paid_amount = sum(invoice.payment_ids.filtered(
+                                lambda p: p.state == 'posted'
+                            ).mapped('amount'))
+                            total_paid += paid_amount
+
+                # Update commission line amounts
+                if total_invoiced != line.invoice_amount or total_paid != line.paid_amount:
+                    line.write({
+                        'invoice_amount': total_invoiced,
+                        'paid_amount': total_paid,
+                    })
+
+                    # Auto-update state to paid if fully paid
+                    if line.outstanding_amount <= 0.01 and line.state != 'paid':
+                        line.write({
+                            'state': 'paid',
+                            'payment_date': fields.Date.today()
+                        })
+                        line.message_post(
+                            body=f"Commission automatically marked as paid. Amount: {line.commission_amount} {line.currency_id.name}"
+                        )
+
+                    updated_count += 1
+
+            except Exception as e:
+                _logger.error(f"Error updating payment status for commission line {line.id}: {str(e)}")
+                continue
+
+        _logger.info(f"Updated payment status for {updated_count} commission lines")
+        return updated_count
+
+    @api.model
+    def _cron_update_payment_status(self):
+        """Scheduled action to update payment status"""
+        try:
+            self.update_payment_status_from_invoices()
+        except Exception as e:
+            _logger.error(f"Error in commission payment status update cron: {str(e)}")
+
+    def send_overdue_notification(self):
+        """Send notification for overdue commission payments"""
+        overdue_lines = self.search([
+            ('payment_status', '=', 'overdue'),
+            ('days_overdue', '>', 7)  # Only notify after 7 days
+        ])
+
+        for line in overdue_lines:
+            # Create activity for sales manager
+            line.activity_schedule(
+                'mail.mail_activity_data_todo',
+                summary=f'Overdue Commission Payment: {line.partner_id.name}',
+                note=f'Commission payment is {line.days_overdue} days overdue.\n'
+                     f'Amount: {line.outstanding_amount} {line.currency_id.name}\n'
+                     f'Sale Order: {line.sale_order_id.name}',
+                user_id=line.sale_order_id.user_id.id or self.env.user.id
+            )
+
+        return len(overdue_lines)
 
     def read(self, fields=None, load='_classic_read'):
         """Override read to handle orphaned Many2one references safely"""

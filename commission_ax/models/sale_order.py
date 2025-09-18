@@ -84,8 +84,12 @@ class SaleOrder(models.Model):
         currency_field='currency_id'
     )
     
-    # Legacy Commission fields with enhanced commission type logic
-    consultant_id = fields.Many2one('res.partner', string="Consultant")
+    # ============== LEGACY COMMISSION FIELDS (DEPRECATED - Use commission_line_ids instead) ==============
+    # These fields are deprecated in favor of the commission_line_ids structure
+    # They are kept for backward compatibility and will be removed in future versions
+    
+    # Legacy Individual Commission Fields
+    consultant_id = fields.Many2one('res.partner', string="Consultant (DEPRECATED)", help="Use commission_line_ids instead")
     consultant_commission_type = fields.Selection([
         ('fixed', 'Fixed'),
         ('percent_unit_price', 'Percentage of Unit Price'),
@@ -1194,5 +1198,61 @@ class SaleOrder(models.Model):
             'domain': [('sale_order_id', '=', self.id)],
             'context': {
                 'search_default_group_by_partner': 1,
+            }
+        }
+
+    def _check_legacy_commission_usage(self):
+        """Check if order uses legacy commission fields and log deprecation warning"""
+        legacy_fields = [
+            'consultant_id', 'manager_id', 'director_id', 'second_agent_id',
+            'broker_partner_id', 'referrer_partner_id', 'cashback_partner_id',
+            'agent1_partner_id', 'agent2_partner_id', 'manager_partner_id', 'director_partner_id'
+        ]
+        
+        for field_name in legacy_fields:
+            if getattr(self, field_name, False):
+                _logger.warning(
+                    "DEPRECATION WARNING: Sale Order %s uses legacy commission field '%s'. "
+                    "Please migrate to commission_line_ids structure for better performance and features.",
+                    self.name, field_name
+                )
+                return True
+        return False
+
+    @api.model
+    def migrate_all_legacy_commissions(self):
+        """Migrate all orders from legacy commission structure to commission lines"""
+        legacy_orders = self.search([
+            '|', '|', '|', '|', '|', '|', '|', '|', '|', '|',
+            ('consultant_id', '!=', False),
+            ('manager_id', '!=', False),
+            ('director_id', '!=', False),
+            ('second_agent_id', '!=', False),
+            ('broker_partner_id', '!=', False),
+            ('referrer_partner_id', '!=', False),
+            ('cashback_partner_id', '!=', False),
+            ('agent1_partner_id', '!=', False),
+            ('agent2_partner_id', '!=', False),
+            ('manager_partner_id', '!=', False),
+            ('director_partner_id', '!=', False),
+        ])
+        
+        migrated_count = 0
+        for order in legacy_orders:
+            if not order.commission_line_ids:  # Only migrate if no commission lines exist
+                try:
+                    order._create_commission_lines_from_legacy()
+                    migrated_count += 1
+                    _logger.info("Migrated commission data for order %s", order.name)
+                except Exception as e:
+                    _logger.error("Failed to migrate order %s: %s", order.name, str(e))
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Migration Complete',
+                'message': f'Successfully migrated {migrated_count} orders to commission lines structure.',
+                'type': 'success',
             }
         }

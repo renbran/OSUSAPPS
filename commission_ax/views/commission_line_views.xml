@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Commissio type="objec                    <group string="Processing Information" invisible="state in ['draft', 'calculated']"> class="oe_stat_button"
-                                          <header>
-                    <button name="action_acknowledge" string="Acknowledge" type="object" class="btn-warning" invisible="state != 'new'"/>
-                    <button name="action_resolve" string="Resolve" type="object" class="btn-success" invisible="state not in ['new', 'acknowledged']"/>
-                    <button name="action_dismiss" string="Dismiss" type="object" class="btn-secondary" invisible="state in ['resolved', 'dismissed']"/>con="fa-shopping-cart" invisible="purchase_order_id == False">                      icon="f                    <group string="Processing Information" invisible="state in ['draft', 'calculated']">shopping-cart" invisible="purchase_order_id == Fals                <header>
-                    <button name="action_acknowledge" string="Acknowledge" type="object" class="btn-warning" invisible="state != 'new'"/>
-                    <button name="action_resolve" string="Resolve" type="object" class="btn-success" invisible="state not in ['new', 'acknowledged']"/>
-                    <button name="action_dismiss" string="Dismiss" type="object" class="btn-secondary" invisible="state in ['resolved', 'dismissed']"/>    <button name="action_                    <group string="Processing Information" invisible="state in ['draft', 'calculated']">ew_purchase_order" type="object"
-                                 <header>
-                    <button name="action_acknowledge" string="Acknowledge" type="object" class="btn-warning" invisible="state != 'new'"/>
-                    <button name="action_resolve" string="Resolve" type="object" class="btn-success" invisible="state not in ['new', 'acknowledged']"/>
-                    <button name="action_dismiss" string="Dismiss" type="object" class="btn-secondary" invisible="state in ['resolved', 'dismissed']"/>        class="oe_stat_button" icon="fa-shopping-cart" invisible="purchase_order_id == False">e Tree View -->
+    <!-- Commission Line Tree View -->
     <record id="view_commission_line_tree" model="ir.ui.view">
         <field name="name">commission.line.tree</field>
         <field name="model">commission.line</field>
@@ -27,6 +16,7 @@
                 <field name="rate"/>
                 <field name="base_amount"/>
                 <field name="commission_amount"/>
+                <field name="payment_status" decoration-danger="payment_status == 'overdue'" decoration-warning="payment_status == 'partial'" decoration-success="payment_status == 'paid'"/>
                 <field name="state" decoration-info="state == 'draft'" decoration-warning="state == 'calculated'" decoration-success="state in ['processed', 'paid']"/>
                 <field name="purchase_order_id"/>
                 <field name="currency_id" invisible="1"/>
@@ -46,13 +36,25 @@
                     <button name="action_process" type="object" string="Process" class="btn-primary" invisible="state != 'confirmed'"/>
                     <button name="action_cancel" type="object" string="Cancel" invisible="state in ['cancelled', 'paid']"/>
                     <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state not in ['calculated', 'confirmed']"/>
+                    <button name="action_record_partial_payment" type="object" string="Record Payment" class="btn-info" invisible="state not in ['processed'] or outstanding_amount <= 0"/>
+                    <button name="action_mark_paid" type="object" string="Mark as Paid" class="btn-success" invisible="state not in ['processed'] or outstanding_amount <= 0"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,calculated,confirmed,processed,paid"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_purchase_order" type="object" class="oe_stat_button" icon="fa-shopping-cart" attrs="{'invisible': [('purchase_order_id', '=', False)]}">
+                        <button name="action_view_purchase_order" type="object" class="oe_stat_button" icon="fa-shopping-cart" invisible="purchase_order_id == False">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_text">Purchase Order</span>
+                            </div>
+                        </button>
+                        <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="invoice_count == 0">
+                            <div class="o_field_widget o_stat_info">
+                                <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                            </div>
+                        </button>
+                        <button name="action_view_payments" type="object" class="oe_stat_button" icon="fa-money" invisible="payment_count == 0">
+                            <div class="o_field_widget o_stat_info">
+                                <field name="payment_count" widget="statinfo" string="Payments"/>
                             </div>
                         </button>
                     </div>
@@ -81,16 +83,25 @@
                             <field name="company_currency_id" invisible="1"/>
                         </group>
                         <group string="Payment Tracking">
+                            <field name="payment_status" decoration-danger="payment_status == 'overdue'" decoration-warning="payment_status == 'partial'" decoration-success="payment_status == 'paid'"/>
                             <field name="invoice_amount"/>
                             <field name="paid_amount"/>
                             <field name="outstanding_amount" readonly="1"/>
+                            <field name="payment_date" readonly="state != 'processed'"/>
+                            <field name="expected_payment_date" readonly="1"/>
+                            <field name="days_overdue" invisible="days_overdue == 0" decoration-danger="days_overdue > 0"/>
                         </group>
                     </group>
 
-                    <group string="Processing Information" attrs="{'invisible': [('state', 'in', ['draft', 'calculated'])]}">
+                    <group string="Processing Information" invisible="state in ['draft', 'calculated']">
                         <field name="purchase_order_id" readonly="1"/>
                         <field name="purchase_line_id" readonly="1"/>
                         <field name="date_commission"/>
+                    </group>
+
+                    <group string="Aging Information" invisible="state in ['draft', 'calculated', 'confirmed']">
+                        <field name="aging_days" readonly="1"/>
+                        <field name="aging_category" readonly="1"/>
                     </group>
 
                     <group>
@@ -183,8 +194,12 @@
                 <filter name="external" string="External" domain="[('commission_category', '=', 'external')]"/>
                 <separator/>
                 <filter name="this_month" string="This Month" domain="[('date_commission', '&gt;=', context_today().replace(day=1))]"/>
-                <filter name="overdue" string="Overdue" domain="[('state', 'in', ['draft', 'calculated']),
-                                 ('date_commission', '&lt;', context_today() - relativedelta(days=30))]"/>
+                <filter name="overdue" string="Overdue" domain="[('payment_status', '=', 'overdue')]"/>
+                <filter name="pending_payment" string="Pending Payment" domain="[('payment_status', '=', 'pending')]"/>
+                <filter name="partial_payment" string="Partially Paid" domain="[('payment_status', '=', 'partial')]"/>
+                <filter name="aging_30" string="31-60 Days" domain="[('aging_category', '=', '30_days')]"/>
+                <filter name="aging_60" string="61-90 Days" domain="[('aging_category', '=', '60_days')]"/>
+                <filter name="aging_90" string="90+ Days" domain="[('aging_category', '=', '90_days')]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter name="group_by_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
@@ -192,6 +207,8 @@
                     <filter name="group_by_category" string="Category" context="{'group_by': 'commission_category'}"/>
                     <filter name="group_by_commission_type" string="Commission Type" context="{'group_by': 'commission_type_id'}"/>
                     <filter name="group_by_sale_order" string="Sale Order" context="{'group_by': 'sale_order_id'}"/>
+                    <filter name="group_by_payment_status" string="Payment Status" context="{'group_by': 'payment_status'}"/>
+                    <filter name="group_by_aging_category" string="Aging Category" context="{'group_by': 'aging_category'}"/>
                 </group>
             </search>
         </field>
@@ -293,9 +310,9 @@
         <field name="arch" type="xml">
             <form string="Commission Alert">
                 <header>
-                    <button name="action_acknowledge" string="Acknowledge" type="object" class="btn-warning" attrs="{'invisible': [('state', '!=', 'new')]}"/>
-                    <button name="action_resolve" string="Resolve" type="object" class="btn-success" attrs="{'invisible': [('state', 'not in', ['new', 'acknowledged'])]}"/>
-                    <button name="action_dismiss" string="Dismiss" type="object" class="btn-secondary" attrs="{'invisible': [('state', 'in', ['resolved', 'dismissed'])]}"/>
+                    <button name="action_acknowledge" string="Acknowledge" type="object" class="btn-warning" invisible="state != 'new'"/>
+                    <button name="action_resolve" string="Resolve" type="object" class="btn-success" invisible="state not in ['new', 'acknowledged']"/>
+                    <button name="action_dismiss" string="Dismiss" type="object" class="btn-secondary" invisible="state in ['resolved', 'dismissed']"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>

@@ -3,12 +3,12 @@
     <!-- Commission Statement Report Action -->
     <record id="action_commission_statement_report" model="ir.actions.report">
         <field name="name">Commission Statement</field>
-        <field name="model">commission.statement.wizard</field>
+        <field name="model">commission.partner.statement.wizard</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">commission_lines.commission_statement_template</field>
-        <field name="report_file">commission_lines.commission_statement_template</field>
+        <field name="report_name">commission_ax.commission_statement_template</field>
+        <field name="report_file">commission_ax.commission_statement_template</field>
         <field name="print_report_name">'Commission Statement - %s' % (object.partner_id.name)</field>
-        <field name="binding_model_id" ref="model_commission_statement_wizard"/>
+        <field name="binding_model_id" ref="commission_ax.model_commission_partner_statement_wizard"/>
         <field name="binding_type">report</field>
     </record>
 
