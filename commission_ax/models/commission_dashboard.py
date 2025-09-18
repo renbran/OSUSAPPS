@@ -69,61 +69,7 @@ class CommissionDashboard(models.Model):
         tools.drop_view_if_exists(self.env.cr, self._table)
 
         try:
-            # Check if commission_line table exists
-            self.env.cr.execute("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables
-                    WHERE table_name = 'commission_line'
-                );
-            """)
-            table_exists = self.env.cr.fetchone()[0]
-
-            if not table_exists:
-                _logger.warning("Commission line table does not exist yet. Dashboard view will be created later.")
-                return
-
-            self.env.cr.execute("""
-                CREATE VIEW %s AS (
-                    SELECT
-                        ROW_NUMBER() OVER (ORDER BY so.date_order DESC, cl.id) AS id,
-                        so.date_order::date AS date,
-                        EXTRACT(MONTH FROM so.date_order)::varchar AS month,
-                        EXTRACT(YEAR FROM so.date_order)::varchar AS year,
-                        so.id AS sale_order_id,
-                        so.amount_total AS order_amount,
-                        so.partner_id AS customer_id,
-                        cl.id AS commission_line_id,
-                        cl.partner_id AS partner_id,
-                        cl.commission_type_id AS commission_type_id,
-                        cl.commission_amount AS commission_amount,
-                        cl.commission_category AS commission_category,
-                        cl.state AS commission_state,
-                        so.state AS order_state,
-                        CASE
-                            WHEN cl.state = 'processed' AND cl.date_commission IS NOT NULL
-                            THEN (cl.date_commission::date - so.date_order::date)
-                            ELSE NULL
-                        END AS days_to_process,
-                        CASE
-                            WHEN cl.state IN ('draft', 'calculated')
-                                 AND so.date_order < (NOW() - INTERVAL '30 days')
-                            THEN TRUE
-                            ELSE FALSE
-                        END AS is_overdue,
-                        so.company_id AS company_id,
-                        so.currency_id AS currency_id
-                    FROM
-                        sale_order so
-                        INNER JOIN commission_line cl ON cl.sale_order_id = so.id
-                    WHERE
-                        cl.state != 'cancelled'
-                        AND so.state IN ('sale', 'done')
-                )
-            """ % self._table)
-            _logger.info("Commission dashboard view created successfully")
-        except Exception as e:
-            _logger.error(f"Error creating commission dashboard view: {str(e)}")
-            # Create a dummy view to prevent errors
+            # Always try to create the view (removed table existence check)
             self.env.cr.execute("""
                 CREATE VIEW %s AS (
                     SELECT
@@ -148,6 +94,11 @@ class CommissionDashboard(models.Model):
                     WHERE FALSE
                 )
             """ % self._table)
+            _logger.info("Commission dashboard dummy view created successfully")
+        except Exception as e:
+            _logger.error(f"Error creating commission dashboard view: {str(e)}")
+            # If all else fails, ensure table exists even if empty
+            pass
 
     @api.model
     def get_commission_summary(self, domain=None, period='month'):
