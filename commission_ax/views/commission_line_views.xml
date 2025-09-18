@@ -36,7 +36,7 @@
                     <button name="action_process" type="object" string="Process" class="btn-primary" invisible="state != 'confirmed'"/>
                     <button name="action_cancel" type="object" string="Cancel" invisible="state in ['cancelled', 'paid']"/>
                     <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state not in ['calculated', 'confirmed']"/>
-                    <button name="action_record_partial_payment" type="object" string="Record Payment" class="btn-info" attrs="{'invisible': [('state', 'not in', ['processed']), ('outstanding_amount', '&lt;=', 0)]}"/>
+                    <button name="action_record_partial_payment" type="object" string="Record Payment" class="btn-info" invisible="state != 'processed' or outstanding_amount &lt;= 0"/>
                     <button name="action_mark_paid" type="object" string="Mark as Paid" class="btn-success" invisible="state != 'processed' or outstanding_amount &lt;= 0"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,calculated,confirmed,processed,paid"/>
                 </header>
