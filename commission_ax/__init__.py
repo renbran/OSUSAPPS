@@ -5,18 +5,8 @@ from . import reports
 
 def post_init_hook(cr, registry):
     """
-    Initialize commission dashboard with SQL view creation.
-    This hook ensures the dashboard is properly set up after module installation.
+    Simple post-init hook for commission module.
     """
-    from odoo import api, SUPERUSER_ID
-    
-    env = api.Environment(cr, SUPERUSER_ID, {})
-    
-    # Create commission dashboard instance
-    dashboard = env['commission.dashboard'].create({
-        'name': 'System Dashboard',
-        'description': 'Auto-created system dashboard for commission analytics'
-    })
-    
-    # Initialize dashboard with SQL views
-    dashboard.init()
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("Commission AX module installed successfully")
