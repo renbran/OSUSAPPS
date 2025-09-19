@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        
+
         <!-- Add Commission Agent fields to Partner form -->
         <record id="view_partner_form_commission_agent" model="ir.ui.view">
             <field name="name">res.partner.form.commission.agent</field>
@@ -23,14 +23,11 @@
                             </group>
                         </group>
                         <group invisible="not is_commission_agent">
-                            <button name="action_view_commission_lines" 
-                                    type="object" 
-                                    string="View Commission Lines" 
-                                    class="btn-primary"/>
+                            <button name="action_view_commission_lines" type="object" string="View Commission Lines" class="btn-primary"/>
                         </group>
                     </page>
                 </xpath>
-                
+
                 <!-- Add commission agent checkbox in main page -->
                 <xpath expr="//field[@name='category_id']" position="after">
                     <field name="is_commission_agent"/>
