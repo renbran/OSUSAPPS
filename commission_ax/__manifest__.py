@@ -19,7 +19,7 @@
     ],
     'data': [
         'security/security.xml',
-        'security/ir.model.access.minimal.csv',
+        'security/ir.model.access.csv',
         'views/commission_menu.xml',
     ],
     'demo': [],
