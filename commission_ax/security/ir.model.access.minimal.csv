@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_commission_type_user,commission.type.user,commission_ax.model_commission_type,commission_ax.group_commission_user,1,0,0,0
+access_commission_type_manager,commission.type.manager,commission_ax.model_commission_type,commission_ax.group_commission_manager,1,1,1,1
+access_commission_line_user,commission.line.user,commission_ax.model_commission_line,commission_ax.group_commission_user,1,1,1,0
+access_commission_line_manager,commission.line.manager,commission_ax.model_commission_line,commission_ax.group_commission_manager,1,1,1,1
