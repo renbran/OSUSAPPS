@@ -461,7 +461,7 @@ class SaleOrder(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': 'Commission Statement',
-            'res_model': 'commission.statement.wizard',
+            'res_model': 'commission.partner.statement.wizard',
             'view_mode': 'form',
             'target': 'new',
             'context': context,
