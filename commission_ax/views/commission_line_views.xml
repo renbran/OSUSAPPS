@@ -433,8 +433,7 @@
                 <field name="sale_order_id"/>
                 <field name="commission_category"/>
                 <field name="commission_state"/>
-                <filter string="This Month" name="this_month" 
-                        domain="[('date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d')), ('date', '&lt;=', (context_today() + relativedelta(months=1, day=1, days=-1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="This Month" name="this_month" domain="[('date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d')), ('date', '&lt;=', (context_today() + relativedelta(months=1, day=1, days=-1)).strftime('%Y-%m-%d'))]"/>
                 <filter string="Overdue" name="overdue" domain="[('is_overdue', '=', True)]"/>
                 <separator/>
                 <filter string="Draft" name="draft" domain="[('commission_state', '=', 'draft')]"/>

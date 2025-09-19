@@ -93,6 +93,7 @@ World-Class Commission Management System
         'data/commission_report_template.xml',
         'views/sale_order.xml',
         'views/purchase_order.xml',
+        'views/res_partner_views.xml',
         'views/commission_line_views.xml',
         'views/commission_payment_wizard_views.xml',
         'views/commission_lines_replace_wizard_views.xml',
