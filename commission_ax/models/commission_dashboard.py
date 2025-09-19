@@ -105,7 +105,7 @@ class CommissionDashboard(models.Model):
                             COALESCE(so.state, 'draft') AS order_state,
                             CASE 
                                 WHEN cl.state IN ('processed', 'paid') AND cl.date_commission IS NOT NULL 
-                                THEN EXTRACT(DAY FROM (cl.write_date::date - cl.date_commission))::integer
+                                THEN (cl.write_date::date - cl.date_commission)::integer
                                 ELSE 0
                             END AS days_to_process,
                             CASE 
