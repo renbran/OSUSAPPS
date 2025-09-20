@@ -29,6 +29,7 @@ services:
       - ./commission_lines:/mnt/extra-addons/commission_lines
       - ./commission_partner_statement:/mnt/extra-addons/commission_partner_statement
       - ./enhanced_status:/mnt/extra-addons/enhanced_status
+      - ./payment_account_enhanced:/mnt/extra-addons/payment_account_enhanced
       - ./odoo.conf:/etc/odoo/odoo.conf
       - odoo_data:/var/lib/odoo
     command: odoo -c /etc/odoo/odoo.conf
