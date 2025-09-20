@@ -75,15 +75,17 @@ pip install xlsxwriter numpy pandas scikit-learn
         # Core data
         'data/commission_types_data.xml',
 
-        # Views (core functionality - load before menus that reference their actions)
+        # Views (core functionality - must load in dependency order)
         'views/sale_order.xml',
         'views/purchase_order.xml',
         'views/res_partner_views.xml',
         'views/commission_line_views.xml',
-        'views/commission_type_views.xml',
-
-        # Menu structure (must load after views that define actions)
+        
+        # Menu structure (must load after line views but before type views)
         'views/commission_menu.xml',
+        
+        # Views that reference menu items
+        'views/commission_type_views.xml',
 
         # Reports (core)
         'reports/commission_report.xml',
