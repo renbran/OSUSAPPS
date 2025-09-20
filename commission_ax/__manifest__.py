@@ -10,7 +10,7 @@
         "security/security.xml",
         "security/ir.model.access.csv"
     ],
-    "installable": true,
-    "auto_install": false,
+    "installable": True,
+    "auto_install": False,
     "license": "LGPL-3"
 }
