@@ -106,7 +106,7 @@ class CommissionType(models.Model):
         return result
 
     @api.model
-    def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
+    def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None, order=None):
         """Enhanced search by code or name"""
         args = args or []
         if name:
@@ -115,11 +115,11 @@ class CommissionType(models.Model):
                 '|',
                 ('code', operator, name),
                 ('name', operator, name)
-            ] + args, limit=limit)
+            ] + args, limit=limit, order=order)
             if commission_types:
                 return commission_types.name_get()
         return super()._name_search(
-            name, args, operator, limit, name_get_uid
+            name, args, operator, limit, name_get_uid, order
         )
 
     @api.model
