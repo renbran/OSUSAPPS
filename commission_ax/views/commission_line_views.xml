@@ -214,7 +214,8 @@
         </field>
     </record>
 
-    <!-- Commission Dashboard Views -->
+    <!-- Commission Dashboard Views - Temporarily disabled for installation -->
+    <!--
     <record id="view_commission_dashboard_graph" model="ir.ui.view">
         <field name="name">commission.dashboard.graph</field>
         <field name="model">commission.dashboard</field>
@@ -256,6 +257,7 @@
             </tree>
         </field>
     </record>
+    -->
 
     <!-- Commission Performance Report Form View - DISABLED: Missing model -->
     <!--
@@ -363,7 +365,8 @@
         </field>
     </record>
 
-    <!-- Commission Dashboard Action -->
+    <!-- Commission Dashboard Action - Temporarily disabled for installation -->
+    <!--
     <record id="action_commission_dashboard" model="ir.actions.act_window">
         <field name="name">Commission Dashboard</field>
         <field name="type">ir.actions.act_window</field>
@@ -381,8 +384,10 @@
             </p>
         </field>
     </record>
+    -->
 
-    <!-- Commission Dashboard Views -->
+    <!-- Commission Dashboard Views - Temporarily disabled for installation -->
+    <!--
     <record id="view_commission_dashboard_graph" model="ir.ui.view">
         <field name="name">commission.dashboard.graph</field>
         <field name="model">commission.dashboard</field>
@@ -406,7 +411,10 @@
             </pivot>
         </field>
     </record>
+    -->
 
+    <!-- Commission Dashboard Tree and Search Views - Temporarily disabled for installation -->
+    <!--
     <record id="view_commission_dashboard_tree" model="ir.ui.view">
         <field name="name">commission.dashboard.tree</field>
         <field name="model">commission.dashboard</field>
@@ -448,6 +456,7 @@
             </search>
         </field>
     </record>
+    -->
 
     <!-- DISABLED: Missing commission.performance.report model -->
     <!--

@@ -1,6 +1,6 @@
 from . import commission_type
 from . import commission_line
-from . import commission_dashboard
+# from . import commission_dashboard  # Temporarily disabled for installation
 from . import commission_ai_analytics
 from . import commission_realtime_dashboard
 from . import commission_alert

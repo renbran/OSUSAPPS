@@ -94,7 +94,8 @@ World-Class Commission Management System
         'views/sale_order.xml',
         'views/purchase_order.xml',
         'views/res_partner_views.xml',
-        'views/commission_line_views.xml',
+        'views/commission_line_views.xml',  # Load views first
+        'views/commission_menu.xml',  # Then load menu structure
         'views/commission_payment_wizard_views.xml',
         'views/commission_lines_replace_wizard_views.xml',
         'views/commission_wizard_views.xml',
@@ -105,7 +106,6 @@ World-Class Commission Management System
         'reports/commission_statement_report.xml',
         'reports/per_order_commission_report.xml',
         'reports/deals_commission_report.xml',
-        'views/commission_menu.xml',
         'views/commission_type_views.xml',
     ],
     'demo': [],

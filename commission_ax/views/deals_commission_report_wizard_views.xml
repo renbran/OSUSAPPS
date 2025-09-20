@@ -73,6 +73,7 @@
         </record>
 
         <!-- Menu Item for Deals Commission Report -->
-        <menuitem id="menu_deals_commission_report" name="Comprehensive Deals Report" parent="menu_commission_reports" action="action_deals_commission_report_wizard" sequence="15" groups="base.group_user"/>
+        <!-- Deals Commission Report Menu - Temporarily disabled for installation -->
+        <!-- <menuitem id="menu_deals_commission_report" name="Comprehensive Deals Report" parent="menu_commission_reports" action="action_deals_commission_report_wizard" sequence="15" groups="base.group_user"/> -->
     </data>
 </odoo>

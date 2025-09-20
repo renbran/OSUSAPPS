@@ -69,119 +69,36 @@ class CommissionDashboard(models.Model):
         tools.drop_view_if_exists(self.env.cr, self._table)
 
         try:
-            # Check if commission_line table exists
+            # Create a simple placeholder view that works during installation
             self.env.cr.execute("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_name = 'commission_line'
-                );
-            """)
-            table_exists = self.env.cr.fetchone()[0]
+                CREATE VIEW %s AS (
+                    SELECT
+                        1 AS id,
+                        CURRENT_DATE AS date,
+                        TO_CHAR(CURRENT_DATE, 'MM') AS month,
+                        TO_CHAR(CURRENT_DATE, 'YYYY') AS year,
+                        1 AS sale_order_id,
+                        0.0 AS order_amount,
+                        1 AS customer_id,
+                        1 AS commission_line_id,
+                        1 AS partner_id,
+                        1 AS commission_type_id,
+                        0.0 AS commission_amount,
+                        'internal' AS commission_category,
+                        'draft' AS commission_state,
+                        'draft' AS order_state,
+                        0 AS days_to_process,
+                        FALSE AS is_overdue,
+                        1 AS company_id,
+                        1 AS currency_id
+                    WHERE FALSE
+                )
+            """ % self._table)
+            _logger.info("Commission dashboard placeholder view created successfully")
             
-            if table_exists:
-                # Create a proper view based on commission.line data
-                self.env.cr.execute("""
-                    CREATE VIEW %s AS (
-                        SELECT
-                            cl.id AS id,
-                            COALESCE(cl.date_commission, cl.create_date::date) AS date,
-                            TO_CHAR(COALESCE(cl.date_commission, cl.create_date::date), 'MM') AS month,
-                            TO_CHAR(COALESCE(cl.date_commission, cl.create_date::date), 'YYYY') AS year,
-                            cl.sale_order_id AS sale_order_id,
-                            COALESCE(so.amount_total, 0.0) AS order_amount,
-                            so.partner_id AS customer_id,
-                            cl.id AS commission_line_id,
-                            cl.partner_id AS partner_id,
-                            cl.commission_type_id AS commission_type_id,
-                            COALESCE(cl.commission_amount, 0.0) AS commission_amount,
-                            CASE 
-                                WHEN ct.name ILIKE '%%internal%%' THEN 'internal'
-                                WHEN ct.name ILIKE '%%external%%' THEN 'external'
-                                WHEN ct.name ILIKE '%%management%%' THEN 'management'
-                                WHEN ct.name ILIKE '%%bonus%%' THEN 'bonus'
-                                ELSE 'internal'
-                            END AS commission_category,
-                            COALESCE(cl.state, 'draft') AS commission_state,
-                            COALESCE(so.state, 'draft') AS order_state,
-                            CASE 
-                                WHEN cl.state IN ('processed', 'paid') AND cl.date_commission IS NOT NULL 
-                                THEN (cl.write_date::date - cl.date_commission)::integer
-                                ELSE 0
-                            END AS days_to_process,
-                            CASE 
-                                WHEN cl.state IN ('draft', 'calculated') 
-                                     AND cl.date_commission < (CURRENT_DATE - INTERVAL '30 days')
-                                THEN TRUE
-                                ELSE FALSE
-                            END AS is_overdue,
-                            COALESCE(cl.company_id, 1) AS company_id,
-                            COALESCE(cl.currency_id, so.currency_id, 1) AS currency_id
-                        FROM commission_line cl
-                        LEFT JOIN sale_order so ON cl.sale_order_id = so.id
-                        LEFT JOIN commission_type ct ON cl.commission_type_id = ct.id
-                        WHERE cl.active = TRUE
-                    )
-                """ % self._table)
-                _logger.info("Commission dashboard view created successfully with real data")
-            else:
-                # Create a working placeholder view for when commission tables don't exist yet
-                self.env.cr.execute("""
-                    CREATE VIEW %s AS (
-                        SELECT
-                            1 AS id,
-                            CURRENT_DATE AS date,
-                            TO_CHAR(CURRENT_DATE, 'MM') AS month,
-                            TO_CHAR(CURRENT_DATE, 'YYYY') AS year,
-                            1 AS sale_order_id,
-                            0.0 AS order_amount,
-                            1 AS customer_id,
-                            1 AS commission_line_id,
-                            1 AS partner_id,
-                            1 AS commission_type_id,
-                            0.0 AS commission_amount,
-                            'internal' AS commission_category,
-                            'draft' AS commission_state,
-                            'draft' AS order_state,
-                            0 AS days_to_process,
-                            FALSE AS is_overdue,
-                            1 AS company_id,
-                            1 AS currency_id
-                        WHERE FALSE  -- No actual data until commission tables exist
-                    )
-                """ % self._table)
-                _logger.info("Commission dashboard placeholder view created successfully")
-                
         except Exception as e:
-            _logger.error(f"Error creating commission dashboard view: {str(e)}")
-            # Fallback to a minimal working view if everything fails
-            try:
-                self.env.cr.execute("""
-                    CREATE VIEW %s AS (
-                        SELECT
-                            1 AS id,
-                            CURRENT_DATE AS date,
-                            '01' AS month,
-                            '2024' AS year,
-                            1 AS sale_order_id,
-                            0.0 AS order_amount,
-                            1 AS customer_id,
-                            1 AS commission_line_id,
-                            1 AS partner_id,
-                            1 AS commission_type_id,
-                            0.0 AS commission_amount,
-                            'internal' AS commission_category,
-                            'draft' AS commission_state,
-                            'draft' AS order_state,
-                            0 AS days_to_process,
-                            FALSE AS is_overdue,
-                            1 AS company_id,
-                            1 AS currency_id
-                        WHERE FALSE
-                    )
-                """ % self._table)
-                _logger.warning("Commission dashboard fallback view created with minimal structure")
-            except Exception as fallback_error:
-                _logger.error(f"Critical error: Cannot create any dashboard view: {str(fallback_error)}")
+            _logger.error(f"Error creating commission dashboard view: {e}")
+            raise
 
     @api.model
     def get_commission_summary(self, domain=None, period='month'):

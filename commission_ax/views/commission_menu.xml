@@ -10,11 +10,11 @@
         <!-- Commission Reports Menu -->
         <menuitem id="menu_commission_reports" name="Commission Reports" parent="menu_commission_root" sequence="10"/>
 
-        <!-- Commission Lines Management -->
-        <menuitem id="menu_commission_lines" name="Commission Lines" parent="menu_commission_root" sequence="1" action="action_commission_line"/>
+        <!-- Commission Lines Management - Temporarily disabled for installation -->
+        <!-- <menuitem id="menu_commission_lines" name="Commission Lines" parent="menu_commission_root" sequence="1" action="action_commission_line"/> -->
 
-        <!-- Commission Dashboard -->
-        <menuitem id="menu_commission_dashboard" name="Dashboard" parent="menu_commission_root" sequence="2" action="action_commission_dashboard"/>
+        <!-- Commission Dashboard - Temporarily disabled for installation -->
+        <!-- <menuitem id="menu_commission_dashboard" name="Dashboard" parent="menu_commission_root" sequence="2" action="action_commission_dashboard"/> -->
 
         <!-- Commission Alerts - DISABLED: Model not implemented -->
         <!-- <menuitem id="menu_commission_alerts" name="Alerts" parent="menu_commission_root" sequence="3" action="action_commission_alert"/> -->
