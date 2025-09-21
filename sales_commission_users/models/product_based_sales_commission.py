@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import fields, models, api
+from odoo.exceptions import ValidationError
 
 
 class ProductBasedSalesCommission(models.Model):
@@ -33,3 +34,10 @@ class ProductBasedSalesCommission(models.Model):
     product_id = fields.Many2one('product.product', string='Product',
                                  help="Product")
     commission = fields.Float(string='Commission %', help="Commission %")
+
+    @api.constrains('commission')
+    def _check_commission_percentage(self):
+        """Validate commission percentage is within valid range"""
+        for record in self:
+            if record.commission < 0 or record.commission > 100:
+                raise ValidationError("Commission percentage must be between 0 and 100")

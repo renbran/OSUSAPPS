@@ -34,7 +34,7 @@ class SalesCommissionReportAbstract(models.AbstractModel):
         sale_commission_id = self.env['commission.lines'].browse(docids)
         if docids:
             return {
-                'doc_ids ': docids,
+                'doc_ids': docids,
                 'doc_model': 'commission.lines',
                 'docs': sale_commission_id,
                 'data': data
@@ -50,7 +50,7 @@ class SalesCommissionReportAbstract(models.AbstractModel):
                 domain.append(('date', '<=', data['end_date']))
             docs = self.env['commission.lines'].search(domain)
             return {
-                'doc_ids ': docids,
+                'doc_ids': docids,
                 'doc_model': 'commission.lines',
                 'docs': docs,
                 'data': data

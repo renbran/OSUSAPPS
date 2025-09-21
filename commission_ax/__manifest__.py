@@ -80,6 +80,7 @@ pip install xlsxwriter numpy pandas scikit-learn
         'views/purchase_order.xml',
         'views/res_partner_views.xml',
         'views/commission_line_views.xml',
+        'views/commission_assignment_views.xml',
         
         # Menu structure (must load after line views but before type views)
         'views/commission_menu.xml',

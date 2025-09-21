@@ -55,7 +55,7 @@ class SaleOrder(models.Model):
                         lambda product: product.product_id == rec.product_id)
                     if order_line:
                         description = 'Sales Commission - Product Based'
-                        commission_amount += order_line.product_id.list_price * rec.commission / 100
+                        commission_amount += order_line.price_subtotal * rec.commission / 100
             if com.commission_type == 'discount_based':
                 for rec in com.discount_based_ids:
                     order_line = self.order_line.filtered(

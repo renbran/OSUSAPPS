@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import fields, models, api
+from odoo.exceptions import ValidationError
 
 
 class DiscountBasedSalesCommission(models.Model):
@@ -32,3 +33,12 @@ class DiscountBasedSalesCommission(models.Model):
                                          help="Sales commission")
     discount = fields.Float(string='Discount %', help="Discount %")
     commission = fields.Float(string='Commission %', help="Commission %")
+
+    @api.constrains('discount', 'commission')
+    def _check_percentages(self):
+        """Validate discount and commission percentages are within valid range"""
+        for record in self:
+            if record.discount < 0 or record.discount > 100:
+                raise ValidationError("Discount percentage must be between 0 and 100")
+            if record.commission < 0 or record.commission > 100:
+                raise ValidationError("Commission percentage must be between 0 and 100")

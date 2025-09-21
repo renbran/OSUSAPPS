@@ -19,7 +19,8 @@
 #    If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from odoo import fields, models
+from odoo import fields, models, api
+from odoo.exceptions import ValidationError
 
 
 class SalesCommission(models.Model):
@@ -57,3 +58,21 @@ class SalesCommission(models.Model):
     discount_based_ids = fields.One2many(
         "discount.based.sales.commission", 'sale_commission_id',
         string='Commission Rules', help="Discount based")
+
+    @api.constrains('std_commission_perc', 'affiliated_commission_perc', 'non_affiliated_commission_perc')
+    def _check_commission_percentages(self):
+        """Validate commission percentages are within valid range"""
+        for record in self:
+            if record.std_commission_perc < 0 or record.std_commission_perc > 100:
+                raise ValidationError("Standard commission percentage must be between 0 and 100")
+            if record.affiliated_commission_perc < 0 or record.affiliated_commission_perc > 100:
+                raise ValidationError("Affiliated commission percentage must be between 0 and 100")
+            if record.non_affiliated_commission_perc < 0 or record.non_affiliated_commission_perc > 100:
+                raise ValidationError("Non-affiliated commission percentage must be between 0 and 100")
+
+    @api.constrains('commission_amount')
+    def _check_commission_amount(self):
+        """Validate commission amount is not negative"""
+        for record in self:
+            if record.commission_amount < 0:
+                raise ValidationError("Commission amount cannot be negative")

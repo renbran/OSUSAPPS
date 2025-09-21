@@ -5,48 +5,59 @@ import logging
 _logger = logging.getLogger(__name__)
 
 class SaleOrder(models.Model):
-    """Extended Sale Order with comprehensive commission management and optimized commission lines"""
-    _inherit = 'sale.order'  # This MUST be at the top of the class
+    """Extended Sale Order with simplified commission management via many2many assignments"""
+    _inherit = ['sale.order', 'commission.assignment.mixin']
 
-    # ============== COMMISSION LINES INTEGRATION ==============
-
+    # ============== MODERN COMMISSION STRUCTURE ==============
+    # Using commission assignment mixin for flexible many2many relationships
+    
+    # Keep the existing one2many for backward compatibility during transition
     commission_line_ids = fields.One2many(
         'commission.line',
         'sale_order_id',
-        string='Commission Lines',
+        string='Commission Lines (Legacy)',
         copy=False,
-        help="Modern commission structure using commission lines"
+        help="Legacy commission structure - being phased out in favor of assignments"
+    )
+
+    # New simplified commission fields using assignments
+    use_modern_commissions = fields.Boolean(
+        string='Use Modern Commission Structure',
+        default=True,
+        help="Use the new many2many assignment structure instead of legacy commission fields"
+    )
+
+    # Performance optimized commission totals
+    total_commission_lines_amount = fields.Monetary(
+        string='Total Commission Amount',
+        compute='_compute_commission_lines_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Total commission amount from all assigned commission lines"
+    )
+
+    internal_commission_lines_amount = fields.Monetary(
+        string='Internal Commission Amount',
+        compute='_compute_commission_lines_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Total internal commission amount"
+    )
+
+    external_commission_lines_amount = fields.Monetary(
+        string='External Commission Amount',
+        compute='_compute_commission_lines_totals',
+        store=True,
+        currency_field='currency_id',
+        help="Total external commission amount"
     )
 
     commission_lines_count = fields.Integer(
         string='Commission Lines Count',
         compute='_compute_commission_lines_count',
-        help="Number of commission lines for this order"
+        help="Number of commission lines assigned to this order"
     )
 
-    # Performance optimized commission totals
-    total_commission_lines_amount = fields.Monetary(
-        string='Total Commission (Lines)',
-        compute='_compute_commission_lines_totals',
-        store=True,
-        currency_field='currency_id',
-        help="Total commission amount from commission lines"
-    )
-
-    internal_commission_lines_amount = fields.Monetary(
-        string='Internal Commission (Lines)',
-        compute='_compute_commission_lines_totals',
-        store=True,
-        currency_field='currency_id'
-    )
-
-    external_commission_lines_amount = fields.Monetary(
-        string='External Commission (Lines)',
-        compute='_compute_commission_lines_totals',
-        store=True,
-        currency_field='currency_id'
-    )
-    
     # Commission Statement fields (Enhanced)
     commission_statement_count = fields.Integer(
         string='Commission Statement Count',
@@ -269,25 +280,42 @@ class SaleOrder(models.Model):
 
     # ============== COMPUTE METHODS - ENHANCED ==============
 
-    @api.depends('commission_line_ids')
+    @api.depends('commission_line_ids', 'commission_assignment_ids')
     def _compute_commission_lines_count(self):
-        """Compute commission lines count"""
+        """Compute commission lines count from both legacy and modern structures"""
         for order in self:
-            order.commission_lines_count = len(order.commission_line_ids)
+            if order.use_modern_commissions:
+                # Use assignment-based count
+                order.commission_lines_count = order.commission_count
+            else:
+                # Use legacy count
+                order.commission_lines_count = len(order.commission_line_ids)
 
-    @api.depends('commission_line_ids.commission_amount', 'commission_line_ids.commission_category')
+    @api.depends('commission_line_ids.commission_amount', 'commission_line_ids.commission_category',
+                 'commission_assignment_ids', 'use_modern_commissions')
     def _compute_commission_lines_totals(self):
-        """Optimized commission totals calculation using commission lines"""
+        """Optimized commission totals calculation using both legacy and modern structures"""
         for order in self:
-            lines = order.commission_line_ids.filtered(lambda l: l.state != 'cancelled')
-
-            order.total_commission_lines_amount = sum(lines.mapped('commission_amount'))
-            order.internal_commission_lines_amount = sum(
-                lines.filtered(lambda l: l.commission_category == 'internal').mapped('commission_amount')
-            )
-            order.external_commission_lines_amount = sum(
-                lines.filtered(lambda l: l.commission_category == 'external').mapped('commission_amount')
-            )
+            if order.use_modern_commissions:
+                # Use modern assignment-based calculation
+                commission_lines = order.commission_line_ids
+                order.total_commission_lines_amount = order.total_commission_amount
+                order.internal_commission_lines_amount = sum(
+                    commission_lines.filtered(lambda l: l.commission_category == 'internal' and l.state != 'cancelled').mapped('commission_amount')
+                )
+                order.external_commission_lines_amount = sum(
+                    commission_lines.filtered(lambda l: l.commission_category == 'external' and l.state != 'cancelled').mapped('commission_amount')
+                )
+            else:
+                # Use legacy calculation
+                lines = order.commission_line_ids.filtered(lambda l: l.state != 'cancelled')
+                order.total_commission_lines_amount = sum(lines.mapped('commission_amount'))
+                order.internal_commission_lines_amount = sum(
+                    lines.filtered(lambda l: l.commission_category == 'internal').mapped('commission_amount')
+                )
+                order.external_commission_lines_amount = sum(
+                    lines.filtered(lambda l: l.commission_category == 'external').mapped('commission_amount')
+                )
 
     @api.depends('agent1_partner_id', 'agent2_partner_id', 'broker_partner_id',
                  'referrer_partner_id', 'cashback_partner_id', 'other_external_partner_id',
@@ -1168,6 +1196,61 @@ class SaleOrder(models.Model):
             'params': {
                 'title': 'Migration Complete',
                 'message': f'Successfully migrated to commission lines structure. Created {lines_created} commission lines.',
+                'type': 'success',
+            }
+        }
+
+    def action_migrate_to_modern_commissions(self):
+        """Migrate order from legacy commission structure to modern assignment-based structure"""
+        self.ensure_one()
+        
+        if self.use_modern_commissions:
+            raise UserError("This order is already using the modern commission structure.")
+        
+        assignments_created = 0
+        
+        # Migrate existing commission lines to assignments
+        for commission_line in self.commission_line_ids:
+            assignment = self.env['commission.assignment'].create({
+                'source_model': self._name,
+                'source_id': self.id,
+                'commission_line_id': commission_line.id,
+                'assignment_type': 'migrated',
+            })
+            assignments_created += 1
+        
+        # Enable modern commission structure
+        self.use_modern_commissions = True
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Migration to Modern Structure Complete',
+                'message': f'Successfully migrated to modern commission assignment structure. Created {assignments_created} assignments.',
+                'type': 'success',
+            }
+        }
+
+    @api.model
+    def migrate_all_to_modern_commissions(self):
+        """Migrate all sale orders to modern commission structure"""
+        orders = self.search([('use_modern_commissions', '=', False)])
+        migrated_count = 0
+        
+        for order in orders:
+            try:
+                order.action_migrate_to_modern_commissions()
+                migrated_count += 1
+            except Exception as e:
+                _logger.warning(f"Failed to migrate order {order.name}: {str(e)}")
+        
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Bulk Migration Complete',
+                'message': f'Successfully migrated {migrated_count} orders to modern commission structure.',
                 'type': 'success',
             }
         }

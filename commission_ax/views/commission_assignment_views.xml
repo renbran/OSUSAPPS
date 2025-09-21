@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Commission Assignment Tree View -->
+    <record id="view_commission_assignment_tree" model="ir.ui.view">
+        <field name="name">commission.assignment.tree</field>
+        <field name="model">commission.assignment</field>
+        <field name="arch" type="xml">
+            <tree string="Commission Assignments">
+                <field name="sequence" widget="handle"/>
+                <field name="source_model"/>
+                <field name="source_id"/>
+                <field name="partner_id"/>
+                <field name="commission_type_id"/>
+                <field name="commission_amount" sum="Total Commission"/>
+                <field name="state"/>
+                <field name="assignment_type"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Commission Assignment Form View -->
+    <record id="view_commission_assignment_form" model="ir.ui.view">
+        <field name="name">commission.assignment.form</field>
+        <field name="model">commission.assignment</field>
+        <field name="arch" type="xml">
+            <form string="Commission Assignment">
+                <header>
+                    <button name="action_view_source_record" type="object" string="View Source Record" class="btn-primary" icon="fa-external-link"/>
+                    <button name="action_view_commission_line" type="object" string="View Commission Line" class="btn-secondary" icon="fa-line-chart"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Smart buttons can be added here -->
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="source_model"/>
+                            <field name="source_id"/>
+                            <field name="commission_line_id" domain="[('state', '!=', 'cancelled')]"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="assignment_type"/>
+                            <field name="active"/>
+                            <field name="created_date"/>
+                            <field name="assigned_by"/>
+                        </group>
+                    </group>
+
+                    <group string="Commission Details" name="commission_details">
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="commission_type_id"/>
+                            <field name="commission_amount"/>
+                            <field name="currency_id"/>
+                        </group>
+                        <group>
+                            <field name="state"/>
+                        </group>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Commission Assignment Search View -->
+    <record id="view_commission_assignment_search" model="ir.ui.view">
+        <field name="name">commission.assignment.search</field>
+        <field name="model">commission.assignment</field>
+        <field name="arch" type="xml">
+            <search string="Commission Assignments">
+                <field name="source_model"/>
+                <field name="source_id"/>
+                <field name="partner_id"/>
+                <field name="commission_type_id"/>
+                <field name="assignment_type"/>
+                <field name="state"/>
+                
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Archived" name="archived" domain="[('active', '=', False)]"/>
+                
+                <separator/>
+                <filter string="Automatic" name="automatic" domain="[('assignment_type', '=', 'automatic')]"/>
+                <filter string="Manual" name="manual" domain="[('assignment_type', '=', 'manual')]"/>
+                <filter string="Migrated" name="migrated" domain="[('assignment_type', '=', 'migrated')]"/>
+                
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Paid" name="paid" domain="[('state', '=', 'paid')]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter string="Source Model" name="group_source_model" context="{'group_by': 'source_model'}"/>
+                    <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Commission Type" name="group_commission_type" context="{'group_by': 'commission_type_id'}"/>
+                    <filter string="Assignment Type" name="group_assignment_type" context="{'group_by': 'assignment_type'}"/>
+                    <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Commission Assignment Action -->
+    <record id="action_commission_assignment" model="ir.actions.act_window">
+        <field name="name">Commission Assignments</field>
+        <field name="res_model">commission.assignment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_commission_assignment_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Commission Assignment
+            </p>
+            <p>
+                Commission assignments allow you to link commission lines to any record
+                in the system using a flexible many2many relationship structure.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_commission_assignment"
+              name="Commission Assignments"
+              parent="commission_ax.menu_commission_main"
+              action="action_commission_assignment"
+              sequence="15"/>
+
+</odoo>
