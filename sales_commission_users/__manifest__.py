@@ -32,6 +32,7 @@
     'website': 'https://www.cybrosys.com/',
     'depends': ['sale_management', 'account'],
     'data': [
+        'data/commission_config.xml',
         'security/ir.model.access.csv',
         'wizard/sales_commission_report_views.xml',
         'views/commission_lines_views.xml',

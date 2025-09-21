@@ -22,11 +22,11 @@ class CommissionAssignmentMixin(models.AbstractModel):
         help='Commission assignments for this record'
     )
 
-    commission_line_ids = fields.Many2many(
+    assigned_commission_line_ids = fields.Many2many(
         'commission.line',
-        string='Commission Lines',
+        string='Assigned Commission Lines',
         compute='_compute_commission_lines',
-        help='Commission lines assigned to this record'
+        help='Commission lines assigned to this record via assignments'
     )
 
     # Commission statistics
