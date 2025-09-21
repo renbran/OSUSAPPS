@@ -27,9 +27,33 @@ class SaleOrder(models.Model):
         help="Use the new many2many assignment structure instead of legacy commission fields"
     )
 
-    # Performance optimized commission totals
-    total_commission_lines_amount = fields.Monetary(
+    # Performance optimized commission totals (Override mixin fields as Monetary)
+    total_commission_amount = fields.Monetary(
         string='Total Commission Amount',
+        compute='_compute_commission_stats',
+        store=True,
+        currency_field='currency_id',
+        help="Total commission amount from all assigned commission lines"
+    )
+
+    pending_commission_amount = fields.Monetary(
+        string='Pending Commission Amount',
+        compute='_compute_commission_stats',
+        store=True,
+        currency_field='currency_id',
+        help="Total amount of pending commissions assigned to this record"
+    )
+
+    paid_commission_amount = fields.Monetary(
+        string='Paid Commission Amount',
+        compute='_compute_commission_stats',
+        store=True,
+        currency_field='currency_id',
+        help="Total amount of paid commissions assigned to this record"
+    )
+
+    total_commission_lines_amount = fields.Monetary(
+        string='Total Commission Amount (Legacy)',
         compute='_compute_commission_lines_totals',
         store=True,
         currency_field='currency_id',
@@ -316,6 +340,28 @@ class SaleOrder(models.Model):
                 order.external_commission_lines_amount = sum(
                     lines.filtered(lambda l: l.commission_category == 'external').mapped('commission_amount')
                 )
+
+    @api.depends('commission_line_ids', 'commission_assignment_ids')
+    def _compute_commission_stats(self):
+        """Compute commission statistics with currency support for sale orders"""
+        for order in self:
+            if order.use_modern_commissions:
+                # Use assignment-based calculation
+                commission_lines = order.commission_line_ids
+            else:
+                # Use legacy structure
+                commission_lines = order.commission_line_ids
+            
+            order.commission_count = len(commission_lines)
+            order.total_commission_amount = sum(commission_lines.mapped('commission_amount'))
+            
+            # Calculate pending commissions
+            pending_lines = commission_lines.filtered(lambda l: l.state in ['draft', 'calculated', 'confirmed'])
+            order.pending_commission_amount = sum(pending_lines.mapped('commission_amount'))
+            
+            # Calculate paid commissions
+            paid_lines = commission_lines.filtered(lambda l: l.state in ['paid', 'partially_paid'])
+            order.paid_commission_amount = sum(paid_lines.mapped('commission_amount'))
 
     @api.depends('agent1_partner_id', 'agent2_partner_id', 'broker_partner_id',
                  'referrer_partner_id', 'cashback_partner_id', 'other_external_partner_id',

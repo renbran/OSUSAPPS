@@ -34,7 +34,7 @@
                     <div class="oe_button_box" name="button_box">
                         <!-- Smart buttons can be added here -->
                     </div>
-                    
+
                     <group>
                         <group>
                             <field name="source_model"/>
@@ -83,20 +83,20 @@
                 <field name="commission_type_id"/>
                 <field name="assignment_type"/>
                 <field name="state"/>
-                
+
                 <filter string="Active" name="active" domain="[('active', '=', True)]"/>
                 <filter string="Archived" name="archived" domain="[('active', '=', False)]"/>
-                
+
                 <separator/>
                 <filter string="Automatic" name="automatic" domain="[('assignment_type', '=', 'automatic')]"/>
                 <filter string="Manual" name="manual" domain="[('assignment_type', '=', 'manual')]"/>
                 <filter string="Migrated" name="migrated" domain="[('assignment_type', '=', 'migrated')]"/>
-                
+
                 <separator/>
                 <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
                 <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
                 <filter string="Paid" name="paid" domain="[('state', '=', 'paid')]"/>
-                
+
                 <group expand="0" string="Group By">
                     <filter string="Source Model" name="group_source_model" context="{'group_by': 'source_model'}"/>
                     <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
@@ -127,10 +127,6 @@
     </record>
 
     <!-- Menu Item -->
-    <menuitem id="menu_commission_assignment"
-              name="Commission Assignments"
-              parent="commission_ax.menu_commission_main"
-              action="action_commission_assignment"
-              sequence="15"/>
+    <menuitem id="menu_commission_assignment" name="Commission Assignments" parent="commission_ax.menu_commission_main" action="action_commission_assignment" sequence="15"/>
 
 </odoo>

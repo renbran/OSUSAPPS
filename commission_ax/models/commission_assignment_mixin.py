@@ -36,24 +36,21 @@ class CommissionAssignmentMixin(models.AbstractModel):
         help='Number of commission lines assigned to this record'
     )
 
-    total_commission_amount = fields.Monetary(
+    total_commission_amount = fields.Float(
         string='Total Commission Amount',
         compute='_compute_commission_stats',
-        currency_field='currency_id',
         help='Total amount of all commissions assigned to this record'
     )
 
-    pending_commission_amount = fields.Monetary(
+    pending_commission_amount = fields.Float(
         string='Pending Commission Amount',
         compute='_compute_commission_stats',
-        currency_field='currency_id',
         help='Total amount of pending commissions assigned to this record'
     )
 
-    paid_commission_amount = fields.Monetary(
+    paid_commission_amount = fields.Float(
         string='Paid Commission Amount',
         compute='_compute_commission_stats',
-        currency_field='currency_id',
         help='Total amount of paid commissions assigned to this record'
     )
 
