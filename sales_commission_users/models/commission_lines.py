@@ -56,22 +56,36 @@ class CommissionLines(models.Model):
 
     def action_create_invoice(self):
         """Creating invoice for sales commission"""
-        if len(self.sales_person_id.mapped('partner_id')) > 1:
-            raise UserError(_('Sales Person should be same.'))
-        else:
+        try:
+            if len(self.sales_person_id.mapped('partner_id')) > 1:
+                raise UserError(_('Sales Person should be same.'))
+
+            total_amount = sum(self.mapped('commission_amount'))
+            _logger.info(f"Creating commission invoice for {self.sales_person_id.name}, total amount: {total_amount}")
+
+            if total_amount <= 0:
+                raise UserError(_('Commission amount must be greater than zero.'))
+
             lines = [(0, 0, {
                 'name': rec.description,
                 'quantity': 1.0,
                 'discount': 0.00,
                 'price_unit': rec.commission_amount,
-            }) for rec in self]
+            }) for rec in self if rec.commission_amount > 0]
+
+            if not lines:
+                raise UserError(_('No valid commission lines found.'))
+
             invoice = self.env['account.move'].create({
                 'move_type': 'out_invoice',
                 'partner_id': self.sales_person_id.mapped('partner_id').id,
-                'payment_reference': self.mapped('order_ref'),
+                'payment_reference': ', '.join(self.mapped('order_ref')),
                 'invoice_date': (datetime.now()).date(),
                 'invoice_line_ids': lines
             })
+
+            _logger.info(f"Commission invoice created: {invoice.name}")
+
             return {
                 'type': 'ir.actions.act_window',
                 'name': 'Invoices',
@@ -80,6 +94,9 @@ class CommissionLines(models.Model):
                 'res_model': 'account.move',
                 'res_id': invoice.id,
                 'domain': [
-                    ('payment_reference', '=', self.mapped('order_ref'))],
+                    ('payment_reference', 'ilike', self.mapped('order_ref')[0])],
                 'context': "{'create': False}"
             }
+        except Exception as e:
+            _logger.error(f"Error creating commission invoice: {str(e)}")
+            raise UserError(f"Failed to create commission invoice: {str(e)}")

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Commission Configuration Parameters -->
+        <record id="commission_max_percentage" model="ir.config_parameter">
+            <field name="key">sales_commission.max_percentage</field>
+            <field name="value">50.0</field>
+        </record>
+
+        <record id="commission_min_amount" model="ir.config_parameter">
+            <field name="key">sales_commission.min_amount</field>
+            <field name="value">1.0</field>
+        </record>
+
+        <record id="commission_enable_logging" model="ir.config_parameter">
+            <field name="key">sales_commission.enable_logging</field>
+            <field name="value">True</field>
+        </record>
+
+        <record id="commission_auto_invoice" model="ir.config_parameter">
+            <field name="key">sales_commission.auto_invoice</field>
+            <field name="value">False</field>
+        </record>
+    </data>
+</odoo>
