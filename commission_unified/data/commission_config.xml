@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Commission Configuration Parameters -->
+        <record id="commission_auto_calculate" model="ir.config_parameter">
+            <field name="key">commission.auto_calculate_on_confirm</field>
+            <field name="value">True</field>
+        </record>
+
+        <record id="commission_default_payment_method" model="ir.config_parameter">
+            <field name="key">commission.default_payment_method</field>
+            <field name="value">invoice</field>
+        </record>
+
+        <record id="commission_require_approval" model="ir.config_parameter">
+            <field name="key">commission.require_approval</field>
+            <field name="value">False</field>
+        </record>
+
+        <record id="commission_max_percentage" model="ir.config_parameter">
+            <field name="key">commission.max_commission_percentage</field>
+            <field name="value">50.0</field>
+        </record>
+
+        <record id="commission_enable_audit_log" model="ir.config_parameter">
+            <field name="key">commission.enable_audit_log</field>
+            <field name="value">True</field>
+        </record>
+
+        <record id="commission_auto_process_invoiced" model="ir.config_parameter">
+            <field name="key">commission.auto_process_invoiced</field>
+            <field name="value">False</field>
+        </record>
+
+        <record id="commission_enable_legacy_mode" model="ir.config_parameter">
+            <field name="key">commission.enable_legacy_mode</field>
+            <field name="value">True</field>
+        </record>
+
+        <record id="commission_enable_rule_based" model="ir.config_parameter">
+            <field name="key">commission.enable_rule_based</field>
+            <field name="value">True</field>
+        </record>
+
+        <record id="commission_enable_stakeholder_based" model="ir.config_parameter">
+            <field name="key">commission.enable_stakeholder_based</field>
+            <field name="value">True</field>
+        </record>
+
+        <record id="commission_notification_emails" model="ir.config_parameter">
+            <field name="key">commission.notification_emails</field>
+            <field name="value">True</field>
+        </record>
+
+    </data>
+</odoo>

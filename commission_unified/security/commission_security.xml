@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Commission Management Groups -->
+        <record id="group_commission_manager" model="res.groups">
+            <field name="name">Commission Manager</field>
+            <field name="category_id" ref="base.module_category_sales"/>
+            <field name="comment">Full access to commission management including approval, configuration, and payment processing</field>
+            <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_manager'))]"/>
+        </record>
+
+        <record id="group_commission_user" model="res.groups">
+            <field name="name">Commission User</field>
+            <field name="category_id" ref="base.module_category_sales"/>
+            <field name="comment">Limited access to commission management - can view and create commissions but cannot approve or process payments</field>
+            <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
+        </record>
+
+        <record id="group_commission_viewer" model="res.groups">
+            <field name="name">Commission Viewer</field>
+            <field name="category_id" ref="base.module_category_sales"/>
+            <field name="comment">Read-only access to commission data for reporting and analysis</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Record Rules for Commission Lines -->
+        <record id="commission_lines_rule_manager" model="ir.rule">
+            <field name="name">Commission Lines: Manager Access</field>
+            <field name="model_id" ref="model_commission_lines"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="commission_lines_rule_user" model="ir.rule">
+            <field name="name">Commission Lines: User Access</field>
+            <field name="model_id" ref="model_commission_lines"/>
+            <field name="domain_force">[
+                '|',
+                ('sales_person_id', '=', user.id),
+                ('sale_order_id.user_id', '=', user.id)
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_commission_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="commission_lines_rule_viewer" model="ir.rule">
+            <field name="name">Commission Lines: Viewer Access</field>
+            <field name="model_id" ref="model_commission_lines"/>
+            <field name="domain_force">[
+                '|',
+                ('sales_person_id', '=', user.id),
+                ('sale_order_id.user_id', '=', user.id)
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_commission_viewer'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Record Rules for Sale Orders with Commissions -->
+        <record id="sale_order_commission_rule_user" model="ir.rule">
+            <field name="name">Sale Order Commission: User Access</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="domain_force">[
+                '|',
+                ('user_id', '=', user.id),
+                ('commission_ids.sales_person_id', '=', user.id)
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_commission_user')), (4, ref('group_commission_viewer'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Field-level Security -->
+        <record id="commission_approval_fields_manager_only" model="ir.model.fields.selection">
+            <field name="field_id" ref="base.field_sale_order__commission_status"/>
+            <field name="value">approved</field>
+            <field name="sequence">30</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+        </record>
+
+        <record id="commission_payment_fields_manager_only" model="ir.model.fields.selection">
+            <field name="field_id" ref="base.field_sale_order__commission_status"/>
+            <field name="value">paid</field>
+            <field name="sequence">50</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+        </record>
+
+        <!-- Commission Configuration Access -->
+        <record id="commission_config_manager_only" model="ir.rule">
+            <field name="name">Commission Configuration: Manager Only</field>
+            <field name="model_id" ref="base.model_ir_config_parameter"/>
+            <field name="domain_force">[('key', 'not like', 'commission.%')]</field>
+            <field name="groups" eval="[(4, ref('group_commission_user')), (4, ref('group_commission_viewer'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Commission Manager can access commission config parameters -->
+        <record id="commission_config_manager_access" model="ir.rule">
+            <field name="name">Commission Configuration: Manager Access</field>
+            <field name="model_id" ref="base.model_ir_config_parameter"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- Multi-company Rules -->
+        <record id="commission_lines_company_rule" model="ir.rule">
+            <field name="name">Commission Lines: Multi-company</field>
+            <field name="model_id" ref="model_commission_lines"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('base.group_multi_company'))]"/>
+        </record>
+
+    </data>
+</odoo>

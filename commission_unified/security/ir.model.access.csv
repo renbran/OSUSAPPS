@@ -1,0 +1,12 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_commission_lines_manager,access.commission.lines.manager,model_commission_lines,group_commission_manager,1,1,1,1
+access_commission_lines_user,access.commission.lines.user,model_commission_lines,group_commission_user,1,1,1,0
+access_commission_lines_viewer,access.commission.lines.viewer,model_commission_lines,group_commission_viewer,1,0,0,0
+access_commission_rules_manager,access.commission.rules.manager,model_commission_rules,group_commission_manager,1,1,1,1
+access_commission_rules_user,access.commission.rules.user,model_commission_rules,group_commission_user,1,0,0,0
+access_commission_calculator_manager,access.commission.calculator.manager,model_commission_calculator,group_commission_manager,1,1,1,1
+access_commission_calculator_user,access.commission.calculator.user,model_commission_calculator,group_commission_user,1,1,1,0
+access_commission_payment_processor_manager,access.commission.payment.processor.manager,model_commission_payment_processor,group_commission_manager,1,1,1,1
+access_commission_payment_processor_user,access.commission.payment.processor.user,model_commission_payment_processor,group_commission_user,1,0,0,0
+access_commission_workflow_manager,access.commission.workflow.manager,model_commission_workflow,group_commission_manager,1,1,1,1
+access_commission_workflow_user,access.commission.workflow.user,model_commission_workflow,group_commission_user,1,1,1,0

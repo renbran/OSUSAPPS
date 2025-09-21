@@ -922,7 +922,7 @@ class CommissionLine(models.Model):
                         'rate': rate,
                         'commission_category': category,
                         'role': role,
-                        'state': 'calculated' if order.commission_processed else 'draft',
+                        'state': 'calculated' if hasattr(order, 'commission_processed') and order.commission_processed else 'draft',
                         'is_legacy': True,
                     })
 

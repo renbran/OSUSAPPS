@@ -17,6 +17,9 @@ class CommissionAssignmentMixin(models.AbstractModel):
     # Many2many commission assignments via bridge table
     commission_assignment_ids = fields.Many2many(
         'commission.assignment',
+        relation='commission_assignment_mixin_rel',
+        column1='source_id',
+        column2='assignment_id',
         string='Commission Assignments',
         compute='_compute_commission_assignments',
         help='Commission assignments for this record'
@@ -24,6 +27,9 @@ class CommissionAssignmentMixin(models.AbstractModel):
 
     assigned_commission_line_ids = fields.Many2many(
         'commission.line',
+        relation='commission_line_mixin_rel',
+        column1='source_id', 
+        column2='line_id',
         string='Assigned Commission Lines',
         compute='_compute_commission_lines',
         help='Commission lines assigned to this record via assignments'
