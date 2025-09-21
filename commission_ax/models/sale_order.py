@@ -347,7 +347,7 @@ class SaleOrder(models.Model):
         for order in self:
             if order.use_modern_commissions:
                 # Use assignment-based calculation
-                commission_lines = order.commission_line_ids
+                commission_lines = order.assigned_commission_line_ids
             else:
                 # Use legacy structure
                 commission_lines = order.commission_line_ids

@@ -73,12 +73,12 @@ class CommissionAssignmentMixin(models.AbstractModel):
     def _compute_commission_lines(self):
         """Compute commission lines for this record"""
         for record in self:
-            record.commission_line_ids = record.commission_assignment_ids.mapped('commission_line_id')
+            record.assigned_commission_line_ids = record.commission_assignment_ids.mapped('commission_line_id')
 
     def _compute_commission_stats(self):
         """Compute commission statistics"""
         for record in self:
-            commission_lines = record.commission_line_ids
+            commission_lines = record.assigned_commission_line_ids
             
             record.commission_count = len(commission_lines)
             record.total_commission_amount = sum(commission_lines.mapped('commission_amount'))
@@ -114,7 +114,7 @@ class CommissionAssignmentMixin(models.AbstractModel):
     def action_view_commission_lines(self):
         """Action to view commission lines for this record"""
         self.ensure_one()
-        commission_line_ids = self.commission_line_ids.ids
+        commission_line_ids = self.assigned_commission_line_ids.ids
         
         return {
             'type': 'ir.actions.act_window',
@@ -211,7 +211,7 @@ class CommissionAssignmentMixin(models.AbstractModel):
         """Get a summary of commission information for this record"""
         self.ensure_one()
         
-        commission_lines = self.commission_line_ids
+        commission_lines = self.assigned_commission_line_ids
         
         summary = {
             'total_lines': len(commission_lines),
