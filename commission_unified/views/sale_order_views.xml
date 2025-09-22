@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Enhanced Sale Order Form View with Commission Management -->
+        <record id="view_sale_order_form_commission" model="ir.ui.view">
+            <field name="name">sale.order.form.commission</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Add Commission Status in Header -->
+                <xpath expr="//field[@name='state']" position="before">
+                    <field name="commission_status" widget="statusbar"
+                           statusbar_visible="draft,calculated,approved,confirmed,paid"
+                           invisible="commission_count == 0"/>
+                </xpath>
+
+                <!-- Add Commission Buttons in Header -->
+                <xpath expr="//header" position="inside">
+                    <button name="action_calculate_commissions" type="object"
+                            string="Calculate Commissions" class="btn-primary"
+                            invisible="commission_status != 'draft'"
+                            help="Calculate commissions for this sale order"/>
+                    <button name="action_approve_commissions" type="object"
+                            string="Approve Commissions" class="btn-primary"
+                            invisible="commission_status != 'calculated'"
+                            groups="commission_unified.group_commission_manager"
+                            help="Approve calculated commissions"/>
+                    <button name="action_confirm_commissions" type="object"
+                            string="Confirm Commissions" class="btn-primary"
+                            invisible="commission_status != 'approved'"
+                            groups="commission_unified.group_commission_manager"
+                            help="Confirm approved commissions"/>
+                    <button name="action_process_commission_payments" type="object"
+                            string="Process Payments" class="btn-success"
+                            invisible="commission_status not in ['confirmed','approved']"
+                            groups="commission_unified.group_commission_manager"
+                            help="Process commission payments"/>
+                    <button name="action_reset_commissions" type="object"
+                            string="Reset Commissions"
+                            invisible="commission_status == 'draft'"
+                            help="Reset commissions to draft status"/>
+                </xpath>
+
+                <!-- Add Commission Smart Buttons -->
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button type="object" name="action_view_commissions"
+                            class="oe_stat_button" icon="fa-money"
+                            invisible="commission_count == 0">
+                        <field string="Commissions" name="commission_count" widget="statinfo"/>
+                    </button>
+                    <button type="object" name="action_commission_report"
+                            class="oe_stat_button" icon="fa-file-pdf-o"
+                            invisible="commission_count == 0">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_text">Commission Report</span>
+                        </div>
+                    </button>
+                </xpath>
+
+                <!-- Add Commission Tab -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="Commissions" name="commissions">
+                        <group>
+                            <group string="Commission Summary">
+                                <field name="total_commission_amount" widget="monetary"/>
+                                <field name="total_external_commission" widget="monetary"/>
+                                <field name="total_internal_commission" widget="monetary"/>
+                                <field name="total_legacy_commission" widget="monetary"/>
+                                <field name="total_rule_commission" widget="monetary"/>
+                            </group>
+                            <group string="Financial Impact">
+                                <field name="company_share" widget="monetary"/>
+                                <field name="net_company_share" widget="monetary"/>
+                                <field name="commission_percentage" widget="percentage"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <group string="Commission Configuration">
+                                <field name="commission_auto_calculate"/>
+                                <field name="commission_payment_method"/>
+                                <field name="commission_requires_approval"/>
+                            </group>
+                            <group string="Processing Status">
+                                <field name="commission_processed" readonly="1"/>
+                                <field name="commission_approved_by" readonly="1"/>
+                                <field name="commission_approved_date" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <!-- External Commissions -->
+                            <page string="External Commissions" name="external_commissions"
+                                  invisible="not broker_partner_id and not referrer_partner_id and not cashback_partner_id and not other_external_partner_id">
+                                <group>
+                                    <group string="Broker Commission">
+                                        <field name="broker_partner_id"/>
+                                        <field name="broker_commission_type" invisible="not broker_partner_id"/>
+                                        <field name="broker_rate" invisible="not broker_partner_id"/>
+                                        <field name="broker_amount" readonly="1" invisible="not broker_partner_id"/>
+                                    </group>
+                                    <group string="Referrer Commission">
+                                        <field name="referrer_partner_id"/>
+                                        <field name="referrer_commission_type" invisible="not referrer_partner_id"/>
+                                        <field name="referrer_rate" invisible="not referrer_partner_id"/>
+                                        <field name="referrer_amount" readonly="1" invisible="not referrer_partner_id"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Cashback Commission">
+                                        <field name="cashback_partner_id"/>
+                                        <field name="cashback_commission_type" invisible="not cashback_partner_id"/>
+                                        <field name="cashback_rate" invisible="not cashback_partner_id"/>
+                                        <field name="cashback_amount" readonly="1" invisible="not cashback_partner_id"/>
+                                    </group>
+                                    <group string="Other External Commission">
+                                        <field name="other_external_partner_id"/>
+                                        <field name="other_external_commission_type" invisible="not other_external_partner_id"/>
+                                        <field name="other_external_rate" invisible="not other_external_partner_id"/>
+                                        <field name="other_external_amount" readonly="1" invisible="not other_external_partner_id"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- Internal Commissions -->
+                            <page string="Internal Commissions" name="internal_commissions"
+                                  invisible="not agent1_partner_id and not agent2_partner_id and not manager_partner_id and not director_partner_id">
+                                <group>
+                                    <group string="Agent 1 Commission">
+                                        <field name="agent1_partner_id"/>
+                                        <field name="agent1_commission_type" invisible="not agent1_partner_id"/>
+                                        <field name="agent1_rate" invisible="not agent1_partner_id"/>
+                                        <field name="agent1_amount" readonly="1" invisible="not agent1_partner_id"/>
+                                    </group>
+                                    <group string="Agent 2 Commission">
+                                        <field name="agent2_partner_id"/>
+                                        <field name="agent2_commission_type" invisible="not agent2_partner_id"/>
+                                        <field name="agent2_rate" invisible="not agent2_partner_id"/>
+                                        <field name="agent2_amount" readonly="1" invisible="not agent2_partner_id"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Manager Commission">
+                                        <field name="manager_partner_id"/>
+                                        <field name="manager_commission_type" invisible="not manager_partner_id"/>
+                                        <field name="manager_rate" invisible="not manager_partner_id"/>
+                                        <field name="manager_amount" readonly="1" invisible="not manager_partner_id"/>
+                                    </group>
+                                    <group string="Director Commission">
+                                        <field name="director_partner_id"/>
+                                        <field name="director_commission_type" invisible="not director_partner_id"/>
+                                        <field name="director_rate" invisible="not director_partner_id"/>
+                                        <field name="director_amount" readonly="1" invisible="not director_partner_id"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- Legacy Commissions -->
+                            <page string="Legacy Commissions" name="legacy_commissions"
+                                  invisible="not consultant_id and not manager_id and not second_agent_id and not director_id">
+                                <group>
+                                    <group string="Consultant Commission">
+                                        <field name="consultant_id"/>
+                                        <field name="consultant_comm_percentage" invisible="not consultant_id"/>
+                                        <field name="salesperson_commission" readonly="1" invisible="not consultant_id"/>
+                                    </group>
+                                    <group string="Manager Commission (Legacy)">
+                                        <field name="manager_id"/>
+                                        <field name="manager_comm_percentage" invisible="not manager_id"/>
+                                        <field name="manager_commission" readonly="1" invisible="not manager_id"/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Second Agent Commission">
+                                        <field name="second_agent_id"/>
+                                        <field name="second_agent_comm_percentage" invisible="not second_agent_id"/>
+                                        <field name="second_agent_commission" readonly="1" invisible="not second_agent_id"/>
+                                    </group>
+                                    <group string="Director Commission (Legacy)">
+                                        <field name="director_id"/>
+                                        <field name="director_comm_percentage" invisible="not director_id"/>
+                                        <field name="director_commission" readonly="1" invisible="not director_id"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- Commission Rules -->
+                            <page string="Commission Rules" name="commission_rules">
+                                <field name="commission_rules_ids" widget="many2many_tags"/>
+                                <group string="Rule-based Commission Configuration">
+                                    <p>Commission rules are automatically applied based on the configured criteria.
+                                       You can also manually assign specific rules to this order.</p>
+                                </group>
+                            </page>
+
+                            <!-- Commission Lines -->
+                            <page string="Commission Lines" name="commission_lines">
+                                <field name="commission_ids" context="{'default_sale_order_id': id}">
+                                    <tree editable="bottom" create="0" delete="0">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name" readonly="1"/>
+                                        <field name="partner_id" readonly="1"/>
+                                        <field name="commission_type" readonly="1"/>
+                                        <field name="calculation_method" readonly="1"/>
+                                        <field name="commission_rate" readonly="1"/>
+                                        <field name="commission_amount" readonly="1" sum="Total"/>
+                                        <field name="status" widget="badge"/>
+                                        <field name="payment_method"/>
+                                        <button name="action_calculate" type="object" string="Calculate"
+                                                icon="fa-calculator" invisible="status != 'draft'"/>
+                                        <button name="action_approve" type="object" string="Approve"
+                                                icon="fa-check" invisible="status != 'calculated'"
+                                                groups="commission_unified.group_commission_manager"/>
+                                        <button name="action_process_payment" type="object" string="Pay"
+                                                icon="fa-money" invisible="status not in ['approved','confirmed']"
+                                                groups="commission_unified.group_commission_manager"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Commission Summary in Sale Order Tree View -->
+        <record id="view_sale_order_tree_commission" model="ir.ui.view">
+            <field name="name">sale.order.tree.commission</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount_total']" position="after">
+                    <field name="total_commission_amount" sum="Total Commissions" optional="hide"/>
+                    <field name="commission_status" optional="hide"/>
+                    <field name="commission_count" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

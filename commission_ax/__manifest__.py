@@ -1,6 +1,6 @@
 {
     'name': 'Advanced Commission Management',
-    'version': '17.0.3.1.0',
+    'version': '17.0.3.1.1',
     'category': 'Sales',
     'summary': 'World-class commission management with robust error handling and graceful degradation',
     'description': """

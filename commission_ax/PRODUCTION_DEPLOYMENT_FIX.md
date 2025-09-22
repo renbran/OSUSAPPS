@@ -1,14 +1,19 @@
-# Commission AX Production Deployment Fix
+# Commission AX Production Deployment Fix - UPDATED
 
 ## Issue Resolution
-The error "Field commission_processed referenced in related field definition commission.line.commission_processed does not exist" has been resolved.
+The error "Field commission_processed referenced in related field definition commission.line.commission_processed does not exist" has been resolved with comprehensive database cleanup.
+
+## Root Cause
+The issue was caused by:
+1. **Orphaned database columns**: Old `commission_processed` column remained in the database
+2. **Cached field metadata**: Odoo's field registry contained stale references
+3. **Related field definitions**: Previous version had related field that wasn't properly cleaned up
 
 ## Changes Made
-1. **Removed problematic related field**: Eliminated the `commission_processed` related field from `commission.line` model that was causing the KeyError.
-
-2. **Safe field access**: Updated all references to `order.commission_processed` to use `hasattr()` checks for backward compatibility.
-
-3. **Graceful degradation**: The module now works regardless of whether the `commission_processed` field exists in the sale_order model.
+1. **Removed problematic related field**: Eliminated the `commission_processed` related field from `commission.line` model
+2. **Added database migration**: Created migration script to clean up orphaned database columns and metadata
+3. **Safe field access**: Updated all references to use `hasattr()` checks for backward compatibility
+4. **Version bump**: Updated module version to `17.0.3.1.1` to trigger migration
 
 ## Production Deployment Steps
 
@@ -21,10 +26,17 @@ sudo service odoo stop
 
 ### 2. Backup Database
 ```bash
-sudo -u postgres pg_dump odoo > /backup/odoo_backup_$(date +%Y%m%d_%H%M%S).sql
+sudo -u postgres pg_dump osusbackup > /backup/osusbackup_backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
-### 3. Update Module Files
+### 3. Clean Python Cache
+```bash
+# Clean any cached Python files
+find /path/to/addons/commission_ax -name "*.pyc" -delete
+find /path/to/addons/commission_ax -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+```
+
+### 4. Update Module Files
 Copy the updated commission_ax module to your production addons directory:
 ```bash
 # Replace /path/to/addons/ with your actual addons path
@@ -32,27 +44,29 @@ cp -r commission_ax /path/to/addons/
 chown -R odoo:odoo /path/to/addons/commission_ax
 ```
 
-### 4. Install/Update Module
+### 5. Update Module (CRITICAL - Use -u not -i)
 ```bash
-# Option A: If module is not installed yet
-sudo -u odoo odoo -d osusbackup -i commission_ax --no-http --stop-after-init
-
-# Option B: If module is already installed
+# IMPORTANT: Use UPDATE (-u) not INSTALL (-i) to trigger migration
 sudo -u odoo odoo -d osusbackup -u commission_ax --no-http --stop-after-init
 ```
 
-### 5. Start Odoo Service
+### 6. Start Odoo Service
 ```bash
 sudo systemctl start odoo
 # or
 sudo service odoo start
 ```
 
-### 6. Verify Installation
+### 7. Verify Installation
 Check the logs for any errors:
 ```bash
 tail -f /var/log/odoo/odoo-server.log
 ```
+
+Look for migration messages:
+- "Starting commission_processed field cleanup migration"
+- "Successfully removed commission_processed column from commission_line table"
+- "Commission_processed field cleanup migration completed successfully"
 
 ## Key Fixes Applied
 

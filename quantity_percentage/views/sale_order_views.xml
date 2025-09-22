@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit sales order form view to replace quantity field with percentage display -->
+        <record id="view_order_form_inherit_percentage" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.percentage</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <!-- Replace quantity field in order lines with percentage widget -->
+                <xpath expr="//field[@name='order_line']//field[@name='product_uom_qty']" position="replace">
+                    <field name="product_uom_qty_percentage" 
+                           widget="percentage" 
+                           string="Quantity" 
+                           options="{'digits': [16, 6]}"
+                           attrs="{'readonly': [('state', 'in', ['sale', 'done', 'cancel'])]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit quotation form view to replace quantity field with percentage display -->
+        <record id="view_quote_form_inherit_percentage" model="ir.ui.view">
+            <field name="name">sale.order.quote.form.inherit.percentage</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <!-- Ensure quotations also use percentage display -->
+                <xpath expr="//page[@name='order_lines']//field[@name='order_line']//field[@name='product_uom_qty']" position="replace">
+                    <field name="product_uom_qty_percentage" 
+                           widget="percentage" 
+                           string="Quantity" 
+                           options="{'digits': [16, 6]}"
+                           attrs="{'readonly': [('state', 'in', ['sale', 'done', 'cancel'])]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit sales order tree view to replace quantity field with percentage display -->
+        <record id="view_quotation_tree_inherit_percentage" model="ir.ui.view">
+            <field name="name">sale.order.tree.inherit.percentage</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']//field[@name='product_uom_qty']" position="replace">
+                    <field name="product_uom_qty_percentage" 
+                           widget="percentage" 
+                           string="Quantity" 
+                           options="{'digits': [16, 6]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit sale order line tree view -->
+        <record id="view_order_line_tree_inherit_percentage" model="ir.ui.view">
+            <field name="name">sale.order.line.tree.inherit.percentage</field>
+            <field name="model">sale.order.line</field>
+            <field name="inherit_id" ref="sale.view_order_line_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_uom_qty']" position="replace">
+                    <field name="product_uom_qty_percentage" 
+                           widget="percentage" 
+                           string="Quantity" 
+                           options="{'digits': [16, 6]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit sale order line form view -->
+        <record id="view_order_line_form_inherit_percentage" model="ir.ui.view">
+            <field name="name">sale.order.line.form.inherit.percentage</field>
+            <field name="model">sale.order.line</field>
+            <field name="inherit_id" ref="sale.view_order_line_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_uom_qty']" position="replace">
+                    <field name="product_uom_qty_percentage" 
+                           widget="percentage" 
+                           string="Quantity" 
+                           options="{'digits': [16, 6]}"
+                           attrs="{'readonly': [('state', 'in', ['sale', 'done', 'cancel'])]}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Inherit search view to include percentage field -->
+        <record id="view_sales_order_filter_inherit_percentage" model="ir.ui.view">
+            <field name="name">sale.order.select.inherit.percentage</field>
+            <field name="model">sale.order.line</field>
+            <field name="inherit_id" ref="sale.sale_order_line_view_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_uom_qty']" position="after">
+                    <field name="product_uom_qty_percentage" string="Quantity %"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
