@@ -481,4 +481,10 @@
         }</field>
     </record>
     -->
+
+    <!-- Update menu with action reference -->
+    <record id="menu_commission_lines" model="ir.ui.menu">
+        <field name="action" ref="action_commission_line"/>
+    </record>
+
 </odoo>

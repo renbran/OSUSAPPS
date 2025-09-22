@@ -6,7 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class SaleOrder(models.Model):
     """Extended Sale Order with simplified commission management via many2many assignments"""
-    _inherit = ['sale.order', 'commission.assignment.mixin']
+    _inherit = 'sale.order'
 
     # ============== MODERN COMMISSION STRUCTURE ==============
     # Using commission assignment mixin for flexible many2many relationships
@@ -304,19 +304,19 @@ class SaleOrder(models.Model):
 
     # ============== COMPUTE METHODS - ENHANCED ==============
 
-    @api.depends('commission_line_ids', 'commission_assignment_ids')
+    @api.depends('commission_line_ids')
     def _compute_commission_lines_count(self):
         """Compute commission lines count from both legacy and modern structures"""
         for order in self:
             if order.use_modern_commissions:
-                # Use assignment-based count
-                order.commission_lines_count = order.commission_count
+                # Use assignment-based count (mixin not available)
+                order.commission_lines_count = 0
             else:
                 # Use legacy count
                 order.commission_lines_count = len(order.commission_line_ids)
 
     @api.depends('commission_line_ids.commission_amount', 'commission_line_ids.commission_category',
-                 'commission_assignment_ids', 'use_modern_commissions')
+                 'use_modern_commissions')
     def _compute_commission_lines_totals(self):
         """Optimized commission totals calculation using both legacy and modern structures"""
         for order in self:
@@ -341,13 +341,13 @@ class SaleOrder(models.Model):
                     lines.filtered(lambda l: l.commission_category == 'external').mapped('commission_amount')
                 )
 
-    @api.depends('commission_line_ids', 'commission_assignment_ids')
+    @api.depends('commission_line_ids')
     def _compute_commission_stats(self):
         """Compute commission statistics with currency support for sale orders"""
         for order in self:
             if order.use_modern_commissions:
-                # Use assignment-based calculation
-                commission_lines = order.assigned_commission_line_ids
+                # Use assignment-based calculation (mixin not available)
+                commission_lines = order.commission_line_ids  # Fallback to legacy
             else:
                 # Use legacy structure
                 commission_lines = order.commission_line_ids

@@ -58,24 +58,6 @@ except Exception as e:
     _logger.warning(f"⚠️  commission_ai_analytics not loaded: {str(e)}")
 
 try:
-    from . import commission_alert
-    _logger.info("✅ commission_alert model loaded")
-except Exception as e:
-    _logger.warning(f"⚠️  commission_alert not loaded: {str(e)}")
-
-try:
-    from . import commission_performance_report
-    _logger.info("✅ commission_performance_report model loaded")
-except Exception as e:
-    _logger.warning(f"⚠️  commission_performance_report not loaded: {str(e)}")
-
-try:
-    from . import commission_realtime_dashboard
-    _logger.info("✅ commission_realtime_dashboard model loaded")
-except Exception as e:
-    _logger.warning(f"⚠️  commission_realtime_dashboard not loaded: {str(e)}")
-
-try:
     from . import commission_statement_line
     _logger.info("✅ commission_statement_line model loaded")
 except Exception as e:

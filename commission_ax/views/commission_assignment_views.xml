@@ -127,6 +127,6 @@
     </record>
 
     <!-- Menu Item -->
-    <menuitem id="menu_commission_assignment" name="Commission Assignments" parent="commission_ax.menu_commission_main" action="action_commission_assignment" sequence="15"/>
+    <menuitem id="menu_commission_assignment" name="Commission Assignments" parent="menu_commission_root" action="action_commission_assignment" sequence="15"/>
 
 </odoo>
