@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Create Percentage UoM Category -->
+        <record id="uom_categ_percentage" model="uom.category">
+            <field name="name">Percentage</field>
+        </record>
+        
+        <!-- Create Percentage Unit of Measure -->
+        <record id="product_uom_percentage" model="uom.uom">
+            <field name="name">%</field>
+            <field name="category_id" ref="uom_categ_percentage"/>
+            <field name="factor">1.0</field>
+            <field name="rounding">0.000001</field>
+            <field name="uom_type">reference</field>
+            <field name="active">True</field>
+        </record>
+        
+    </data>
+</odoo>
