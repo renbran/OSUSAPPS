@@ -10,6 +10,11 @@
                     <field name="sequence" widget="handle"/>
                     <field name="name"/>
                     <field name="code"/>
+                    <field name="agent1_partner" optional="hide"/>
+                    <field name="agent2_partner" optional="hide"/>
+                    <field name="manager_partner" optional="hide"/>
+                    <field name="director_partner" optional="hide"/>
+                    <field name="broker_id" optional="hide"/>
                 </tree>
             </field>
         </record>
@@ -22,10 +27,27 @@
                 <form string="Commission Type">
                     <sheet>
                         <group>
-                            <field name="sequence"/>
-                            <field name="name"/>
-                            <field name="code"/>
+                            <group name="basic_info" string="Basic Information">
+                                <field name="sequence"/>
+                                <field name="name"/>
+                                <field name="code"/>
+                            </group>
                         </group>
+                        <notebook>
+                            <page string="Commission Partners" name="commission_partners">
+                                <group>
+                                    <group name="agents" string="Agents">
+                                        <field name="agent1_partner"/>
+                                        <field name="agent2_partner"/>
+                                    </group>
+                                    <group name="management" string="Management">
+                                        <field name="manager_partner"/>
+                                        <field name="director_partner"/>
+                                        <field name="broker_id"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
                     </sheet>
                 </form>
             </field>
