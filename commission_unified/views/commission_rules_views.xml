@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Commission Rules Tree View -->
+        <record id="view_commission_rules_tree" model="ir.ui.view">
+            <field name="name">commission.rules.tree</field>
+            <field name="model">commission.rules</field>
+            <field name="arch" type="xml">
+                <tree string="Commission Rules" default_order="sequence,name">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="commission_type"/>
+                    <field name="std_commission_perc" string="Standard %"/>
+                    <field name="affiliated_commission_perc" string="Affiliated %"/>
+                    <field name="non_affiliated_commission_perc" string="Non-Affiliated %"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                    <field name="usage_count"/>
+                    <field name="active" widget="boolean_toggle"/>
+                    <button name="action_test_rule" type="object" string="Test Rule"
+                            icon="fa-flask" title="Test this rule with recent orders"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Commission Rules Form View -->
+        <record id="view_commission_rules_form" model="ir.ui.view">
+            <field name="name">commission.rules.form</field>
+            <field name="model">commission.rules</field>
+            <field name="arch" type="xml">
+                <form string="Commission Rule">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_test_rule" type="object"
+                                    class="oe_stat_button" icon="fa-flask">
+                                <div class="o_field_widget o_stat_info">
+                                    <span class="o_stat_text">Test Rule</span>
+                                </div>
+                            </button>
+                            <button type="object" name="action_view_commission_lines"
+                                    class="oe_stat_button" icon="fa-money"
+                                    invisible="usage_count == 0">
+                                <field string="Used" name="usage_count" widget="statinfo"/>
+                            </button>
+                        </div>
+
+                        <widget name="web_ribbon" title="Inactive" bg_color="bg-danger"
+                                invisible="active"/>
+
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Rule Name"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group string="Basic Information">
+                                <field name="commission_type" required="1"/>
+                                <field name="sequence"/>
+                                <field name="active"/>
+                            </group>
+                            <group string="Validity Period">
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <group string="Order Conditions">
+                                <field name="min_order_amount"/>
+                                <field name="max_order_amount"/>
+                            </group>
+                            <group string="Usage Statistics">
+                                <field name="usage_count" readonly="1"/>
+                                <field name="last_used_date" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Commission Rates" name="rates">
+                                <group invisible="commission_type != 'standard'">
+                                    <group string="Standard Commission">
+                                        <field name="std_commission_perc" widget="percentage"/>
+                                    </group>
+                                </group>
+
+                                <group invisible="commission_type != 'partner_based'">
+                                    <group string="Partner-based Commission">
+                                        <field name="affiliated_commission_perc" widget="percentage"/>
+                                        <field name="non_affiliated_commission_perc" widget="percentage"/>
+                                    </group>
+                                </group>
+
+                                <field name="product_based_ids" invisible="commission_type != 'product_based'">
+                                    <tree editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="product_id"/>
+                                        <field name="commission_perc" widget="percentage"/>
+                                    </tree>
+                                </field>
+
+                                <field name="discount_based_ids" invisible="commission_type != 'discount_based'">
+                                    <tree editable="bottom">
+                                        <field name="min_discount" widget="percentage"/>
+                                        <field name="max_discount" widget="percentage"/>
+                                        <field name="commission_perc" widget="percentage"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Assignment" name="assignment">
+                                <group>
+                                    <group string="Sales Persons">
+                                        <field name="sales_person_ids" widget="many2many_tags"
+                                               placeholder="Leave empty for global rule"/>
+                                    </group>
+                                    <group string="Company">
+                                        <field name="company_id" groups="base.group_multi_company"/>
+                                        <field name="currency_id"/>
+                                    </group>
+                                </group>
+
+                                <group>
+                                    <group string="Partner Filter">
+                                        <field name="partner_ids" widget="many2many_tags"
+                                               placeholder="Leave empty for all partners"/>
+                                    </group>
+                                    <group string="Product Category Filter">
+                                        <field name="product_category_ids" widget="many2many_tags"
+                                               placeholder="Leave empty for all categories"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Description" name="description">
+                                <group>
+                                    <field name="description" placeholder="Detailed description of this rule..."/>
+                                </group>
+                                <group>
+                                    <field name="notes" placeholder="Internal notes for rule management..."/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Commission Rules Search View -->
+        <record id="view_commission_rules_search" model="ir.ui.view">
+            <field name="name">commission.rules.search</field>
+            <field name="model">commission.rules</field>
+            <field name="arch" type="xml">
+                <search string="Commission Rules">
+                    <field name="name" string="Rule Name"/>
+                    <field name="sales_person_ids" string="Sales Person"/>
+                    <field name="commission_type" string="Type"/>
+
+                    <filter string="Active" name="active" domain="[('active','=',True)]"/>
+                    <filter string="Inactive" name="inactive" domain="[('active','=',False)]"/>
+
+                    <separator/>
+                    <filter string="Standard" name="standard" domain="[('commission_type','=','standard')]"/>
+                    <filter string="Partner Based" name="partner_based" domain="[('commission_type','=','partner_based')]"/>
+                    <filter string="Product Based" name="product_based" domain="[('commission_type','=','product_based')]"/>
+                    <filter string="Discount Based" name="discount_based" domain="[('commission_type','=','discount_based')]"/>
+
+                    <separator/>
+                    <filter string="Global Rules" name="global_rules" domain="[('sales_person_ids','=',False)]"/>
+                    <filter string="My Rules" name="my_rules" domain="[('sales_person_ids','in',[uid])]"/>
+
+                    <group expand="0" string="Group By">
+                        <filter string="Commission Type" name="group_type" context="{'group_by':'commission_type'}"/>
+                        <filter string="Company" name="group_company" context="{'group_by':'company_id'}" groups="base.group_multi_company"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Commission Rules Action -->
+        <record id="action_commission_rules" model="ir.actions.act_window">
+            <field name="name">Commission Rules</field>
+            <field name="res_model">commission.rules</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_commission_rules_search"/>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first commission rule!
+                </p>
+                <p>
+                    Commission rules define how commissions are calculated automatically
+                    based on different criteria like product, partner, or discount levels.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

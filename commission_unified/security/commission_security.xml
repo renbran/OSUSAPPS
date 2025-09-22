@@ -121,12 +121,113 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
+        <!-- Commission Rules Security -->
+        <record id="commission_rules_rule_manager" model="ir.rule">
+            <field name="name">Commission Rules: Manager Access</field>
+            <field name="model_id" ref="model_commission_rules"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="commission_rules_rule_user" model="ir.rule">
+            <field name="name">Commission Rules: User Access</field>
+            <field name="model_id" ref="model_commission_rules"/>
+            <field name="domain_force">[
+                '|',
+                ('sales_person_ids', '=', False),
+                ('sales_person_ids', 'in', [user.id])
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_commission_user')), (4, ref('group_commission_viewer'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Commission Calculator Security -->
+        <record id="commission_calculator_rule_all" model="ir.rule">
+            <field name="name">Commission Calculator: All Access</field>
+            <field name="model_id" ref="model_commission_calculator"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager')), (4, ref('group_commission_user'))]"/>
+        </record>
+
+        <!-- Commission Payment Processor Security -->
+        <record id="commission_payment_processor_rule_manager" model="ir.rule">
+            <field name="name">Commission Payment Processor: Manager Only</field>
+            <field name="model_id" ref="model_commission_payment_processor"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+        </record>
+
+        <!-- Commission Workflow Security -->
+        <record id="commission_workflow_rule_all" model="ir.rule">
+            <field name="name">Commission Workflow: All Access</field>
+            <field name="model_id" ref="model_commission_workflow"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager')), (4, ref('group_commission_user'))]"/>
+        </record>
+
+        <!-- Commission Product Rule Security -->
+        <record id="commission_product_rule_security" model="ir.rule">
+            <field name="name">Commission Product Rules: Manager Only</field>
+            <field name="model_id" ref="model_commission_product_rule"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+        </record>
+
+        <!-- Commission Discount Rule Security -->
+        <record id="commission_discount_rule_security" model="ir.rule">
+            <field name="name">Commission Discount Rules: Manager Only</field>
+            <field name="model_id" ref="model_commission_discount_rule"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+        </record>
+
+        <!-- Enhanced Field-level Security -->
+        <record id="commission_status_approved_manager_only" model="ir.model.fields">
+            <field name="name">status</field>
+            <field name="model_id" ref="model_commission_lines"/>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+            <field name="readonly" eval="True"/>
+        </record>
+
+        <!-- Payment Method Restrictions -->
+        <record id="commission_payment_method_manager" model="ir.model.fields">
+            <field name="name">payment_method</field>
+            <field name="model_id" ref="model_commission_lines"/>
+            <field name="groups" eval="[(4, ref('group_commission_manager'))]"/>
+        </record>
+
         <!-- Multi-company Rules -->
         <record id="commission_lines_company_rule" model="ir.rule">
             <field name="name">Commission Lines: Multi-company</field>
             <field name="model_id" ref="model_commission_lines"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
             <field name="groups" eval="[(4, ref('base.group_multi_company'))]"/>
+        </record>
+
+        <record id="commission_rules_company_rule" model="ir.rule">
+            <field name="name">Commission Rules: Multi-company</field>
+            <field name="model_id" ref="model_commission_rules"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('base.group_multi_company'))]"/>
+        </record>
+
+        <!-- Commission Amount Limits -->
+        <record id="commission_amount_limit_user" model="ir.rule">
+            <field name="name">Commission Lines: Amount Limit for Users</field>
+            <field name="model_id" ref="model_commission_lines"/>
+            <field name="domain_force">[('commission_amount', '&lt;=', 10000)]</field>
+            <field name="groups" eval="[(4, ref('group_commission_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
         </record>
 
     </data>
