@@ -2,29 +2,63 @@
 
 ## Overview
 
-This module modifies quantity fields across Odoo 17 sales orders and invoices to display as percentages with precise decimal handling, preventing rounding and providing a uniform interface throughout the system.
+This module enhances Odoo 17 sales orders and invoices with intelligent percentage quantity handling. When users input "5", the system automatically converts it to 0.05 (representing 5%) and defaults to percentage Unit of Measure.
 
-## Features
+## Key Features
 
+### Smart Percentage Input Conversion
+- **Input "5"** → System stores **0.05** and displays **"5%"**
+- **Input "0.5"** → System stores **0.005** and displays **"0.5%"**
+- **Input "10"** → System stores **0.10** and displays **"10%"**
+
+### Automatic UoM Management
+- **Default UoM**: Automatically sets Unit of Measure to % for new lines
+- **Flexible**: Users can still change UoM if needed for specific cases
+- **Consistent**: Percentage UoM is created if it doesn't exist
+
+### High Precision Display
 - **Uniform Percentage Display**: Converts quantity values to percentage format across all modules
-- **Sales Integration**: Works with Sales Orders, Quotations, and Order Lines
-- **Accounting Integration**: Works with Customer Invoices, Supplier Bills, and Move Lines
 - **High Precision**: Maintains up to 6 decimal places for exact calculations
 - **No Rounding**: Preserves exact decimal values without rounding
 - **Clean UI**: Uses Odoo's built-in percentage widget for consistent display
-- **Complete Integration**: Seamless workflow from quotation to invoice
 
 ## Supported Modules
 
 ### Sales
-- **Sales Orders**: Order line quantities display as percentages
-- **Quotations**: Quote line quantities display as percentages  
+- **Sales Orders**: Order line quantities with smart percentage input
+- **Quotations**: Quote line quantities with percentage conversion  
 - **Sales Order Lines**: Tree and form views with percentage display
 
 ### Accounting
-- **Customer Invoices**: Invoice line quantities display as percentages
-- **Supplier Bills**: Bill line quantities display as percentages
+- **Customer Invoices**: Invoice line quantities with percentage logic
+- **Supplier Bills**: Bill line quantities with percentage conversion
 - **Account Move Lines**: All accounting entries with percentage display
+
+## Usage Examples
+
+### Example 1: Commission Percentage
+```
+User Input: 5
+System Storage: 0.05
+Display: 5%
+Calculation: If sale amount is $1000, commission = $1000 × 0.05 = $50
+```
+
+### Example 2: Tax Rate
+```
+User Input: 7.5
+System Storage: 0.075
+Display: 7.5%
+Calculation: If taxable amount is $200, tax = $200 × 0.075 = $15
+```
+
+### Example 3: Discount Rate
+```
+User Input: 15
+System Storage: 0.15
+Display: 15%
+Calculation: If product price is $100, discount = $100 × 0.15 = $15
+```
 
 ## Technical Implementation
 
