@@ -1,5 +1,3 @@
-    <<<<<<< HEAD
-# Commission Models Initialization
 from . import commission_type
 from . import commission_line
 from . import commission_assignment
