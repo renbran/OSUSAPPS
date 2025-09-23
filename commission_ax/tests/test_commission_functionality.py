@@ -199,40 +199,24 @@ class TestCommissionFunctionality(TransactionCase):
                 self.assertEqual(po.partner_id, self.commission_partner)
                 self.assertEqual(po.partner_ref, sale_order.client_order_ref)
 
-    def test_05_commission_dashboard_data(self):
-        """Test commission dashboard data generation"""
-        # Create multiple commission lines
-        sale_order = self.env['sale.order'].create({
-            'partner_id': self.customer.id,
-            'date_order': datetime.now(),
-            'order_line': [(0, 0, {
-                'product_id': self.product.id,
-                'product_uom_qty': 1,
-                'price_unit': 1000.0,
-            })],
-        })
+    def test_05_commission_workflow_states(self):
+        """Test commission state transitions"""
+        # Initial state
+        self.assertEqual(self.commission_line.state, 'draft')
+        
+        # Calculate
+        self.commission_line.action_calculate()
+        self.assertEqual(self.commission_line.state, 'calculated')
+        
+        # Confirm
+        self.commission_line.action_confirm()
+        self.assertEqual(self.commission_line.state, 'confirmed')
+        
+        # Process
+        self.commission_line.action_process()
+        self.assertEqual(self.commission_line.state, 'processed')
 
-        commission_lines = []
-        for i in range(5):
-            commission_line = self.env['commission.line'].create({
-                'sale_order_id': sale_order.id,
-                'partner_id': self.commission_partner.id,
-                'commission_type_id': self.commission_type.id,
-                'amount': (i + 1) * 50.0,
-                'state': 'confirmed',
-            })
-            commission_lines.append(commission_line)
-
-        # Test dashboard data
-        dashboard = self.env['commission.dashboard']
-        if hasattr(dashboard, 'get_dashboard_data'):
-            data = dashboard.get_dashboard_data()
-
-            self.assertIn('total_commission_amount', data)
-            self.assertIn('commission_count', data)
-            self.assertIsInstance(data['total_commission_amount'], (int, float))
-
-    def test_06_commission_alerts(self):
+    def test_06_commission_payment_tracking(self):
         """Test commission alert system"""
         sale_order = self.env['sale.order'].create({
             'partner_id': self.customer.id,

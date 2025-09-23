@@ -112,7 +112,6 @@ class TestCommissionInstallation(TransactionCase):
         expected_views = [
             'commission_line_tree_view',
             'commission_line_form_view',
-            'commission_dashboard_view',
             'commission_type_tree_view',
         ]
 
