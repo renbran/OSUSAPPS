@@ -1,8 +1,121 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 import logging
 
 _logger = logging.getLogger(__name__)
+
+class CommissionAssignmentMixin(models.AbstractModel):
+    """Mixin for models that support commission assignments"""
+    _name = 'commission.assignment.mixin'
+    _description = 'Commission Assignment Mixin'
+
+    # Many2many commission assignments via bridge table
+    commission_assignment_ids = fields.Many2many(
+        'commission.assignment',
+        relation='commission_assignment_mixin_rel',
+        column1='source_id',
+        column2='assignment_id',
+        string='Commission Assignments',
+        compute='_compute_commission_assignments',
+        help='Commission assignments for this record'
+    )
+
+    assigned_commission_line_ids = fields.Many2many(
+        'commission.line',
+        relation='commission_line_mixin_rel',
+        column1='source_id',
+        column2='line_id',
+        string='Assigned Commission Lines',
+        compute='_compute_commission_lines',
+        help='Commission lines assigned to this record via assignments'
+    )
+
+    # Commission statistics
+    commission_count = fields.Integer(
+        string='Commission Lines Count',
+        compute='_compute_commission_stats',
+        help='Number of commission lines assigned to this record'
+    )
+
+    total_commission_amount = fields.Float(
+        string='Total Commission Amount',
+        compute='_compute_commission_stats',
+        help='Total amount of all commissions assigned to this record'
+    )
+
+    pending_commission_amount = fields.Float(
+        string='Pending Commission Amount',
+        compute='_compute_commission_stats',
+        help='Total amount of pending commissions assigned to this record'
+    )
+
+    paid_commission_amount = fields.Float(
+        string='Paid Commission Amount',
+        compute='_compute_commission_stats',
+        help='Total amount of paid commissions assigned to this record'
+    )
+
+    def _compute_commission_assignments(self):
+        """Compute commission assignments for this record"""
+        for record in self:
+            model_name = record._name
+            record_id = record.id
+
+            if model_name and record_id:
+                assignments = self.env['commission.assignment'].search([
+                    ('source_model', '=', model_name),
+                    ('source_id', '=', record_id),
+                    ('active', '=', True)
+                ])
+                record.commission_assignment_ids = assignments
+            else:
+                record.commission_assignment_ids = self.env['commission.assignment']
+
+    def _compute_commission_lines(self):
+        """Compute commission lines for this record"""
+        for record in self:
+            record.assigned_commission_line_ids = record.commission_assignment_ids.mapped('commission_line_id')
+
+    def _compute_commission_stats(self):
+        """Compute commission statistics"""
+        for record in self:
+            commission_lines = record.assigned_commission_line_ids
+
+            record.commission_count = len(commission_lines)
+            record.total_commission_amount = sum(commission_lines.mapped('commission_amount'))
+
+            # Calculate pending commissions
+            pending_lines = commission_lines.filtered(lambda l: l.state in ['draft', 'calculated', 'confirmed'])
+            record.pending_commission_amount = sum(pending_lines.mapped('commission_amount'))
+
+            # Calculate paid commissions
+            paid_lines = commission_lines.filtered(lambda l: l.state in ['paid'])
+            record.paid_commission_amount = sum(paid_lines.mapped('commission_amount'))
+
+    def assign_commission_line(self, commission_line_id, assignment_type='manual'):
+        """Assign a commission line to this record"""
+        self.ensure_one()
+
+        # Check if assignment already exists
+        existing = self.env['commission.assignment'].search([
+            ('source_model', '=', self._name),
+            ('source_id', '=', self.id),
+            ('commission_line_id', '=', commission_line_id),
+            ('active', '=', True)
+        ])
+
+        if existing:
+            raise UserError(_("This commission line is already assigned to this record."))
+
+        # Create new assignment
+        assignment = self.env['commission.assignment'].create({
+            'source_model': self._name,
+            'source_id': self.id,
+            'commission_line_id': commission_line_id,
+            'assignment_type': assignment_type,
+        })
+
+        return assignment
 
 class CommissionAssignment(models.Model):
     """Commission Assignment Bridge Model

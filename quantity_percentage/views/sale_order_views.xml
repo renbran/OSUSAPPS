@@ -1,44 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Inherit sale order line tree view -->
-        <record id="view_order_line_tree_inherit_percentage" model="ir.ui.view">
-            <field name="name">sale.order.line.tree.inherit.percentage</field>
-            <field name="model">sale.order.line</field>
-            <field name="inherit_id" ref="sale.view_order_line_tree"/>
+        <!-- Inherit sale order form view to add percentage field -->
+        <record id="view_order_form_inherit_percentage" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.percentage</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='product_uom_qty']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="//field[@name='product_uom_qty']" position="after">
-                    <field name="product_uom_qty_percentage" widget="percentage" string="Quantity" options="{'digits': [16, 6]}"/>
-                </xpath>
-            </field>
-        </record>
-
-        <!-- Inherit sale order line form view -->
-        <record id="view_order_line_form_inherit_percentage" model="ir.ui.view">
-            <field name="name">sale.order.line.form.inherit.percentage</field>
-            <field name="model">sale.order.line</field>
-            <field name="inherit_id" ref="sale.view_order_line_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='product_uom_qty']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="//field[@name='product_uom_qty']" position="after">
-                    <field name="product_uom_qty_percentage" widget="percentage" string="Quantity" options="{'digits': [16, 6]}" attrs="{'readonly': [('state', 'in', ['sale', 'done', 'cancel'])]}"/>
-                </xpath>
-            </field>
-        </record>
-
-        <!-- Inherit search view to include percentage field -->
-        <record id="view_sales_order_filter_inherit_percentage" model="ir.ui.view">
-            <field name="name">sale.order.select.inherit.percentage</field>
-            <field name="model">sale.order.line</field>
-            <field name="inherit_id" ref="sale.sale_order_line_view_search"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='product_uom_qty']" position="after">
-                    <field name="product_uom_qty_percentage" string="Quantity %"/>
+                <!-- Add percentage field to order line tree within the form -->
+                <xpath expr="//field[@name='order_line']/tree//field[@name='product_uom_qty']" position="after">
+                    <field name="product_uom_qty_percentage" widget="percentage" string="Qty %" options="{'digits': [16, 6]}"/>
                 </xpath>
             </field>
         </record>
