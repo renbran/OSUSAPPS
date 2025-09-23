@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Override the default calendar invitation template -->
+        <record id="calendar_template_meeting_invitation" model="mail.template">
+            <field name="name">Calendar: Meeting Invitation (Enhanced)</field>
+            <field name="model_id" ref="calendar.model_calendar_event"/>
+            <field name="subject">📅 Meeting Invitation: ${object.name or 'Meeting'}</field>
+            <field name="email_from">${(object.user_id.email_formatted or user.email_formatted) | safe}</field>
+            <field name="email_to">${ctx.get('attendee_email') or ''}</field>
+            <field name="lang">${ctx.get('lang')}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+<![CDATA[
+<div>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meeting Invitation</title>
+
+<t t-set="colors" t-value="{'needsAction': 'grey', 'accepted': 'green', 'tentative': '#FFFF00', 'declined': 'red'}"></t>
+<t t-set="is_online" t-value="'appointment_type_id' in object and object.appointment_type_id"></t>
+<t t-set="target_responsible" t-value="object.partner_id == object.partner_id"></t>
+<t t-set="target_customer" t-value="object.partner_id == customer"></t>
+<t t-set="recurrent" t-value="object.recurrence_id and not ctx.get('calendar_template_ignore_recurrence')"></t>
+<t t-set="mail_tz" t-value="object._get_mail_tz() or ctx.get('mail_tz')"></t>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="box-sizing: border-box; caption-side: bottom; background-color: #ffffff; border-collapse: collapse; color: #333333;" class="o_selected_table">
+<tbody>
+    <tr>
+        <td align="center" style="padding: 20px; background-color: #ffffff;" class="o_selected_td">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="box-sizing: border-box; width: 100%; max-width: 600px; background-color: #ffffff; border: 2px solid #722f37; border-radius: 12px; overflow: hidden; border-collapse: collapse; color: #333333;" width="100%">
+                <tbody>
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #722F37; padding: 25px 20px; text-align: center; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                                📅 Meeting Invitation
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 25px; background-color: #ffffff; color: #333333;">
+                            <div style="display: inline-block; margin-bottom: 20px; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #ffffff; background-color: #722F37; border: 1px solid #722F37;">
+                                📋 Meeting Invitation
+                            </div>
+
+                            <p style="margin: 0 0 20px 0; color: #333333; font-weight: 500; font-size: 16px; line-height: 1.6;">
+                                Hello <t t-if="ctx.get('attendee_name')"><t t-out="ctx.get('attendee_name')"/></t><t t-else="">there</t>,<br><br>
+                                You have been invited to the meeting <strong style="font-weight: 700; color: #722F37;" t-out="object.name or 'Meeting'">Meeting Title</strong>.<br><br>
+                                The meeting is scheduled for 
+                                <strong style="font-weight: bolder; color: #722F37;">
+                                    <t t-out="format_datetime(dt=object.start, tz=mail_tz if not object.allday else None, dt_format='EEEE, MMMM d, y at h:mm a', lang_code=object.env.lang)">Tuesday, May 4, 2021 at 11:00 AM</t>
+                                    <t t-if="mail_tz"> (<t t-out="mail_tz">Europe/Brussels</t>)</t>
+                                </strong>.
+                            </p>
+
+                            <!-- Calendar Integration -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border: 3px solid #722f37; border-radius: 12px; margin: 25px 0; border-collapse: collapse; background-color: #f8f9fa; color: #333333;">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 25px; text-align: center; background-color: #f8f9fa;">
+                                            <h3 style="margin: 0 0 15px 0; font-weight: 700; font-size: 20px; color: #722F37;">
+                                                📅 Add to Your Calendar
+                                            </h3>
+                                            <p style="margin: 10px 0 20px 0; color: #333333; font-size: 14px; font-weight: 500;">
+                                                Choose your preferred calendar service:
+                                            </p>
+
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; text-align: center; color: #333333;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="padding: 10px 5px; text-align: center;">
+                                                            <!-- Google Calendar URL Generation -->
+                                                            <t t-set="event_title_encoded" t-value="(object.name or 'Meeting').replace(' ', '%20').replace('&amp;', '%26').replace('+', '%2B').replace('#', '%23')"/>
+                                                            <t t-set="event_start_utc" t-value="object.start.strftime('%Y%m%dT%H%M%SZ') if object.start else ''"/>
+                                                            <t t-set="event_end_utc" t-value="object.stop.strftime('%Y%m%dT%H%M%SZ') if object.stop else ''"/>
+                                                            <t t-set="event_location_encoded" t-value="(object.location or '').replace(' ', '%20').replace('&amp;', '%26').replace('+', '%2B')"/>
+                                                            <t t-set="event_organizer" t-value="object.user_id.partner_id.name if object.user_id and object.user_id.partner_id else 'Organizer'"/>
+                                                            <t t-set="event_description_text" t-value="(object.description or 'Meeting details').replace('\n', '%0A').replace(' ', '%20').replace('&amp;', '%26')"/>
+                                                            <t t-set="full_description" t-value="event_description_text + '%0A%0AOrganized by: ' + event_organizer.replace(' ', '%20') + '%0AMeeting ID: ' + str(object.id)"/>
+                                                            
+                                                            <!-- Enhanced Google Calendar URL -->
+                                                            <t t-set="gcal_url" t-value="'https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=' + event_title_encoded + '&amp;dates=' + event_start_utc + '/' + event_end_utc + '&amp;location=' + event_location_encoded + '&amp;details=' + full_description"/>
+                                                            
+                                                            <a t-att-href="gcal_url" target="_blank" style="display: inline-block; text-decoration: none; color: #ffffff; font-size: 16px; font-weight: 700; padding: 15px 20px; background-color: #4285f4; border: 2px solid #4285f4; border-radius: 8px; width: 100%; max-width: 250px; text-align: center; box-sizing: border-box;" width="100%">
+                                                                📅 Add to Google Calendar
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td style="padding: 10px 5px; text-align: center;">
+                                                            <a t-attf-download="{{(object.name or 'Meeting').replace('/', '-')}}.ics" t-attf-href="/calendar/meeting/{{object.id}}/ics?token={{object.access_token}}" style="display: inline-block; text-decoration: none; color: #ffffff; font-size: 16px; font-weight: 700; padding: 15px 20px; background-color: #0078d4; border: 2px solid #0078d4; border-radius: 8px; width: 100%; max-width: 250px; text-align: center; box-sizing: border-box;" width="100%">
+                                                                📧 Download .ics file
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Event Details Section -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 25px 0; border-collapse: collapse; color: #333333;">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 150px; vertical-align: top; padding: 0 15px 0 0;" width="150">
+                                            <!-- Calendar Widget -->
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #722F37; border-radius: 12px; text-align: center; color: #ffffff; overflow: hidden; width: 100%; border-collapse: collapse; border: 2px solid #722F37;" width="100%">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="background-color: #8B1538; padding: 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">
+                                                            <t t-out="format_datetime(dt=object.start, tz=mail_tz if not object.allday else None, dt_format='EEEE', lang_code=object.env.lang)">Tuesday</t>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="font-size: 42px; font-weight: 700; padding: 20px 10px; background-color: #722F37; color: #ffffff;">
+                                                            <t t-out="format_datetime(dt=object.start, tz=mail_tz if not object.allday else None, dt_format='d', lang_code=object.env.lang)">4</t>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="background-color: #8B1538; padding: 12px; font-size: 14px; font-weight: 700; color: #ffffff;">
+                                                            <t t-out="format_datetime(dt=object.start, tz=mail_tz if not object.allday else None, dt_format='MMMM y', lang_code=object.env.lang)">May 2021</t>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="background-color: #5a1f2a; padding: 15px 8px; font-size: 16px; font-weight: 700; color: #ffffff;">
+                                                            <t t-if="not object.allday">
+                                                                <t t-out="format_time(time=object.start, tz=mail_tz, time_format='short', lang_code=object.env.lang)">11:00 AM</t>
+                                                                <t t-if="mail_tz">
+                                                                    <div style="font-size: 12px; margin-top: 4px; color: #ffffff;">(<t t-out="mail_tz">Europe/Brussels</t>)</div>
+                                                                </t>
+                                                            </t>
+                                                            <t t-if="object.allday">All Day</t>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+
+                                        <td style="vertical-align: top; color: #333333; padding-left: 15px;">
+                                            <h4 style="margin: 0 0 15px 0; font-weight: 700; color: #722F37; font-size: 20px;">Event Details</h4>
+
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; color: #333333;">
+                                                <tbody>
+                                                    <t t-if="not is_html_empty(object.description)">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Description:</strong>
+                                                                <div style="color: #333333; font-style: italic; font-size: 14px;" t-out="object.description">Meeting description</div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+
+                                                    <t t-if="object.videocall_location">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Join Online:</strong>
+                                                                <div style="color: #333333; font-size: 14px;">
+                                                                    <t t-if="object.get_base_url() in object.videocall_location">Join with Odoo Discuss</t>
+                                                                    <t t-else="">Join at</t>
+                                                                    <br/>
+                                                                    <a target="_blank" style="color: #722F37; text-decoration: underline; font-weight: 600;" t-att-href="object.videocall_location" t-out="object.videocall_location or ''">🎥 Join Meeting Link</a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+
+                                                    <t t-if="object.location">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Location:</strong>
+                                                                <div style="color: #333333; font-size: 14px;">
+                                                                    <t t-out="object.location or ''">Meeting location</t>
+                                                                    <br/>
+                                                                    <a target="_blank" style="color: #722F37; text-decoration: underline; font-weight: 600;" t-attf-href="http://maps.google.com/maps?oi=map&amp;q={{object.location}}">🗺️ View on Map</a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+
+                                                    <t t-if="recurrent">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Recurrence:</strong>
+                                                                <div style="color: #333333; font-size: 14px;">
+                                                                    <t t-out="object.recurrence_id.get_recurrence_name()">Recurring meeting</t>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+
+                                                    <t t-if="not object.allday and object.duration">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Duration:</strong>
+                                                                <div style="color: #333333; font-size: 14px;">
+                                                                    <t t-out="('%dH%02d' % (object.duration, round(object.duration * 60) % 60))">Duration</t>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- RSVP Section -->
+                            <div style="margin: 25px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                <h4 style="margin: 0 0 15px 0; font-weight: 700; color: #722F37; font-size: 18px;">Please respond:</h4>
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse;">
+                                    <tbody>
+                                        <tr>
+                                            <td style="padding: 5px 10px 5px 0;">
+                                                <a t-attf-href="/calendar/meeting/{{object.id}}/accept?token={{object.access_token}}" style="display: inline-block; text-decoration: none; color: #ffffff; font-size: 14px; font-weight: 700; padding: 10px 20px; background-color: #28a745; border: 2px solid #28a745; border-radius: 6px; text-align: center;">
+                                                    ✅ Accept
+                                                </a>
+                                            </td>
+                                            <td style="padding: 5px 10px 5px 0;">
+                                                <a t-attf-href="/calendar/meeting/{{object.id}}/decline?token={{object.access_token}}" style="display: inline-block; text-decoration: none; color: #ffffff; font-size: 14px; font-weight: 700; padding: 10px 20px; background-color: #dc3545; border: 2px solid #dc3545; border-radius: 6px; text-align: center;">
+                                                    ❌ Decline
+                                                </a>
+                                            </td>
+                                            <td style="padding: 5px;">
+                                                <a t-attf-href="/calendar/meeting/{{object.id}}/tentative?token={{object.access_token}}" style="display: inline-block; text-decoration: none; color: #333; font-size: 14px; font-weight: 700; padding: 10px 20px; background-color: #ffc107; border: 2px solid #ffc107; border-radius: 6px; text-align: center;">
+                                                    ❓ Maybe
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Signature -->
+                            <div style="margin-top: 30px; padding-top: 20px; border-top: 3px solid #722F37; color: #333333; font-size: 16px; text-align: center;">
+                                <p style="margin: 0; font-weight: 500;">
+                                    Thank you,<br/>
+                                    <strong style="color: #722F37; font-weight: 700; font-size: 18px;">
+                                        <t t-if="object.user_id.signature">
+                                            <t t-out="object.user_id.signature or ''">Organizer</t>
+                                        </t>
+                                        <t t-elif="object.user_id and object.user_id.partner_id">
+                                            <t t-out="object.user_id.partner_id.name"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-out="object.user_id.company_id.name or 'Team'"/>
+                                        </t>
+                                    </strong>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</tbody>
+</table>
+</div>
+]]>
+            </field>
+        </record>
+
+        <!-- Force override of the original calendar template -->
+        <record id="calendar.calendar_template_meeting_invitation" model="mail.template">
+            <field name="name">Calendar: Meeting Invitation (Enhanced)</field>
+            <field name="model_id" ref="calendar.model_calendar_event"/>
+            <field name="subject">📅 Meeting Invitation: ${object.name or 'Meeting'}</field>
+            <field name="email_from">${(object.user_id.email_formatted or user.email_formatted) | safe}</field>
+            <field name="email_to">${ctx.get('attendee_email') or ''}</field>
+            <field name="lang">${ctx.get('lang')}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+<![CDATA[
+<div>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meeting Invitation</title>
+
+<t t-set="colors" t-value="{'needsAction': 'grey', 'accepted': 'green', 'tentative': '#FFFF00', 'declined': 'red'}"></t>
+<t t-set="is_online" t-value="'appointment_type_id' in object and object.appointment_type_id"></t>
+<t t-set="target_responsible" t-value="object.partner_id == object.partner_id"></t>
+<t t-set="target_customer" t-value="object.partner_id == customer"></t>
+<t t-set="recurrent" t-value="object.recurrence_id and not ctx.get('calendar_template_ignore_recurrence')"></t>
+<t t-set="mail_tz" t-value="object._get_mail_tz() or ctx.get('mail_tz')"></t>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="box-sizing: border-box; caption-side: bottom; background-color: #ffffff; border-collapse: collapse; color: #333333;">
+<tbody>
+    <tr>
+        <td align="center" style="padding: 20px; background-color: #ffffff;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="box-sizing: border-box; width: 100%; max-width: 600px; background-color: #ffffff; border: 2px solid #722f37; border-radius: 12px; overflow: hidden; border-collapse: collapse; color: #333333;" width="100%">
+                <tbody>
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #722F37; padding: 25px 20px; text-align: center; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                                📅 Meeting Invitation
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 25px; background-color: #ffffff; color: #333333;">
+                            <div style="display: inline-block; margin-bottom: 20px; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #ffffff; background-color: #722F37; border: 1px solid #722F37;">
+                                📋 Meeting Invitation
+                            </div>
+
+                            <p style="margin: 0 0 20px 0; color: #333333; font-weight: 500; font-size: 16px; line-height: 1.6;">
+                                Hello <t t-if="ctx.get('attendee_name')"><t t-out="ctx.get('attendee_name')"/></t><t t-else="">there</t>,<br><br>
+                                You have been invited to the meeting <strong style="font-weight: 700; color: #722F37;" t-out="object.name or 'Meeting'">Meeting Title</strong>.<br><br>
+                                The meeting is scheduled for 
+                                <strong style="font-weight: bolder; color: #722F37;">
+                                    <t t-out="format_datetime(dt=object.start, tz=mail_tz if not object.allday else None, dt_format='EEEE, MMMM d, y at h:mm a', lang_code=object.env.lang)">Tuesday, May 4, 2021 at 11:00 AM</t>
+                                    <t t-if="mail_tz"> (<t t-out="mail_tz">Europe/Brussels</t>)</t>
+                                </strong>.
+                            </p>
+
+                            <!-- Calendar Integration -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border: 3px solid #722f37; border-radius: 12px; margin: 25px 0; border-collapse: collapse; background-color: #f8f9fa; color: #333333;">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 25px; text-align: center; background-color: #f8f9fa;">
+                                            <h3 style="margin: 0 0 15px 0; font-weight: 700; font-size: 20px; color: #722F37;">
+                                                📅 Add to Your Calendar
+                                            </h3>
+                                            <p style="margin: 10px 0 20px 0; color: #333333; font-size: 14px; font-weight: 500;">
+                                                Choose your preferred calendar service:
+                                            </p>
+
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; text-align: center; color: #333333;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="padding: 10px 5px; text-align: center;">
+                                                            <!-- Google Calendar URL Generation -->
+                                                            <t t-set="event_title_encoded" t-value="(object.name or 'Meeting').replace(' ', '%20').replace('&amp;', '%26').replace('+', '%2B').replace('#', '%23')"/>
+                                                            <t t-set="event_start_utc" t-value="object.start.strftime('%Y%m%dT%H%M%SZ') if object.start else ''"/>
+                                                            <t t-set="event_end_utc" t-value="object.stop.strftime('%Y%m%dT%H%M%SZ') if object.stop else ''"/>
+                                                            <t t-set="event_location_encoded" t-value="(object.location or '').replace(' ', '%20').replace('&amp;', '%26').replace('+', '%2B')"/>
+                                                            <t t-set="event_organizer" t-value="object.user_id.partner_id.name if object.user_id and object.user_id.partner_id else 'Organizer'"/>
+                                                            <t t-set="event_description_text" t-value="(object.description or 'Meeting details').replace('\n', '%0A').replace(' ', '%20').replace('&amp;', '%26')"/>
+                                                            <t t-set="full_description" t-value="event_description_text + '%0A%0AOrganized by: ' + event_organizer.replace(' ', '%20') + '%0AMeeting ID: ' + str(object.id)"/>
+                                                            
+                                                            <!-- Enhanced Google Calendar URL -->
+                                                            <t t-set="gcal_url" t-value="'https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=' + event_title_encoded + '&amp;dates=' + event_start_utc + '/' + event_end_utc + '&amp;location=' + event_location_encoded + '&amp;details=' + full_description"/>
+                                                            
+                                                            <a t-att-href="gcal_url" target="_blank" style="display: inline-block; text-decoration: none; color: #ffffff; font-size: 16px; font-weight: 700; padding: 15px 20px; background-color: #4285f4; border: 2px solid #4285f4; border-radius: 8px; width: 100%; max-width: 250px; text-align: center; box-sizing: border-box;" width="100%">
+                                                                📅 Add to Google Calendar
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td style="padding: 10px 5px; text-align: center;">
+                                                            <a t-attf-download="{{(object.name or 'Meeting').replace('/', '-')}}.ics" t-attf-href="/calendar/meeting/{{object.id}}/ics?token={{object.access_token}}" style="display: inline-block; text-decoration: none; color: #ffffff; font-size: 16px; font-weight: 700; padding: 15px 20px; background-color: #0078d4; border: 2px solid #0078d4; border-radius: 8px; width: 100%; max-width: 250px; text-align: center; box-sizing: border-box;" width="100%">
+                                                                📧 Download .ics file
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Event Details Section -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 25px 0; border-collapse: collapse; color: #333333;">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 150px; vertical-align: top; padding: 0 15px 0 0;" width="150">
+                                            <!-- Calendar Widget -->
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color: #722F37; border-radius: 12px; text-align: center; color: #ffffff; overflow: hidden; width: 100%; border-collapse: collapse; border: 2px solid #722F37;" width="100%">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="background-color: #8B1538; padding: 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">
+                                                            <t t-out="format_datetime(dt=object.start, tz=mail_tz if not object.allday else None, dt_format='EEEE', lang_code=object.env.lang)">Tuesday</t>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="font-size: 42px; font-weight: 700; padding: 20px 10px; background-color: #722F37; color: #ffffff;">
+                                                            <t t-out="format_datetime(dt=object.start, tz=mail_tz if not object.allday else None, dt_format='d', lang_code=object.env.lang)">4</t>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="background-color: #8B1538; padding: 12px; font-size: 14px; font-weight: 700; color: #ffffff;">
+                                                            <t t-out="format_datetime(dt=object.start, tz=mail_tz if not object.allday else None, dt_format='MMMM y', lang_code=object.env.lang)">May 2021</t>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="background-color: #5a1f2a; padding: 15px 8px; font-size: 16px; font-weight: 700; color: #ffffff;">
+                                                            <t t-if="not object.allday">
+                                                                <t t-out="format_time(time=object.start, tz=mail_tz, time_format='short', lang_code=object.env.lang)">11:00 AM</t>
+                                                                <t t-if="mail_tz">
+                                                                    <div style="font-size: 12px; margin-top: 4px; color: #ffffff;">(<t t-out="mail_tz">Europe/Brussels</t>)</div>
+                                                                </t>
+                                                            </t>
+                                                            <t t-if="object.allday">All Day</t>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+
+                                        <td style="vertical-align: top; color: #333333; padding-left: 15px;">
+                                            <h4 style="margin: 0 0 15px 0; font-weight: 700; color: #722F37; font-size: 20px;">Event Details</h4>
+
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; color: #333333;">
+                                                <tbody>
+                                                    <t t-if="not is_html_empty(object.description)">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Description:</strong>
+                                                                <div style="color: #333333; font-style: italic; font-size: 14px;" t-out="object.description">Meeting description</div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+
+                                                    <t t-if="object.videocall_location">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Join Online:</strong>
+                                                                <div style="color: #333333; font-size: 14px;">
+                                                                    <t t-if="object.get_base_url() in object.videocall_location">Join with Odoo Discuss</t>
+                                                                    <t t-else="">Join at</t>
+                                                                    <br/>
+                                                                    <a target="_blank" style="color: #722F37; text-decoration: underline; font-weight: 600;" t-att-href="object.videocall_location" t-out="object.videocall_location or ''">🎥 Join Meeting Link</a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+
+                                                    <t t-if="object.location">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Location:</strong>
+                                                                <div style="color: #333333; font-size: 14px;">
+                                                                    <t t-out="object.location or ''">Meeting location</t>
+                                                                    <br/>
+                                                                    <a target="_blank" style="color: #722F37; text-decoration: underline; font-weight: 600;" t-attf-href="http://maps.google.com/maps?oi=map&amp;q={{object.location}}">🗺️ View on Map</a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+
+                                                    <t t-if="recurrent">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Recurrence:</strong>
+                                                                <div style="color: #333333; font-size: 14px;">
+                                                                    <t t-out="object.recurrence_id.get_recurrence_name()">Recurring meeting</t>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+
+                                                    <t t-if="not object.allday and object.duration">
+                                                        <tr>
+                                                            <td style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                                                <strong style="font-weight: 700; color: #722F37; display: block; margin-bottom: 8px; font-size: 16px;">Duration:</strong>
+                                                                <div style="color: #333333; font-size: 14px;">
+                                                                    <t t-out="('%dH%02d' % (object.duration, round(object.duration * 60) % 60))">Duration</t>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- RSVP Section -->
+                            <div style="margin: 25px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #722F37; border: 1px solid #dee2e6;">
+                                <h4 style="margin: 0 0 15px 0; font-weight: 700; color: #722F37; font-size: 18px;">Please respond:</h4>
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse;">
+                                    <tbody>
+                                        <tr>
+                                            <td style="padding: 5px 10px 5px 0;">
+                                                <a t-attf-href="/calendar/meeting/{{object.id}}/accept?token={{object.access_token}}" style="display: inline-block; text-decoration: none; color: #ffffff; font-size: 14px; font-weight: 700; padding: 10px 20px; background-color: #28a745; border: 2px solid #28a745; border-radius: 6px; text-align: center;">
+                                                    ✅ Accept
+                                                </a>
+                                            </td>
+                                            <td style="padding: 5px 10px 5px 0;">
+                                                <a t-attf-href="/calendar/meeting/{{object.id}}/decline?token={{object.access_token}}" style="display: inline-block; text-decoration: none; color: #ffffff; font-size: 14px; font-weight: 700; padding: 10px 20px; background-color: #dc3545; border: 2px solid #dc3545; border-radius: 6px; text-align: center;">
+                                                    ❌ Decline
+                                                </a>
+                                            </td>
+                                            <td style="padding: 5px;">
+                                                <a t-attf-href="/calendar/meeting/{{object.id}}/tentative?token={{object.access_token}}" style="display: inline-block; text-decoration: none; color: #333; font-size: 14px; font-weight: 700; padding: 10px 20px; background-color: #ffc107; border: 2px solid #ffc107; border-radius: 6px; text-align: center;">
+                                                    ❓ Maybe
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Signature -->
+                            <div style="margin-top: 30px; padding-top: 20px; border-top: 3px solid #722F37; color: #333333; font-size: 16px; text-align: center;">
+                                <p style="margin: 0; font-weight: 500;">
+                                    Thank you,<br/>
+                                    <strong style="color: #722F37; font-weight: 700; font-size: 18px;">
+                                        <t t-if="object.user_id.signature">
+                                            <t t-out="object.user_id.signature or ''">Organizer</t>
+                                        </t>
+                                        <t t-elif="object.user_id and object.user_id.partner_id">
+                                            <t t-out="object.user_id.partner_id.name"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-out="object.user_id.company_id.name or 'Team'"/>
+                                        </t>
+                                    </strong>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</tbody>
+</table>
+</div>
+]]>
+            </field>
+        </record>
+    </data>
+</odoo>
