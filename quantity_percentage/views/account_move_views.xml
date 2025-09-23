@@ -1,31 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Inherit account move line tree view to replace quantity field with percentage display -->
-        <record id="view_move_line_tree_inherit_percentage" model="ir.ui.view">
-            <field name="name">account.move.line.tree.inherit.percentage</field>
+        <!-- Create a simple tree view for account move lines with percentage display -->
+        <record id="view_move_line_percentage_tree" model="ir.ui.view">
+            <field name="name">account.move.line.percentage.tree</field>
             <field name="model">account.move.line</field>
-            <field name="inherit_id" ref="account.view_move_line_tree"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='quantity']" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="//field[@name='quantity']" position="after">
-                    <field name="quantity_percentage" widget="percentage" string="Quantity" options="{'digits': [16, 6]}"/>
-                </xpath>
+                <tree string="Account Move Lines with Percentage">
+                    <field name="move_id"/>
+                    <field name="account_id"/>
+                    <field name="partner_id"/>
+                    <field name="name"/>
+                    <field name="debit"/>
+                    <field name="credit"/>
+                    <field name="quantity_percentage" widget="percentage" string="Quantity %" options="{'digits': [16, 6]}"/>
+                    <field name="currency_id" invisible="1"/>
+                </tree>
             </field>
         </record>
 
-        <!-- Inherit search view to include percentage field -->
-        <record id="view_account_move_line_filter_inherit_percentage" model="ir.ui.view">
-            <field name="name">account.move.line.select.inherit.percentage</field>
-            <field name="model">account.move.line</field>
-            <field name="inherit_id" ref="account.view_account_move_line_filter"/>
+        <!-- Inherit account move form view to add percentage field to invoice lines -->
+        <record id="view_move_form_inherit_percentage" model="ir.ui.view">
+            <field name="name">account.move.form.inherit.percentage</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='quantity']" position="after">
-                    <field name="quantity_percentage" string="Quantity %"/>
+                <!-- Add percentage field to invoice line tree within the form -->
+                <xpath expr="//field[@name='invoice_line_ids']/tree//field[@name='price_unit']" position="after">
+                    <field name="quantity_percentage" widget="percentage" string="Qty %" options="{'digits': [16, 6]}"/>
                 </xpath>
             </field>
         </record>
+    </data>
+</odoo>
     </data>
 </odoo>
