@@ -6,24 +6,36 @@
             <field name="sequence">10</field>
             <field name="name">External Commission</field>
             <field name="code">EXTERNAL</field>
+            <field name="calculation_method">percentage</field>
+            <field name="default_rate">5.0</field>
+            <field name="commission_category">external</field>
         </record>
 
         <record id="commission_type_internal" model="commission.type">
             <field name="sequence">20</field>
             <field name="name">Internal Commission</field>
             <field name="code">INTERNAL</field>
+            <field name="calculation_method">percentage</field>
+            <field name="default_rate">3.0</field>
+            <field name="commission_category">internal</field>
         </record>
 
         <record id="commission_type_referral" model="commission.type">
             <field name="sequence">30</field>
             <field name="name">Referral Commission</field>
             <field name="code">REFERRAL</field>
+            <field name="calculation_method">percentage</field>
+            <field name="default_rate">2.0</field>
+            <field name="commission_category">external</field>
         </record>
 
         <record id="commission_type_bonus" model="commission.type">
             <field name="sequence">40</field>
             <field name="name">Bonus Commission</field>
             <field name="code">BONUS</field>
+            <field name="calculation_method">fixed</field>
+            <field name="default_rate">100.0</field>
+            <field name="commission_category">internal</field>
         </record>
     </data>
 </odoo>

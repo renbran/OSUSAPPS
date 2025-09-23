@@ -510,11 +510,36 @@ class CommissionLine(models.Model):
 
     @api.onchange('commission_type_id')
     def _onchange_commission_type(self):
-        """Auto-fill fields from commission type"""
+        """Auto-fill fields from commission type with proper error handling"""
         if self.commission_type_id:
-            self.calculation_method = self.commission_type_id.calculation_method or 'percentage_total'
-            self.rate = self.commission_type_id.default_rate or 0.0
-            self.commission_category = self.commission_type_id.commission_category or 'internal'
+            try:
+                # Map commission type calculation method to commission line method
+                calculation_method_mapping = {
+                    'percentage': 'percentage_total',
+                    'fixed': 'fixed',
+                    'tiered': 'percentage_total',
+                }
+                
+                commission_type_method = self.commission_type_id.calculation_method or 'percentage'
+                mapped_method = calculation_method_mapping.get(commission_type_method, 'percentage_total')
+                
+                # Double-check that the mapped method is valid
+                valid_methods = [opt[0] for opt in self._fields['calculation_method'].selection]
+                if mapped_method in valid_methods:
+                    self.calculation_method = mapped_method
+                else:
+                    _logger.warning(f"Invalid calculation method mapping: {commission_type_method} -> {mapped_method}")
+                    self.calculation_method = 'percentage_total'
+                
+                self.rate = self.commission_type_id.default_rate or 0.0
+                self.commission_category = self.commission_type_id.commission_category or 'internal'
+                
+            except Exception as e:
+                _logger.error(f"Error in commission type onchange: {e}")
+                # Set safe defaults to prevent RPC errors
+                self.calculation_method = 'percentage_total'
+                self.rate = 0.0
+                self.commission_category = 'internal'
 
     @api.model
     def _cleanup_orphaned_records(self):
