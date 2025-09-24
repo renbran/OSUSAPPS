@@ -352,7 +352,7 @@ class SaleOrder(models.Model):
                 # Use legacy structure
                 commission_lines = order.commission_line_ids
             
-            order.commission_count = len(commission_lines)
+            order.commission_lines_count = len(commission_lines)
             order.total_commission_amount = sum(commission_lines.mapped('commission_amount'))
             
             # Calculate pending commissions
