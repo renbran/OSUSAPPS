@@ -1,10 +1,3 @@
-from . import commission_type
-from . import commission_line
-from . import commission_assignment
-from . import sale_order
-from . import purchase_order
-from . import res_partner
-=======
 # -*- coding: utf-8 -*-
 """
 Commission Models Initialization with Robust Error Handling
@@ -71,4 +64,3 @@ except Exception as e:
     _logger.warning(f"⚠️  commission_statement_line not loaded: {str(e)}")
 
 _logger.info("🎯 Commission models initialization completed")
->>>>>>> 8cebde85c1c1855f70466431279857f91191bddc
