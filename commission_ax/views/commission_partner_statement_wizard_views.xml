@@ -18,17 +18,26 @@
                         <field name="report_format" widget="radio"/>
                     </group>
                 </group>
-                
+
                 <div class="alert alert-info mt-3" role="alert">
-                    <h6><i class="fa fa-info-circle"/> Report Information:</h6>
+                    <h6>
+                        <i class="fa fa-info-circle"/>
+ Report Information:</h6>
                     <ul class="mb-0">
-                        <li><strong>Booking Date:</strong> Date when the sale order was confirmed</li>
-                        <li><strong>Project:</strong> Associated project from sale order</li>
-                        <li><strong>Unit:</strong> Product information from sale order lines</li>
-                        <li><strong>Sale Value:</strong> Total amount of the sale order</li>
-                        <li><strong>Rate:</strong> Commission rate/percentage as per commission line</li>
-                        <li><strong>Commission Amount:</strong> Calculated commission amount</li>
-                        <li><strong>Status:</strong> Current commission processing status</li>
+                        <li>
+                            <strong>Booking Date:</strong> Date when the sale order was confirmed</li>
+                        <li>
+                            <strong>Project:</strong> Associated project from sale order</li>
+                        <li>
+                            <strong>Unit:</strong> Product information from sale order lines</li>
+                        <li>
+                            <strong>Sale Value:</strong> Total amount of the sale order</li>
+                        <li>
+                            <strong>Rate:</strong> Commission rate/percentage as per commission line</li>
+                        <li>
+                            <strong>Commission Amount:</strong> Calculated commission amount</li>
+                        <li>
+                            <strong>Status:</strong> Current commission processing status</li>
                     </ul>
                 </div>
 
@@ -51,10 +60,6 @@
     </record>
 
     <!-- Add to Commission Menu -->
-    <menuitem id="menu_commission_partner_statement_wizard"
-              name="Partner Statement Report"
-              parent="commission_ax.menu_commission_reports"
-              action="action_commission_partner_statement_wizard"
-              sequence="20"/>
+    <menuitem id="menu_commission_partner_statement_wizard" name="Partner Statement Report" parent="commission_ax.menu_commission_reports" action="action_commission_partner_statement_wizard" sequence="20"/>
 
 </odoo>
