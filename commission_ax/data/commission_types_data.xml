@@ -8,7 +8,7 @@
             <field name="code">EXTERNAL</field>
             <field name="calculation_method">percentage</field>
             <field name="default_rate">5.0</field>
-            <field name="commission_category">external</field>
+            <field name="commission_category">sales</field>
         </record>
 
         <record id="commission_type_internal" model="commission.type">
@@ -17,7 +17,7 @@
             <field name="code">INTERNAL</field>
             <field name="calculation_method">percentage</field>
             <field name="default_rate">3.0</field>
-            <field name="commission_category">internal</field>
+            <field name="commission_category">management</field>
         </record>
 
         <record id="commission_type_referral" model="commission.type">
@@ -26,7 +26,7 @@
             <field name="code">REFERRAL</field>
             <field name="calculation_method">percentage</field>
             <field name="default_rate">2.0</field>
-            <field name="commission_category">external</field>
+            <field name="commission_category">referral</field>
         </record>
 
         <record id="commission_type_bonus" model="commission.type">
@@ -35,7 +35,7 @@
             <field name="code">BONUS</field>
             <field name="calculation_method">fixed</field>
             <field name="default_rate">100.0</field>
-            <field name="commission_category">internal</field>
+            <field name="commission_category">bonus</field>
         </record>
     </data>
 </odoo>
