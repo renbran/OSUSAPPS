@@ -89,11 +89,14 @@ pip install xlsxwriter numpy pandas scikit-learn
         # Reports (core)
         'reports/commission_report.xml',
         'reports/commission_report_template.xml',
+        'reports/commission_partner_statement_reports.xml',
+        'reports/commission_partner_statement_template.xml',
 
         # Advanced features (load if files exist)
         'views/commission_wizard_views.xml',
         'views/commission_payment_wizard_views.xml',
         'views/commission_statement_wizard_views.xml',
+        'views/commission_partner_statement_wizard_views.xml',
         'data/cron_data.xml',
     ],
     'demo': [],
