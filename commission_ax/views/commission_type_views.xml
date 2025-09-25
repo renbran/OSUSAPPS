@@ -10,11 +10,10 @@
                     <field name="sequence" widget="handle"/>
                     <field name="name"/>
                     <field name="code"/>
-                    <field name="agent1_partner" optional="hide"/>
-                    <field name="agent2_partner" optional="hide"/>
-                    <field name="manager_partner" optional="hide"/>
-                    <field name="director_partner" optional="hide"/>
-                    <field name="broker_id" optional="hide"/>
+                    <field name="calculation_method" optional="show"/>
+                    <field name="default_rate" optional="show"/>
+                    <field name="commission_category" optional="show"/>
+                    <field name="active" optional="hide"/>
                 </tree>
             </field>
         </record>
@@ -31,19 +30,25 @@
                                 <field name="sequence"/>
                                 <field name="name"/>
                                 <field name="code"/>
+                                <field name="active"/>
+                                <field name="description"/>
+                            </group>
+                            <group name="calculation_info" string="Calculation Settings">
+                                <field name="calculation_method"/>
+                                <field name="default_rate"/>
+                                <field name="commission_category"/>
                             </group>
                         </group>
                         <notebook>
-                            <page string="Commission Partners" name="commission_partners">
+                            <page string="Financial Settings" name="financial_settings">
                                 <group>
-                                    <group name="agents" string="Agents">
-                                        <field name="agent1_partner"/>
-                                        <field name="agent2_partner"/>
+                                    <group name="amounts" string="Amount Limits">
+                                        <field name="currency_id"/>
+                                        <field name="min_amount"/>
+                                        <field name="max_amount"/>
                                     </group>
-                                    <group name="management" string="Management">
-                                        <field name="manager_partner"/>
-                                        <field name="director_partner"/>
-                                        <field name="broker_id"/>
+                                    <group name="accounting" string="Accounting">
+                                        <field name="account_id"/>
                                     </group>
                                 </group>
                             </page>
