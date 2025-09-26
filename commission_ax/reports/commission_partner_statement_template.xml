@@ -36,6 +36,7 @@
                         <table class="table table-condensed table-bordered">
                             <thead class="table-dark">
                                 <tr>
+                                    <th class="text-center">Commission Partner</th>
                                     <th class="text-center">Booking Date</th>
                                     <th class="text-center">Client Order Ref</th>
                                     <th class="text-center">Reference</th>
@@ -52,7 +53,7 @@
                                 <!-- Check if we have data -->
                                 <t t-if="not data.get('report_data') or len(data.get('report_data', [])) == 0">
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted" style="padding: 30px; font-style: italic;">
+                                        <td colspan="8" class="text-center text-muted" style="padding: 30px; font-style: italic;">
                                             <i class="fa fa-info-circle" style="margin-right: 8px;"></i>
                                             No commission data available for the selected criteria.<br/>
                                             <small>Please adjust your date range or partner selection and try again.</small>
@@ -62,6 +63,10 @@
 
                                 <t t-foreach="data.get('report_data', [])" t-as="line">
                                     <tr>
+                                        <!-- Commission Partner -->
+                                        <td>
+                                            <strong t-esc="line.get('partner_name', 'Unknown Partner')"/>
+                                        </td>
                                         <!-- Booking Date -->
                                         <td class="text-center">
                                             <span t-esc="line.get('booking_date', '')" t-options="{'widget': 'date'}"/>
@@ -106,7 +111,7 @@
                             <!-- Grand Total Row -->
                             <tfoot class="table-dark">
                                 <tr>
-                                    <th colspan="4" class="text-right">GRAND TOTAL:</th>
+                                    <th colspan="5" class="text-right">GRAND TOTAL:</th>
                                     <th class="text-right">
                                         <span t-esc="'{:,.2f}'.format(total_sale_value)"/>
                                     </th>

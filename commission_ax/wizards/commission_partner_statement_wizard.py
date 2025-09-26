@@ -252,11 +252,12 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             'num_format': 'dd/mm/yyyy'
         })
         
-        # Write title - Updated for 7-column structure
-        worksheet.merge_range(0, 0, 0, 6, f'Commission Partner Statement ({self.date_from} to {self.date_to})', header_format)
+        # Write title - Updated for 8-column structure with Commission Partner
+        worksheet.merge_range(0, 0, 0, 7, f'Commission Partner Statement ({self.date_from} to {self.date_to})', header_format)
         
-        # Write headers - Updated to match the new client_order_ref structure
+        # Write headers - Updated to include Commission Partner column
         headers = [
+            'Commission Partner',
             'Booking Date',
             'Client Order Ref',
             'Reference',
@@ -269,41 +270,43 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         for col, header in enumerate(headers):
             worksheet.write(2, col, header, header_format)
         
-        # Set column widths - Updated for new 7-column structure
-        worksheet.set_column(0, 0, 12)  # Booking Date  
-        worksheet.set_column(1, 1, 25)  # Client Order Ref
-        worksheet.set_column(2, 2, 15)  # Reference
-        worksheet.set_column(3, 3, 15)  # Sale Value
-        worksheet.set_column(4, 4, 12)  # Commission Rate
-        worksheet.set_column(5, 5, 15)  # Total Amount
-        worksheet.set_column(6, 6, 20)  # Commission Payment Status
+        # Set column widths - Updated for new 8-column structure
+        worksheet.set_column(0, 0, 20)  # Commission Partner
+        worksheet.set_column(1, 1, 12)  # Booking Date  
+        worksheet.set_column(2, 2, 25)  # Client Order Ref
+        worksheet.set_column(3, 3, 15)  # Reference
+        worksheet.set_column(4, 4, 15)  # Sale Value
+        worksheet.set_column(5, 5, 12)  # Commission Rate
+        worksheet.set_column(6, 6, 15)  # Total Amount
+        worksheet.set_column(7, 7, 20)  # Commission Payment Status
         
         # Write data - Updated column mapping for new client_order_ref structure
         row = 3
         for data in report_data:
-            worksheet.write(row, 0, data['booking_date'], date_format)
-            worksheet.write(row, 1, data['client_order_ref'], data_format)  # Updated: use client_order_ref instead of project_name
-            worksheet.write(row, 2, data['sale_order_name'], data_format)   # Updated: moved reference to column 2
-            worksheet.write(row, 3, data['sale_value'], number_format)      # Updated: shifted sale_value to column 3
+            worksheet.write(row, 0, data['partner_name'], data_format)      # Commission Partner
+            worksheet.write(row, 1, data['booking_date'], date_format)      # Booking Date
+            worksheet.write(row, 2, data['client_order_ref'], data_format)  # Client Order Ref
+            worksheet.write(row, 3, data['sale_order_name'], data_format)   # Reference
+            worksheet.write(row, 4, data['sale_value'], number_format)      # Sale Value
             
             # Format commission rate based on calculation method
             rate_display = f"{data['commission_rate']}"
             if 'percentage' in data['calculation_method'].lower():
                 rate_display += '%'
-            worksheet.write(row, 4, rate_display, data_format)              # Updated: commission_rate to column 4
+            worksheet.write(row, 5, rate_display, data_format)              # Commission Rate
             
-            worksheet.write(row, 5, data['commission_amount'], number_format) # Updated: commission_amount to column 5
-            worksheet.write(row, 6, data['commission_status'], data_format)   # Updated: commission_status to column 6
+            worksheet.write(row, 6, data['commission_amount'], number_format) # Total Amount
+            worksheet.write(row, 7, data['commission_status'], data_format)   # Commission Payment Status
             row += 1
         
-        # Add totals row - Updated column positions for new 7-column structure
+        # Add totals row - Updated column positions for new 8-column structure
         if report_data:
             total_sale_value = sum(data['sale_value'] for data in report_data)
             total_commission = sum(data['commission_amount'] for data in report_data)
             
-            worksheet.write(row + 1, 1, 'TOTALS:', header_format)      # Updated: moved to column 1
-            worksheet.write(row + 1, 3, total_sale_value, number_format)  # Updated: sale_value total in column 3
-            worksheet.write(row + 1, 5, total_commission, number_format)  # Updated: commission total in column 5
+            worksheet.write(row + 1, 2, 'TOTALS:', header_format)      # Totals label in column 2
+            worksheet.write(row + 1, 4, total_sale_value, number_format)  # Sale value total in column 4
+            worksheet.write(row + 1, 6, total_commission, number_format)  # Commission total in column 6
         
         workbook.close()
         
