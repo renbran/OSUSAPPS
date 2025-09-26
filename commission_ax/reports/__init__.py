@@ -4,6 +4,7 @@
 
 try:
     from . import commission_report
+    from . import commission_partner_statement_report
 except ImportError as e:
     import logging
     _logger = logging.getLogger(__name__)
