@@ -14,7 +14,8 @@
                     <group string="Filters">
                         <field name="partner_ids" widget="many2many_tags"/>
                         <field name="commission_state"/>
-                        <field name="project_ids" widget="many2many_tags"/>
+                        <!-- Project filter temporarily disabled until project module is available -->
+                        <!-- <field name="project_ids" widget="many2many_tags"/> -->
                         <field name="report_format" widget="radio"/>
                     </group>
                 </group>

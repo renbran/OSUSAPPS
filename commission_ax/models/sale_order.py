@@ -108,8 +108,8 @@ class SaleOrder(models.Model):
         help="Temporary flag to bypass invoice validation when force processing commissions"
     )
     
-    # Project fields (if project module is installed)
-    project_id = fields.Many2one('project.project', string='Project')
+    # Project fields - Temporarily disabled until project module is available
+    # project_id = fields.Many2one('project.project', string='Project')
     
     # Purchase order related fields
     purchase_order_total_amount = fields.Monetary(

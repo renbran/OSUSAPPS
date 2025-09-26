@@ -18,18 +18,18 @@ class PurchaseOrder(models.Model):
         help="Indicates if this PO was created for commission payments"
     )
     
-    # Project fields (conditional on project module)
-    project_id = fields.Many2one(
-        'project.project',
-        string='Project',
-        help='Related project for this purchase order',
-    )
+    # Project fields - Temporarily disabled until project module is available
+    # project_id = fields.Many2one(
+    #     'project.project',
+    #     string='Project',
+    #     help='Related project for this purchase order',
+    # )
 
-    unit_id = fields.Many2one(
-        'project.unit',
-        string='Unit',
-        help='Related unit for this purchase order',
-    )
+    # unit_id = fields.Many2one(
+    #     'project.unit',
+    #     string='Unit',
+    #     help='Related unit for this purchase order',
+    # )
     
     description = fields.Char(string="Description")
 

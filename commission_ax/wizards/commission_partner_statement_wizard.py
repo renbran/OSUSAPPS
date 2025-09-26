@@ -51,11 +51,12 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         ('cancelled', 'Cancelled')
     ], string='Commission Status', default='all')
 
-    project_ids = fields.Many2many(
-        'project.project',
-        string='Projects',
-        help='Filter by specific projects'
-    )
+    # Project filter - Temporarily disabled until project module is available
+    # project_ids = fields.Many2many(
+    #     'project.project',
+    #     string='Projects',
+    #     help='Filter by specific projects'
+    # )
 
     @api.constrains('date_from', 'date_to')
     def _check_dates(self):
@@ -78,8 +79,9 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         if self.commission_state != 'all':
             domain.append(('state', '=', self.commission_state))
             
-        if self.project_ids:
-            domain.append(('sale_order_id.project_id', 'in', self.project_ids.ids))
+        # Project filtering temporarily disabled until project module is available
+        # if self.project_ids:
+        #     domain.append(('sale_order_id.project_id', 'in', self.project_ids.ids))
 
         commission_lines = self.env['commission.line'].search(domain, order='partner_id, sale_order_id.date_order')
         
@@ -100,7 +102,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             report_data.append({
                 'partner_name': line.partner_id.name,
                 'booking_date': sale_order.date_order.date() if sale_order.date_order else '',
-                'project_name': sale_order.project_id.name if sale_order.project_id else 'No Project',
+                'project_name': 'No Project',  # Project module not available
                 'unit': unit_info or 'No Units',
                 'sale_value': sale_order.amount_total,
                 'commission_rate': line.rate,
@@ -141,7 +143,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                 'date_to': self.date_to,
                 'commission_state': self.commission_state,
                 'partner_names': ', '.join(self.partner_ids.mapped('name')) if self.partner_ids else 'All Partners',
-                'project_names': ', '.join(self.project_ids.mapped('name')) if self.project_ids else 'All Projects'
+                'project_names': 'All Projects'  # Project module not available
             },
             'context': self.env.context,
         }
