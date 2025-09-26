@@ -83,7 +83,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         # if self.project_ids:
         #     domain.append(('sale_order_id.project_id', 'in', self.project_ids.ids))
 
-        commission_lines = self.env['commission.line'].search(domain, order='partner_id, sale_order_id.date_order')
+        commission_lines = self.env['commission.line'].search(domain, order='partner_id, id')
         
         # Prepare data structure
         report_data = []
@@ -112,6 +112,9 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                 'sale_order_name': sale_order.name,
                 'currency': sale_order.currency_id.name,
             })
+        
+        # Sort data by partner name and booking date for better readability
+        report_data.sort(key=lambda x: (x['partner_name'], x['booking_date']))
             
         return report_data
 
