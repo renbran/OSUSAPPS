@@ -192,6 +192,31 @@ class CommissionLine(models.Model):
         tracking=True
     )
 
+    # Quantity tracking fields
+    sales_qty = fields.Float(
+        string='Sales Quantity',
+        digits=(16, 6),
+        compute='_compute_quantities',
+        store=True,
+        help='Total quantity from sale order lines'
+    )
+
+    invoiced_qty = fields.Float(
+        string='Invoiced Quantity',
+        digits=(16, 6),
+        compute='_compute_quantities',
+        store=True,
+        help='Total invoiced quantity from related invoices'
+    )
+
+    qty_percentage = fields.Float(
+        string='Invoiced Qty %',
+        digits=(16, 6),
+        compute='_compute_quantities',
+        store=True,
+        help='Percentage of sales quantity that has been invoiced (without rounding)'
+    )
+
     outstanding_amount = fields.Monetary(
         string='Outstanding Amount',
         compute='_compute_payment_amounts',
@@ -358,6 +383,33 @@ class CommissionLine(models.Model):
                     line.days_overdue = 0
             else:
                 line.days_overdue = 0
+
+    @api.depends('sale_order_id.order_line', 'sale_order_id.order_line.product_uom_qty', 
+                 'sale_order_id.order_line.qty_invoiced')
+    def _compute_quantities(self):
+        """Compute sales quantity, invoiced quantity, and percentage without rounding"""
+        for line in self:
+            if not line.sale_order_id or not line.sale_order_id.order_line:
+                line.sales_qty = 0.0
+                line.invoiced_qty = 0.0
+                line.qty_percentage = 0.0
+                continue
+
+            # Calculate total sales quantity
+            total_sales_qty = sum(line.sale_order_id.order_line.mapped('product_uom_qty'))
+            
+            # Calculate total invoiced quantity  
+            total_invoiced_qty = sum(line.sale_order_id.order_line.mapped('qty_invoiced'))
+            
+            line.sales_qty = total_sales_qty
+            line.invoiced_qty = total_invoiced_qty
+            
+            # Calculate percentage without rounding - preserve full precision
+            if total_sales_qty > 0:
+                # Use high precision division to avoid rounding
+                line.qty_percentage = (total_invoiced_qty / total_sales_qty) * 100.0
+            else:
+                line.qty_percentage = 0.0
 
     @api.depends('outstanding_amount', 'commission_amount', 'paid_amount', 'days_overdue', 'state')
     def _compute_payment_status(self):

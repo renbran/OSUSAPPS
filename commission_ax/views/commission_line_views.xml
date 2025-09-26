@@ -16,6 +16,9 @@
                 <field name="rate"/>
                 <field name="base_amount"/>
                 <field name="commission_amount"/>
+                <field name="sales_qty"/>
+                <field name="invoiced_qty"/>
+                <field name="qty_percentage" widget="percentage"/>
                 <field name="payment_status" decoration-danger="payment_status == 'overdue'" decoration-warning="payment_status == 'partial'" decoration-success="payment_status == 'paid'"/>
                 <field name="state" decoration-info="state == 'draft'" decoration-warning="state == 'calculated'" decoration-success="state in ['processed', 'paid']"/>
                 <field name="purchase_order_id"/>
@@ -91,6 +94,15 @@
                             <field name="expected_payment_date" readonly="1"/>
                             <field name="days_overdue" invisible="days_overdue == 0" decoration-danger="days_overdue > 0"/>
                         </group>
+                    </group>
+
+                    <group>
+                        <group string="Quantity Tracking">
+                            <field name="sales_qty" readonly="1"/>
+                            <field name="invoiced_qty" readonly="1"/>
+                            <field name="qty_percentage" readonly="1" widget="percentage"/>
+                        </group>
+                        <group></group>
                     </group>
 
                     <group string="Processing Information" invisible="state in ['draft', 'calculated']">
