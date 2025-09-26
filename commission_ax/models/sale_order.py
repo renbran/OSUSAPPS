@@ -1248,35 +1248,39 @@ class SaleOrder(models.Model):
 
     def action_migrate_to_modern_commissions(self):
         """Migrate order from legacy commission structure to modern assignment-based structure"""
+        # TEMPORARILY DISABLED - Assignment model not loaded
         self.ensure_one()
         
-        if self.use_modern_commissions:
-            raise UserError("This order is already using the modern commission structure.")
+        raise UserError(_("Modern commission assignment structure is temporarily disabled. Using legacy commission structure."))
         
-        assignments_created = 0
-        
-        # Migrate existing commission lines to assignments
-        for commission_line in self.commission_line_ids:
-            assignment = self.env['commission.assignment'].create({
-                'source_model': self._name,
-                'source_id': self.id,
-                'commission_line_id': commission_line.id,
-                'assignment_type': 'migrated',
-            })
-            assignments_created += 1
-        
-        # Enable modern commission structure
-        self.use_modern_commissions = True
-        
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Migration to Modern Structure Complete',
-                'message': f'Successfully migrated to modern commission assignment structure. Created {assignments_created} assignments.',
-                'type': 'success',
-            }
-        }
+        # Disabled assignment migration code
+        # if self.use_modern_commissions:
+        #     raise UserError("This order is already using the modern commission structure.")
+        # 
+        # assignments_created = 0
+        # 
+        # # Migrate existing commission lines to assignments
+        # for commission_line in self.commission_line_ids:
+        #     assignment = self.env['commission.assignment'].create({
+        #         'source_model': self._name,
+        #         'source_id': self.id,
+        #         'commission_line_id': commission_line.id,
+        #         'assignment_type': 'migrated',
+        #     })
+        #     assignments_created += 1
+        # 
+        # # Enable modern commission structure
+        # self.use_modern_commissions = True
+        # 
+        # return {
+        #     'type': 'ir.actions.client',
+        #     'tag': 'display_notification',
+        #     'params': {
+        #         'title': 'Migration to Modern Structure Complete',
+        #         'message': f'Successfully migrated to modern commission assignment structure. Created {assignments_created} assignments.',
+        #         'type': 'success',
+        #     }
+        # }
 
     @api.model
     def migrate_all_to_modern_commissions(self):

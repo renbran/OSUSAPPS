@@ -769,19 +769,23 @@ class CommissionLine(models.Model):
 
     def action_view_assignments(self):
         """View all assignments for this commission line"""
+        # TEMPORARILY DISABLED - Assignment model not loaded
         self.ensure_one()
         
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Commission Assignments'),
-            'res_model': 'commission.assignment',
-            'view_mode': 'tree,form',
-            'domain': [('commission_line_id', '=', self.id)],
-            'context': {
-                'default_commission_line_id': self.id,
-            },
-            'target': 'current',
-        }
+        raise UserError(_("Commission assignment functionality is temporarily disabled. Using legacy commission structure."))
+        
+        # Disabled assignment view code
+        # return {
+        #     'type': 'ir.actions.act_window',
+        #     'name': _('Commission Assignments'),
+        #     'res_model': 'commission.assignment',
+        #     'view_mode': 'tree,form',
+        #     'domain': [('commission_line_id', '=', self.id)],
+        #     'context': {
+        #         'default_commission_line_id': self.id,
+        #     },
+        #     'target': 'current',
+        # }
 
     def _create_purchase_order(self):
         """Create purchase order for commission payment"""
