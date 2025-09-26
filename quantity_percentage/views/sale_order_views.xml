@@ -9,10 +9,7 @@
             <field name="arch" type="xml">
                 <!-- Add percentage field to order line tree within the form -->
                 <xpath expr="//field[@name='order_line']/tree//field[@name='product_uom_qty']" position="after">
-                    <field name="product_uom_qty_percentage" 
-                           string="Qty (Smart %)" 
-                           help="Smart percentage: Shows % for percentage UoM, regular qty for other UoMs"
-                           optional="hide"/>
+                    <field name="product_uom_qty_percentage" string="Qty (Smart %)" help="Smart percentage: Shows % for percentage UoM, regular qty for other UoMs" optional="hide"/>
                 </xpath>
             </field>
         </record>
@@ -24,17 +21,10 @@
             <field name="inherit_id" ref="sale.view_sale_order_line_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='product_uom_qty']" position="after">
-                    <field name="product_uom_qty_percentage" 
-                           string="Smart Quantity" 
-                           help="Smart field: If UoM is %, input 5 for 0.05 (5%). Otherwise shows regular quantity."/>
+                    <field name="product_uom_qty_percentage" string="Smart Quantity" help="Smart field: If UoM is %, input 5 for 0.05 (5%). Otherwise shows regular quantity."/>
                 </xpath>
                 <xpath expr="//field[@name='product_uom']" position="after">
-                    <button name="action_set_percentage_uom" 
-                            type="object" 
-                            string="Use % UoM" 
-                            class="btn-sm btn-secondary"
-                            help="Convert this line to use percentage Unit of Measure"
-                            invisible="product_uom and product_uom.category_id.name == 'Percentage'"/>
+                    <button name="action_set_percentage_uom" type="object" string="Use % UoM" class="btn-sm btn-secondary" help="Convert this line to use percentage Unit of Measure" invisible="product_uom and product_uom.category_id.name == 'Percentage'"/>
                 </xpath>
             </field>
         </record>
