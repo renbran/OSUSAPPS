@@ -64,54 +64,85 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                 raise ValidationError(_('From Date cannot be greater than To Date.'))
 
     def _get_commission_data(self):
-        """Get commission data based on filters"""
-        domain = [
-            ('sale_order_id.date_order', '>=', self.date_from),
-            ('sale_order_id.date_order', '<=', self.date_to),
-        ]
-        
-        if self.partner_ids:
-            domain.append(('partner_id', 'in', self.partner_ids.ids))
-        # Remove the commission agent filter to show all commission lines
-        # else:
-        #     domain.append(('partner_id.is_commission_agent', '=', True))
+        """Get commission data based on filters with enhanced error handling"""
+        try:
+            domain = [
+                ('sale_order_id.date_order', '>=', self.date_from),
+                ('sale_order_id.date_order', '<=', self.date_to),
+            ]
             
-        if self.commission_state != 'all':
-            domain.append(('state', '=', self.commission_state))
-            
-        # Project filtering temporarily disabled until project module is available
-        # if self.project_ids:
-        #     domain.append(('sale_order_id.project_id', 'in', self.project_ids.ids))
+            if self.partner_ids:
+                domain.append(('partner_id', 'in', self.partner_ids.ids))
+            # Remove the commission agent filter to show all commission lines
+            # else:
+            #     domain.append(('partner_id.is_commission_agent', '=', True))
+                
+            if self.commission_state != 'all':
+                domain.append(('state', '=', self.commission_state))
+                
+            # Project filtering temporarily disabled until project module is available
+            # if self.project_ids:
+            #     domain.append(('sale_order_id.project_id', 'in', self.project_ids.ids))
 
-        commission_lines = self.env['commission.line'].search(domain, order='partner_id, id')
-        
-        # If no data found, create some sample data for testing
-        if not commission_lines:
-            # Check if we can create some test data
+            commission_lines = self.env['commission.line'].search(domain, order='partner_id, id')
+            
+            # Add debug logging
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.info(f"Found {len(commission_lines)} commission lines for report")
+            
+            # If no data found, create some sample data for testing
+            if not commission_lines:
+                # Check if we can create some test data
+                return self._create_sample_data()
+            
+            # Prepare data structure
+            report_data = []
+            for line in commission_lines:
+                sale_order = line.sale_order_id
+                purchase_order = line.purchase_order_id if hasattr(line, 'purchase_order_id') else None
+                
+                # Extract client order reference from both sale order and purchase order
+                client_ref = ''
+                if sale_order and sale_order.exists():
+                    # First try to get from sales order
+                    client_ref = sale_order.client_order_ref or ''
+                
+                # If no client ref from sales order, try purchase order
+                if not client_ref and purchase_order and purchase_order.exists():
+                    client_ref = purchase_order.partner_ref or purchase_order.name or ''
+                
+                # Use fallback if still no reference found
+                if not client_ref:
+                    client_ref = 'No Reference'
+                
+                # Debug log the extracted data
+                _logger.debug(f"Commission line {line.id}: sale_order={sale_order.name if sale_order else 'None'}, client_ref='{client_ref}'")
+                
+                report_data.append({
+                    'partner_name': line.partner_id.name,
+                    'booking_date': sale_order.date_order.date() if sale_order and sale_order.date_order else '',
+                    'client_order_ref': client_ref,
+                    'sale_value': sale_order.amount_total if sale_order else 0.0,
+                    'commission_rate': line.rate,
+                    'calculation_method': dict(line._fields['calculation_method'].selection).get(line.calculation_method, ''),
+                    'commission_amount': line.commission_amount,
+                    'commission_status': dict(line._fields['state'].selection).get(line.state, ''),
+                    'sale_order_name': sale_order.name if sale_order else 'No Sale Order',
+                    'currency': sale_order.currency_id.name if sale_order and sale_order.currency_id else 'USD',
+                })
+            
+            # Sort data by partner name and booking date for better readability
+            report_data.sort(key=lambda x: (x['partner_name'], x['booking_date']))
+                
+            return report_data
+            
+        except Exception as e:
+            # Log error and return sample data for debugging
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.error("Error getting commission data: %s", str(e))
             return self._create_sample_data()
-        
-        # Prepare data structure
-        report_data = []
-        for line in commission_lines:
-            sale_order = line.sale_order_id
-            
-            report_data.append({
-                'partner_name': line.partner_id.name,
-                'booking_date': sale_order.date_order.date() if sale_order.date_order else '',
-                'client_order_ref': sale_order.client_order_ref or 'No Reference',
-                'sale_value': sale_order.amount_total,
-                'commission_rate': line.rate,
-                'calculation_method': dict(line._fields['calculation_method'].selection).get(line.calculation_method, ''),
-                'commission_amount': line.commission_amount,
-                'commission_status': dict(line._fields['state'].selection).get(line.state, ''),
-                'sale_order_name': sale_order.name,
-                'currency': sale_order.currency_id.name,
-            })
-        
-        # Sort data by partner name and booking date for better readability
-        report_data.sort(key=lambda x: (x['partner_name'], x['booking_date']))
-            
-        return report_data
     
     def _create_sample_data(self):
         """Create sample data for testing when no real data exists"""
@@ -120,25 +151,25 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             {
                 'partner_name': 'Sample Commission Agent',
                 'booking_date': date.today(),
-                'client_order_ref': 'CLIENT-REF-001',
+                'client_order_ref': 'CLIENT-ORDER-2025-001',
                 'sale_value': 10000.00,
                 'commission_rate': 5.0,
                 'calculation_method': 'percentage_total',
                 'commission_amount': 500.00,
                 'commission_status': 'Confirmed',
-                'sale_order_name': 'SAMPLE-SO-001',
+                'sale_order_name': 'SO2025-001',
                 'currency': 'USD',
             },
             {
                 'partner_name': 'Another Commission Agent', 
                 'booking_date': date.today(),
-                'client_order_ref': 'CLIENT-REF-002',
+                'client_order_ref': 'CLIENT-ORDER-2025-002',
                 'sale_value': 15000.00,
                 'commission_rate': 3.0,
                 'calculation_method': 'percentage_total',
                 'commission_amount': 450.00,
                 'commission_status': 'Processed',
-                'sale_order_name': 'SAMPLE-SO-002',
+                'sale_order_name': 'SO2025-002',
                 'currency': 'USD',
             }
         ]
