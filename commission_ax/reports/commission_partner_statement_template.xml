@@ -7,158 +7,96 @@
                     <div class="page">
                         <div class="oe_structure"/>
 
-                        <!-- Report Title -->
+                        <!-- Report Title - CENTERED -->
                         <div class="row">
                             <div class="col-12">
                                 <h2 class="text-center mb-4">
                                     <strong>Commission Partner Statement</strong>
                                 </h2>
+                                <!-- Partner Name and Date Range - CENTERED -->
+                                <div class="text-center mb-4">
+                                    <p class="mb-2">
+                                        <strong>Partner(s): 
+                                            <span t-esc="data.get('partner_names', 'All Partners')"/>
+                                        </strong>
+                                    </p>
+                                    <p class="mb-4">
+                                        <strong>Period: 
+                                            <span t-esc="data.get('date_from', '')"/> 
+                                            to 
+                                            <span t-esc="data.get('date_to', '')"/>
+                                        </strong>
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Report Parameters -->
-                        <div class="row mb-4">
-                            <div class="col-6">
-                                <p>
-                                    <strong>Period:</strong>
-                                    <span t-esc="data['date_from']"/>
- to <span t-esc="data['date_to']"/>
-                                </p>
-                                <p>
-                                    <strong>Partners:</strong>
-                                    <span t-esc="data['partner_names']"/>
-                                </p>
-                            </div>
-                            <div class="col-6">
-                                <p>
-                                    <strong>Status Filter:</strong>
-                                    <span t-esc="data['commission_state'].title()"/>
-                                </p>
-                                <p>
-                                    <strong>Projects:</strong>
-                                    <span t-esc="data['project_names']"/>
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Commission Statement Table -->
+                        <!-- Commission Statement Table with YOUR REQUESTED HEADERS -->
                         <table class="table table-condensed table-bordered">
                             <thead class="table-dark">
                                 <tr>
-                                    <th class="text-center">Partner</th>
                                     <th class="text-center">Booking Date</th>
                                     <th class="text-center">Project</th>
-                                    <th class="text-center">Unit/Product</th>
+                                    <th class="text-center">Unit</th>
+                                    <th class="text-center">Reference</th>
                                     <th class="text-center">Sale Value</th>
-                                    <th class="text-center">Rate</th>
-                                    <th class="text-center">Commission Amount</th>
-                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Commission Rate</th>
+                                    <th class="text-center">Total Amount</th>
+                                    <th class="text-center">Commission Payment Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <t t-set="total_sale_value" t-value="0"/>
                                 <t t-set="total_commission" t-value="0"/>
-                                <t t-set="current_partner" t-value=""/>
-                                <t t-set="partner_sale_total" t-value="0"/>
-                                <t t-set="partner_commission_total" t-value="0"/>
 
-                                <t t-foreach="data['report_data']" t-as="line">
-                                    <!-- Partner Group Header -->
-                                    <t t-if="line['partner_name'] != current_partner">
-                                        <!-- Print previous partner totals -->
-                                        <t t-if="current_partner">
-                                            <tr class="table-info">
-                                                <td colspan="4" class="text-right">
-                                                    <strong>Subtotal for <t t-esc="current_partner"/>
-:</strong>
-                                                </td>
-                                                <td class="text-right">
-                                                    <strong>
-                                                        <span t-esc="'{:,.2f}'.format(partner_sale_total)"/>
-                                                        <span t-esc="line['currency']"/>
-                                                    </strong>
-                                                </td>
-                                                <td></td>
-                                                <td class="text-right">
-                                                    <strong>
-                                                        <span t-esc="'{:,.2f}'.format(partner_commission_total)"/>
-                                                        <span t-esc="line['currency']"/>
-                                                    </strong>
-                                                </td>
-                                                <td></td>
-                                            </tr>
-                                        </t>
-
-                                        <!-- Reset partner totals -->
-                                        <t t-set="current_partner" t-value="line['partner_name']"/>
-                                        <t t-set="partner_sale_total" t-value="0"/>
-                                        <t t-set="partner_commission_total" t-value="0"/>
-                                    </t>
-
-                                    <!-- Commission Line Data -->
+                                <t t-foreach="data.get('report_data', [])" t-as="line">
                                     <tr>
-                                        <td>
-                                            <span t-esc="line['partner_name']"/>
-                                        </td>
+                                        <!-- Booking Date -->
                                         <td class="text-center">
-                                            <span t-esc="line['booking_date']" t-options="{'widget': 'date'}"/>
+                                            <span t-esc="line.get('booking_date', '')" t-options="{'widget': 'date'}"/>
                                         </td>
+                                        <!-- Project -->
                                         <td>
-                                            <span t-esc="line['project_name']"/>
+                                            <span t-esc="line.get('project_name', 'No Project')"/>
                                         </td>
+                                        <!-- Unit -->
                                         <td>
-                                            <span t-esc="line['unit']"/>
+                                            <span t-esc="line.get('unit', 'No Units')"/>
                                         </td>
+                                        <!-- Reference (Sale Order) -->
+                                        <td>
+                                            <span t-esc="line.get('sale_order_name', '')"/>
+                                        </td>
+                                        <!-- Sale Value -->
                                         <td class="text-right">
-                                            <span t-esc="'{:,.2f}'.format(line['sale_value'])"/>
-                                            <span t-esc="line['currency']"/>
+                                            <span t-esc="'{:,.2f}'.format(line.get('sale_value', 0))"/>
+                                            <span t-esc="line.get('currency', '')"/>
                                         </td>
+                                        <!-- Commission Rate -->
                                         <td class="text-center">
-                                            <span t-esc="'{:.2f}'.format(line['commission_rate'])"/>
-                                            <span t-if="'percentage' in line['calculation_method'].lower()">%</span>
+                                            <span t-esc="'{:.2f}'.format(line.get('commission_rate', 0))"/>
+                                            <span t-if="'percentage' in line.get('calculation_method', '').lower()">%</span>
                                         </td>
+                                        <!-- Total Amount (Commission Amount) -->
                                         <td class="text-right">
-                                            <span t-esc="'{:,.2f}'.format(line['commission_amount'])"/>
-                                            <span t-esc="line['currency']"/>
+                                            <span t-esc="'{:,.2f}'.format(line.get('commission_amount', 0))"/>
+                                            <span t-esc="line.get('currency', '')"/>
                                         </td>
+                                        <!-- Commission Payment Status -->
                                         <td class="text-center">
-                                            <span class="badge" t-att-class="'badge-success' if line['commission_status'] == 'Paid' else 'badge-warning' if line['commission_status'] == 'Processed' else 'badge-info' if line['commission_status'] == 'Confirmed' else 'badge-secondary'">
-                                                <span t-esc="line['commission_status']"/>
+                                            <span class="badge" t-att-class="'badge-success' if line.get('commission_status') == 'Paid' else 'badge-warning' if line.get('commission_status') == 'Processed' else 'badge-info' if line.get('commission_status') == 'Confirmed' else 'badge-secondary'">
+                                                <span t-esc="line.get('commission_status', 'Unknown')"/>
                                             </span>
                                         </td>
                                     </tr>
 
                                     <!-- Update totals -->
-                                    <t t-set="total_sale_value" t-value="total_sale_value + line['sale_value']"/>
-                                    <t t-set="total_commission" t-value="total_commission + line['commission_amount']"/>
-                                    <t t-set="partner_sale_total" t-value="partner_sale_total + line['sale_value']"/>
-                                    <t t-set="partner_commission_total" t-value="partner_commission_total + line['commission_amount']"/>
-                                </t>
-
-                                <!-- Last partner subtotal -->
-                                <t t-if="current_partner and data['report_data']">
-                                    <tr class="table-info">
-                                        <td colspan="4" class="text-right">
-                                            <strong>Subtotal for <t t-esc="current_partner"/>
-:</strong>
-                                        </td>
-                                        <td class="text-right">
-                                            <strong>
-                                                <span t-esc="'{:,.2f}'.format(partner_sale_total)"/>
-                                            </strong>
-                                        </td>
-                                        <td></td>
-                                        <td class="text-right">
-                                            <strong>
-                                                <span t-esc="'{:,.2f}'.format(partner_commission_total)"/>
-                                            </strong>
-                                        </td>
-                                        <td></td>
-                                    </tr>
+                                    <t t-set="total_sale_value" t-value="total_sale_value + line.get('sale_value', 0)"/>
+                                    <t t-set="total_commission" t-value="total_commission + line.get('commission_amount', 0)"/>
                                 </t>
                             </tbody>
 
-                            <!-- Grand Total -->
+                            <!-- Grand Total Row -->
                             <tfoot class="table-dark">
                                 <tr>
                                     <th colspan="4" class="text-right">GRAND TOTAL:</th>
@@ -175,7 +113,7 @@
                         </table>
 
                         <!-- Summary Statistics -->
-                        <div class="row mt-4" t-if="data['report_data']">
+                        <div class="row mt-4" t-if="data.get('report_data')">
                             <div class="col-12">
                                 <div class="alert alert-info">
                                     <h5>Summary Statistics</h5>
@@ -183,11 +121,11 @@
                                         <div class="col-4">
                                             <p>
                                                 <strong>Total Records:</strong>
-                                                <span t-esc="len(data['report_data'])"/>
+                                                <span t-esc="len(data.get('report_data', []))"/>
                                             </p>
                                             <p>
                                                 <strong>Unique Partners:</strong>
-                                                <span t-esc="len(set(line['partner_name'] for line in data['report_data']))"/>
+                                                <span t-esc="len(set(line.get('partner_name', '') for line in data.get('report_data', [])))"/>
                                             </p>
                                         </div>
                                         <div class="col-4">
@@ -203,7 +141,7 @@
                                         <div class="col-4">
                                             <p>
                                                 <strong>Average Commission:</strong>
-                                                <span t-esc="'{:,.2f}'.format(total_commission / len(data['report_data']))"/>
+                                                <span t-esc="'{:,.2f}'.format(total_commission / len(data.get('report_data', [])) if data.get('report_data') else 0)"/>
                                             </p>
                                             <p>
                                                 <strong>Commission Ratio:</strong>
@@ -216,7 +154,7 @@
                         </div>
 
                         <!-- No Data Message -->
-                        <div class="row" t-if="not data['report_data']">
+                        <div class="row" t-if="not data.get('report_data')">
                             <div class="col-12">
                                 <div class="alert alert-warning text-center">
                                     <h4>No commission data found for the selected criteria.</h4>

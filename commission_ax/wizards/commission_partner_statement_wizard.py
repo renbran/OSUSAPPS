@@ -29,7 +29,6 @@ class CommissionPartnerStatementWizard(models.TransientModel):
     partner_ids = fields.Many2many(
         'res.partner',
         string='Commission Partners',
-        domain=[('is_commission_agent', '=', True)],
         help='Select specific partners or leave empty for all commission partners'
     )
 
@@ -73,8 +72,9 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         
         if self.partner_ids:
             domain.append(('partner_id', 'in', self.partner_ids.ids))
-        else:
-            domain.append(('partner_id.is_commission_agent', '=', True))
+        # Remove the commission agent filter to show all commission lines
+        # else:
+        #     domain.append(('partner_id.is_commission_agent', '=', True))
             
         if self.commission_state != 'all':
             domain.append(('state', '=', self.commission_state))
@@ -95,8 +95,8 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             if sale_order.order_line:
                 units = []
                 for order_line in sale_order.order_line:
-                    if order_line.product_qty > 0:
-                        units.append(f"{order_line.product_id.name} ({order_line.product_qty} {order_line.product_uom.name})")
+                    if order_line.product_uom_qty > 0:  # Fix: use product_uom_qty instead of product_qty
+                        units.append(f"{order_line.product_id.name} ({order_line.product_uom_qty} {order_line.product_uom.name})")
                 unit_info = "; ".join(units)
             
             report_data.append({
@@ -194,38 +194,38 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         # Write title
         worksheet.merge_range(0, 0, 0, 7, f'Commission Partner Statement ({self.date_from} to {self.date_to})', header_format)
         
-        # Write headers
+        # Write headers - Updated to match your requested headers
         headers = [
-            'Partner Name',
-            'Booking Date', 
-            'Project',
+            'Booking Date',
+            'Project', 
             'Unit',
+            'Reference',
             'Sale Value',
             'Commission Rate',
-            'Commission Amount', 
-            'Status'
+            'Total Amount',
+            'Commission Payment Status'
         ]
         
         for col, header in enumerate(headers):
             worksheet.write(2, col, header, header_format)
         
-        # Set column widths
-        worksheet.set_column(0, 0, 20)  # Partner Name
-        worksheet.set_column(1, 1, 12)  # Booking Date
-        worksheet.set_column(2, 2, 20)  # Project
-        worksheet.set_column(3, 3, 30)  # Unit
+        # Set column widths - Updated for new headers
+        worksheet.set_column(0, 0, 12)  # Booking Date  
+        worksheet.set_column(1, 1, 20)  # Project
+        worksheet.set_column(2, 2, 30)  # Unit
+        worksheet.set_column(3, 3, 15)  # Reference
         worksheet.set_column(4, 4, 15)  # Sale Value
         worksheet.set_column(5, 5, 12)  # Commission Rate
-        worksheet.set_column(6, 6, 15)  # Commission Amount
-        worksheet.set_column(7, 7, 12)  # Status
+        worksheet.set_column(6, 6, 15)  # Total Amount
+        worksheet.set_column(7, 7, 12)  # Commission Payment Status
         
-        # Write data
+        # Write data - Updated column mapping for new headers
         row = 3
         for data in report_data:
-            worksheet.write(row, 0, data['partner_name'], data_format)
-            worksheet.write(row, 1, data['booking_date'], date_format)
-            worksheet.write(row, 2, data['project_name'], data_format)
-            worksheet.write(row, 3, data['unit'], data_format)
+            worksheet.write(row, 0, data['booking_date'], date_format)
+            worksheet.write(row, 1, data['project_name'], data_format)
+            worksheet.write(row, 2, data['unit'], data_format)
+            worksheet.write(row, 3, data['sale_order_name'], data_format)
             worksheet.write(row, 4, data['sale_value'], number_format)
             
             # Format commission rate based on calculation method
@@ -238,12 +238,12 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             worksheet.write(row, 7, data['commission_status'], data_format)
             row += 1
         
-        # Add totals row
+        # Add totals row - Updated column positions  
         if report_data:
             total_sale_value = sum(data['sale_value'] for data in report_data)
             total_commission = sum(data['commission_amount'] for data in report_data)
             
-            worksheet.write(row + 1, 3, 'TOTALS:', header_format)
+            worksheet.write(row + 1, 2, 'TOTALS:', header_format)
             worksheet.write(row + 1, 4, total_sale_value, number_format)
             worksheet.write(row + 1, 6, total_commission, number_format)
         
