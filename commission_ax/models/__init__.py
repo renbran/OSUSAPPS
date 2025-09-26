@@ -21,8 +21,9 @@ except Exception as e:
     _logger.error(f"❌ Failed to load commission_line: {str(e)}")
 
 try:
-    from . import commission_assignment
-    _logger.info("✅ commission_assignment model loaded")
+    # Temporarily disabled due to missing database table
+    # from . import commission_assignment
+    _logger.info("⚠️  commission_assignment model temporarily disabled")
 except Exception as e:
     _logger.error(f"❌ Failed to load commission_assignment: {str(e)}")
 

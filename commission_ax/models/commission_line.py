@@ -111,17 +111,18 @@ class CommissionLine(models.Model):
         copy=False
     )
 
-    # Assignment relationship (Many2many bridge)
-    assignment_ids = fields.One2many(
-        'commission.assignment',
-        'commission_line_id',
-        string='Assignments',
-        help='Records that this commission line is assigned to via many2many bridge'
-    )
+    # Assignment relationship (Many2many bridge) - Temporarily disabled
+    # assignment_ids = fields.One2many(
+    #     'commission.assignment',
+    #     'commission_line_id',
+    #     string='Assignments',
+    #     help='Records that this commission line is assigned to via many2many bridge'
+    # )
 
     assignment_count = fields.Integer(
         string='Assignment Count',
-        compute='_compute_assignment_count',
+        # compute='_compute_assignment_count',
+        default=0,
         help='Number of records this commission line is assigned to'
     )
 
@@ -293,11 +294,11 @@ class CommissionLine(models.Model):
             else:
                 line.display_name = _('Commission Line')
 
-    @api.depends('assignment_ids')
+    # @api.depends('assignment_ids')  # Temporarily disabled
     def _compute_assignment_count(self):
         """Compute the number of assignments for this commission line"""
         for line in self:
-            line.assignment_count = len(line.assignment_ids)
+            line.assignment_count = 0  # len(line.assignment_ids)
 
     @api.depends('sale_order_id.amount_total', 'sale_order_id.amount_untaxed',
                  'rate', 'calculation_method', 'sale_order_id.order_line.price_unit')
