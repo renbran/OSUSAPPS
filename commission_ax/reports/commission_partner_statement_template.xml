@@ -22,7 +22,8 @@
                                     </p>
                                     <p class="mb-4">
                                         <strong>Period: 
-                                            <span t-esc="data.get('date_from', '')"/> 
+                                            <span t-esc="data.get('date_from', '')"/>
+ 
                                             to 
                                             <span t-esc="data.get('date_to', '')"/>
                                         </strong>
