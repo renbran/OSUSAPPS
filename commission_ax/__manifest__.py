@@ -81,7 +81,7 @@ pip install xlsxwriter numpy pandas scikit-learn
         'views/purchase_order.xml',
         'views/res_partner_views.xml',
         'views/commission_line_views.xml',
-        'views/commission_assignment_views.xml',
+        # 'views/commission_assignment_views.xml',  # Temporarily disabled - model not loaded
         
         # Views that reference menu items
         'views/commission_type_views.xml',
