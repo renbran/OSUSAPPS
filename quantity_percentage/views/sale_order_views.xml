@@ -15,6 +15,10 @@
         </record>
 
         <!-- Extend Sale Order Line Form View to add percentage field -->
+        <!-- Note: In Odoo 17, sale order lines don't have separate form views -->
+        <!-- The percentage field is already added to the inline tree view above -->
+        
+        <!--
         <record id="view_sale_order_line_form_percentage" model="ir.ui.view">
             <field name="name">sale.order.line.form.percentage</field>
             <field name="model">sale.order.line</field>
@@ -28,6 +32,7 @@
                 </xpath>
             </field>
         </record>
+        -->
 
     </data>
 </odoo>
