@@ -14,25 +14,8 @@
             </field>
         </record>
 
-        <!-- Extend Sale Order Line Form View to add percentage field -->
         <!-- Note: In Odoo 17, sale order lines don't have separate form views -->
         <!-- The percentage field is already added to the inline tree view above -->
-        
-        <!--
-        <record id="view_sale_order_line_form_percentage" model="ir.ui.view">
-            <field name="name">sale.order.line.form.percentage</field>
-            <field name="model">sale.order.line</field>
-            <field name="inherit_id" ref="sale.view_sale_order_line_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='product_uom_qty']" position="after">
-                    <field name="product_uom_qty_percentage" string="Smart Quantity" help="Smart field: If UoM is %, input 5 for 0.05 (5%). Otherwise shows regular quantity."/>
-                </xpath>
-                <xpath expr="//field[@name='product_uom']" position="after">
-                    <button name="action_set_percentage_uom" type="object" string="Use % UoM" class="btn-sm btn-secondary" help="Convert this line to use percentage Unit of Measure" invisible="product_uom and product_uom.category_id.name == 'Percentage'"/>
-                </xpath>
-            </field>
-        </record>
-        -->
 
     </data>
 </odoo>
