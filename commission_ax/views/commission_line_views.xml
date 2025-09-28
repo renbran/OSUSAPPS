@@ -14,6 +14,7 @@
                 <field name="commission_category"/>
                 <field name="calculation_method"/>
                 <field name="rate"/>
+                <field name="sales_value" optional="hide"/>
                 <field name="base_amount"/>
                 <field name="commission_amount"/>
                 <field name="sales_qty"/>
@@ -74,6 +75,7 @@
                             <field name="role"/>
                             <field name="calculation_method"/>
                             <field name="rate" readonly="state not in ['draft']"/>
+                            <field name="sales_value" readonly="state not in ['draft']" invisible="calculation_method not in ['percentage_sales_value', 'percentage_unit']"/>
                         </group>
                     </group>
 

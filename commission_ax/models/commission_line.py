@@ -51,12 +51,21 @@ class CommissionLine(models.Model):
         ('percentage_unit', 'Percentage of Unit Price'),
         ('percentage_total', 'Percentage of Total'),
         ('percentage_untaxed', 'Percentage of Untaxed Amount'),
-    ], string='Calculation Method', required=True, default='percentage_total')
+        ('percentage_sales_value', 'Percentage of Sales Value'),
+    ], string='Calculation Method', required=True, default='percentage_sales_value')
 
     rate = fields.Float(
         string='Rate/Amount',
         digits=(16, 6),
         help='Commission rate as percentage or fixed amount'
+    )
+
+    # Sales value field for commission calculation
+    sales_value = fields.Monetary(
+        string='Sales Value',
+        currency_field='currency_id',
+        help='Specific sales value for commission calculation (e.g., price_unit of related product)',
+        tracking=True
     )
 
     # Computed amounts
@@ -326,9 +335,9 @@ class CommissionLine(models.Model):
             line.assignment_count = 0  # len(line.assignment_ids)
 
     @api.depends('sale_order_id.amount_total', 'sale_order_id.amount_untaxed',
-                 'rate', 'calculation_method', 'sale_order_id.order_line.price_unit')
+                 'rate', 'calculation_method', 'sales_value', 'sale_order_id.order_line.price_unit')
     def _compute_amounts(self):
-        """Optimized commission amount calculation"""
+        """Enhanced commission amount calculation with proper sales value handling"""
         for line in self:
             if not line.sale_order_id:
                 line.base_amount = 0.0
@@ -338,20 +347,32 @@ class CommissionLine(models.Model):
 
             order = line.sale_order_id
 
-            # Determine base amount
+            # Determine base amount based on calculation method
             if line.calculation_method == 'fixed':
                 line.base_amount = 1.0  # Fixed amount doesn't need base
                 line.commission_amount = line.rate
+            
+            elif line.calculation_method == 'percentage_sales_value':
+                # Use the specific sales_value field for calculation
+                line.base_amount = line.sales_value or 0.0
+                line.commission_amount = (line.rate / 100.0) * line.base_amount
+            
             elif line.calculation_method == 'percentage_unit':
-                if order.order_line:
-                    line.base_amount = order.order_line[0].price_unit
-                    line.commission_amount = (line.rate / 100.0) * line.base_amount
+                # Use sales_value if available, otherwise fallback to first order line
+                if line.sales_value:
+                    line.base_amount = line.sales_value
+                elif order.order_line:
+                    # Calculate sum of all order line unit prices instead of just first one
+                    total_price_unit = sum(ol.price_unit * ol.product_uom_qty for ol in order.order_line)
+                    line.base_amount = total_price_unit
                 else:
                     line.base_amount = 0.0
-                    line.commission_amount = 0.0
+                line.commission_amount = (line.rate / 100.0) * line.base_amount
+            
             elif line.calculation_method == 'percentage_untaxed':
                 line.base_amount = order.amount_untaxed
                 line.commission_amount = (line.rate / 100.0) * line.base_amount
+            
             else:  # percentage_total
                 line.base_amount = order.amount_total
                 line.commission_amount = (line.rate / 100.0) * line.base_amount
@@ -568,13 +589,13 @@ class CommissionLine(models.Model):
             try:
                 # Map commission type calculation method to commission line method
                 calculation_method_mapping = {
-                    'percentage': 'percentage_total',
+                    'percentage': 'percentage_sales_value',  # Changed default to sales_value
                     'fixed': 'fixed',
-                    'tiered': 'percentage_total',
+                    'tiered': 'percentage_sales_value',
                 }
                 
                 commission_type_method = self.commission_type_id.calculation_method or 'percentage'
-                mapped_method = calculation_method_mapping.get(commission_type_method, 'percentage_total')
+                mapped_method = calculation_method_mapping.get(commission_type_method, 'percentage_sales_value')
                 
                 # Double-check that the mapped method is valid
                 valid_methods = [opt[0] for opt in self._fields['calculation_method'].selection]
@@ -582,7 +603,7 @@ class CommissionLine(models.Model):
                     self.calculation_method = mapped_method
                 else:
                     _logger.warning(f"Invalid calculation method mapping: {commission_type_method} -> {mapped_method}")
-                    self.calculation_method = 'percentage_total'
+                    self.calculation_method = 'percentage_sales_value'
                 
                 self.rate = self.commission_type_id.default_rate or 0.0
                 self.commission_category = self.commission_type_id.commission_category or 'internal'
@@ -590,9 +611,26 @@ class CommissionLine(models.Model):
             except Exception as e:
                 _logger.error(f"Error in commission type onchange: {e}")
                 # Set safe defaults to prevent RPC errors
-                self.calculation_method = 'percentage_total'
+                self.calculation_method = 'percentage_sales_value'
                 self.rate = 0.0
                 self.commission_category = 'internal'
+
+    @api.onchange('sale_order_id', 'calculation_method')
+    def _onchange_sale_order_auto_populate_sales_value(self):
+        """Auto-populate sales_value when sale order or calculation method changes"""
+        if self.sale_order_id and self.calculation_method in ['percentage_sales_value', 'percentage_unit']:
+            if not self.sales_value or self.sales_value == 0.0:
+                # Try to set a reasonable default sales_value
+                order = self.sale_order_id
+                if order.order_line:
+                    if len(order.order_line) == 1:
+                        # Single line order - use the line's subtotal
+                        line = order.order_line[0]
+                        self.sales_value = line.price_subtotal
+                    else:
+                        # Multiple lines - could use total subtotal or ask user to specify
+                        # For now, use the order subtotal as default
+                        self.sales_value = order.amount_untaxed
 
     @api.model
     def _cleanup_orphaned_records(self):
