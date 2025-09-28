@@ -7,13 +7,12 @@
                     <div class="page">
                         <div class="oe_structure"/>
 
-                        <!-- Report Title - CENTERED -->
+                        <!-- Report Title -->
                         <div class="row">
                             <div class="col-12">
                                 <h2 class="text-center mb-4">
                                     <strong>Commission Partner Statement</strong>
                                 </h2>
-                                <!-- Partner Name and Date Range - CENTERED -->
                                 <div class="text-center mb-4">
                                     <p class="mb-2">
                                         <strong>Partner(s): 
@@ -23,7 +22,6 @@
                                     <p class="mb-4">
                                         <strong>Period: 
                                             <span t-esc="data.get('date_from', '')"/>
- 
                                             to 
                                             <span t-esc="data.get('date_to', '')"/>
                                         </strong>
@@ -32,7 +30,7 @@
                             </div>
                         </div>
 
-                        <!-- Commission Statement Table with YOUR REQUESTED HEADERS -->
+                        <!-- Commission Statement Table -->
                         <table class="table table-condensed table-bordered">
                             <thead class="table-dark">
                                 <tr>
@@ -40,14 +38,127 @@
                                     <th class="text-center">Booking Date</th>
                                     <th class="text-center">Client Order Ref</th>
                                     <th class="text-center">Reference</th>
-                                    <th class="text-center">Sale Value</th>
+                                    <th class="text-center">Unit Price</th>
                                     <th class="text-center">Commission Rate</th>
                                     <th class="text-center">Total Amount</th>
                                     <th class="text-center">Commission Payment Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <t t-set="total_sale_value" t-value="0"/>
+                                <t t-set="total_unit_price" t-value="0"/>
+                                <t t-set="total_commission" t-value="0"/>
+                                
+                                <!-- Check if we have data -->
+                                <t t-if="not data.get('report_data') or len(data.get('report_data', [])) == 0">
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted" style="padding: 30px;">
+                                            No commission data available for the selected criteria.
+                                        </td>
+                                    </tr>
+                                </t>
+
+                                <t t-foreach="data.get('report_data', [])" t-as="line">
+                                    <t t-set="total_unit_price" t-value="total_unit_price + line.get('unit_price', 0)"/>
+                                    <t t-set="total_commission" t-value="total_commission + line.get('commission_amount', 0)"/>
+                                    
+                                    <tr>
+                                        <!-- Commission Partner -->
+                                        <td>
+                                            <strong t-esc="line.get('partner_name', 'Unknown Partner')"/>
+                                        </td>
+                                        <!-- Booking Date -->
+                                        <td class="text-center">
+                                            <span t-esc="line.get('booking_date', '')"/>
+                                        </td>
+                                        <!-- Client Order Ref -->
+                                        <td>
+                                            <span t-esc="line.get('client_order_ref', 'No Reference')"/>
+                                        </td>
+                                        <!-- Reference (Sale Order) -->
+                                        <td>
+                                            <span t-esc="line.get('sale_order_name', '')"/>
+                                        </td>
+                                        <!-- Unit Price -->
+                                        <td class="text-right">
+                                            <span t-esc="line.get('unit_price', 0)"/>
+                                            <span t-esc="line.get('currency', 'USD')"/>
+                                        </td>
+                                        <!-- Commission Rate -->
+                                        <td class="text-center">
+                                            <span t-esc="line.get('commission_rate', 0)"/>%
+                                        </td>
+                                        <!-- Total Amount (Commission Amount) -->
+                                        <td class="text-right">
+                                            <span t-esc="line.get('commission_amount', 0)"/>
+                                            <span t-esc="line.get('currency', 'USD')"/>
+                                        </td>
+                                        <!-- Commission Payment Status -->
+                                        <td class="text-center">
+                                            <span t-esc="line.get('commission_status', 'Unknown')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot class="table-dark">
+                                <tr>
+                                    <th colspan="4" class="text-right">GRAND TOTAL:</th>
+                                    <th class="text-right">
+                                        <span t-esc="total_unit_price"/> USD
+                                    </th>
+                                    <th></th>
+                                    <th class="text-right">
+                                        <span t-esc="total_commission"/> USD
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Summary Statistics -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Summary</h5>
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <p><strong>Report Generated:</strong> <span t-esc="context_today().strftime('%d/%m/%Y')"/></p>
+                                                <p><strong>Commission State:</strong> <span t-esc="data.get('commission_state', 'all')"/></p>
+                                            </div>
+                                            <div class="col-4">
+                                                <p>
+                                                    <strong>Total Unit Price:</strong>
+                                                    <span t-esc="total_unit_price"/> USD
+                                                </p>
+                                                <p>
+                                                    <strong>Total Commissions:</strong>
+                                                    <span t-esc="total_commission"/> USD
+                                                </p>
+                                            </div>
+                                            <div class="col-4">
+                                                <p>
+                                                    <strong>Number of Records:</strong>
+                                                    <span t-esc="len(data.get('report_data', []))"/>
+                                                </p>
+                                                <p>
+                                                    <strong>Average Commission:</strong>
+                                                    <t t-set="record_count" t-value="len(data.get('report_data', []))"/>
+                                                    <span t-esc="total_commission / record_count if record_count > 0 else 0"/> USD
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="oe_structure"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
                                 <t t-set="total_commission" t-value="0"/>
 
                                 <!-- Check if we have data -->

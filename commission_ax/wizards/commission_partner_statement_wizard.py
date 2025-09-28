@@ -119,11 +119,29 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                 # Debug log the extracted data
                 _logger.debug("Commission line %s: sale_order=%s, client_ref='%s'", line.id, sale_order.name if sale_order else 'None', client_ref)
                 
+                # Get unit price from commission line or sale order line
+                unit_price = 0.0
+                if hasattr(line, 'sales_value') and line.sales_value:
+                    # Use sales_value if available (from our commission enhancement)
+                    unit_price = line.sales_value
+                elif hasattr(line, 'price_unit') and line.price_unit:
+                    # Use price_unit if available
+                    unit_price = line.price_unit
+                elif sale_order:
+                    # Get unit price from sale order lines
+                    order_lines = sale_order.order_line
+                    if order_lines:
+                        # Use the first line's unit price, or average if multiple lines
+                        unit_price = sum(ol.price_unit for ol in order_lines) / len(order_lines)
+                    else:
+                        # Fallback to amount_total if no lines
+                        unit_price = sale_order.amount_total
+                
                 report_data.append({
                     'partner_name': line.partner_id.name,
                     'booking_date': sale_order.date_order.date() if sale_order and sale_order.date_order else '',
                     'client_order_ref': client_ref,
-                    'sale_value': sale_order.amount_total if sale_order else 0.0,
+                    'unit_price': unit_price,
                     'commission_rate': line.rate,
                     'calculation_method': dict(line._fields['calculation_method'].selection).get(line.calculation_method, ''),
                     'commission_amount': line.commission_amount,
@@ -152,7 +170,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                 'partner_name': 'Sample Commission Agent',
                 'booking_date': date.today(),
                 'client_order_ref': 'CLIENT-ORDER-2025-001',
-                'sale_value': 10000.00,
+                'unit_price': 10000.00,
                 'commission_rate': 5.0,
                 'calculation_method': 'percentage_total',
                 'commission_amount': 500.00,
@@ -164,7 +182,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                 'partner_name': 'Another Commission Agent', 
                 'booking_date': date.today(),
                 'client_order_ref': 'CLIENT-ORDER-2025-002',
-                'sale_value': 15000.00,
+                'unit_price': 15000.00,
                 'commission_rate': 3.0,
                 'calculation_method': 'percentage_total',
                 'commission_amount': 450.00,
@@ -271,13 +289,13 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         # Write title - Updated for 8-column structure with Commission Partner
         worksheet.merge_range(0, 0, 0, 7, f'Commission Partner Statement ({self.date_from} to {self.date_to})', header_format)
         
-        # Write headers - Updated to include Commission Partner column
+        # Write headers - Updated to include Commission Partner column and Unit Price
         headers = [
             'Commission Partner',
             'Booking Date',
             'Client Order Ref',
             'Reference',
-            'Sale Value',
+            'Unit Price',
             'Commission Rate',
             'Total Amount',
             'Commission Payment Status'
@@ -291,19 +309,19 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         worksheet.set_column(1, 1, 12)  # Booking Date  
         worksheet.set_column(2, 2, 25)  # Client Order Ref
         worksheet.set_column(3, 3, 15)  # Reference
-        worksheet.set_column(4, 4, 15)  # Sale Value
+        worksheet.set_column(4, 4, 15)  # Unit Price (was Sale Value)
         worksheet.set_column(5, 5, 12)  # Commission Rate
         worksheet.set_column(6, 6, 15)  # Total Amount
         worksheet.set_column(7, 7, 20)  # Commission Payment Status
         
-        # Write data - Updated column mapping for new client_order_ref structure
+        # Write data - Updated column mapping to use unit_price
         row = 3
         for data in report_data:
             worksheet.write(row, 0, data['partner_name'], data_format)      # Commission Partner
             worksheet.write(row, 1, data['booking_date'], date_format)      # Booking Date
             worksheet.write(row, 2, data['client_order_ref'], data_format)  # Client Order Ref
             worksheet.write(row, 3, data['sale_order_name'], data_format)   # Reference
-            worksheet.write(row, 4, data['sale_value'], number_format)      # Sale Value
+            worksheet.write(row, 4, data['unit_price'], number_format)      # Unit Price (was sale_value)
             
             # Format commission rate based on calculation method
             rate_display = f"{data['commission_rate']}"
@@ -315,13 +333,13 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             worksheet.write(row, 7, data['commission_status'], data_format)   # Commission Payment Status
             row += 1
         
-        # Add totals row - Updated column positions for new 8-column structure
+        # Add totals row - Updated to use unit_price
         if report_data:
-            total_sale_value = sum(data['sale_value'] for data in report_data)
+            total_unit_price = sum(data['unit_price'] for data in report_data)
             total_commission = sum(data['commission_amount'] for data in report_data)
             
             worksheet.write(row + 1, 2, 'TOTALS:', header_format)      # Totals label in column 2
-            worksheet.write(row + 1, 4, total_sale_value, number_format)  # Sale value total in column 4
+            worksheet.write(row + 1, 4, total_unit_price, number_format)  # Unit price total in column 4
             worksheet.write(row + 1, 6, total_commission, number_format)  # Commission total in column 6
         
         workbook.close()
