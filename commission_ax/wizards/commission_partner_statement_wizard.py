@@ -89,7 +89,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             # Add debug logging
             import logging
             _logger = logging.getLogger(__name__)
-            _logger.info(f"Found {len(commission_lines)} commission lines for report")
+            _logger.info("Found %s commission lines for report", len(commission_lines))
             
             # If no data found, create some sample data for testing
             if not commission_lines:
@@ -117,7 +117,7 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                     client_ref = 'No Reference'
                 
                 # Debug log the extracted data
-                _logger.debug(f"Commission line {line.id}: sale_order={sale_order.name if sale_order else 'None'}, client_ref='{client_ref}'")
+                _logger.debug("Commission line %s: sale_order=%s, client_ref='%s'", line.id, sale_order.name if sale_order else 'None', client_ref)
                 
                 report_data.append({
                     'partner_name': line.partner_id.name,
@@ -209,8 +209,8 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         # Debug logging
         import logging
         _logger = logging.getLogger(__name__)
-        _logger.info(f"PDF Report - Found {len(report_data)} records")
-        _logger.info(f"PDF Report Context: {report_context}")
+        _logger.info("PDF Report - Found %s records", len(report_data))
+        _logger.info("PDF Report Context keys: %s", list(report_context.keys()))
         
         # Store the data in wizard for template access
         self.with_context(report_context=report_context)

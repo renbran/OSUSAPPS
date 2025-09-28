@@ -81,18 +81,18 @@
                                         </td>
                                         <!-- Sale Value -->
                                         <td class="text-right">
-                                            <span t-esc="'{:,.2f}'.format(line.get('sale_value', 0))"/>
-                                            <span t-esc="line.get('currency', '')"/>
+                                            <span t-esc="line.get('sale_value', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span t-esc="line.get('currency', 'USD')"/>
                                         </td>
                                         <!-- Commission Rate -->
                                         <td class="text-center">
-                                            <span t-esc="'{:.2f}'.format(line.get('commission_rate', 0))"/>
+                                            <span t-esc="line.get('commission_rate', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
                                             <span t-if="'percentage' in line.get('calculation_method', '').lower()">%</span>
                                         </td>
                                         <!-- Total Amount (Commission Amount) -->
                                         <td class="text-right">
-                                            <span t-esc="'{:,.2f}'.format(line.get('commission_amount', 0))"/>
-                                            <span t-esc="line.get('currency', '')"/>
+                                            <span t-esc="line.get('commission_amount', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span t-esc="line.get('currency', 'USD')"/>
                                         </td>
                                         <!-- Commission Payment Status -->
                                         <td class="text-center">
@@ -113,11 +113,11 @@
                                 <tr>
                                     <th colspan="5" class="text-right">GRAND TOTAL:</th>
                                     <th class="text-right">
-                                        <span t-esc="'{:,.2f}'.format(total_sale_value)"/>
+                                        <span t-esc="total_sale_value" t-options="{'widget': 'float', 'precision': 2}"/> USD
                                     </th>
                                     <th></th>
                                     <th class="text-right">
-                                        <span t-esc="'{:,.2f}'.format(total_commission)"/>
+                                        <span t-esc="total_commission" t-options="{'widget': 'float', 'precision': 2}"/> USD
                                     </th>
                                     <th></th>
                                 </tr>
@@ -143,21 +143,23 @@
                                         <div class="col-4">
                                             <p>
                                                 <strong>Total Sale Value:</strong>
-                                                <span t-esc="'{:,.2f}'.format(total_sale_value)"/>
+                                                <span t-esc="total_sale_value" t-options="{'widget': 'float', 'precision': 2}"/> USD
                                             </p>
                                             <p>
                                                 <strong>Total Commissions:</strong>
-                                                <span t-esc="'{:,.2f}'.format(total_commission)"/>
+                                                <span t-esc="total_commission" t-options="{'widget': 'float', 'precision': 2}"/> USD
                                             </p>
                                         </div>
                                         <div class="col-4">
                                             <p>
                                                 <strong>Average Commission:</strong>
-                                                <span t-esc="'{:,.2f}'.format(total_commission / len(data.get('report_data', [])) if data.get('report_data') else 0)"/>
+                                                <t t-set="avg_commission" t-value="total_commission / len(data.get('report_data', [])) if data.get('report_data') else 0"/>
+                                                <span t-esc="avg_commission" t-options="{'widget': 'float', 'precision': 2}"/> USD
                                             </p>
                                             <p>
                                                 <strong>Commission Ratio:</strong>
-                                                <span t-esc="'{:.2f}%'.format((total_commission / total_sale_value) * 100 if total_sale_value > 0 else 0)"/>
+                                                <t t-set="commission_ratio" t-value="(total_commission / total_sale_value) * 100 if total_sale_value > 0 else 0"/>
+                                                <span t-esc="commission_ratio" t-options="{'widget': 'float', 'precision': 2}"/>%
                                             </p>
                                         </div>
                                     </div>

@@ -19,7 +19,7 @@ class CommissionPartnerStatementReport(models.AbstractModel):
             if not data:
                 data = {}
                 
-            _logger.info(f"Report generation - docids: {docids}, data keys: {list(data.keys())}")
+            _logger.info("Report generation - docids: %s, data keys: %s", docids, list(data.keys()) if data else [])
                 
             # Get wizard record to access its methods
             wizard_model = self.env['commission.partner.statement.wizard']
@@ -30,11 +30,11 @@ class CommissionPartnerStatementReport(models.AbstractModel):
                 wizards = wizard_model.browse(docids)
                 if wizards.exists():
                     wizard = wizards[0]  # Use first wizard instance
-                    _logger.info(f"Found wizard: {wizard.id}, date_from: {wizard.date_from}, date_to: {wizard.date_to}")
+                    _logger.info("Found wizard: %s, date_from: %s, date_to: %s", wizard.id, wizard.date_from, wizard.date_to)
                     
                     # Get commission data using wizard method
                     report_data = wizard._get_commission_data()
-                    _logger.info(f"Wizard returned {len(report_data)} records")
+                    _logger.info("Wizard returned %s records", len(report_data))
                     
                     # Prepare the data structure for the template
                     report_context = {
@@ -55,7 +55,7 @@ class CommissionPartnerStatementReport(models.AbstractModel):
                 # Use data passed from wizard action or create sample data
                 report_context = data if data.get('report_data') else self._get_sample_report_data()
                 
-            _logger.info(f"Final report context has {len(report_context.get('report_data', []))} records")
+            _logger.info("Final report context has %s records", len(report_context.get('report_data', [])))
             
             return {
                 'doc_ids': docids or [],
@@ -66,7 +66,7 @@ class CommissionPartnerStatementReport(models.AbstractModel):
             
         except Exception as e:
             # Log error and return safe fallback data
-            _logger.error(f"Error generating commission partner statement report: {str(e)}")
+            _logger.error("Error generating commission partner statement report: %s", str(e))
             
             return {
                 'doc_ids': docids or [],
