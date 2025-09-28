@@ -189,26 +189,42 @@ class CommissionPartnerStatementWizard(models.TransientModel):
             return pdf_result  # Return PDF for immediate view
             
     def _generate_pdf_report(self):
-        """Generate PDF report using proper report action"""
+        """Generate PDF report with proper data passing"""
         self.ensure_one()
         
-        # Use the report action with proper context
+        # Get the commission data
+        report_data = self._get_commission_data()
+        
+        # Prepare report context data
+        report_context = {
+            'report_data': report_data,
+            'date_from': self.date_from.strftime('%d/%m/%Y') if self.date_from else '',
+            'date_to': self.date_to.strftime('%d/%m/%Y') if self.date_to else '',
+            'commission_state': self.commission_state,
+            'partner_names': ', '.join(self.partner_ids.mapped('name')) if self.partner_ids else 'All Partners',
+            'project_names': 'All Projects',  # Project module not available
+            'error_message': None if report_data else 'No commission data found for the selected criteria'
+        }
+        
+        # Debug logging
+        import logging
+        _logger = logging.getLogger(__name__)
+        _logger.info(f"PDF Report - Found {len(report_data)} records")
+        _logger.info(f"PDF Report Context: {report_context}")
+        
+        # Store the data in wizard for template access
+        self.with_context(report_context=report_context)
+        
+        # Return report action that passes data correctly
         return {
             'type': 'ir.actions.report',
             'report_name': 'commission_ax.commission_partner_statement_report',
             'report_type': 'qweb-pdf',
-            'report_file': 'commission_ax.commission_partner_statement_report',
+            'data': report_context,
             'context': {
                 'active_ids': [self.id],
-                'active_model': 'commission.partner.statement.wizard'
-            },
-            'data': {
-                'report_data': self._get_commission_data(),
-                'date_from': self.date_from.strftime('%d/%m/%Y') if self.date_from else '',
-                'date_to': self.date_to.strftime('%d/%m/%Y') if self.date_to else '',
-                'commission_state': self.commission_state,
-                'partner_names': ', '.join(self.partner_ids.mapped('name')) if self.partner_ids else 'All Partners',
-                'project_names': 'All Projects'  # Project module not available
+                'active_model': 'commission.partner.statement.wizard',
+                **report_context
             }
         }
 

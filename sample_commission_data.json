@@ -1,0 +1,46 @@
+{
+  "report_data": [
+    {
+      "partner_name": "ABC Sales Agent",
+      "booking_date": "2025-01-15",
+      "client_order_ref": "CLIENT-ORDER-2025-001",
+      "sale_value": 12500.0,
+      "commission_rate": 2.5,
+      "calculation_method": "percentage_total",
+      "commission_amount": 312.5,
+      "commission_status": "Confirmed",
+      "sale_order_name": "SO2025-001",
+      "currency": "USD"
+    },
+    {
+      "partner_name": "XYZ Marketing Ltd",
+      "booking_date": "2025-01-18",
+      "client_order_ref": "CLIENT-ORDER-2025-002",
+      "sale_value": 8750.0,
+      "commission_rate": 3.0,
+      "calculation_method": "percentage_total",
+      "commission_amount": 262.5,
+      "commission_status": "Processed",
+      "sale_order_name": "SO2025-002",
+      "currency": "USD"
+    },
+    {
+      "partner_name": "Best Deal Partners",
+      "booking_date": "2025-01-20",
+      "client_order_ref": "CLIENT-ORDER-2025-003",
+      "sale_value": 15200.0,
+      "commission_rate": 1.8,
+      "calculation_method": "percentage_total",
+      "commission_amount": 273.6,
+      "commission_status": "Confirmed",
+      "sale_order_name": "SO2025-003",
+      "currency": "USD"
+    }
+  ],
+  "date_from": "01/01/2025",
+  "date_to": "31/01/2025",
+  "commission_state": "all",
+  "partner_names": "ABC Sales Agent, XYZ Marketing Ltd, Best Deal Partners",
+  "project_names": "All Projects",
+  "error_message": null
+}
