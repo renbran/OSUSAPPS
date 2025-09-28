@@ -49,144 +49,150 @@
                             <tbody>
                                 <t t-set="total_sale_value" t-value="0"/>
                                 <t t-set="total_commission" t-value="0"/>
-                                
+
                                 <!-- Check if we have data -->
                                 <t t-if="not data.get('report_data') or len(data.get('report_data', [])) == 0">
                                     <tr>
                                         <td colspan="8" class="text-center text-muted" style="padding: 30px; font-style: italic;">
                                             <i class="fa fa-info-circle" style="margin-right: 8px;"></i>
                                             No commission data available for the selected criteria.<br/>
-                                            <small>Please adjust your date range or partner selection and try again.</small>
-                                        </td>
-                                    </tr>
-                                </t>
-
-                                <t t-foreach="data.get('report_data', [])" t-as="line">
-                                    <tr>
-                                        <!-- Commission Partner -->
-                                        <td>
-                                            <strong t-esc="line.get('partner_name', 'Unknown Partner')"/>
-                                        </td>
-                                        <!-- Booking Date -->
-                                        <td class="text-center">
-                                            <span t-esc="line.get('booking_date', '')" t-options="{'widget': 'date'}"/>
-                                        </td>
-                                        <!-- Client Order Ref -->
-                                        <td>
-                                            <span t-esc="line.get('client_order_ref', 'No Reference')"/>
-                                        </td>
-                                        <!-- Reference (Sale Order) -->
-                                        <td>
-                                            <span t-esc="line.get('sale_order_name', '')"/>
-                                        </td>
-                                        <!-- Sale Value -->
-                                        <td class="text-right">
-                                            <span t-esc="line.get('sale_value', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
-                                            <span t-esc="line.get('currency', 'USD')"/>
-                                        </td>
-                                        <!-- Commission Rate -->
-                                        <td class="text-center">
-                                            <span t-esc="line.get('commission_rate', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
-                                            <span t-if="'percentage' in line.get('calculation_method', '').lower()">%</span>
-                                        </td>
-                                        <!-- Total Amount (Commission Amount) -->
-                                        <td class="text-right">
-                                            <span t-esc="line.get('commission_amount', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
-                                            <span t-esc="line.get('currency', 'USD')"/>
-                                        </td>
-                                        <!-- Commission Payment Status -->
-                                        <td class="text-center">
-                                            <span class="badge" t-att-class="'badge-success' if line.get('commission_status') == 'Paid' else 'badge-warning' if line.get('commission_status') == 'Processed' else 'badge-info' if line.get('commission_status') == 'Confirmed' else 'badge-secondary'">
-                                                <span t-esc="line.get('commission_status', 'Unknown')"/>
-                                            </span>
-                                        </td>
-                                    </tr>
-
-                                    <!-- Update totals -->
-                                    <t t-set="total_sale_value" t-value="total_sale_value + line.get('sale_value', 0)"/>
-                                    <t t-set="total_commission" t-value="total_commission + line.get('commission_amount', 0)"/>
-                                </t>
-                            </tbody>
-
-                            <!-- Grand Total Row -->
-                            <tfoot class="table-dark">
-                                <tr>
-                                    <th colspan="5" class="text-right">GRAND TOTAL:</th>
-                                    <th class="text-right">
-                                        <span t-esc="total_sale_value" t-options="{'widget': 'float', 'precision': 2}"/> USD
-                                    </th>
-                                    <th></th>
-                                    <th class="text-right">
-                                        <span t-esc="total_commission" t-options="{'widget': 'float', 'precision': 2}"/> USD
-                                    </th>
-                                    <th></th>
+                                        <small>Please adjust your date range or partner selection and try again.</small>
+                                    </td>
                                 </tr>
-                            </tfoot>
-                        </table>
+                            </t>
 
-                        <!-- Summary Statistics -->
-                        <div class="row mt-4" t-if="data.get('report_data')">
-                            <div class="col-12">
-                                <div class="alert alert-info">
-                                    <h5>Summary Statistics</h5>
-                                    <div class="row">
-                                        <div class="col-4">
-                                            <p>
-                                                <strong>Total Records:</strong>
-                                                <span t-esc="len(data.get('report_data', []))"/>
-                                            </p>
-                                            <p>
-                                                <strong>Unique Partners:</strong>
-                                                <span t-esc="len(set(line.get('partner_name', '') for line in data.get('report_data', [])))"/>
-                                            </p>
-                                        </div>
-                                        <div class="col-4">
-                                            <p>
-                                                <strong>Total Sale Value:</strong>
-                                                <span t-esc="total_sale_value" t-options="{'widget': 'float', 'precision': 2}"/> USD
-                                            </p>
-                                            <p>
-                                                <strong>Total Commissions:</strong>
-                                                <span t-esc="total_commission" t-options="{'widget': 'float', 'precision': 2}"/> USD
-                                            </p>
-                                        </div>
-                                        <div class="col-4">
-                                            <p>
-                                                <strong>Average Commission:</strong>
-                                                <t t-set="avg_commission" t-value="total_commission / len(data.get('report_data', [])) if data.get('report_data') else 0"/>
-                                                <span t-esc="avg_commission" t-options="{'widget': 'float', 'precision': 2}"/> USD
-                                            </p>
-                                            <p>
-                                                <strong>Commission Ratio:</strong>
-                                                <t t-set="commission_ratio" t-value="(total_commission / total_sale_value) * 100 if total_sale_value > 0 else 0"/>
-                                                <span t-esc="commission_ratio" t-options="{'widget': 'float', 'precision': 2}"/>%
-                                            </p>
-                                        </div>
+                            <t t-foreach="data.get('report_data', [])" t-as="line">
+                                <tr>
+                                    <!-- Commission Partner -->
+                                    <td>
+                                        <strong t-esc="line.get('partner_name', 'Unknown Partner')"/>
+                                    </td>
+                                    <!-- Booking Date -->
+                                    <td class="text-center">
+                                        <span t-esc="line.get('booking_date', '')" t-options="{'widget': 'date'}"/>
+                                    </td>
+                                    <!-- Client Order Ref -->
+                                    <td>
+                                        <span t-esc="line.get('client_order_ref', 'No Reference')"/>
+                                    </td>
+                                    <!-- Reference (Sale Order) -->
+                                    <td>
+                                        <span t-esc="line.get('sale_order_name', '')"/>
+                                    </td>
+                                    <!-- Sale Value -->
+                                    <td class="text-right">
+                                        <span t-esc="line.get('sale_value', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
+                                        <span t-esc="line.get('currency', 'USD')"/>
+                                    </td>
+                                    <!-- Commission Rate -->
+                                    <td class="text-center">
+                                        <span t-esc="line.get('commission_rate', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
+                                        <span t-if="'percentage' in line.get('calculation_method', '').lower()">%</span>
+                                    </td>
+                                    <!-- Total Amount (Commission Amount) -->
+                                    <td class="text-right">
+                                        <span t-esc="line.get('commission_amount', 0)" t-options="{'widget': 'float', 'precision': 2}"/>
+                                        <span t-esc="line.get('currency', 'USD')"/>
+                                    </td>
+                                    <!-- Commission Payment Status -->
+                                    <td class="text-center">
+                                        <span class="badge" t-att-class="'badge-success' if line.get('commission_status') == 'Paid' else 'badge-warning' if line.get('commission_status') == 'Processed' else 'badge-info' if line.get('commission_status') == 'Confirmed' else 'badge-secondary'">
+                                            <span t-esc="line.get('commission_status', 'Unknown')"/>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <!-- Update totals -->
+                                <t t-set="total_sale_value" t-value="total_sale_value + line.get('sale_value', 0)"/>
+                                <t t-set="total_commission" t-value="total_commission + line.get('commission_amount', 0)"/>
+                            </t>
+                        </tbody>
+
+                        <!-- Grand Total Row -->
+                        <tfoot class="table-dark">
+                            <tr>
+                                <th colspan="5" class="text-right">GRAND TOTAL:</th>
+                                <th class="text-right">
+                                    <span t-esc="total_sale_value" t-options="{'widget': 'float', 'precision': 2}"/>
+ USD
+                                </th>
+                                <th></th>
+                                <th class="text-right">
+                                    <span t-esc="total_commission" t-options="{'widget': 'float', 'precision': 2}"/>
+ USD
+                                </th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Summary Statistics -->
+                    <div class="row mt-4" t-if="data.get('report_data')">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h5>Summary Statistics</h5>
+                                <div class="row">
+                                    <div class="col-4">
+                                        <p>
+                                            <strong>Total Records:</strong>
+                                            <span t-esc="len(data.get('report_data', []))"/>
+                                        </p>
+                                        <p>
+                                            <strong>Unique Partners:</strong>
+                                            <span t-esc="len(set(line.get('partner_name', '') for line in data.get('report_data', [])))"/>
+                                        </p>
+                                    </div>
+                                    <div class="col-4">
+                                        <p>
+                                            <strong>Total Sale Value:</strong>
+                                            <span t-esc="total_sale_value" t-options="{'widget': 'float', 'precision': 2}"/>
+ USD
+                                        </p>
+                                        <p>
+                                            <strong>Total Commissions:</strong>
+                                            <span t-esc="total_commission" t-options="{'widget': 'float', 'precision': 2}"/>
+ USD
+                                        </p>
+                                    </div>
+                                    <div class="col-4">
+                                        <p>
+                                            <strong>Average Commission:</strong>
+                                            <t t-set="avg_commission" t-value="total_commission / len(data.get('report_data', [])) if data.get('report_data') else 0"/>
+                                            <span t-esc="avg_commission" t-options="{'widget': 'float', 'precision': 2}"/>
+ USD
+                                        </p>
+                                        <p>
+                                            <strong>Commission Ratio:</strong>
+                                            <t t-set="commission_ratio" t-value="(total_commission / total_sale_value) * 100 if total_sale_value > 0 else 0"/>
+                                            <span t-esc="commission_ratio" t-options="{'widget': 'float', 'precision': 2}"/>
+%
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- No Data Message -->
-                        <div class="row" t-if="not data.get('report_data')">
-                            <div class="col-12">
-                                <div class="alert alert-warning text-center">
-                                    <h4>No commission data found for the selected criteria.</h4>
-                                    <p>Please adjust your filters and try again.</p>
-                                    <!-- Debug information -->
-                                    <div t-if="data.get('error_message')" class="mt-3">
-                                        <small class="text-muted">
-                                            Debug: <span t-esc="data.get('error_message')"/>
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="oe_structure"/>
                     </div>
-                </t>
+
+                    <!-- No Data Message -->
+                    <div class="row" t-if="not data.get('report_data')">
+                        <div class="col-12">
+                            <div class="alert alert-warning text-center">
+                                <h4>No commission data found for the selected criteria.</h4>
+                                <p>Please adjust your filters and try again.</p>
+                                <!-- Debug information -->
+                                <div t-if="data.get('error_message')" class="mt-3">
+                                    <small class="text-muted">
+                                            Debug: <span t-esc="data.get('error_message')"/>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oe_structure"/>
+                </div>
             </t>
         </t>
-    </template>
+    </t>
+</template>
 </odoo>
