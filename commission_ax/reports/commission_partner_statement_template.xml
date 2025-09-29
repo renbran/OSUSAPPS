@@ -115,7 +115,8 @@
                                     <!-- Commission Rate -->
                                     <td style="border: 1px solid #333; padding: 6px; text-align: center; vertical-align: top;">
                                         <t t-set="rate_val" t-value="line.get('commission_rate', 0) or 0"/>
-                                        <span t-esc="rate_val"/>%
+                                        <span t-esc="rate_val"/>
+%
                                     </td>
                                     <!-- Total Amount (Commission Amount) -->
                                     <td style="border: 1px solid #333; padding: 6px; text-align: right; vertical-align: top;">
@@ -141,12 +142,14 @@
                                 <td style="border: 1px solid #333; padding: 8px;"></td>
                                 <td style="border: 1px solid #333; padding: 8px; text-align: right;">
                                     <strong>
-                                        <span t-esc="total_unit_price"/> USD</strong>
+                                        <span t-esc="total_unit_price"/>
+ USD</strong>
                                 </td>
                                 <td style="border: 1px solid #333; padding: 8px;"></td>
                                 <td style="border: 1px solid #333; padding: 8px; text-align: right;">
                                     <strong>
-                                        <span t-esc="total_commission"/> USD</strong>
+                                        <span t-esc="total_commission"/>
+ USD</strong>
                                 </td>
                                 <td style="border: 1px solid #333; padding: 8px;"></td>
                             </tr>
@@ -170,7 +173,8 @@
                                     <td style="border: 1px solid #333; padding: 8px;">
                                         <t t-set="record_count" t-value="len(data.get('report_data', []))"/>
                                         <t t-set="avg_commission" t-value="float(total_commission) / float(record_count) if record_count > 0 else 0"/>
-                                        <span t-esc="avg_commission"/> USD
+                                        <span t-esc="avg_commission"/>
+ USD
                                     </td>
                                 </tr>
                                 <tr>
