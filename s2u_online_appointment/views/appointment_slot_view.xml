@@ -48,9 +48,7 @@
             <field name="view_mode">tree,form</field>
         </record>
 
-        <menuitem name="Appointment Slots" id="menu_appointment_slot"
-                  parent="menu_appointment" groups="website.group_website_designer"
-                  action="appointment_slot_action" sequence="10"/>
+        <!-- This menu is already defined in menus.xml as menu_videographer_availability -->
 
     </data>
 </odoo>
