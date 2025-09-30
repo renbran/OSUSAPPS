@@ -148,6 +148,11 @@ class CommissionPartnerStatementWizard(models.TransientModel):
                     'commission_status': dict(line._fields['state'].selection).get(line.state, ''),
                     'sale_order_name': sale_order.name if sale_order else 'No Sale Order',
                     'currency': sale_order.currency_id.name if sale_order and sale_order.currency_id else 'USD',
+                    # Add profit analysis fields for comprehensive reporting
+                    'commission_category': getattr(line, 'commission_category', 'sales_commission'),
+                    'is_cost_to_company': getattr(line, 'is_cost_to_company', True),
+                    'profit_impact_percentage': getattr(line, 'profit_impact_percentage', 0.0),
+                    'commission_type_name': line.commission_type_id.name if line.commission_type_id else 'Standard Commission',
                 })
             
             # Sort data by partner name and booking date for better readability

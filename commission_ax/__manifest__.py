@@ -91,6 +91,7 @@ pip install xlsxwriter numpy pandas scikit-learn
         'reports/commission_report_template.xml',
         'reports/commission_partner_statement_reports.xml',
         'reports/commission_partner_statement_template.xml',
+        'reports/commission_profit_analysis_template.xml',
 
         # Advanced features (wizard views) - Load wizard views AFTER models are loaded
         'views/commission_payment_wizard_views.xml',

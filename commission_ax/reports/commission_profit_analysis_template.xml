@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Comprehensive Commission Profit Analysis Report -->
+    <record id="action_commission_profit_analysis_report" model="ir.actions.report">
+        <field name="name">Commission Profit Analysis Report</field>
+        <field name="model">commission.partner.statement.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">commission_ax.commission_profit_analysis_report</field>
+        <field name="report_file">commission_ax.commission_profit_analysis_report</field>
+        <field name="binding_model_id" ref="model_commission_partner_statement_wizard"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <template id="commission_profit_analysis_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <!-- Report Header -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h1 class="text-center mb-4" style="font-weight: bold; color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px;">
+                                    Commission Profit Analysis Report
+                                </h1>
+                                <div class="text-center mb-4">
+                                    <h3 style="color: #34495e;">
+                                        Period: <span t-esc="data.get('date_from', '')"/> to <span t-esc="data.get('date_to', '')"/>
+                                    </h3>
+                                    <p class="text-muted">Generated on: <span t-esc="context_today()"/></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Executive Summary -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card" style="border: 2px solid #3498db; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                    <div class="card-header" style="background: #3498db; color: white;">
+                                        <h4 class="mb-0">Executive Summary - Net Profit Impact</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <t t-set="total_sales" t-value="0"/>
+                                        <t t-set="total_commissions" t-value="0"/>
+                                        <t t-set="external_commissions" t-value="0"/>
+                                        <t t-set="internal_commissions" t-value="0"/>
+                                        
+                                        <!-- Calculate totals -->
+                                        <t t-foreach="data.get('report_data', [])" t-as="line">
+                                            <t t-set="unit_price" t-value="line.get('unit_price', 0) or 0"/>
+                                            <t t-set="commission_amt" t-value="line.get('commission_amount', 0) or 0"/>
+                                            <t t-set="category" t-value="line.get('commission_category', '')"/>
+                                            
+                                            <t t-set="total_sales" t-value="total_sales + unit_price"/>
+                                            <t t-set="total_commissions" t-value="total_commissions + commission_amt"/>
+                                            
+                                            <t t-if="'external' in category">
+                                                <t t-set="external_commissions" t-value="external_commissions + commission_amt"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-set="internal_commissions" t-value="internal_commissions + commission_amt"/>
+                                            </t>
+                                        </t>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-3 text-center">
+                                                <h5 style="color: #27ae60;">Total Sales Revenue</h5>
+                                                <h3 style="color: #27ae60; font-weight: bold;">
+                                                    $<span t-esc="'{:,.2f}'.format(total_sales)"/>
+                                                </h3>
+                                            </div>
+                                            <div class="col-md-3 text-center">
+                                                <h5 style="color: #e74c3c;">Total Commission Cost</h5>
+                                                <h3 style="color: #e74c3c; font-weight: bold;">
+                                                    $<span t-esc="'{:,.2f}'.format(total_commissions)"/>
+                                                </h3>
+                                            </div>
+                                            <div class="col-md-3 text-center">
+                                                <h5 style="color: #f39c12;">Commission Rate</h5>
+                                                <h3 style="color: #f39c12; font-weight: bold;">
+                                                    <span t-esc="'{:.2f}%'.format((total_commissions/total_sales)*100 if total_sales > 0 else 0)"/>
+                                                </h3>
+                                            </div>
+                                            <div class="col-md-3 text-center">
+                                                <h5 style="color: #9b59b6;">Net Profit Margin</h5>
+                                                <h3 style="color: #9b59b6; font-weight: bold;">
+                                                    <span t-esc="'{:.2f}%'.format(((total_sales-total_commissions)/total_sales)*100 if total_sales > 0 else 0)"/>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                        
+                                        <hr/>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6 text-center">
+                                                <h6 style="color: #e74c3c;">External Commissions (Cost)</h6>
+                                                <h4 style="color: #e74c3c;">$<span t-esc="'{:,.2f}'.format(external_commissions)"/></h4>
+                                            </div>
+                                            <div class="col-md-6 text-center">
+                                                <h6 style="color: #f39c12;">Internal Commissions (Investment)</h6>
+                                                <h4 style="color: #f39c12;">$<span t-esc="'{:,.2f}'.format(internal_commissions)"/></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Commission Category Breakdown -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h4 style="color: #2c3e50; border-left: 4px solid #3498db; padding-left: 10px;">Commission Category Analysis</h4>
+                                <table class="table table-bordered table-hover" style="font-size: 11px;">
+                                    <thead style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white;">
+                                        <tr>
+                                            <th style="padding: 12px; text-align: center;">Category</th>
+                                            <th style="padding: 12px; text-align: center;">Count</th>
+                                            <th style="padding: 12px; text-align: center;">Total Amount</th>
+                                            <th style="padding: 12px; text-align: center;">Avg Rate</th>
+                                            <th style="padding: 12px; text-align: center;">% of Total Sales</th>
+                                            <th style="padding: 12px; text-align: center;">Profit Impact</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Group by category for analysis -->
+                                        <t t-set="categories" t-value="{}"/>
+                                        <t t-foreach="data.get('report_data', [])" t-as="line">
+                                            <t t-set="cat" t-value="line.get('commission_category', 'Unknown')"/>
+                                            <t t-if="cat not in categories">
+                                                <t t-set="categories" t-value="dict(categories, **{cat: {'count': 0, 'total': 0, 'rates': []}})"/>
+                                            </t>
+                                            <t t-set="categories" t-value="dict(categories, **{cat: {
+                                                'count': categories[cat]['count'] + 1,
+                                                'total': categories[cat]['total'] + (line.get('commission_amount', 0) or 0),
+                                                'rates': categories[cat]['rates'] + [(line.get('commission_rate', 0) or 0)]
+                                            }})"/>
+                                        </t>
+                                        
+                                        <!-- External Categories (Higher Impact) -->
+                                        <tr style="background-color: #ffe6e6;">
+                                            <td colspan="6" style="padding: 8px; font-weight: bold; color: #c0392b;">
+                                                EXTERNAL COMMISSIONS (Direct Cost Impact)
+                                            </td>
+                                        </tr>
+                                        <t t-foreach="categories.items()" t-as="cat_data">
+                                            <t t-if="'external' in cat_data[0]">
+                                                <t t-set="cat_name" t-value="cat_data[0]"/>
+                                                <t t-set="cat_info" t-value="cat_data[1]"/>
+                                                <tr style="background-color: #ffeaea;">
+                                                    <td style="padding: 8px; font-weight: bold;">
+                                                        <span t-esc="cat_name.replace('_', ' ').title()"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: center;">
+                                                        <span t-esc="cat_info['count']"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: right; font-weight: bold; color: #e74c3c;">
+                                                        $<span t-esc="'{:,.2f}'.format(cat_info['total'])"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: center;">
+                                                        <span t-esc="'{:.2f}%'.format(sum(cat_info['rates'])/len(cat_info['rates']) if cat_info['rates'] else 0)"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: center;">
+                                                        <span t-esc="'{:.2f}%'.format((cat_info['total']/total_sales)*100 if total_sales > 0 else 0)"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: center; color: #e74c3c; font-weight: bold;">
+                                                        HIGH IMPACT
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        
+                                        <!-- Internal Categories (Investment) -->
+                                        <tr style="background-color: #fff3cd;">
+                                            <td colspan="6" style="padding: 8px; font-weight: bold; color: #856404;">
+                                                INTERNAL COMMISSIONS (Performance Investment)
+                                            </td>
+                                        </tr>
+                                        <t t-foreach="categories.items()" t-as="cat_data">
+                                            <t t-if="'external' not in cat_data[0] and cat_data[0] != 'Unknown'">
+                                                <t t-set="cat_name" t-value="cat_data[0]"/>
+                                                <t t-set="cat_info" t-value="cat_data[1]"/>
+                                                <tr style="background-color: #fef9e7;">
+                                                    <td style="padding: 8px; font-weight: bold;">
+                                                        <span t-esc="cat_name.replace('_', ' ').title()"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: center;">
+                                                        <span t-esc="cat_info['count']"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: right; font-weight: bold; color: #f39c12;">
+                                                        $<span t-esc="'{:,.2f}'.format(cat_info['total'])"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: center;">
+                                                        <span t-esc="'{:.2f}%'.format(sum(cat_info['rates'])/len(cat_info['rates']) if cat_info['rates'] else 0)"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: center;">
+                                                        <span t-esc="'{:.2f}%'.format((cat_info['total']/total_sales)*100 if total_sales > 0 else 0)"/>
+                                                    </td>
+                                                    <td style="padding: 8px; text-align: center; color: #f39c12; font-weight: bold;">
+                                                        INVESTMENT
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Commission Lines -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h4 style="color: #2c3e50; border-left: 4px solid #3498db; padding-left: 10px;">Detailed Commission Breakdown</h4>
+                                <table class="table table-bordered table-striped" style="font-size: 10px;">
+                                    <thead style="background: #34495e; color: white;">
+                                        <tr>
+                                            <th style="padding: 8px;">Partner</th>
+                                            <th style="padding: 8px;">Date</th>
+                                            <th style="padding: 8px;">Order Ref</th>
+                                            <th style="padding: 8px;">Category</th>
+                                            <th style="padding: 8px;">Sales Value</th>
+                                            <th style="padding: 8px;">Rate</th>
+                                            <th style="padding: 8px;">Commission</th>
+                                            <th style="padding: 8px;">Profit Impact %</th>
+                                            <th style="padding: 8px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="data.get('report_data', [])" t-as="line">
+                                            <t t-set="is_external" t-value="'external' in (line.get('commission_category', '') or '')"/>
+                                            <tr t-att-style="'background-color: #ffeaea;' if is_external else 'background-color: #e8f5e8;'">
+                                                <td style="padding: 6px;">
+                                                    <span t-esc="line.get('partner_name', 'Unknown')"/>
+                                                </td>
+                                                <td style="padding: 6px; text-align: center;">
+                                                    <span t-esc="line.get('booking_date', '')"/>
+                                                </td>
+                                                <td style="padding: 6px;">
+                                                    <span t-esc="line.get('sale_order_name', '')"/>
+                                                </td>
+                                                <td style="padding: 6px; font-weight: bold;" t-att-style="'color: #e74c3c;' if is_external else 'color: #27ae60;'">
+                                                    <span t-esc="(line.get('commission_category', 'Unknown') or 'Unknown').replace('_', ' ').title()"/>
+                                                </td>
+                                                <td style="padding: 6px; text-align: right;">
+                                                    $<span t-esc="'{:,.2f}'.format(line.get('unit_price', 0) or 0)"/>
+                                                </td>
+                                                <td style="padding: 6px; text-align: center;">
+                                                    <span t-esc="line.get('commission_rate', 0) or 0"/>%
+                                                </td>
+                                                <td style="padding: 6px; text-align: right; font-weight: bold;" t-att-style="'color: #e74c3c;' if is_external else 'color: #f39c12;'">
+                                                    $<span t-esc="'{:,.2f}'.format(line.get('commission_amount', 0) or 0)"/>
+                                                </td>
+                                                <td style="padding: 6px; text-align: center; font-weight: bold;">
+                                                    <t t-set="impact" t-value="((line.get('commission_amount', 0) or 0) / (line.get('unit_price', 1) or 1)) * 100"/>
+                                                    <span t-esc="'{:.2f}%'.format(impact)"/>
+                                                </td>
+                                                <td style="padding: 6px; text-align: center;">
+                                                    <span t-esc="line.get('commission_status', 'Unknown')"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Profit Analysis Summary -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h5><strong>Profit Analysis Summary:</strong></h5>
+                                    <ul class="mb-0">
+                                        <li><strong>Total Commission Cost:</strong> $<span t-esc="'{:,.2f}'.format(total_commissions)"/> (<span t-esc="'{:.2f}%'.format((total_commissions/total_sales)*100 if total_sales > 0 else 0)"/> of sales)</li>
+                                        <li><strong>External Commission Impact:</strong> $<span t-esc="'{:,.2f}'.format(external_commissions)"/> (Direct cost to company profit)</li>
+                                        <li><strong>Internal Commission Investment:</strong> $<span t-esc="'{:,.2f}'.format(internal_commissions)"/> (Performance incentive investment)</li>
+                                        <li><strong>Net Profit After Commissions:</strong> $<span t-esc="'{:,.2f}'.format(total_sales - total_commissions)"/> (<span t-esc="'{:.2f}%'.format(((total_sales-total_commissions)/total_sales)*100 if total_sales > 0 else 0)"/> margin)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

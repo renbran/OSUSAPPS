@@ -52,7 +52,38 @@ class CommissionLine(models.Model):
         ('percentage_total', 'Percentage of Total'),
         ('percentage_untaxed', 'Percentage of Untaxed Amount'),
         ('percentage_sales_value', 'Percentage of Sales Value'),
+        ('tiered', 'Tiered Commission'),
     ], string='Calculation Method', required=True, default='percentage_sales_value')
+    
+    # Commission categorization for profit analysis
+    commission_category = fields.Selection([
+        ('external_broker', 'External Broker'),
+        ('external_referrer', 'External Referrer'),
+        ('external_cashback', 'External Cashback'),
+        ('external_other', 'Other External'),
+        ('internal_agent1', 'Internal Agent 1'),
+        ('internal_agent2', 'Internal Agent 2'),
+        ('internal_manager', 'Internal Manager'),
+        ('internal_director', 'Internal Director'),
+        ('sales_commission', 'Sales Commission'),
+        ('referral_commission', 'Referral Commission'),
+        ('management_override', 'Management Override'),
+        ('performance_bonus', 'Performance Bonus'),
+    ], string='Commission Category', help='Category for profit analysis and reporting')
+    
+    # Profit impact tracking
+    is_cost_to_company = fields.Boolean(
+        string='Cost to Company',
+        default=True,
+        help='If true, this commission reduces company profit'
+    )
+    
+    profit_impact_percentage = fields.Float(
+        string='Profit Impact %',
+        compute='_compute_profit_impact',
+        store=True,
+        help='Percentage of order total that this commission represents'
+    )
 
     rate = fields.Float(
         string='Rate/Amount',
@@ -335,48 +366,62 @@ class CommissionLine(models.Model):
             line.assignment_count = 0  # len(line.assignment_ids)
 
     @api.depends('sale_order_id.amount_total', 'sale_order_id.amount_untaxed',
-                 'rate', 'calculation_method', 'sales_value', 'sale_order_id.order_line.price_unit')
+                 'rate', 'calculation_method', 'sales_value', 'sale_order_id.order_line.price_unit',
+                 'sale_order_id.order_line.product_uom_qty', 'commission_type_id')
     def _compute_amounts(self):
-        """Enhanced commission amount calculation with proper sales value handling"""
+        """Enhanced commission amount calculation with comprehensive commission type support"""
         for line in self:
             if not line.sale_order_id:
                 line.base_amount = 0.0
                 line.commission_amount = 0.0
                 line.commission_amount_company_currency = 0.0
                 continue
-
-            order = line.sale_order_id
-
-            # Determine base amount based on calculation method
-            if line.calculation_method == 'fixed':
-                line.base_amount = 1.0  # Fixed amount doesn't need base
-                line.commission_amount = line.rate
             
-            elif line.calculation_method == 'percentage_sales_value':
+            order = line.sale_order_id
+            
+            # Get commission type configuration if available
+            commission_type = line.commission_type_id
+            calculation_method = line.calculation_method or (commission_type.calculation_method if commission_type else 'percentage_sales_value')
+            rate = line.rate or (commission_type.default_rate if commission_type else 0.0)
+            
+            # Determine base amount based on calculation method
+            if calculation_method == 'fixed':
+                line.base_amount = 1.0  # Fixed amount doesn't need base
+                line.commission_amount = rate
+            
+            elif calculation_method == 'percentage_sales_value':
                 # Use the specific sales_value field for calculation
                 line.base_amount = line.sales_value or 0.0
-                line.commission_amount = (line.rate / 100.0) * line.base_amount
+                line.commission_amount = (rate / 100.0) * line.base_amount
             
-            elif line.calculation_method == 'percentage_unit':
-                # Use sales_value if available, otherwise fallback to first order line
+            elif calculation_method == 'percentage_unit':
+                # Use sales_value if available, otherwise calculate from order lines
                 if line.sales_value:
                     line.base_amount = line.sales_value
                 elif order.order_line:
-                    # Calculate sum of all order line unit prices instead of just first one
-                    total_price_unit = sum(ol.price_unit * ol.product_uom_qty for ol in order.order_line)
-                    line.base_amount = total_price_unit
+                    # Calculate weighted unit price based on quantities for accurate profit calculation
+                    total_value = sum(ol.price_unit * ol.product_uom_qty for ol in order.order_line)
+                    line.base_amount = total_value
                 else:
                     line.base_amount = 0.0
-                line.commission_amount = (line.rate / 100.0) * line.base_amount
+                line.commission_amount = (rate / 100.0) * line.base_amount
             
-            elif line.calculation_method == 'percentage_untaxed':
+            elif calculation_method == 'percentage_untaxed':
                 line.base_amount = order.amount_untaxed
-                line.commission_amount = (line.rate / 100.0) * line.base_amount
+                line.commission_amount = (rate / 100.0) * line.base_amount
             
-            else:  # percentage_total
+            elif calculation_method == 'tiered':
+                # Tiered commission calculation for advanced profit optimization
+                line.base_amount = order.amount_untaxed
+                line.commission_amount = line._calculate_tiered_commission(line.base_amount, rate, commission_type)
+            
+            else:  # percentage_total (default)
                 line.base_amount = order.amount_total
-                line.commission_amount = (line.rate / 100.0) * line.base_amount
-
+                line.commission_amount = (rate / 100.0) * line.base_amount            # Ensure commission amount is not negative
+            if line.commission_amount < 0:
+                line.commission_amount = 0.0
+                _logger.warning(f"Negative commission amount corrected to 0 for line {line.id}")
+            
             # Convert to company currency
             if line.currency_id and line.company_currency_id and line.currency_id != line.company_currency_id:
                 line.commission_amount_company_currency = line.currency_id._convert(
@@ -387,6 +432,43 @@ class CommissionLine(models.Model):
                 )
             else:
                 line.commission_amount_company_currency = line.commission_amount
+    
+    def _calculate_tiered_commission(self, base_amount, base_rate, commission_type):
+        """Calculate tiered commission based on amount thresholds"""
+        if not commission_type:
+            return (base_rate / 100.0) * base_amount
+        
+        # Define default tiers (can be extended to read from commission_type)
+        tiers = [
+            (0, 10000, base_rate),  # 0-10k: base rate
+            (10000, 50000, base_rate * 1.2),  # 10k-50k: 20% bonus
+            (50000, 100000, base_rate * 1.5),  # 50k-100k: 50% bonus
+            (100000, float('inf'), base_rate * 2.0),  # 100k+: 100% bonus
+        ]
+        
+        total_commission = 0.0
+        remaining_amount = base_amount
+        
+        for tier_min, tier_max, tier_rate in tiers:
+            if remaining_amount <= 0:
+                break
+            
+            tier_amount = min(remaining_amount, tier_max - tier_min)
+            if tier_amount > 0:
+                tier_commission = (tier_rate / 100.0) * tier_amount
+                total_commission += tier_commission
+                remaining_amount -= tier_amount
+        
+        return total_commission
+    
+    @api.depends('commission_amount', 'sale_order_id.amount_total')
+    def _compute_profit_impact(self):
+        """Compute the profit impact percentage of this commission"""
+        for line in self:
+            if line.sale_order_id and line.sale_order_id.amount_total > 0:
+                line.profit_impact_percentage = (line.commission_amount / line.sale_order_id.amount_total) * 100.0
+            else:
+                line.profit_impact_percentage = 0.0
 
     @api.depends('commission_amount', 'invoice_amount', 'paid_amount', 'expected_payment_date')
     def _compute_payment_amounts(self):
@@ -591,11 +673,34 @@ class CommissionLine(models.Model):
                 calculation_method_mapping = {
                     'percentage': 'percentage_sales_value',  # Changed default to sales_value
                     'fixed': 'fixed',
-                    'tiered': 'percentage_sales_value',
+                    'tiered': 'tiered',
                 }
                 
                 commission_type_method = self.commission_type_id.calculation_method or 'percentage'
                 mapped_method = calculation_method_mapping.get(commission_type_method, 'percentage_sales_value')
+                
+                # Auto-set commission category based on commission type for profit analysis
+                commission_type = self.commission_type_id
+                if commission_type.commission_category == 'sales':
+                    self.commission_category = 'sales_commission'
+                elif commission_type.commission_category == 'referral':
+                    self.commission_category = 'referral_commission'
+                elif commission_type.commission_category == 'management':
+                    self.commission_category = 'management_override'
+                elif commission_type.code in ['BROKER', 'EXTERNAL_BROKER']:
+                    self.commission_category = 'external_broker'
+                elif commission_type.code in ['REFERRER', 'EXTERNAL_REFERRER']:
+                    self.commission_category = 'external_referrer'
+                elif commission_type.code in ['AGENT1', 'INTERNAL_AGENT1']:
+                    self.commission_category = 'internal_agent1'
+                elif commission_type.code in ['AGENT2', 'INTERNAL_AGENT2']:
+                    self.commission_category = 'internal_agent2'
+                elif commission_type.code in ['MANAGER', 'INTERNAL_MANAGER']:
+                    self.commission_category = 'internal_manager'
+                elif commission_type.code in ['DIRECTOR', 'INTERNAL_DIRECTOR']:
+                    self.commission_category = 'internal_director'
+                else:
+                    self.commission_category = 'sales_commission'  # default
                 
                 # Double-check that the mapped method is valid
                 valid_methods = [opt[0] for opt in self._fields['calculation_method'].selection]
