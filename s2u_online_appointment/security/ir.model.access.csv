@@ -1,0 +1,36 @@
+"id","group_id:id","name","model_id:id","perm_create","perm_unlink","perm_write","perm_read"
+"access_appointment_slot_manager","website.group_website_designer","Appointment Slot Manager","model_s2u_appointment_slot",1,1,1,1
+"access_appointment_option_manager","website.group_website_designer","Appointment Option Manager","model_s2u_appointment_option",1,1,1,1
+"access_appointment_slot_portal","base.group_portal","Appointment Slot Portal","model_s2u_appointment_slot",0,0,0,1
+"access_appointment_option_portal","base.group_portal","Appointment Option Portal","model_s2u_appointment_option",0,0,0,1
+"access_appointment_registration_portal","base.group_portal","Booking Registration Portal","model_s2u_appointment_registration",1,0,1,1
+"access_appointment_registration_user","base.group_user","Booking Registration User","model_s2u_appointment_registration",1,1,1,1
+"access_videographer_profile_manager","website.group_website_designer","Videographer Profile Manager","model_s2u_videographer_profile",1,1,1,1
+"access_videographer_profile_user","base.group_user","Videographer Profile User","model_s2u_videographer_profile",0,0,1,1
+"access_videographer_profile_portal","base.group_portal","Videographer Profile Portal","model_s2u_videographer_profile",0,0,0,1
+"access_videographer_specialization_manager","website.group_website_designer","Specialization Manager","model_s2u_videographer_specialization",1,1,1,1
+"access_videographer_specialization_user","base.group_user","Specialization User","model_s2u_videographer_specialization",0,0,0,1
+"access_videographer_specialization_portal","base.group_portal","Specialization Portal","model_s2u_videographer_specialization",0,0,0,1
+"access_videographer_equipment_manager","website.group_website_designer","Equipment Manager","model_s2u_videographer_equipment",1,1,1,1
+"access_videographer_equipment_user","base.group_user","Equipment User","model_s2u_videographer_equipment",0,0,0,1
+"access_equipment_category_manager","website.group_website_designer","Equipment Category Manager","model_s2u_equipment_category",1,1,1,1
+"access_equipment_category_user","base.group_user","Equipment Category User","model_s2u_equipment_category",0,0,0,1
+"access_videographer_portfolio_manager","website.group_website_designer","Portfolio Manager","model_s2u_videographer_portfolio",1,1,1,1
+"access_videographer_portfolio_user","base.group_user","Portfolio User","model_s2u_videographer_portfolio",1,0,1,1
+"access_videographer_portfolio_portal","base.group_portal","Portfolio Portal","model_s2u_videographer_portfolio",0,0,0,1
+"access_videographer_review_manager","website.group_website_designer","Review Manager","model_s2u_videographer_review",1,1,1,1
+"access_videographer_review_user","base.group_user","Review User","model_s2u_videographer_review",0,0,1,1
+"access_videographer_review_portal","base.group_portal","Review Portal","model_s2u_videographer_review",1,0,1,1
+"access_service_package_manager","website.group_website_designer","Service Package Manager","model_s2u_service_package",1,1,1,1
+"access_service_package_user","base.group_user","Service Package User","model_s2u_service_package",0,0,0,1
+"access_service_package_portal","base.group_portal","Service Package Portal","model_s2u_service_package",0,0,0,1
+"access_package_feature_manager","website.group_website_designer","Package Feature Manager","model_s2u_package_feature",1,1,1,1
+"access_package_feature_user","base.group_user","Package Feature User","model_s2u_package_feature",0,0,0,1
+"access_package_deliverable_manager","website.group_website_designer","Package Deliverable Manager","model_s2u_package_deliverable",1,1,1,1
+"access_package_deliverable_user","base.group_user","Package Deliverable User","model_s2u_package_deliverable",0,0,0,1
+"access_package_addon_manager","website.group_website_designer","Package Addon Manager","model_s2u_package_addon",1,1,1,1
+"access_package_addon_user","base.group_user","Package Addon User","model_s2u_package_addon",0,0,0,1
+"access_booking_addon_manager","website.group_website_designer","Booking Addon Manager","model_s2u_booking_addon",1,1,1,1
+"access_booking_addon_user","base.group_user","Booking Addon User","model_s2u_booking_addon",1,1,1,1
+"access_booking_addon_portal","base.group_portal","Booking Addon Portal","model_s2u_booking_addon",1,0,1,1
+

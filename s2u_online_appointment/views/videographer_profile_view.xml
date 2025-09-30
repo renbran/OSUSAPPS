@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Videographer Profile Views -->
+        <record id="videographer_profile_view_search" model="ir.ui.view">
+            <field name="name">videographer.profile.search</field>
+            <field name="model">s2u.videographer.profile</field>
+            <field name="arch" type="xml">
+                <search string="Videographers">
+                    <field name="name" string="Videographer" filter_domain="['|', ('name', 'ilike', self), ('user_id', 'ilike', self)]"/>
+                    <field name="specialization_ids"/>
+                    <field name="service_location_ids"/>
+                    <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                    <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                    <separator/>
+                    <filter string="High Rated (4+)" name="high_rated" domain="[('average_rating', '>=', 4.0)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Specialization" name="group_specialization" context="{'group_by': 'specialization_ids'}"/>
+                        <filter string="User" name="group_user" context="{'group_by': 'user_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="videographer_profile_view_tree" model="ir.ui.view">
+            <field name="name">videographer.profile.tree</field>
+            <field name="model">s2u.videographer.profile</field>
+            <field name="arch" type="xml">
+                <tree string="Videographers">
+                    <field name="name"/>
+                    <field name="user_id"/>
+                    <field name="specialization_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                    <field name="hourly_rate" widget="monetary"/>
+                    <field name="average_rating" widget="priority" readonly="1"/>
+                    <field name="total_bookings"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="videographer_profile_view_form" model="ir.ui.view">
+            <field name="name">videographer.profile.form</field>
+            <field name="model">s2u.videographer.profile</field>
+            <field name="arch" type="xml">
+                <form string="Videographer Profile">
+                    <header>
+                        <button name="action_view_bookings" type="object" string="View Bookings" class="oe_highlight" invisible="total_bookings == 0"/>
+                        <button name="action_view_portfolio" type="object" string="View Portfolio" class="oe_stat_button" icon="fa-camera" invisible="portfolio_count == 0"/>
+                    </header>
+                    <sheet>
+                        <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                        <field name="image_1920" widget="image" class="oe_avatar"/>
+                        <div class="oe_title">
+                            <label for="name" string="Videographer Name"/>
+                            <h1>
+                                <field name="name" placeholder="e.g., John Smith"/>
+                            </h1>
+                            <field name="specialization_ids" widget="many2many_tags" options="{'color_field': 'color'}" placeholder="Specializations..."/>
+                        </div>
+
+                        <group>
+                            <group string="Basic Information">
+                                <field name="user_id" required="1"/>
+                                <field name="partner_id" invisible="1"/>
+                                <field name="active" widget="boolean_toggle"/>
+                                <field name="years_experience"/>
+                            </group>
+                            <group string="Contact Information">
+                                <field name="phone" widget="phone"/>
+                                <field name="mobile" widget="phone"/>
+                                <field name="email" widget="email"/>
+                                <field name="website" widget="url"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Professional Profile" name="profile">
+                                <group>
+                                    <group string="Biography">
+                                        <field name="bio" nolabel="1" placeholder="Tell clients about your experience, style, and passion for videography..."/>
+                                    </group>
+                                </group>
+                                <group>
+                                    <group string="Social Media">
+                                        <field name="instagram" widget="url" placeholder="https://instagram.com/username"/>
+                                        <field name="youtube" widget="url" placeholder="https://youtube.com/channel"/>
+                                        <field name="facebook" widget="url" placeholder="https://facebook.com/page"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Pricing &amp; Services" name="pricing">
+                                <group>
+                                    <group string="Pricing">
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="hourly_rate" widget="monetary"/>
+                                        <field name="min_booking_hours"/>
+                                    </group>
+                                    <group string="Service Areas">
+                                        <field name="service_location_ids" widget="many2many_tags" placeholder="Select service areas..."/>
+                                        <field name="travel_radius"/>
+                                        <field name="travel_fee_per_km" widget="monetary"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Availability Settings" name="availability">
+                                <group>
+                                    <group string="Booking Settings">
+                                        <field name="buffer_time_before" widget="float_time"/>
+                                        <field name="buffer_time_after" widget="float_time"/>
+                                        <field name="max_bookings_per_day"/>
+                                        <field name="advance_booking_days"/>
+                                    </group>
+                                </group>
+                                <group string="Weekly Schedule">
+                                    <field name="slot_ids" nolabel="1">
+                                        <tree editable="bottom">
+                                            <field name="day"/>
+                                            <field name="slot" widget="float_time"/>
+                                            <field name="slot_type"/>
+                                            <field name="date_from" optional="hide" column_invisible="parent.slot_type != 'temporary'"/>
+                                            <field name="date_to" optional="hide" column_invisible="parent.slot_type != 'temporary'"/>
+                                            <field name="active" widget="boolean_toggle"/>
+                                            <field name="notes"/>
+                                        </tree>
+                                    </field>
+                                </group>
+                            </page>
+
+                            <page string="Equipment" name="equipment">
+                                <group>
+                                    <group string="Equipment List">
+                                        <field name="equipment_ids" widget="many2many_tags" placeholder="Select equipment..."/>
+                                    </group>
+                                </group>
+                                <group string="Notes">
+                                    <field name="equipment_notes" nolabel="1" placeholder="Additional equipment details or special items..."/>
+                                </group>
+                            </page>
+
+                            <page string="Portfolio" name="portfolio">
+                                <field name="portfolio_ids" mode="kanban">
+                                    <kanban>
+                                        <field name="name"/>
+                                        <field name="category"/>
+                                        <field name="thumbnail_url"/>
+                                        <field name="video_url"/>
+                                        <field name="featured"/>
+                                        <templates>
+                                            <t t-name="kanban-box">
+                                                <div class="oe_kanban_card oe_kanban_global_click">
+                                                    <div class="o_kanban_image">
+                                                        <img t-att-src="kanban_image('s2u.videographer.portfolio', 'image_128', record.id.raw_value)" alt="Portfolio Item" class="o_image_128"/>
+                                                    </div>
+                                                    <div class="oe_kanban_details">
+                                                        <strong class="o_kanban_record_title">
+                                                            <field name="name"/>
+                                                        </strong>
+                                                        <div>
+                                                            <field name="category"/>
+                                                        </div>
+                                                        <div t-if="record.featured.raw_value">
+                                                            <span class="badge text-bg-warning">Featured</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </templates>
+                                    </kanban>
+                                </field>
+                            </page>
+
+                            <page string="Reviews &amp; Ratings" name="reviews">
+                                <group>
+                                    <group string="Statistics">
+                                        <field name="average_rating" widget="priority"/>
+                                        <field name="review_count"/>
+                                        <field name="total_bookings"/>
+                                        <field name="completed_bookings"/>
+                                    </group>
+                                </group>
+                                <field name="review_ids" nolabel="1">
+                                    <tree decoration-success="state == 'approved'" decoration-muted="state == 'rejected'">
+                                        <field name="partner_id"/>
+                                        <field name="rating" widget="priority"/>
+                                        <field name="title"/>
+                                        <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-warning="state == 'pending'" decoration-danger="state == 'rejected'"/>
+                                        <field name="create_date"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Bookings" name="bookings">
+                                <field name="booking_ids" nolabel="1" readonly="1">
+                                    <tree decoration-info="state == 'confirmed'" decoration-success="state == 'completed'">
+                                        <field name="name"/>
+                                        <field name="partner_id"/>
+                                        <field name="appointment_begin"/>
+                                        <field name="duration_hours" widget="float_time"/>
+                                        <field name="total_amount" widget="monetary"/>
+                                        <field name="payment_status" widget="badge"/>
+                                        <field name="state" widget="badge" decoration-info="state == 'confirmed'" decoration-success="state == 'completed'"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="videographer_profile_view_kanban" model="ir.ui.view">
+            <field name="name">videographer.profile.kanban</field>
+            <field name="model">s2u.videographer.profile</field>
+            <field name="arch" type="xml">
+                <kanban string="Videographers" class="o_kanban_mobile">
+                    <field name="name"/>
+                    <field name="user_id"/>
+                    <field name="specialization_ids"/>
+                    <field name="hourly_rate"/>
+                    <field name="average_rating"/>
+                    <field name="total_bookings"/>
+                    <field name="image_128"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <div class="o_kanban_image">
+                                    <img t-att-src="kanban_image('s2u.videographer.profile', 'image_128', record.id.raw_value)" alt="Videographer" class="o_image_64_cover"/>
+                                </div>
+                                <div class="oe_kanban_details">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                    <div class="o_kanban_tags_section">
+                                        <field name="specialization_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                    </div>
+                                    <div class="mt-2">
+                                        <span class="fa fa-star text-warning"/> <field name="average_rating"/> (<field name="review_count"/> reviews)
+                                    </div>
+                                    <div>
+                                        <span class="fa fa-calendar"/> <field name="total_bookings"/> bookings
+                                    </div>
+                                    <div>
+                                        <strong><field name="hourly_rate" widget="monetary"/>/hr</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record id="videographer_profile_action" model="ir.actions.act_window">
+            <field name="name">Videographers</field>
+            <field name="res_model">s2u.videographer.profile</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first videographer profile
+                </p>
+                <p>
+                    Set up videographer profiles with their specializations, equipment, pricing, and availability.
+                </p>
+            </field>
+        </record>
+
+        <!-- Specialization Views -->
+        <record id="specialization_view_tree" model="ir.ui.view">
+            <field name="name">videographer.specialization.tree</field>
+            <field name="model">s2u.videographer.specialization</field>
+            <field name="arch" type="xml">
+                <tree string="Specializations" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="icon"/>
+                    <field name="color" widget="color_picker"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="specialization_action" model="ir.actions.act_window">
+            <field name="name">Specializations</field>
+            <field name="res_model">s2u.videographer.specialization</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Equipment Views -->
+        <record id="equipment_view_tree" model="ir.ui.view">
+            <field name="name">videographer.equipment.tree</field>
+            <field name="model">s2u.videographer.equipment</field>
+            <field name="arch" type="xml">
+                <tree string="Equipment">
+                    <field name="name"/>
+                    <field name="category_id"/>
+                    <field name="brand"/>
+                    <field name="model"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="equipment_action" model="ir.actions.act_window">
+            <field name="name">Equipment</field>
+            <field name="res_model">s2u.videographer.equipment</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Equipment Category Views -->
+        <record id="equipment_category_view_tree" model="ir.ui.view">
+            <field name="name">equipment.category.tree</field>
+            <field name="model">s2u.equipment.category</field>
+            <field name="arch" type="xml">
+                <tree string="Equipment Categories" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="icon"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="equipment_category_action" model="ir.actions.act_window">
+            <field name="name">Equipment Categories</field>
+            <field name="res_model">s2u.equipment.category</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>
