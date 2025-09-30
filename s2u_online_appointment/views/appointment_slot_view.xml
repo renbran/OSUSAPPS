@@ -29,7 +29,7 @@
                 </form>
             </field>
         </record>
-        
+
         <record model="ir.ui.view" id="appointment_slot_tree_view">
             <field name="model">s2u.appointment.slot</field>
             <field name="arch" type="xml">
@@ -41,7 +41,7 @@
             </field>
         </record>
 
-        
+
         <record model="ir.actions.act_window" id="appointment_slot_action">
             <field name="name">Appointment Slots</field>
             <field name="res_model">s2u.appointment.slot</field>

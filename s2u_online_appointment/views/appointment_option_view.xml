@@ -5,7 +5,7 @@
             <field name="model">s2u.appointment.option</field>
             <field name="arch" type="xml">
                 <search>
-                       <field name="name"/>
+                    <field name="name"/>
                 </search>
             </field>
         </record>
@@ -22,10 +22,7 @@
                             </group>
                             <group>
                                 <field name="user_specific"/>
-                                <field name="users_allowed"
-                                       widget="many2many_tags"
-                                       required="user_specific"
-                                       invisible="not user_specific"/>
+                                <field name="users_allowed" widget="many2many_tags" required="user_specific" invisible="not user_specific"/>
                             </group>
                         </group>
                     </sheet>
