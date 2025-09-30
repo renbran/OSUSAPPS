@@ -8,6 +8,7 @@ from odoo.addons.s2u_online_appointment.helpers import functions
 from odoo import http, modules, tools
 from odoo import api, fields, models, _, SUPERUSER_ID
 from odoo.http import request
+from odoo.exceptions import ValidationError, UserError, AccessError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -16,68 +17,80 @@ _logger = logging.getLogger(__name__)
 class OnlineAppointment(http.Controller):
 
     def ld_to_utc(self, ld, appointee_id, duration=False):
+        """Convert local datetime to UTC based on user timezone."""
+        try:
+            date_parsed = datetime.datetime.strptime(ld, "%Y-%m-%d  %H:%M")
+            if duration:
+                date_parsed += datetime.timedelta(hours=duration)
 
-        date_parsed = datetime.datetime.strptime(ld, "%Y-%m-%d  %H:%M")
-        if duration:
-            date_parsed += datetime.timedelta(hours=duration)
-
-        user = request.env['res.users'].sudo().search([('id', '=', appointee_id)])
-        if user:
-            if user.tz:
-                tz = user.tz
+            user = request.env['res.users'].with_user(SUPERUSER_ID).search([('id', '=', appointee_id)])
+            if user:
+                if user.tz:
+                    tz = user.tz
+                else:
+                    tz = 'Europe/Amsterdam'
+                local = pytz.timezone(tz)
+                local_dt = local.localize(date_parsed, is_dst=None)
+                return local_dt.astimezone(pytz.utc)
             else:
-                tz = 'Europe/Amsterdam'
-            local = pytz.timezone(tz)
-            local_dt = local.localize(date_parsed, is_dst=None)
-            return local_dt.astimezone(pytz.utc)
-        else:
+                return ld
+        except (ValueError, TypeError) as e:
+            _logger.error("Error converting datetime '%s' to UTC: %s", ld, str(e))
+            return ld
+        except Exception as e:
+            _logger.error("Unexpected error in ld_to_utc: %s", str(e))
             return ld
 
     def appointee_id_to_partner_id(self, appointee_id):
-
-        appointee = request.env['res.users'].sudo().search([('id', '=', appointee_id)])
-        if appointee:
-            return appointee.partner_id.id
-        else:
+        """Convert appointee user ID to partner ID for compatibility."""
+        try:
+            appointee = request.env['res.users'].with_user(SUPERUSER_ID).search([('id', '=', appointee_id)])
+            if appointee.exists():
+                return appointee.partner_id.id
+            else:
+                _logger.warning("User with ID %s not found", appointee_id)
+                return False
+        except Exception as e:
+            _logger.error("Error converting appointee_id to partner_id: %s", str(e))
             return False
 
     def select_appointees(self, criteria='default', appointment_option=False, package_id=False):
-
+        """Select available videographers based on package or appointment option criteria."""
         # Get videographers based on package or option
         videographer_ids = []
 
         if package_id:
-            package = request.env['s2u.service.package'].sudo().browse(package_id)
+            package = request.env['s2u.service.package'].with_user(SUPERUSER_ID).browse(package_id)
             if package and package.videographer_ids:
                 videographer_ids = package.videographer_ids.ids
             else:
                 # All active videographers if package has no specific videographers
-                videographer_ids = request.env['s2u.videographer.profile'].sudo().search([('active', '=', True)]).ids
+                videographer_ids = request.env['s2u.videographer.profile'].with_user(SUPERUSER_ID).search([('active', '=', True)]).ids
         elif appointment_option:
             if appointment_option.user_specific:
                 user_allowed_ids = appointment_option.users_allowed.ids
-                slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', 'in', user_allowed_ids)])
+                slots = request.env['s2u.appointment.slot'].with_user(SUPERUSER_ID).search([('user_id', 'in', user_allowed_ids)])
                 user_ids = list(set([s.user_id.id for s in slots]))
-                videographers = request.env['s2u.videographer.profile'].sudo().search([('user_id', 'in', user_ids), ('active', '=', True)])
+                videographers = request.env['s2u.videographer.profile'].with_user(SUPERUSER_ID).search([('user_id', 'in', user_ids), ('active', '=', True)])
                 videographer_ids = videographers.ids
             else:
-                videographer_ids = request.env['s2u.videographer.profile'].sudo().search([('active', '=', True)]).ids
+                videographer_ids = request.env['s2u.videographer.profile'].with_user(SUPERUSER_ID).search([('active', '=', True)]).ids
         else:
             # Default: all active videographers with slots
-            slots = request.env['s2u.appointment.slot'].sudo().search([('active', '=', True)])
+            slots = request.env['s2u.appointment.slot'].with_user(SUPERUSER_ID).search([('active', '=', True)])
             user_ids = list(set([s.user_id.id for s in slots]))
-            videographers = request.env['s2u.videographer.profile'].sudo().search([('user_id', 'in', user_ids), ('active', '=', True)])
+            videographers = request.env['s2u.videographer.profile'].with_user(SUPERUSER_ID).search([('user_id', 'in', user_ids), ('active', '=', True)])
             videographer_ids = videographers.ids
 
         return videographer_ids
 
     def select_options(self, criteria='default'):
-
-        return request.env['s2u.appointment.option'].sudo().search([])
+        """Get available appointment options."""
+        return request.env['s2u.appointment.option'].with_user(SUPERUSER_ID).search([])
 
     def select_packages(self, criteria='default'):
         """Get available service packages"""
-        return request.env['s2u.service.package'].sudo().search([('active', '=', True), ('is_public', '=', True)])
+        return request.env['s2u.service.package'].with_user(SUPERUSER_ID).search([('active', '=', True), ('is_public', '=', True)])
 
     def prepare_values(self, form_data=False, default_appointee_id=False, criteria='default'):
 
@@ -86,8 +99,8 @@ class OnlineAppointment(http.Controller):
         packages = self.select_packages(criteria=criteria)
 
         values = {
-            'videographers': request.env['s2u.videographer.profile'].sudo().search([('id', 'in', appointee_ids)]),
-            'appointees': request.env['res.users'].sudo().search([('id', 'in', appointee_ids)]),  # Legacy support
+            'videographers': request.env['s2u.videographer.profile'].with_user(SUPERUSER_ID).search([('id', 'in', appointee_ids)]),
+            'appointees': request.env['res.users'].with_user(SUPERUSER_ID).search([('id', 'in', appointee_ids)]),  # Legacy support
             'appointment_options': options,
             'service_packages': packages,
             'timeslots': [],
@@ -170,7 +183,7 @@ class OnlineAppointment(http.Controller):
     @http.route(['/online-appointment'], auth='public', website=True, csrf=True)
     def online_appointment(self, **kw):
         if request.env.user._is_public():
-            param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
+            param = request.env['ir.config_parameter'].with_user(SUPERUSER_ID).search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
                 return request.render('s2u_online_appointment.only_registered_users')
         values = self.prepare_values(default_appointee_id=kw.get('appointee', False))
@@ -183,7 +196,7 @@ class OnlineAppointment(http.Controller):
         error_message = []
 
         if request.env.user._is_public():
-            param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
+            param = request.env['ir.config_parameter'].with_user(SUPERUSER_ID).search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
                 return request.render('s2u_online_appointment.only_registered_users')
 
@@ -208,12 +221,12 @@ class OnlineAppointment(http.Controller):
             error['appointee_id'] = True
             error_message.append(_('Please select a valid appointee.'))
 
-        option = request.env['s2u.appointment.option'].sudo().search([('id', '=', int(post.get('appointment_option_id', 0)))])
+        option = request.env['s2u.appointment.option'].with_user(SUPERUSER_ID).search([('id', '=', int(post.get('appointment_option_id', 0)))])
         if not option:
             error['appointment_option_id'] = True
             error_message.append(_('Please select a valid subject.'))
 
-        slot = request.env['s2u.appointment.slot'].sudo().search([('id', '=', int(post.get('timeslot_id', 0)))])
+        slot = request.env['s2u.appointment.slot'].with_user(SUPERUSER_ID).search([('id', '=', int(post.get('timeslot_id', 0)))])
         if not slot:
             error['timeslot_id'] = True
             error_message.append(_('Please select a valid timeslot.'))
@@ -238,13 +251,13 @@ class OnlineAppointment(http.Controller):
             return request.render('s2u_online_appointment.make_appointment', values)
 
         if request.env.user._is_public():
-            partner = request.env['res.partner'].sudo().search(['|', ('phone', 'ilike', values['phone']),
+            partner = request.env['res.partner'].with_user(SUPERUSER_ID).search(['|', ('phone', 'ilike', values['phone']),
                                                                      ('email', 'ilike', values['email'])])
             if partner:
                 partner_ids = [self.appointee_id_to_partner_id(appointee_id),
                                partner[0].id]
             else:
-                partner = request.env['res.partner'].sudo().create({
+                partner = request.env['res.partner'].with_user(SUPERUSER_ID).create({
                     'name': values['name'],
                     'phone': values['phone'],
                     'email': values['email']
@@ -256,7 +269,7 @@ class OnlineAppointment(http.Controller):
                            request.env.user.partner_id.id]
 
         # set detaching = True, we do not want to send a mail to the attendees
-        appointment = request.env['calendar.event'].sudo().with_context(detaching=True).create({
+        appointment = request.env['calendar.event'].with_user(SUPERUSER_ID).with_context(detaching=True).create({
             'name': option.name,
             'description': post.get('remarks', ''),
             'start': start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
@@ -284,11 +297,11 @@ class OnlineAppointment(http.Controller):
     def confirmed(self, **post):
 
         if request.env.user._is_public():
-            param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
+            param = request.env['ir.config_parameter'].with_user(SUPERUSER_ID).search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
                 return request.render('s2u_online_appointment.only_registered_users')
 
-        appointment = request.env['calendar.event'].sudo().search([('id', '=', int(post.get('appointment', 0)))])
+        appointment = request.env['calendar.event'].with_user(SUPERUSER_ID).search([('id', '=', int(post.get('appointment', 0)))])
         if not appointment:
             values = {
                 'appointment': False,
@@ -330,10 +343,10 @@ class OnlineAppointment(http.Controller):
         if not slot_id:
             return False
 
-        option = request.env['s2u.appointment.option'].sudo().search([('id', '=', option_id)])
+        option = request.env['s2u.appointment.option'].with_user(SUPERUSER_ID).search([('id', '=', option_id)])
         if not option:
             return False
-        slot = request.env['s2u.appointment.slot'].sudo().search([('id', '=', slot_id)])
+        slot = request.env['s2u.appointment.slot'].with_user(SUPERUSER_ID).search([('id', '=', slot_id)])
         if not slot:
             return False
 
@@ -385,12 +398,12 @@ class OnlineAppointment(http.Controller):
         if not appointee_id:
             return []
 
-        option = request.env['s2u.appointment.option'].sudo().search([('id', '=', option_id)])
+        option = request.env['s2u.appointment.option'].with_user(SUPERUSER_ID).search([('id', '=', option_id)])
         if not option:
             return []
 
         week_day = datetime.datetime.strptime(appointment_date, '%d/%m/%Y').weekday()
-        slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', '=', appointee_id),
+        slots = request.env['s2u.appointment.slot'].with_user(SUPERUSER_ID).search([('user_id', '=', appointee_id),
                                                                    ('day', '=', str(week_day))])
         slots = self.filter_slots(slots, criteria)
 
@@ -455,12 +468,12 @@ class OnlineAppointment(http.Controller):
 
         day_slots = []
 
-        option = request.env['s2u.appointment.option'].sudo().search([('id', '=', option_id)])
+        option = request.env['s2u.appointment.option'].with_user(SUPERUSER_ID).search([('id', '=', option_id)])
         if not option:
             return {}
 
         for weekday, dates in start_datetimes.items():
-            slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', '=', appointee_id),
+            slots = request.env['s2u.appointment.slot'].with_user(SUPERUSER_ID).search([('user_id', '=', appointee_id),
                                                                        ('day', '=', str(weekday))])
             slots = self.filter_slots(slots, criteria)
 
@@ -506,7 +519,7 @@ class OnlineAppointment(http.Controller):
     def free_timeslots(self, appointment_option, appointment_with, appointment_date, form_criteria, **kwargs):
 
         if request.env.user._is_public():
-            param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
+            param = request.env['ir.config_parameter'].with_user(SUPERUSER_ID).search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
                 return {
                     'timeslots': [],
@@ -538,10 +551,10 @@ class OnlineAppointment(http.Controller):
             date_parsed = False
 
         if option_id:
-            option = request.env['s2u.appointment.option'].sudo().browse(option_id)
+            option = request.env['s2u.appointment.option'].with_user(SUPERUSER_ID).browse(option_id)
             appointee_ids = self.select_appointees(criteria=form_criteria, appointment_option=option)
             appointees = []
-            for a in request.env['res.users'].sudo().search([('id', 'in', appointee_ids)]):
+            for a in request.env['res.users'].with_user(SUPERUSER_ID).search([('id', 'in', appointee_ids)]):
                 appointees.append({
                     'id': a.id,
                     'name': a.name
@@ -570,7 +583,7 @@ class OnlineAppointment(http.Controller):
     def month_bookable(self, appointment_option, appointment_with, appointment_year, appointment_month, form_criteria, **kwargs):
 
         if request.env.user._is_public():
-            param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
+            param = request.env['ir.config_parameter'].with_user(SUPERUSER_ID).search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
                 return {
                     'days_with_free_slots': [],
@@ -617,7 +630,7 @@ class OnlineAppointment(http.Controller):
     def online_appointment_portal_cancel(self, **post):
 
         if request.env.user._is_public():
-            param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
+            param = request.env['ir.config_parameter'].with_user(SUPERUSER_ID).search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
                 return request.render('s2u_online_appointment.only_registered_users')
 
@@ -640,7 +653,7 @@ class OnlineAppointment(http.Controller):
     def online_appointment_portal_confirm(self, **post):
 
         if request.env.user._is_public():
-            param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
+            param = request.env['ir.config_parameter'].with_user(SUPERUSER_ID).search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
                 return request.render('s2u_online_appointment.only_registered_users')
 

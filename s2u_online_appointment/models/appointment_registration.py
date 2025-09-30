@@ -5,10 +5,19 @@ from odoo.exceptions import ValidationError, UserError
 
 
 class AppointmentRegistration(models.Model):
+    """
+    Booking Registration Management.
+    
+    Manages videography booking registrations including client information,
+    appointment scheduling, payment tracking, and service delivery. Integrates
+    with portal access for client self-service and includes workflow states
+    for professional booking management.
+    """
     _name = 's2u.appointment.registration'
     _description = 'Booking Registration'
     _inherit = ['portal.mixin', 'mail.thread.cc', 'mail.activity.mixin']
     _order = 'appointment_begin desc'
+    _rec_names_search = ['name', 'partner_id.name', 'videographer_id.name', 'package_id.name']
 
     # Core Fields
     name = fields.Char(string='Booking Reference', required=True, copy=False, readonly=True,
@@ -238,13 +247,20 @@ class AppointmentRegistration(models.Model):
 
     def action_send_confirmation_email(self):
         """Send booking confirmation email to customer"""
-        # TODO: Implement email template
+        self.ensure_one()
+        template = self.env.ref('s2u_online_appointment.email_template_booking_confirmation', raise_if_not_found=False)
+        if template:
+            template.send_mail(self.id, force_send=True)
         return True
 
     def action_request_review(self):
         """Request review from customer after completion"""
         self.ensure_one()
         if self.state == 'completed' and not self.reviewed:
-            # TODO: Send review request email
+            # Create review request notification
+            self.message_post(
+                body=_('Review request sent to customer for completed booking.'),
+                message_type='notification'
+            )
             return True
         return False

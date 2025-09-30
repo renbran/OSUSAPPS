@@ -5,10 +5,18 @@ from odoo.exceptions import ValidationError
 
 
 class VideographerProfile(models.Model):
+    """
+    Videographer Profile Management.
+    
+    Manages professional videographer profiles including their portfolio,
+    equipment, pricing, availability, and booking history. Integrates
+    with the appointment system for client bookings and reviews.
+    """
     _name = 's2u.videographer.profile'
     _description = 'Videographer Profile'
     _inherit = ['mail.thread', 'mail.activity.mixin', 'image.mixin']
     _order = 'name'
+    _rec_names_search = ['name', 'user_id.name', 'specialization_ids.name']
 
     # Basic Information
     name = fields.Char(string='Name', required=True, tracking=True)
@@ -90,11 +98,16 @@ class VideographerProfile(models.Model):
 
     @api.depends('portfolio_ids')
     def _compute_portfolio_count(self):
+        """Compute the total number of portfolio items for each videographer."""
         for record in self:
             record.portfolio_count = len(record.portfolio_ids)
 
     @api.depends('booking_ids', 'booking_ids.state')
     def _compute_statistics(self):
+        """
+        Compute booking statistics including total and completed bookings.
+        Used for displaying performance metrics in the profile views.
+        """
         for record in self:
             record.total_bookings = len(record.booking_ids)
             record.completed_bookings = len(record.booking_ids.filtered(lambda b: b.state == 'completed'))
@@ -108,17 +121,23 @@ class VideographerProfile(models.Model):
 
     @api.constrains('hourly_rate')
     def _check_hourly_rate(self):
+        """Validate that hourly rate is not negative."""
         for record in self:
             if record.hourly_rate < 0:
                 raise ValidationError(_('Hourly rate cannot be negative.'))
 
     @api.constrains('min_booking_hours')
     def _check_min_booking_hours(self):
+        """Validate minimum booking hours constraint."""
         for record in self:
             if record.min_booking_hours < 0.5:
                 raise ValidationError(_('Minimum booking hours must be at least 0.5 hours.'))
 
     def action_view_bookings(self):
+        """
+        Open a view showing all bookings for this videographer.
+        Returns an action to display bookings in tree, form, and calendar views.
+        """
         self.ensure_one()
         return {
             'name': _('Bookings'),
@@ -130,6 +149,10 @@ class VideographerProfile(models.Model):
         }
 
     def action_view_portfolio(self):
+        """
+        Open a view showing the videographer's portfolio items.
+        Returns an action to display portfolio in kanban, tree, and form views.
+        """
         self.ensure_one()
         return {
             'name': _('Portfolio'),

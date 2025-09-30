@@ -5,10 +5,18 @@ from odoo.exceptions import ValidationError
 
 
 class ServicePackage(models.Model):
+    """
+    Service Package Management.
+    
+    Defines videography service packages with pricing, features, deliverables,
+    and add-ons. Packages can be assigned to specific videographers or made
+    available to all. Used for standardizing service offerings and pricing.
+    """
     _name = 's2u.service.package'
     _description = 'Service Package'
     _inherit = ['mail.thread', 'image.mixin']
     _order = 'sequence, name'
+    _rec_names_search = ['name', 'category', 'short_description']
 
     # Basic Information
     name = fields.Char(string='Package Name', required=True, tracking=True, translate=True)

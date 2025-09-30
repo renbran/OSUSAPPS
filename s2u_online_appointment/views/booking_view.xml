@@ -24,12 +24,9 @@
                     <filter string="Deposit Paid" name="deposit_paid" domain="[('payment_status', '=', 'deposit_paid')]"/>
                     <filter string="Fully Paid" name="fully_paid" domain="[('payment_status', '=', 'fully_paid')]"/>
                     <separator/>
-                    <filter string="This Month" name="this_month"
-                        domain="[('appointment_begin', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
-                                 ('appointment_begin', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
-                    <filter string="Next Month" name="next_month"
-                        domain="[('appointment_begin', '&gt;=', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d')),
-                                 ('appointment_begin', '&lt;', (context_today() + relativedelta(months=2, day=1)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="This Month" name="this_month" date="appointment_begin" default_period="this_month"/>
+                    <filter string="Next Month" name="next_month" date="appointment_begin" default_period="next_month"/>
+                    <filter string="This Year" name="this_year" date="appointment_begin" default_period="this_year"/>
                     <group expand="0" string="Group By">
                         <filter string="Customer" name="group_customer" context="{'group_by': 'partner_id'}"/>
                         <filter string="Videographer" name="group_videographer" context="{'group_by': 'videographer_id'}"/>
