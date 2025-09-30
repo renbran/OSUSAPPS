@@ -230,4 +230,22 @@
         </field>
     </record>
 
+    <!-- Commission Rule Action -->
+    <record id="action_commission_rule" model="ir.actions.act_window">
+        <field name="name">Commission Rules</field>
+        <field name="res_model">commission.rule</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_commission_rule_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first commission rule
+            </p>
+            <p>
+                Commission rules define how commissions are calculated for different scenarios.
+                You can set up rules based on commission category, calculation method, and partner criteria.
+            </p>
+        </field>
+    </record>
+
 </odoo>

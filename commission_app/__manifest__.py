@@ -54,13 +54,13 @@ while preserving all essential functionality and improving user experience.
         'data/commission_sequence_data.xml',
         'data/commission_rule_data.xml',
         
-        # Views
-        'views/menus.xml',
+        # Views (actions must be defined before menus reference them)
         'views/commission_allocation_views.xml',
         'views/commission_rule_views.xml',
         'views/commission_period_views.xml',
         'views/res_partner_views.xml',
         'views/wizard_views.xml',
+        'views/menus.xml',
     ],
     
     # Technical
