@@ -51,13 +51,13 @@
         'data/default_data.xml',
         'data/mail_template_data.xml',
 
-        # Views - Backend
-        'views/menus.xml',
+        # Views - Backend (Load actions before menus that reference them)
         'views/videographer_profile_view.xml',
         'views/service_package_view.xml',
         'views/appointment_slot_view.xml',
         'views/appointment_option_view.xml',
         'views/booking_view.xml',
+        'views/menus.xml',
 
         # Views - Frontend
         'views/appointment_template.xml',
