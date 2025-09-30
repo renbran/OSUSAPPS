@@ -107,5 +107,27 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
+        <!-- Multi-Company Rules (Global) -->
+        <record id="commission_allocation_multi_company_rule" model="ir.rule">
+            <field name="name">Commission Allocation: Multi-Company</field>
+            <field name="model_id" ref="model_commission_allocation"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="global" eval="True"/>
+        </record>
+
+        <record id="commission_period_multi_company_rule" model="ir.rule">
+            <field name="name">Commission Period: Multi-Company</field>
+            <field name="model_id" ref="model_commission_period"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="global" eval="True"/>
+        </record>
+
+        <record id="commission_rule_multi_company_rule" model="ir.rule">
+            <field name="name">Commission Rule: Multi-Company</field>
+            <field name="model_id" ref="model_commission_rule"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="global" eval="True"/>
+        </record>
+
     </data>
 </odoo>

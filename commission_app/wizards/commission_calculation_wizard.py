@@ -111,7 +111,7 @@ class CommissionCalculationWizard(models.TransientModel):
                 # Rough estimation of commission amount
                 for rule in applicable_rules:
                     if rule.calculation_type == 'percentage':
-                        estimated_amount += order.amount_total * (rule.commission_rate / 100)
+                        estimated_amount += order.amount_total * (rule.default_rate / 100)
                     elif rule.calculation_type == 'fixed':
                         estimated_amount += rule.fixed_amount
 
@@ -143,23 +143,25 @@ class CommissionCalculationWizard(models.TransientModel):
     def _is_rule_applicable(self, rule, sale_order):
         """Check if a commission rule is applicable to a sale order"""
         # Check partner conditions
-        if rule.partner_ids and sale_order.partner_id not in rule.partner_ids:
+        if rule.allowed_customer_ids and sale_order.partner_id not in rule.allowed_customer_ids:
             return False
 
         # Check category conditions
-        if rule.category_ids and not any(cat in sale_order.partner_id.category_id for cat in rule.category_ids):
-            return False
+        if rule.allowed_category_ids:
+            order_categories = sale_order.order_line.mapped('product_id.categ_id')
+            if not any(cat in rule.allowed_category_ids for cat in order_categories):
+                return False
 
         # Check amount conditions
-        if rule.min_amount and sale_order.amount_total < rule.min_amount:
+        if rule.minimum_amount and sale_order.amount_total < rule.minimum_amount:
             return False
-        if rule.max_amount and sale_order.amount_total > rule.max_amount:
+        if rule.maximum_amount and sale_order.amount_total > rule.maximum_amount:
             return False
 
         # Check date conditions
-        if rule.date_from and sale_order.date_order.date() < rule.date_from:
+        if rule.date_start and sale_order.date_order.date() < rule.date_start:
             return False
-        if rule.date_to and sale_order.date_order.date() > rule.date_to:
+        if rule.date_end and sale_order.date_order.date() > rule.date_end:
             return False
 
         return True
@@ -252,22 +254,19 @@ class CommissionCalculationWizard(models.TransientModel):
     def _get_commission_partners(self, rule, sale_order):
         """Get partners who should receive commission for this rule and order"""
         partners = self.env['res.partner']
-        
-        # If rule specifies partners, use those
-        if rule.partner_ids:
-            partners = rule.partner_ids.filtered('is_commission_partner')
-        else:
-            # Find partners based on rule category and sale context
-            if rule.commission_category == 'sales':
-                # Sales commission goes to salesperson
-                if sale_order.user_id and sale_order.user_id.partner_id.is_commission_partner:
-                    partners |= sale_order.user_id.partner_id
-            elif rule.commission_category in ['legacy', 'external', 'internal']:
-                # These categories need specific partner assignment
-                partners = self.env['res.partner'].search([
-                    ('is_commission_partner', '=', True),
-                    ('commission_rule_ids', 'in', [rule.id])
-                ])
+
+        # Find partners based on rule category and sale context
+        if rule.commission_category == 'sales':
+            # Sales commission goes to salesperson
+            if sale_order.user_id and sale_order.user_id.partner_id.is_commission_partner:
+                partners |= sale_order.user_id.partner_id
+        elif rule.commission_category in ['legacy', 'external', 'internal']:
+            # These categories need specific partner assignment
+            # Find partners with this rule as their default
+            partners = self.env['res.partner'].search([
+                ('is_commission_partner', '=', True),
+                ('default_commission_rule_id', '=', rule.id)
+            ])
 
         return partners
 

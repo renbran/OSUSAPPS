@@ -25,7 +25,17 @@ class CommissionAllocation(models.Model):
     # ================================
     # CORE FIELDS
     # ================================
-    
+
+    # Reference number
+    name = fields.Char(
+        string='Reference',
+        required=True,
+        copy=False,
+        readonly=True,
+        default=lambda self: _('New'),
+        help='Unique reference number for commission allocation'
+    )
+
     # Sequence for ordering (like order lines)
     sequence = fields.Integer(
         string='Sequence',
@@ -163,7 +173,8 @@ class CommissionAllocation(models.Model):
         related='sale_order_id.date_order',
         string='Sale Date',
         store=True,
-        readonly=True
+        readonly=True,
+        index=True
     )
     
     # Customer from sale order
@@ -189,7 +200,18 @@ class CommissionAllocation(models.Model):
         store=True,
         readonly=True
     )
-    
+
+    # Company from sale order
+    company_id = fields.Many2one(
+        comodel_name='res.company',
+        string='Company',
+        related='sale_order_id.company_id',
+        store=True,
+        readonly=True,
+        index=True,
+        help='Company associated with this commission allocation'
+    )
+
     # Display name for the record
     display_name = fields.Char(
         string='Display Name',
@@ -385,13 +407,12 @@ class CommissionAllocation(models.Model):
             raise UserError(_('Cannot create payment entry with zero commission amount.'))
         
         # Get commission expense account
-        expense_account = (
-            self.commission_rule_id.expense_account_id or
-            self.company_id.commission_expense_account_id
-        )
-        
+        expense_account = self.commission_rule_id.expense_account_id
+
         if not expense_account:
-            raise UserError(_('Please configure commission expense account.'))
+            raise UserError(_(
+                'Please configure commission expense account in commission rule: %s'
+            ) % self.commission_rule_id.name)
         
         # Get partner payable account
         payable_account = self.partner_id.property_account_payable_id
@@ -512,6 +533,20 @@ class CommissionAllocation(models.Model):
             result[partner.id]['amount'] += allocation.commission_amount
         return result
     
+    # ================================
+    # ORM OVERRIDE METHODS
+    # ================================
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override create to assign sequence numbers."""
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code(
+                    'commission.allocation'
+                ) or _('New')
+        return super(CommissionAllocation, self).create(vals_list)
+
     def _group_by_period(self):
         """Group commissions by period."""
         result = {}
