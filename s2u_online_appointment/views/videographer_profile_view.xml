@@ -121,8 +121,8 @@
                                             <field name="day"/>
                                             <field name="slot" widget="float_time"/>
                                             <field name="slot_type"/>
-                                            <field name="date_from" optional="hide" column_invisible="parent.slot_type != 'temporary'"/>
-                                            <field name="date_to" optional="hide" column_invisible="parent.slot_type != 'temporary'"/>
+                                            <field name="date_from" optional="hide" column_invisible="slot_type != 'temporary'"/>
+                                            <field name="date_to" optional="hide" column_invisible="slot_type != 'temporary'"/>
                                             <field name="active" widget="boolean_toggle"/>
                                             <field name="notes"/>
                                         </tree>
