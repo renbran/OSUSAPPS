@@ -390,10 +390,22 @@ class CommissionAllocation(models.Model):
         for allocation in self:
             if allocation.state == 'paid':
                 raise UserError(_('Paid allocations cannot be reset.'))
-            
+
             allocation.state = 'draft'
-            
+
         return True
+
+    def action_view_sale_order(self):
+        """Open the related sale order."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Sale Order'),
+            'res_model': 'sale.order',
+            'res_id': self.sale_order_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
     
     # ================================
     # BUSINESS METHODS
