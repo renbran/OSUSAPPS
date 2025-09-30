@@ -167,8 +167,9 @@ class VideographerProfile(models.Model):
 class VideographerSpecialization(models.Model):
     _name = 's2u.videographer.specialization'
     _description = 'Videographer Specialization'
-    _order = 'name'
+    _order = 'sequence, name'
 
+    sequence = fields.Integer(string='Sequence', default=10)
     name = fields.Char(string='Specialization', required=True, translate=True)
     description = fields.Text(string='Description', translate=True)
     icon = fields.Char(string='Icon Class', help='Font Awesome icon class (e.g., fa-video)')
