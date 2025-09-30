@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Commission Rule Tree View -->
+    <record id="view_commission_rule_tree" model="ir.ui.view">
+        <field name="name">commission.rule.tree</field>
+        <field name="model">commission.rule</field>
+        <field name="arch" type="xml">
+            <tree string="Commission Rules"
+                  decoration-success="active == True"
+                  decoration-muted="active == False">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="commission_category"/>
+                <field name="calculation_type"/>
+                <field name="commission_rate" attrs="{'invisible': [('calculation_type', '==', 'fixed')]}"/>
+                <field name="fixed_amount" attrs="{'invisible': [('calculation_type', '!=', 'fixed')]}"/>
+                <field name="active" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Commission Rule Form View -->
+    <record id="view_commission_rule_form" model="ir.ui.view">
+        <field name="name">commission.rule.form</field>
+        <field name="model">commission.rule</field>
+        <field name="arch" type="xml">
+            <form string="Commission Rule">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" 
+                                name="action_view_allocations" icon="fa-list">
+                            <field name="allocation_count" widget="statinfo" 
+                                   string="Allocations"/>
+                        </button>
+                    </div>
+                    
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" 
+                            attrs="{'invisible': [('active', '=', True)]}"/>
+                    
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Sales Commission - Legacy"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group name="basic_info">
+                            <field name="sequence"/>
+                            <field name="commission_category" widget="selection"/>
+                            <field name="calculation_type" widget="radio"/>
+                            <field name="active"/>
+                        </group>
+                        <group name="calculation_details">
+                            <field name="commission_rate" 
+                                   attrs="{'invisible': [('calculation_type', '==', 'fixed')],
+                                           'required': [('calculation_type', '!=', 'fixed')]}"/>
+                            <field name="fixed_amount" 
+                                   attrs="{'invisible': [('calculation_type', '!=', 'fixed')],
+                                           'required': [('calculation_type', '==', 'fixed')]}"/>
+                            <field name="currency_id" 
+                                   attrs="{'invisible': [('calculation_type', '!=', 'fixed')]}"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Conditions" name="conditions">
+                            <group>
+                                <group name="partner_conditions">
+                                    <field name="partner_ids" widget="many2many_tags" 
+                                           placeholder="Leave empty to apply to all partners"/>
+                                    <field name="category_ids" widget="many2many_tags" 
+                                           placeholder="Leave empty to apply to all categories"/>
+                                </group>
+                                <group name="product_conditions">
+                                    <field name="product_ids" widget="many2many_tags" 
+                                           placeholder="Leave empty to apply to all products"/>
+                                    <field name="product_category_ids" widget="many2many_tags" 
+                                           placeholder="Leave empty to apply to all product categories"/>
+                                </group>
+                            </group>
+                            
+                            <group name="amount_conditions">
+                                <group>
+                                    <field name="min_amount" placeholder="0.00"/>
+                                    <field name="max_amount" placeholder="Leave empty for no limit"/>
+                                </group>
+                                <group>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Tiered Rules" name="tiered_rules" 
+                              attrs="{'invisible': [('calculation_type', '!=', 'tiered')]}">
+                            <field name="tier_line_ids">
+                                <tree editable="bottom" string="Commission Tiers">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="amount_from"/>
+                                    <field name="amount_to"/>
+                                    <field name="commission_rate"/>
+                                </tree>
+                            </field>
+                        </page>
+                        
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Detailed description of this commission rule..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Commission Rule Search View -->
+    <record id="view_commission_rule_search" model="ir.ui.view">
+        <field name="name">commission.rule.search</field>
+        <field name="model">commission.rule</field>
+        <field name="arch" type="xml">
+            <search string="Commission Rules">
+                <field name="name"/>
+                <field name="commission_category"/>
+                <field name="partner_ids"/>
+                <field name="product_ids"/>
+                <separator/>
+                <filter name="active" string="Active" domain="[('active', '=', True)]" default="1"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="legacy" string="Legacy Commission" 
+                        domain="[('commission_category', '=', 'legacy')]"/>
+                <filter name="external" string="External Commission" 
+                        domain="[('commission_category', '=', 'external')]"/>
+                <filter name="internal" string="Internal Commission" 
+                        domain="[('commission_category', '=', 'internal')]"/>
+                <filter name="management" string="Management Commission" 
+                        domain="[('commission_category', '=', 'management')]"/>
+                <separator/>
+                <filter name="percentage" string="Percentage" 
+                        domain="[('calculation_type', '=', 'percentage')]"/>
+                <filter name="fixed" string="Fixed Amount" 
+                        domain="[('calculation_type', '=', 'fixed')]"/>
+                <filter name="tiered" string="Tiered" 
+                        domain="[('calculation_type', '=', 'tiered')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_category" string="Category" context="{'group_by': 'commission_category'}"/>
+                    <filter name="group_calculation_type" string="Calculation Type" context="{'group_by': 'calculation_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Commission Rule Kanban View -->
+    <record id="view_commission_rule_kanban" model="ir.ui.view">
+        <field name="name">commission.rule.kanban</field>
+        <field name="model">commission.rule</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="commission_category">
+                <field name="name"/>
+                <field name="commission_category"/>
+                <field name="calculation_type"/>
+                <field name="commission_rate"/>
+                <field name="fixed_amount"/>
+                <field name="active"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card" t-attf-class="#{record.active.raw_value ? '' : 'o_kanban_color_muted'}">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div>Type: <field name="calculation_type"/></div>
+                                    <div t-if="record.calculation_type.raw_value == 'percentage'">
+                                        Rate: <field name="commission_rate"/>%
+                                    </div>
+                                    <div t-if="record.calculation_type.raw_value == 'fixed'">
+                                        Amount: <field name="fixed_amount" widget="monetary"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Commission Rule Action -->
+    <record id="action_commission_rule" model="ir.actions.act_window">
+        <field name="name">Commission Rules</field>
+        <field name="res_model">commission.rule</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="search_view_id" ref="view_commission_rule_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first commission rule
+            </p>
+            <p>
+                Commission rules define how commissions are calculated. You can create different
+                rules for various commission categories like Legacy, External, Internal, Management, etc.
+            </p>
+        </field>
+    </record>
+
+    <!-- Commission Tier Line Tree View -->
+    <record id="view_commission_tier_line_tree" model="ir.ui.view">
+        <field name="name">commission.tier.line.tree</field>
+        <field name="model">commission.tier.line</field>
+        <field name="arch" type="xml">
+            <tree string="Commission Tiers" editable="top">
+                <field name="sequence" widget="handle"/>
+                <field name="rule_id" readonly="1"/>
+                <field name="amount_from"/>
+                <field name="amount_to"/>
+                <field name="commission_rate"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Commission Tier Line Form View -->
+    <record id="view_commission_tier_line_form" model="ir.ui.view">
+        <field name="name">commission.tier.line.form</field>
+        <field name="model">commission.tier.line</field>
+        <field name="arch" type="xml">
+            <form string="Commission Tier">
+                <group>
+                    <group>
+                        <field name="rule_id"/>
+                        <field name="sequence"/>
+                    </group>
+                    <group>
+                        <field name="amount_from"/>
+                        <field name="amount_to"/>
+                        <field name="commission_rate"/>
+                    </group>
+                </group>
+            </form>
+        </field>
+    </record>
+
+</odoo>

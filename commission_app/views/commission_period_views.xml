@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Commission Period Tree View -->
+    <record id="view_commission_period_tree" model="ir.ui.view">
+        <field name="name">commission.period.tree</field>
+        <field name="model">commission.period</field>
+        <field name="arch" type="xml">
+            <tree string="Commission Periods"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'open'"
+                  decoration-success="state == 'closed'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_amount"/>
+                <field name="allocation_count"/>
+                <field name="state" decoration-bf="1"/>
+                <field name="currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Commission Period Form View -->
+    <record id="view_commission_period_form" model="ir.ui.view">
+        <field name="name">commission.period.form</field>
+        <field name="model">commission.period</field>
+        <field name="arch" type="xml">
+            <form string="Commission Period">
+                <header>
+                    <button name="action_open" string="Open Period" type="object" 
+                            states="draft" class="btn-primary"/>
+                    <button name="action_close" string="Close Period" type="object" 
+                            states="open" class="btn-primary"/>
+                    <button name="action_cancel" string="Cancel" type="object" 
+                            states="draft,open"/>
+                    <button name="action_reopen" string="Reopen" type="object" 
+                            states="closed,cancelled" groups="commission_app.group_commission_manager"/>
+                    <button name="action_calculate_all" string="Calculate All" type="object" 
+                            states="open" class="btn-secondary"/>
+                    <button name="action_generate_report" string="Generate Report" type="object" 
+                            states="open,closed" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,open,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" 
+                                name="action_view_allocations" icon="fa-list">
+                            <field name="allocation_count" widget="statinfo" 
+                                   string="Allocations"/>
+                        </button>
+                        <button class="oe_stat_button" type="object" 
+                                name="action_view_summary" icon="fa-bar-chart">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="total_amount" widget="monetary"/>
+                                </span>
+                                <span class="o_stat_text">Total Amount</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Q1 2024 Commission"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group name="period_info">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="auto_close" help="Automatically close this period when date_to is reached"/>
+                        </group>
+                        <group name="summary_info">
+                            <field name="total_amount"/>
+                            <field name="allocation_count" string="Total Allocations"/>
+                            <field name="currency_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Commission Allocations" name="allocations">
+                            <field name="allocation_ids" context="{'default_commission_period_id': active_id}">
+                                <tree editable="bottom"
+                                      decoration-info="state == 'draft'"
+                                      decoration-warning="state == 'calculated'"
+                                      decoration-success="state == 'paid'"
+                                      decoration-muted="state == 'cancelled'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="sale_order_id"/>
+                                    <field name="partner_id"/>
+                                    <field name="commission_rule_id"/>
+                                    <field name="base_amount"/>
+                                    <field name="commission_rate"/>
+                                    <field name="commission_amount"/>
+                                    <field name="state"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Summary by Category" name="category_summary">
+                            <group>
+                                <field name="legacy_amount" string="Legacy Commission"/>
+                                <field name="external_amount" string="External Commission"/>
+                                <field name="internal_amount" string="Internal Commission"/>
+                                <field name="management_amount" string="Management Commission"/>
+                                <field name="bonus_amount" string="Bonus Commission"/>
+                                <field name="referral_amount" string="Referral Commission"/>
+                                <field name="sales_amount" string="Sales Commission"/>
+                            </group>
+                        </page>
+
+                        <page string="Summary by Partner" name="partner_summary">
+                            <button name="action_refresh_summary" string="Refresh Summary" 
+                                    type="object" class="btn-secondary"/>
+                            <field name="partner_summary_ids" readonly="1">
+                                <tree string="Partner Commission Summary">
+                                    <field name="partner_id"/>
+                                    <field name="total_amount"/>
+                                    <field name="allocation_count"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Additional notes for this commission period..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Commission Period Search View -->
+    <record id="view_commission_period_search" model="ir.ui.view">
+        <field name="name">commission.period.search</field>
+        <field name="model">commission.period</field>
+        <field name="arch" type="xml">
+            <search string="Commission Periods">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <separator/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="open" string="Open" domain="[('state', '=', 'open')]" default="1"/>
+                <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <separator/>
+                <filter name="current_month" string="Current Month" 
+                        domain="[('date_from', '&lt;=', context_today()),
+                                ('date_to', '&gt;=', context_today())]"/>
+                <filter name="this_quarter" string="This Quarter" 
+                        domain="[('date_from', '&gt;=', (context_today() - relativedelta(months=2)).strftime('%Y-%m-01')),
+                                ('date_to', '&lt;=', (context_today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                    <filter name="group_date" string="Period Start" context="{'group_by': 'date_from:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Commission Period Kanban View -->
+    <record id="view_commission_period_kanban" model="ir.ui.view">
+        <field name="name">commission.period.kanban</field>
+        <field name="model">commission.period</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_amount"/>
+                <field name="allocation_count"/>
+                <field name="state"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div>
+                                        <strong><t t-esc="record.date_from.value"/> - <t t-esc="record.date_to.value"/></strong>
+                                    </div>
+                                    <div>
+                                        Total: <field name="total_amount" widget="monetary"/>
+                                    </div>
+                                    <div>
+                                        Allocations: <field name="allocation_count"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Commission Period Calendar View -->
+    <record id="view_commission_period_calendar" model="ir.ui.view">
+        <field name="name">commission.period.calendar</field>
+        <field name="model">commission.period</field>
+        <field name="arch" type="xml">
+            <calendar string="Commission Periods" 
+                     date_start="date_from" 
+                     date_stop="date_to" 
+                     color="state">
+                <field name="name"/>
+                <field name="total_amount"/>
+                <field name="allocation_count"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Commission Period Pivot View -->
+    <record id="view_commission_period_pivot" model="ir.ui.view">
+        <field name="name">commission.period.pivot</field>
+        <field name="model">commission.period</field>
+        <field name="arch" type="xml">
+            <pivot string="Commission Period Analysis">
+                <field name="date_from" type="row" interval="month"/>
+                <field name="state" type="col"/>
+                <field name="total_amount" type="measure"/>
+                <field name="allocation_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Commission Period Graph View -->
+    <record id="view_commission_period_graph" model="ir.ui.view">
+        <field name="name">commission.period.graph</field>
+        <field name="model">commission.period</field>
+        <field name="arch" type="xml">
+            <graph string="Commission Period Trends">
+                <field name="date_from" type="row" interval="month"/>
+                <field name="total_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Commission Period Action -->
+    <record id="action_commission_period" model="ir.actions.act_window">
+        <field name="name">Commission Periods</field>
+        <field name="res_model">commission.period</field>
+        <field name="view_mode">tree,form,kanban,calendar,pivot,graph</field>
+        <field name="search_view_id" ref="view_commission_period_search"/>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first commission period
+            </p>
+            <p>
+                Commission periods help organize and track commissions for specific time ranges.
+                You can group allocations by month, quarter, or custom periods.
+            </p>
+        </field>
+    </record>
+
+</odoo>

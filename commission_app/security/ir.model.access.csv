@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_commission_allocation_user,commission.allocation.user,model_commission_allocation,group_commission_user,1,1,1,0
+access_commission_allocation_manager,commission.allocation.manager,model_commission_allocation,group_commission_manager,1,1,1,1
+access_commission_allocation_admin,commission.allocation.admin,model_commission_allocation,group_commission_admin,1,1,1,1
+access_commission_rule_user,commission.rule.user,model_commission_rule,group_commission_user,1,0,0,0
+access_commission_rule_manager,commission.rule.manager,model_commission_rule,group_commission_manager,1,1,1,1
+access_commission_rule_admin,commission.rule.admin,model_commission_rule,group_commission_admin,1,1,1,1
+access_commission_rule_tier_user,commission.rule.tier.user,model_commission_rule_tier,group_commission_user,1,0,0,0
+access_commission_rule_tier_manager,commission.rule.tier.manager,model_commission_rule_tier,group_commission_manager,1,1,1,1
+access_commission_rule_tier_admin,commission.rule.tier.admin,model_commission_rule_tier,group_commission_admin,1,1,1,1
+access_commission_period_user,commission.period.user,model_commission_period,group_commission_user,1,0,0,0
+access_commission_period_manager,commission.period.manager,model_commission_period,group_commission_manager,1,1,1,1
+access_commission_period_admin,commission.period.admin,model_commission_period,group_commission_admin,1,1,1,1

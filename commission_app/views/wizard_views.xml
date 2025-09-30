@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Commission Calculation Wizard Form -->
+    <record id="view_commission_calculation_wizard" model="ir.ui.view">
+        <field name="name">commission.calculation.wizard.form</field>
+        <field name="model">commission.calculation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Calculate Commission">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Calculate Commission</h1>
+                        <p>Calculate commissions for sale orders within the specified criteria.</p>
+                    </div>
+
+                    <group>
+                        <group name="date_range">
+                            <label for="date_from" string="Date Range"/>
+                            <div class="o_row">
+                                <field name="date_from" class="oe_inline"/>
+                                <span class="oe_inline"> to </span>
+                                <field name="date_to" class="oe_inline"/>
+                            </div>
+                        </group>
+                        <group name="options">
+                            <field name="recalculate_existing"/>
+                            <field name="auto_confirm"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Filters" name="filters">
+                            <group>
+                                <group name="partner_filters">
+                                    <field name="partner_ids" widget="many2many_tags" 
+                                           placeholder="Leave empty for all commission partners"/>
+                                    <field name="commission_rule_ids" widget="many2many_tags" 
+                                           placeholder="Leave empty for all active rules"/>
+                                </group>
+                                <group name="period_filter">
+                                    <field name="commission_period_id" 
+                                           placeholder="Leave empty to create without period"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Preview" name="preview">
+                            <button name="action_preview_only" string="Refresh Preview" 
+                                    type="object" class="btn-secondary"/>
+                            <group>
+                                <group name="preview_stats">
+                                    <field name="sale_order_count" readonly="1"/>
+                                    <field name="allocation_count" readonly="1"/>
+                                </group>
+                                <group name="preview_amounts">
+                                    <field name="estimated_amount" readonly="1"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_calculate_commissions" string="Calculate Commissions" 
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Commission Payment Wizard Form -->
+    <record id="view_commission_payment_wizard" model="ir.ui.view">
+        <field name="name">commission.payment.wizard.form</field>
+        <field name="model">commission.payment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Process Commission Payments">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Process Commission Payments</h1>
+                        <p>Process payments for confirmed commission allocations.</p>
+                    </div>
+
+                    <group>
+                        <group name="payment_details">
+                            <field name="payment_date"/>
+                            <field name="journal_id"/>
+                            <field name="payment_method"/>
+                        </group>
+                        <group name="payment_options">
+                            <field name="group_by_partner"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Filters" name="filters">
+                            <group>
+                                <group name="selection_filters">
+                                    <field name="partner_ids" widget="many2many_tags"/>
+                                    <field name="commission_period_id"/>
+                                    <field name="commission_rule_ids" widget="many2many_tags"/>
+                                </group>
+                                <group name="amount_filters">
+                                    <field name="min_amount"/>
+                                    <field name="max_amount"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Summary" name="summary">
+                            <button name="action_preview_payments" string="Refresh Summary" 
+                                    type="object" class="btn-secondary"/>
+                            <group>
+                                <group name="payment_summary">
+                                    <field name="allocation_count" readonly="1"/>
+                                    <field name="partner_count" readonly="1"/>
+                                </group>
+                                <group name="amount_summary">
+                                    <field name="total_amount" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_process_payments" string="Process Payments" 
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Commission Report Wizard Form -->
+    <record id="view_commission_report_wizard" model="ir.ui.view">
+        <field name="name">commission.report.wizard.form</field>
+        <field name="model">commission.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Commission Report">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Generate Commission Report</h1>
+                        <p>Generate comprehensive commission reports with deal summaries and category breakdowns.</p>
+                    </div>
+
+                    <group>
+                        <group name="report_type">
+                            <field name="report_type" widget="radio"/>
+                        </group>
+                        <group name="output_format">
+                            <field name="output_format" widget="radio"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group name="date_range">
+                            <label for="date_from" string="Date Range"/>
+                            <div class="o_row">
+                                <field name="date_from" class="oe_inline"/>
+                                <span class="oe_inline"> to </span>
+                                <field name="date_to" class="oe_inline"/>
+                            </div>
+                        </group>
+                        <group name="currency">
+                            <field name="currency_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Filters" name="filters">
+                            <group>
+                                <group name="entity_filters">
+                                    <field name="partner_ids" widget="many2many_tags"/>
+                                    <field name="commission_period_ids" widget="many2many_tags"/>
+                                    <field name="commission_rule_ids" widget="many2many_tags"/>
+                                </group>
+                                <group name="category_filters">
+                                    <field name="commission_categories"/>
+                                    <field name="state_filter"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Options" name="options">
+                            <group>
+                                <group name="grouping_options">
+                                    <field name="group_by_partner"/>
+                                    <field name="group_by_category"/>
+                                    <field name="group_by_period"/>
+                                </group>
+                                <group name="content_options">
+                                    <field name="include_totals"/>
+                                    <field name="include_details"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Download" name="download" 
+                              attrs="{'invisible': [('report_file', '=', False)]}">
+                            <group>
+                                <field name="report_filename" readonly="1"/>
+                                <field name="report_file" filename="report_filename"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_generate_report" string="Generate Report" 
+                            type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Actions -->
+    <record id="action_commission_calculation_wizard" model="ir.actions.act_window">
+        <field name="name">Calculate Commissions</field>
+        <field name="res_model">commission.calculation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_commission_allocation"/>
+    </record>
+
+    <record id="action_commission_payment_wizard" model="ir.actions.act_window">
+        <field name="name">Process Commission Payments</field>
+        <field name="res_model">commission.payment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_commission_allocation"/>
+    </record>
+
+    <record id="action_commission_report_wizard" model="ir.actions.act_window">
+        <field name="name">Generate Commission Reports</field>
+        <field name="res_model">commission.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Add Wizard Menus -->
+    <menuitem id="menu_commission_calculation_wizard"
+              name="Calculate Commissions"
+              parent="menu_commission_operations"
+              action="action_commission_calculation_wizard"
+              sequence="40"/>
+
+    <menuitem id="menu_commission_payment_wizard"
+              name="Process Payments"
+              parent="menu_commission_operations"
+              action="action_commission_payment_wizard"
+              sequence="50"/>
+
+    <menuitem id="menu_commission_report_wizard"
+              name="Commission Reports"
+              parent="menu_commission_reports"
+              action="action_commission_report_wizard"
+              sequence="10"/>
+
+</odoo>
