@@ -25,12 +25,12 @@
         <field name="arch" type="xml">
             <form string="Commission Period">
                 <header>
-                    <button name="action_open" string="Open Period" type="object" states="draft" class="btn-primary"/>
-                    <button name="action_close" string="Close Period" type="object" states="open" class="btn-primary"/>
-                    <button name="action_cancel" string="Cancel" type="object" states="draft,open"/>
-                    <button name="action_reopen" string="Reopen" type="object" states="closed,cancelled" groups="commission_app.group_commission_manager"/>
-                    <button name="action_calculate_all" string="Calculate All" type="object" states="open" class="btn-secondary"/>
-                    <button name="action_generate_report" string="Generate Report" type="object" states="open,closed" class="btn-secondary"/>
+                    <button name="action_open" string="Open Period" type="object" invisible="state != 'draft'" class="btn-primary"/>
+                    <button name="action_close" string="Close Period" type="object" invisible="state != 'open'" class="btn-primary"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state not in ['draft', 'open']"/>
+                    <button name="action_reopen" string="Reopen" type="object" invisible="state not in ['closed', 'cancelled']" groups="commission_app.group_commission_manager"/>
+                    <button name="action_calculate_all" string="Calculate All" type="object" invisible="state != 'open'" class="btn-secondary"/>
+                    <button name="action_generate_report" string="Generate Report" type="object" invisible="state not in ['open', 'closed']" class="btn-secondary"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,open,closed"/>
                 </header>
                 <sheet>

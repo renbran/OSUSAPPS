@@ -10,10 +10,10 @@
 
             <!-- Add Commission Button Box -->
             <xpath expr="//div[@name='button_box']" position="inside">
-                <button class="oe_stat_button" type="object" name="action_view_commission_allocations" icon="fa-money" attrs="{'invisible': [('is_commission_partner', '=', False)]}">
+                <button class="oe_stat_button" type="object" name="action_view_commission_allocations" icon="fa-money" invisible="is_commission_partner == False">
                     <field name="commission_allocation_count" widget="statinfo" string="Commissions"/>
                 </button>
-                <button class="oe_stat_button" type="object" name="action_view_commission_summary" icon="fa-bar-chart" attrs="{'invisible': [('is_commission_partner', '=', False)]}">
+                <button class="oe_stat_button" type="object" name="action_view_commission_summary" icon="fa-bar-chart" invisible="is_commission_partner == False">
                     <div class="o_field_widget o_stat_info">
                         <span class="o_stat_value">
                             <field name="total_commission_amount" widget="monetary"/>
@@ -25,34 +25,34 @@
 
             <!-- Add Commission Tab -->
             <xpath expr="//notebook" position="inside">
-                <page string="Commission Setup" name="commission_setup" attrs="{'invisible': [('is_commission_partner', '=', False)]}">
+                <page string="Commission Setup" name="commission_setup" invisible="is_commission_partner == False">
 
                     <group>
                         <group name="commission_basic">
                             <field name="is_commission_partner"/>
-                            <field name="commission_payment_method" attrs="{'invisible': [('is_commission_partner', '=', False)]}"/>
-                            <field name="default_commission_rule_id" attrs="{'invisible': [('is_commission_partner', '=', False)]}" domain="[('active', '=', True)]"/>
+                            <field name="commission_payment_method" invisible="is_commission_partner == False"/>
+                            <field name="default_commission_rule_id" invisible="is_commission_partner == False" domain="[('active', '=', True)]"/>
                         </group>
                         <group name="commission_advanced">
-                            <field name="commission_auto_calculate" attrs="{'invisible': [('is_commission_partner', '=', False)]}"/>
-                            <field name="commission_bank_account_id" attrs="{'invisible': [('commission_payment_method', '!=', 'bank_transfer')]}"/>
+                            <field name="commission_auto_calculate" invisible="is_commission_partner == False"/>
+                            <field name="commission_bank_account_id" invisible="commission_payment_method != 'bank_transfer'"/>
                         </group>
                     </group>
 
-                    <separator string="Commission Rules" attrs="{'invisible': [('is_commission_partner', '=', False)]}"/>
-                    <field name="commission_rule_ids" attrs="{'invisible': [('is_commission_partner', '=', False)]}" context="{'default_partner_ids': [(4, active_id)]}">
+                    <separator string="Commission Rules" invisible="is_commission_partner == False"/>
+                    <field name="commission_rule_ids" invisible="is_commission_partner == False" context="{'default_partner_ids': [(4, active_id)]}">
                         <tree>
                             <field name="name"/>
                             <field name="commission_category"/>
                             <field name="calculation_type"/>
-                            <field name="commission_rate" attrs="{'invisible': [('calculation_type', '==', 'fixed')]}"/>
-                            <field name="fixed_amount" attrs="{'invisible': [('calculation_type', '!=', 'fixed')]}"/>
+                            <field name="commission_rate" invisible="calculation_type == 'fixed'"/>
+                            <field name="fixed_amount" invisible="calculation_type != 'fixed'"/>
                             <field name="active"/>
                         </tree>
                     </field>
 
-                    <separator string="Recent Commission Allocations" attrs="{'invisible': [('is_commission_partner', '=', False)]}"/>
-                    <field name="commission_allocation_ids" attrs="{'invisible': [('is_commission_partner', '=', False)]}" readonly="1">
+                    <separator string="Recent Commission Allocations" invisible="is_commission_partner == False"/>
+                    <field name="commission_allocation_ids" invisible="is_commission_partner == False" readonly="1">
                         <tree limit="10">
                             <field name="sale_order_id"/>
                             <field name="commission_rule_id"/>
@@ -67,7 +67,7 @@
 
             <!-- Add Commission Statistics Tab -->
             <xpath expr="//notebook" position="inside">
-                <page string="Commission Statistics" name="commission_statistics" attrs="{'invisible': [('is_commission_partner', '=', False)]}">
+                <page string="Commission Statistics" name="commission_statistics" invisible="is_commission_partner == False">
 
                     <group>
                         <group name="current_period">
@@ -120,8 +120,8 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='display_name']" position="after">
                 <field name="is_commission_partner" string="Commission"/>
-                <field name="total_commission_amount" string="Total Commission" attrs="{'invisible': [('is_commission_partner', '=', False)]}"/>
-                <field name="commission_allocation_count" string="Allocations" attrs="{'invisible': [('is_commission_partner', '=', False)]}"/>
+                <field name="total_commission_amount" string="Total Commission" invisible="is_commission_partner == False"/>
+                <field name="commission_allocation_count" string="Allocations" invisible="is_commission_partner == False"/>
             </xpath>
         </field>
     </record>

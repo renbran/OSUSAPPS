@@ -189,7 +189,7 @@
                             </group>
                         </page>
 
-                        <page string="Download" name="download" attrs="{'invisible': [('report_file', '=', False)]}">
+                        <page string="Download" name="download" invisible="report_file == False">
                             <group>
                                 <field name="report_filename" readonly="1"/>
                                 <field name="report_file" filename="report_filename"/>
