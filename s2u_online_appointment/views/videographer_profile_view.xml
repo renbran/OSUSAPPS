@@ -63,6 +63,7 @@
                             <group string="Basic Information">
                                 <field name="user_id" required="1"/>
                                 <field name="partner_id" invisible="1"/>
+                                <field name="portfolio_count" invisible="1"/>
                                 <field name="active" widget="boolean_toggle"/>
                                 <field name="years_experience"/>
                             </group>
