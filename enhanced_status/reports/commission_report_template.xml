@@ -178,14 +178,23 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td><span t-field="o.name"/> - <span t-field="o.partner_id.name"/></td>
+                                            <td>
+                                                <span t-field="o.name"/>
+ -                                                <span t-field="o.partner_id.name"/>
+                                            </td>
                                             <td class="text-center">1</td>
-                                            <td class="text-right"><t t-esc="'{:,.2f}'.format(o.amount_untaxed or 0)"/></td>
-                                            <td class="text-right"><t t-esc="'{:,.2f}'.format(o.amount_untaxed or 0)"/></td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(o.amount_untaxed or 0)"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(o.amount_untaxed or 0)"/>
+                                            </td>
                                         </tr>
                                         <tr class="total-row">
                                             <td colspan="3" class="text-right">Order Total (AED):</td>
-                                            <td class="text-right"><t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/></td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -196,15 +205,25 @@
                                     <tbody>
                                         <tr>
                                             <td colspan="3" class="text-right">Sales Amount (AED):</td>
-                                            <td class="text-right"><t t-esc="'{:,.2f}'.format(o.amount_untaxed or 0)"/></td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(o.amount_untaxed or 0)"/>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td colspan="3" class="text-right">Tax Amount (AED):</td>
-                                            <td class="text-right"><t t-esc="'{:,.2f}'.format(o.amount_tax or 0)"/></td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(o.amount_tax or 0)"/>
+                                            </td>
                                         </tr>
                                         <tr class="total-row">
-                                            <td colspan="3" class="text-right"><strong>Total Amount (AED):</strong></td>
-                                            <td class="text-right"><strong><t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/></strong></td>
+                                            <td colspan="3" class="text-right">
+                                                <strong>Total Amount (AED):</strong>
+                                            </td>
+                                            <td class="text-right">
+                                                <strong>
+                                                    <t t-esc="'{:,.2f}'.format(o.amount_total or 0)"/>
+                                                </strong>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -222,7 +241,7 @@
             </t>
         </t>
     </template>
-    
+
     <!-- Commission Report Definition -->
     <record id="commission_payout_report" model="ir.actions.report">
         <field name="name">Commission Payout Report</field>

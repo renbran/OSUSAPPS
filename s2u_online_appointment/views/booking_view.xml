@@ -55,15 +55,8 @@
                     <field name="total_amount" widget="monetary"/>
                     <field name="paid_amount" widget="monetary" optional="hide"/>
                     <field name="balance_due" widget="monetary" optional="show"/>
-                    <field name="payment_status" widget="badge"
-                        decoration-danger="payment_status == 'unpaid'"
-                        decoration-warning="payment_status in ['deposit_paid', 'partially_paid']"
-                        decoration-success="payment_status == 'fully_paid'"/>
-                    <field name="state" widget="badge"
-                        decoration-info="state == 'confirmed'"
-                        decoration-warning="state in ['draft', 'pending']"
-                        decoration-success="state == 'completed'"
-                        decoration-muted="state == 'cancelled'"/>
+                    <field name="payment_status" widget="badge" decoration-danger="payment_status == 'unpaid'" decoration-warning="payment_status in ['deposit_paid', 'partially_paid']" decoration-success="payment_status == 'fully_paid'"/>
+                    <field name="state" widget="badge" decoration-info="state == 'confirmed'" decoration-warning="state in ['draft', 'pending']" decoration-success="state == 'completed'" decoration-muted="state == 'cancelled'"/>
                 </tree>
             </field>
         </record>
@@ -74,26 +67,18 @@
             <field name="arch" type="xml">
                 <form string="Booking">
                     <header>
-                        <button name="action_confirm" type="object" string="Submit for Approval"
-                            invisible="state != 'draft'" class="oe_highlight"/>
-                        <button name="action_approve" type="object" string="Confirm Booking"
-                            invisible="state != 'pending'" class="oe_highlight"/>
-                        <button name="action_start" type="object" string="Start Event"
-                            invisible="state != 'confirmed'" class="oe_highlight"/>
-                        <button name="action_complete" type="object" string="Mark as Completed"
-                            invisible="state not in ['confirmed', 'in_progress']" class="oe_highlight"/>
-                        <button name="action_cancel" type="object" string="Cancel Booking"
-                            invisible="state in ['completed', 'cancelled']"
-                            confirm="Are you sure you want to cancel this booking?"/>
-                        <button name="action_view_calendar_event" type="object" string="View Calendar Event"
-                            invisible="not event_id" icon="fa-calendar"/>
+                        <button name="action_confirm" type="object" string="Submit for Approval" invisible="state != 'draft'" class="oe_highlight"/>
+                        <button name="action_approve" type="object" string="Confirm Booking" invisible="state != 'pending'" class="oe_highlight"/>
+                        <button name="action_start" type="object" string="Start Event" invisible="state != 'confirmed'" class="oe_highlight"/>
+                        <button name="action_complete" type="object" string="Mark as Completed" invisible="state not in ['confirmed', 'in_progress']" class="oe_highlight"/>
+                        <button name="action_cancel" type="object" string="Cancel Booking" invisible="state in ['completed', 'cancelled']" confirm="Are you sure you want to cancel this booking?"/>
+                        <button name="action_view_calendar_event" type="object" string="View Calendar Event" invisible="not event_id" icon="fa-calendar"/>
                         <button name="action_send_confirmation_email" type="object" string="Send Confirmation" icon="fa-envelope"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,pending,confirmed,in_progress,completed"/>
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
-                            <button name="action_view_calendar_event" type="object"
-                                class="oe_stat_button" icon="fa-calendar" invisible="not event_id">
+                            <button name="action_view_calendar_event" type="object" class="oe_stat_button" icon="fa-calendar" invisible="not event_id">
                                 <div class="o_stat_info">
                                     <span class="o_stat_text">Calendar</span>
                                 </div>
@@ -223,13 +208,7 @@
             <field name="name">booking.registration.calendar</field>
             <field name="model">s2u.appointment.registration</field>
             <field name="arch" type="xml">
-                <calendar string="Bookings Calendar"
-                    date_start="appointment_begin"
-                    date_stop="appointment_end"
-                    color="videographer_id"
-                    event_open_popup="true"
-                    quick_create="false"
-                    mode="month">
+                <calendar string="Bookings Calendar" date_start="appointment_begin" date_stop="appointment_end" color="videographer_id" event_open_popup="true" quick_create="false" mode="month">
                     <field name="partner_id"/>
                     <field name="videographer_id" filters="1" color="videographer_id"/>
                     <field name="state" filters="1" invisible="1"/>
@@ -267,20 +246,21 @@
                                     <div class="o_kanban_record_body">
                                         <field name="videographer_id"/>
                                         <div>
-                                            <i class="fa fa-calendar"/> <field name="appointment_begin"/>
+                                            <i class="fa fa-calendar"/>
+                                            <field name="appointment_begin"/>
                                         </div>
                                         <div>
-                                            <strong><field name="total_amount" widget="monetary"/></strong>
+                                            <strong>
+                                                <field name="total_amount" widget="monetary"/>
+                                            </strong>
                                         </div>
                                     </div>
                                     <div class="o_kanban_record_bottom">
                                         <div class="oe_kanban_bottom_left">
-                                            <field name="payment_status" widget="label_selection"
-                                                options="{'classes': {'unpaid': 'danger', 'deposit_paid': 'warning', 'partially_paid': 'warning', 'fully_paid': 'success'}}"/>
+                                            <field name="payment_status" widget="label_selection" options="{'classes': {'unpaid': 'danger', 'deposit_paid': 'warning', 'partially_paid': 'warning', 'fully_paid': 'success'}}"/>
                                         </div>
                                         <div class="oe_kanban_bottom_right">
-                                            <field name="state" widget="label_selection"
-                                                options="{'classes': {'draft': 'default', 'pending': 'warning', 'confirmed': 'info', 'completed': 'success', 'cancelled': 'danger'}}"/>
+                                            <field name="state" widget="label_selection" options="{'classes': {'draft': 'default', 'pending': 'warning', 'confirmed': 'info', 'completed': 'success', 'cancelled': 'danger'}}"/>
                                         </div>
                                     </div>
                                 </div>

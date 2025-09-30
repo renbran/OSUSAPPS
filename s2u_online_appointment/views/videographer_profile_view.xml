@@ -244,13 +244,20 @@
                                         <field name="specialization_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                                     </div>
                                     <div class="mt-2">
-                                        <span class="fa fa-star text-warning"/> <field name="average_rating"/> (<field name="review_count"/> reviews)
+                                        <span class="fa fa-star text-warning"/>
+                                        <field name="average_rating"/>
+ (                                        <field name="review_count"/>
+ reviews)
                                     </div>
                                     <div>
-                                        <span class="fa fa-calendar"/> <field name="total_bookings"/> bookings
+                                        <span class="fa fa-calendar"/>
+                                        <field name="total_bookings"/>
+ bookings
                                     </div>
                                     <div>
-                                        <strong><field name="hourly_rate" widget="monetary"/>/hr</strong>
+                                        <strong>
+                                            <field name="hourly_rate" widget="monetary"/>
+/hr</strong>
                                     </div>
                                 </div>
                             </div>

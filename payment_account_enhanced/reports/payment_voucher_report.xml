@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <!-- Paper Format for Payment Voucher -->
-        <record id="paperformat_voucher_a4" model="report.paperformat">
-            <field name="name">Payment Voucher A4</field>
-            <field name="default" eval="False"/>
-            <field name="format">A4</field>
-            <field name="orientation">Portrait</field>
-            <field name="margin_top">15</field>
-            <field name="margin_bottom">15</field>
-            <field name="margin_left">15</field>
-            <field name="margin_right">15</field>
-            <field name="header_line" eval="False"/>
-            <field name="header_spacing">0</field>
-            <field name="dpi">96</field>
-        </record>
+  <data>
+    <!-- Paper Format for Payment Voucher -->
+    <record id="paperformat_voucher_a4" model="report.paperformat">
+      <field name="name">Payment Voucher A4</field>
+      <field name="default" eval="False"/>
+      <field name="format">A4</field>
+      <field name="orientation">Portrait</field>
+      <field name="margin_top">15</field>
+      <field name="margin_bottom">15</field>
+      <field name="margin_left">15</field>
+      <field name="margin_right">15</field>
+      <field name="header_line" eval="False"/>
+      <field name="header_spacing">0</field>
+      <field name="dpi">96</field>
+    </record>
 
-        <!-- Payment Voucher Report Action -->
-        <record id="action_report_payment_voucher" model="ir.actions.report">
-            <field name="name">Payment/Receipt Voucher</field>
-            <field name="model">account.payment</field>
-            <field name="report_type">qweb-pdf</field>
-            <field name="report_name">payment_account_enhanced.payment_voucher_template</field>
-            <field name="report_file">payment_account_enhanced.payment_voucher_template</field>
-            <field name="binding_model_id" ref="account.model_account_payment"/>
-            <field name="binding_type">report</field>
-            <field name="paperformat_id" ref="payment_account_enhanced.paperformat_voucher_a4"/>
-            <field name="print_report_name">(object.payment_type == 'inbound' and 'Receipt Voucher - %s' or 'Payment Voucher - %s') % (object.name or 'Draft')</field>
-        </record>
+    <!-- Payment Voucher Report Action -->
+    <record id="action_report_payment_voucher" model="ir.actions.report">
+      <field name="name">Payment/Receipt Voucher</field>
+      <field name="model">account.payment</field>
+      <field name="report_type">qweb-pdf</field>
+      <field name="report_name">payment_account_enhanced.payment_voucher_template</field>
+      <field name="report_file">payment_account_enhanced.payment_voucher_template</field>
+      <field name="binding_model_id" ref="account.model_account_payment"/>
+      <field name="binding_type">report</field>
+      <field name="paperformat_id" ref="payment_account_enhanced.paperformat_voucher_a4"/>
+      <field name="print_report_name">(object.payment_type == 'inbound' and 'Receipt Voucher - %s' or 'Payment Voucher - %s') % (object.name or 'Draft')</field>
+    </record>
 
-        <!-- Alternative ID for backward compatibility -->
-        <record id="payment_voucher_report" model="ir.actions.report">
-            <field name="name">Payment/Receipt Voucher Report</field>
-            <field name="model">account.payment</field>
-            <field name="report_type">qweb-pdf</field>
-            <field name="report_name">payment_account_enhanced.payment_voucher_template</field>
-            <field name="report_file">payment_account_enhanced.payment_voucher_template</field>
-            <field name="binding_model_id" ref="account.model_account_payment"/>
-            <field name="binding_type">report</field>
-            <field name="paperformat_id" ref="payment_account_enhanced.paperformat_voucher_a4"/>
-            <field name="print_report_name">(object.payment_type == 'inbound' and 'Receipt Voucher - %s' or 'Payment Voucher - %s') % (object.name or 'Draft')</field>
-        </record>
+    <!-- Alternative ID for backward compatibility -->
+    <record id="payment_voucher_report" model="ir.actions.report">
+      <field name="name">Payment/Receipt Voucher Report</field>
+      <field name="model">account.payment</field>
+      <field name="report_type">qweb-pdf</field>
+      <field name="report_name">payment_account_enhanced.payment_voucher_template</field>
+      <field name="report_file">payment_account_enhanced.payment_voucher_template</field>
+      <field name="binding_model_id" ref="account.model_account_payment"/>
+      <field name="binding_type">report</field>
+      <field name="paperformat_id" ref="payment_account_enhanced.paperformat_voucher_a4"/>
+      <field name="print_report_name">(object.payment_type == 'inbound' and 'Receipt Voucher - %s' or 'Payment Voucher - %s') % (object.name or 'Draft')</field>
+    </record>
 
-        <!-- Payment Voucher Template -->
-        <template id="payment_voucher_template" name="Payment/Receipt Voucher (Burgundy Premium)">
-            <t t-call="web.html_container">
-                <t t-foreach="docs" t-as="payment">
-                    <div class="page">
-                        <style type="text/css">
+    <!-- Payment Voucher Template -->
+    <template id="payment_voucher_template" name="Payment/Receipt Voucher (Burgundy Premium)">
+      <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="payment">
+          <div class="page">
+            <style type="text/css">
           /* Base styles - SCOPED to prevent global conflicts */
           .pv-wrapper * {
             margin: 0;
@@ -387,241 +387,246 @@
             color: white;
             line-height: 1.3;
           }
-                        </style>
+            </style>
 
-                        <div class="pv-wrapper">
-                            <!-- Header -->
-                            <div class="pv-header">
-                                <table>
-                                    <tr>
-                                        <td width="30%">
-                                            <div class="company-name">
-                                                <t t-esc="payment.company_id.name or ''"/>
-                                            </div>
-                                        </td>
-                                        <td width="40%">
-                                            <div class="pv-title">
-                                                <t t-if="payment.payment_type == 'inbound'">Receipt Voucher</t>
-                                                <t t-elif="payment.payment_type == 'outbound'">Payment Voucher</t>
-                                                <t t-else="">Payment Voucher</t>
-                                            </div>
-                                            <div class="pv-number">
-                                                <t t-esc="payment.name or ''"/>
-                                            </div>
-                                        </td>
-                                        <td width="30%" align="right">
-                                            <t t-if="payment.state == 'posted'">
-                                                <span class="pv-badge completed">COMPLETED</span>
-                                            </t>
-                                            <t t-elif="payment.state == 'draft'">
-                                                <span class="pv-badge draft">DRAFT</span>
-                                            </t>
-                                            <t t-elif="payment.state == 'cancelled'">
-                                                <span class="pv-badge cancelled">CANCELLED</span>
-                                            </t>
-                                            <t t-else="">
-                                                <span class="pv-badge pending">PENDING</span>
-                                            </t>
-                                        </td>
-                                    </tr>
-                                </table>
+            <div class="pv-wrapper">
+              <!-- Header -->
+              <div class="pv-header">
+                <table>
+                  <tr>
+                    <td width="30%">
+                      <div class="company-name">
+                        <t t-esc="payment.company_id.name or ''"/>
+                      </div>
+                    </td>
+                    <td width="40%">
+                      <div class="pv-title">
+                        <t t-if="payment.payment_type == 'inbound'">Receipt Voucher</t>
+                        <t t-elif="payment.payment_type == 'outbound'">Payment Voucher</t>
+                        <t t-else="">Payment Voucher</t>
+                      </div>
+                      <div class="pv-number">
+                        <t t-esc="payment.name or ''"/>
+                      </div>
+                    </td>
+                    <td width="30%" align="right">
+                      <t t-if="payment.state == 'posted'">
+                        <span class="pv-badge completed">COMPLETED</span>
+                      </t>
+                      <t t-elif="payment.state == 'draft'">
+                        <span class="pv-badge draft">DRAFT</span>
+                      </t>
+                      <t t-elif="payment.state == 'cancelled'">
+                        <span class="pv-badge cancelled">CANCELLED</span>
+                      </t>
+                      <t t-else="">
+                        <span class="pv-badge pending">PENDING</span>
+                      </t>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Body -->
+              <div class="pv-body">
+                <table class="content-wrapper">
+                  <tr>
+                    <td class="content-main">
+                      <!-- Payment Information -->
+                      <table class="info-table">
+                        <tr>
+                          <td width="50%">
+                            <div class="info-label">Payee</div>
+                            <div class="info-value">
+                              <t t-esc="payment.partner_id.name or 'N/A'"/>
                             </div>
+                          </td>
+                          <td width="50%">
+                            <div class="info-label">Payment Date</div>
+                            <div class="info-value">
+                              <t t-if="payment.date">
+                                <span t-field="payment.date" t-options='{"widget":"date", "format":"dd MMMM yyyy"}'/>
+                              </t>
+                              <t t-else="">Not specified</t>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <div class="info-label">Payment Method</div>
+                            <div class="info-value">
+                              <t t-esc="payment.journal_id.name or 'N/A'"/>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="info-label">Reference</div>
+                            <div class="info-value">
+                              <t t-esc="payment.ref or '-'"/>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <div class="info-label">Contact</div>
+                            <div class="info-value">
+                              <t t-if="payment.partner_id.email">
+                                <t t-esc="payment.partner_id.email"/>
+                              </t>
+                              <t t-else="">No contact information</t>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="info-label">Transaction Type</div>
+                            <div class="info-value">
+                              <t t-if="payment.payment_type == 'inbound'">Customer Receipt</t>
+                              <t t-elif="payment.payment_type == 'outbound'">Vendor Payment</t>
+                              <t t-else="">
+                                <t t-esc="payment.payment_type or 'N/A'"/>
+                              </t>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="content-side">
+                      <!-- QR Code -->
+                      <div class="qr-container">
+                        <t t-if="payment.qr_code">
+                          <img t-att-src="image_data_uri(payment.qr_code)" class="qr-code" alt="QR"/>
+                        </t>
+                        <t t-else="">
+                          <div class="qr-placeholder">QR CODE</div>
+                        </t>
+                        <div class="qr-label">Scan for Details</div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
 
-                            <!-- Body -->
-                            <div class="pv-body">
-            <table class="content-wrapper">
-              <tr>
-                <td class="content-main">
-                  <!-- Payment Information -->
-                  <table class="info-table">
+                <!-- Amount Section -->
+                <div class="amount-section">
+                  <div class="amount-display">
+                    <span class="currency-badge">
+                      <t t-esc="payment.currency_id.name or 'AED'"/>
+                    </span>
+                    <t t-esc="'{:,.2f}'.format(payment.amount or 0)"/>
+                  </div>
+                  <div class="amount-words">
+                    <t t-if="payment.amount and payment.currency_id">
+                      <t t-esc="payment.currency_id.amount_to_text(payment.amount).replace('and Zero Cent','').replace('Dirham','Dirhams').strip()"/>
+                    </t>
+                    <t t-else="">Zero</t>
+                  </div>
+                </div>
+
+                <!-- Process Steps -->
+                <div class="process-section">
+                  <div class="process-title">Approval Workflow</div>
+                  <div class="steps-container">
+                    <span t-attf-class="step #{payment.reviewer_id and 'done' or ''}">Reviewed</span>
+                    <span t-attf-class="step #{payment.approver_id and 'done' or ''}">Approved</span>
+                    <span t-attf-class="step #{payment.authorizer_id and 'done' or ''}">Authorized</span>
+                    <span t-attf-class="step #{payment.state == 'posted' and 'done' or ''}">Processed</span>
+                  </div>
+                </div>
+
+                <!-- Signatures -->
+                <div class="signature-section">
+                  <table class="signature-table">
                     <tr>
-                      <td width="50%">
-                        <div class="info-label">Payee</div>
-                        <div class="info-value">
-                          <t t-esc="payment.partner_id.name or 'N/A'"/>
+                      <td width="33%">
+                        <div class="signature-box">
+                          <div class="signature-line"></div>
+                          <div class="signature-name">
+                            <t t-if="payment.reviewer_id">
+                              <t t-esc="payment.reviewer_id.name"/>
+                            </t>
+                            <t t-else="">________________</t>
+                          </div>
+                          <div class="signature-title">Reviewed By</div>
+                          <div class="signature-date">
+                            <t t-if="payment.reviewer_date">
+                              <span t-field="payment.reviewer_date" t-options='{"widget":"date", "format":"dd/MM/yyyy"}'/>
+                            </t>
+                            <t t-else="">Date: ___________</t>
+                          </div>
                         </div>
                       </td>
-                      <td width="50%">
-                        <div class="info-label">Payment Date</div>
-                        <div class="info-value">
-                          <t t-if="payment.date">
-                            <span t-field="payment.date" t-options='{"widget":"date", "format":"dd MMMM yyyy"}'/>
-                          </t>
-                          <t t-else="">Not specified</t>
+                      <td width="33%">
+                        <div class="signature-box">
+                          <div class="signature-line"></div>
+                          <div class="signature-name">
+                            <t t-if="payment.approver_id">
+                              <t t-esc="payment.approver_id.name"/>
+                            </t>
+                            <t t-else="">________________</t>
+                          </div>
+                          <div class="signature-title">Approved By</div>
+                          <div class="signature-date">
+                            <t t-if="payment.approver_date">
+                              <span t-field="payment.approver_date" t-options='{"widget":"date", "format":"dd/MM/yyyy"}'/>
+                            </t>
+                            <t t-else="">Date: ___________</t>
+                          </div>
                         </div>
                       </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="info-label">Payment Method</div>
-                        <div class="info-value">
-                          <t t-esc="payment.journal_id.name or 'N/A'"/>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="info-label">Reference</div>
-                        <div class="info-value">
-                          <t t-esc="payment.ref or '-'"/>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="info-label">Contact</div>
-                        <div class="info-value">
-                          <t t-if="payment.partner_id.email">
-                            <t t-esc="payment.partner_id.email"/>
-                          </t>
-                          <t t-else="">No contact information</t>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="info-label">Transaction Type</div>
-                        <div class="info-value">
-                          <t t-if="payment.payment_type == 'inbound'">Customer Receipt</t>
-                          <t t-elif="payment.payment_type == 'outbound'">Vendor Payment</t>
-                          <t t-else=""><t t-esc="payment.payment_type or 'N/A'"/></t>
+                      <td width="33%">
+                        <div class="signature-box">
+                          <div class="signature-line"></div>
+                          <div class="signature-name">
+                            <t t-if="payment.authorizer_id">
+                              <t t-esc="payment.authorizer_id.name"/>
+                            </t>
+                            <t t-else="">________________</t>
+                          </div>
+                          <div class="signature-title">Authorized By</div>
+                          <div class="signature-date">
+                            <t t-if="payment.authorizer_date">
+                              <span t-field="payment.authorizer_date" t-options='{"widget":"date", "format":"dd/MM/yyyy"}'/>
+                            </t>
+                            <t t-else="">Date: ___________</t>
+                          </div>
                         </div>
                       </td>
                     </tr>
                   </table>
-                </td>
-                <td class="content-side">
-                  <!-- QR Code -->
-                  <div class="qr-container">
-                    <t t-if="payment.qr_code">
-                      <img t-att-src="image_data_uri(payment.qr_code)" class="qr-code" alt="QR"/>
-                    </t>
-                    <t t-else="">
-                      <div class="qr-placeholder">QR CODE</div>
-                    </t>
-                    <div class="qr-label">Scan for Details</div>
+
+                  <!-- Recipient Signature -->
+                  <div class="recipient-signature">
+                    <div class="recipient-box">
+                      <div class="signature-line"></div>
+                      <div class="signature-name">
+                        <t t-esc="payment.partner_id.name or '________________'"/>
+                      </div>
+                      <div class="signature-title">Received By</div>
+                      <div class="signature-date">Date: ___________</div>
+                    </div>
                   </div>
-                </td>
-              </tr>
-            </table>
-
-            <!-- Amount Section -->
-            <div class="amount-section">
-              <div class="amount-display">
-                <span class="currency-badge">
-                  <t t-esc="payment.currency_id.name or 'AED'"/>
-                </span>
-                <t t-esc="'{:,.2f}'.format(payment.amount or 0)"/>
-              </div>
-              <div class="amount-words">
-                <t t-if="payment.amount and payment.currency_id">
-                  <t t-esc="payment.currency_id.amount_to_text(payment.amount).replace('and Zero Cent','').replace('Dirham','Dirhams').strip()"/>
-                </t>
-                <t t-else="">Zero</t>
-              </div>
-            </div>
-
-            <!-- Process Steps -->
-            <div class="process-section">
-              <div class="process-title">Approval Workflow</div>
-              <div class="steps-container">
-                <span t-attf-class="step #{payment.reviewer_id and 'done' or ''}">Reviewed</span>
-                <span t-attf-class="step #{payment.approver_id and 'done' or ''}">Approved</span>
-                <span t-attf-class="step #{payment.authorizer_id and 'done' or ''}">Authorized</span>
-                <span t-attf-class="step #{payment.state == 'posted' and 'done' or ''}">Processed</span>
-              </div>
-            </div>
-
-            <!-- Signatures -->
-            <div class="signature-section">
-              <table class="signature-table">
-                <tr>
-                  <td width="33%">
-                    <div class="signature-box">
-                      <div class="signature-line"></div>
-                      <div class="signature-name">
-                        <t t-if="payment.reviewer_id">
-                          <t t-esc="payment.reviewer_id.name"/>
-                        </t>
-                        <t t-else="">________________</t>
-                      </div>
-                      <div class="signature-title">Reviewed By</div>
-                      <div class="signature-date">
-                        <t t-if="payment.reviewer_date">
-                          <span t-field="payment.reviewer_date" t-options='{"widget":"date", "format":"dd/MM/yyyy"}'/>
-                        </t>
-                        <t t-else="">Date: ___________</t>
-                      </div>
-                    </div>
-                  </td>
-                  <td width="33%">
-                    <div class="signature-box">
-                      <div class="signature-line"></div>
-                      <div class="signature-name">
-                        <t t-if="payment.approver_id">
-                          <t t-esc="payment.approver_id.name"/>
-                        </t>
-                        <t t-else="">________________</t>
-                      </div>
-                      <div class="signature-title">Approved By</div>
-                      <div class="signature-date">
-                        <t t-if="payment.approver_date">
-                          <span t-field="payment.approver_date" t-options='{"widget":"date", "format":"dd/MM/yyyy"}'/>
-                        </t>
-                        <t t-else="">Date: ___________</t>
-                      </div>
-                    </div>
-                  </td>
-                  <td width="33%">
-                    <div class="signature-box">
-                      <div class="signature-line"></div>
-                      <div class="signature-name">
-                        <t t-if="payment.authorizer_id">
-                          <t t-esc="payment.authorizer_id.name"/>
-                        </t>
-                        <t t-else="">________________</t>
-                      </div>
-                      <div class="signature-title">Authorized By</div>
-                      <div class="signature-date">
-                        <t t-if="payment.authorizer_date">
-                          <span t-field="payment.authorizer_date" t-options='{"widget":"date", "format":"dd/MM/yyyy"}'/>
-                        </t>
-                        <t t-else="">Date: ___________</t>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Recipient Signature -->
-              <div class="recipient-signature">
-                <div class="recipient-box">
-                  <div class="signature-line"></div>
-                  <div class="signature-name">
-                    <t t-esc="payment.partner_id.name or '________________'"/>
-                  </div>
-                  <div class="signature-title">Received By</div>
-                  <div class="signature-date">Date: ___________</div>
                 </div>
               </div>
+
+              <!-- Footer -->
+              <div class="pv-footer">
+                <table class="footer-table">
+                  <tr>
+                    <td class="footer-left">
+                      <strong>Document ID:</strong>
+                      <t t-esc="payment.id or 'N/A'"/>
+ | 
+                      <strong>Reference:</strong>
+                      <t t-esc="payment.name or 'N/A'"/>
+                    </td>
+                    <td class="footer-right">
+                      <strong>Generated on:</strong>
+                      <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M') if context_timestamp else 'N/A'"/>
+                    </td>
+                  </tr>
+                </table>
+              </div>
             </div>
           </div>
-
-          <!-- Footer -->
-          <div class="pv-footer">
-            <table class="footer-table">
-              <tr>
-                <td class="footer-left">
-                  <strong>Document ID:</strong> <t t-esc="payment.id or 'N/A'"/> | 
-                  <strong>Reference:</strong> <t t-esc="payment.name or 'N/A'"/>
-                </td>
-                <td class="footer-right">
-                  <strong>Generated on:</strong> 
-                  <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M') if context_timestamp else 'N/A'"/>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-    </t>
-  </t>
-</template>
-</data>
+        </t>
+      </t>
+    </template>
+  </data>
 </odoo>
