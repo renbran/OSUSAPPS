@@ -48,24 +48,21 @@
                 <t t-foreach="docs" t-as="payment">
                     <div class="page">
                         <style type="text/css">
-          /* Base styles */
-          * {
+          /* Base styles - SCOPED to prevent global conflicts */
+          .pv-wrapper * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
           }
           
-          body {
+          /* Main Container with typography */
+          .pv-wrapper { 
+            width: 100%; 
+            border: 2px solid #6B1F35;
             font-family: Arial, Helvetica, sans-serif;
             font-size: 14px;
             color: #333;
             line-height: 1.4;
-          }
-          
-          /* Main Container */
-          .pv-wrapper { 
-            width: 100%; 
-            border: 2px solid #6B1F35;
           }
           
           /* Header */
