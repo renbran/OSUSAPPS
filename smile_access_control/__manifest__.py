@@ -18,6 +18,6 @@
     ],
     "demo": [],
     "installable": True,
-    "active": True,
+    "auto_install": False,
     "uninstall_hook": "uninstall_hook",
 }

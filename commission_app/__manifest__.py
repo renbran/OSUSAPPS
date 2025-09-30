@@ -51,8 +51,8 @@ while preserving all essential functionality and improving user experience.
         'security/ir.model.access.csv',
         
         # Data
-        'data/commission_sequence.xml',
-        'data/commission_data.xml',
+        'data/commission_sequence_data.xml',
+        'data/commission_rule_data.xml',
         
         # Views
         'views/menus.xml',
@@ -63,41 +63,14 @@ while preserving all essential functionality and improving user experience.
         'views/wizard_views.xml',
     ],
     
-    # Assets
-    'assets': {
-        'web.assets_backend': [
-            'commission_app/static/src/css/commission_app.css',
-            'commission_app/static/src/js/commission_dashboard.js',
-        ],
-    },
-    
     # Technical
     'installable': True,
     'auto_install': False,
     'application': True,
-    'post_init_hook': 'post_init_hook',
-    'uninstall_hook': 'uninstall_hook',
     
     # Version requirements
     'python_requires': '>=3.8',
     'odoo_version': '17.0',
-    
-    # External dependencies (optional for enhanced features)
-    'external_dependencies': {
-        'python': [
-            # Core functionality works without these
-            # Enhanced features available with:
-            # 'pandas',     # Enhanced analytics
-            # 'numpy',      # Statistical calculations  
-            # 'xlsxwriter', # Excel export
-        ],
-    },
-    
-    # Images
-    'images': [
-        'static/description/banner.png',
-        'static/description/icon.png',
-    ],
     
     # Development mode
     'development_status': 'Production/Stable',
