@@ -6,11 +6,7 @@
         <field name="name">commission.period.tree</field>
         <field name="model">commission.period</field>
         <field name="arch" type="xml">
-            <tree string="Commission Periods"
-                  decoration-info="state == 'draft'"
-                  decoration-warning="state == 'open'"
-                  decoration-success="state == 'closed'"
-                  decoration-muted="state == 'cancelled'">
+            <tree string="Commission Periods" decoration-info="state == 'draft'" decoration-warning="state == 'open'" decoration-success="state == 'closed'" decoration-muted="state == 'cancelled'">
                 <field name="name"/>
                 <field name="date_from"/>
                 <field name="date_to"/>
@@ -29,30 +25,20 @@
         <field name="arch" type="xml">
             <form string="Commission Period">
                 <header>
-                    <button name="action_open" string="Open Period" type="object" 
-                            states="draft" class="btn-primary"/>
-                    <button name="action_close" string="Close Period" type="object" 
-                            states="open" class="btn-primary"/>
-                    <button name="action_cancel" string="Cancel" type="object" 
-                            states="draft,open"/>
-                    <button name="action_reopen" string="Reopen" type="object" 
-                            states="closed,cancelled" groups="commission_app.group_commission_manager"/>
-                    <button name="action_calculate_all" string="Calculate All" type="object" 
-                            states="open" class="btn-secondary"/>
-                    <button name="action_generate_report" string="Generate Report" type="object" 
-                            states="open,closed" class="btn-secondary"/>
-                    <field name="state" widget="statusbar" 
-                           statusbar_visible="draft,open,closed"/>
+                    <button name="action_open" string="Open Period" type="object" states="draft" class="btn-primary"/>
+                    <button name="action_close" string="Close Period" type="object" states="open" class="btn-primary"/>
+                    <button name="action_cancel" string="Cancel" type="object" states="draft,open"/>
+                    <button name="action_reopen" string="Reopen" type="object" states="closed,cancelled" groups="commission_app.group_commission_manager"/>
+                    <button name="action_calculate_all" string="Calculate All" type="object" states="open" class="btn-secondary"/>
+                    <button name="action_generate_report" string="Generate Report" type="object" states="open,closed" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,closed"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button class="oe_stat_button" type="object" 
-                                name="action_view_allocations" icon="fa-list">
-                            <field name="allocation_count" widget="statinfo" 
-                                   string="Allocations"/>
+                        <button class="oe_stat_button" type="object" name="action_view_allocations" icon="fa-list">
+                            <field name="allocation_count" widget="statinfo" string="Allocations"/>
                         </button>
-                        <button class="oe_stat_button" type="object" 
-                                name="action_view_summary" icon="fa-bar-chart">
+                        <button class="oe_stat_button" type="object" name="action_view_summary" icon="fa-bar-chart">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">
                                     <field name="total_amount" widget="monetary"/>
@@ -61,7 +47,7 @@
                             </div>
                         </button>
                     </div>
-                    
+
                     <div class="oe_title">
                         <label for="name"/>
                         <h1>
@@ -85,11 +71,7 @@
                     <notebook>
                         <page string="Commission Allocations" name="allocations">
                             <field name="allocation_ids" context="{'default_commission_period_id': active_id}">
-                                <tree editable="bottom"
-                                      decoration-info="state == 'draft'"
-                                      decoration-warning="state == 'calculated'"
-                                      decoration-success="state == 'paid'"
-                                      decoration-muted="state == 'cancelled'">
+                                <tree editable="bottom" decoration-info="state == 'draft'" decoration-warning="state == 'calculated'" decoration-success="state == 'paid'" decoration-muted="state == 'cancelled'">
                                     <field name="sequence" widget="handle"/>
                                     <field name="sale_order_id"/>
                                     <field name="partner_id"/>
@@ -116,8 +98,7 @@
                         </page>
 
                         <page string="Summary by Partner" name="partner_summary">
-                            <button name="action_refresh_summary" string="Refresh Summary" 
-                                    type="object" class="btn-secondary"/>
+                            <button name="action_refresh_summary" string="Refresh Summary" type="object" class="btn-secondary"/>
                             <field name="partner_summary_ids" readonly="1">
                                 <tree string="Partner Commission Summary">
                                     <field name="partner_id"/>
@@ -156,11 +137,9 @@
                 <filter name="open" string="Open" domain="[('state', '=', 'open')]" default="1"/>
                 <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
                 <separator/>
-                <filter name="current_month" string="Current Month" 
-                        domain="[('date_from', '&lt;=', context_today()),
+                <filter name="current_month" string="Current Month" domain="[('date_from', '&lt;=', context_today()),
                                 ('date_to', '&gt;=', context_today())]"/>
-                <filter name="this_quarter" string="This Quarter" 
-                        domain="[('date_from', '&gt;=', (context_today() - relativedelta(months=2)).strftime('%Y-%m-01')),
+                <filter name="this_quarter" string="This Quarter" domain="[('date_from', '&gt;=', (context_today() - relativedelta(months=2)).strftime('%Y-%m-01')),
                                 ('date_to', '&lt;=', (context_today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <group expand="0" string="Group By">
@@ -193,7 +172,10 @@
                                 </div>
                                 <div class="o_kanban_record_body">
                                     <div>
-                                        <strong><t t-esc="record.date_from.value"/> - <t t-esc="record.date_to.value"/></strong>
+                                        <strong>
+                                            <t t-esc="record.date_from.value"/>
+ -                                            <t t-esc="record.date_to.value"/>
+                                        </strong>
                                     </div>
                                     <div>
                                         Total: <field name="total_amount" widget="monetary"/>
@@ -215,10 +197,7 @@
         <field name="name">commission.period.calendar</field>
         <field name="model">commission.period</field>
         <field name="arch" type="xml">
-            <calendar string="Commission Periods" 
-                     date_start="date_from" 
-                     date_stop="date_to" 
-                     color="state">
+            <calendar string="Commission Periods" date_start="date_from" date_stop="date_to" color="state">
                 <field name="name"/>
                 <field name="total_amount"/>
                 <field name="allocation_count"/>

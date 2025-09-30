@@ -6,11 +6,7 @@
         <field name="name">commission.allocation.tree</field>
         <field name="model">commission.allocation</field>
         <field name="arch" type="xml">
-            <tree string="Commission Allocations" 
-                  decoration-info="state == 'draft'" 
-                  decoration-warning="state == 'calculated'"
-                  decoration-success="state == 'paid'"
-                  decoration-muted="state == 'cancelled'">
+            <tree string="Commission Allocations" decoration-info="state == 'draft'" decoration-warning="state == 'calculated'" decoration-success="state == 'paid'" decoration-muted="state == 'cancelled'">
                 <field name="sequence" widget="handle"/>
                 <field name="sale_order_id"/>
                 <field name="partner_id"/>
@@ -33,31 +29,23 @@
         <field name="arch" type="xml">
             <form string="Commission Allocation">
                 <header>
-                    <button name="action_calculate" string="Calculate" type="object" 
-                            states="draft" class="btn-primary"/>
-                    <button name="action_confirm" string="Confirm" type="object" 
-                            states="calculated" class="btn-primary"/>
-                    <button name="action_process" string="Process" type="object" 
-                            states="confirmed" class="btn-primary"/>
-                    <button name="action_pay" string="Pay" type="object" 
-                            states="processed" class="btn-primary"/>
-                    <button name="action_cancel" string="Cancel" type="object" 
-                            states="draft,calculated,confirmed"/>
-                    <button name="action_reset_to_draft" string="Reset to Draft" type="object" 
-                            states="cancelled"/>
-                    <field name="state" widget="statusbar" 
-                           statusbar_visible="draft,calculated,confirmed,processed,paid"/>
+                    <button name="action_calculate" string="Calculate" type="object" states="draft" class="btn-primary"/>
+                    <button name="action_confirm" string="Confirm" type="object" states="calculated" class="btn-primary"/>
+                    <button name="action_process" string="Process" type="object" states="confirmed" class="btn-primary"/>
+                    <button name="action_pay" string="Pay" type="object" states="processed" class="btn-primary"/>
+                    <button name="action_cancel" string="Cancel" type="object" states="draft,calculated,confirmed"/>
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object" states="cancelled"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,calculated,confirmed,processed,paid"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button class="oe_stat_button" type="object" 
-                                name="action_view_sale_order" icon="fa-shopping-cart">
+                        <button class="oe_stat_button" type="object" name="action_view_sale_order" icon="fa-shopping-cart">
                             <div class="o_stat_info">
                                 <span class="o_stat_text">Sale Order</span>
                             </div>
                         </button>
                     </div>
-                    
+
                     <group>
                         <group name="main_info">
                             <field name="sequence" groups="base.group_no_one"/>
@@ -69,8 +57,7 @@
                         <group name="amounts">
                             <field name="base_amount"/>
                             <field name="commission_rate"/>
-                            <field name="fixed_amount" 
-                                   attrs="{'invisible': [('commission_rule_id.calculation_type', '!=', 'fixed')]}"/>
+                            <field name="fixed_amount" attrs="{'invisible': [('commission_rule_id.calculation_type', '!=', 'fixed')]}"/>
                             <field name="commission_amount"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
@@ -121,11 +108,9 @@
                 <filter name="processed" string="Processed" domain="[('state', '=', 'processed')]"/>
                 <filter name="paid" string="Paid" domain="[('state', '=', 'paid')]"/>
                 <separator/>
-                <filter name="this_month" string="This Month" 
-                        domain="[('sale_date', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')),
+                <filter name="this_month" string="This Month" domain="[('sale_date', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')),
                                 ('sale_date', '&lt;', (context_today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d'))]"/>
-                <filter name="this_quarter" string="This Quarter" 
-                        domain="[('sale_date', '&gt;=', (context_today() - relativedelta(months=2)).strftime('%Y-%m-01')),
+                <filter name="this_quarter" string="This Quarter" domain="[('sale_date', '&gt;=', (context_today() - relativedelta(months=2)).strftime('%Y-%m-01')),
                                 ('sale_date', '&lt;', (context_today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <group expand="0" string="Group By">
@@ -158,8 +143,10 @@
                                     <field name="display_name"/>
                                 </div>
                                 <div class="o_kanban_record_body">
-                                    <div>Partner: <field name="partner_id"/></div>
-                                    <div>Amount: <field name="commission_amount" widget="monetary"/></div>
+                                    <div>Partner: <field name="partner_id"/>
+                                    </div>
+                                    <div>Amount: <field name="commission_amount" widget="monetary"/>
+                                    </div>
                                 </div>
                             </div>
                         </div>

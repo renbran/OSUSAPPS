@@ -2,58 +2,28 @@
 <odoo>
 
     <!-- Commission Management Menu -->
-    <menuitem id="menu_commission_main"
-              name="Commission"
-              sequence="40"
-              groups="commission_app.group_commission_user"
-              web_icon="commission_app,static/description/icon.png"/>
+    <menuitem id="menu_commission_main" name="Commission" sequence="40" groups="commission_app.group_commission_user" web_icon="commission_app,static/description/icon.png"/>
 
     <!-- Commission Operations Submenu -->
-    <menuitem id="menu_commission_operations"
-              name="Operations"
-              parent="menu_commission_main"
-              sequence="10"/>
+    <menuitem id="menu_commission_operations" name="Operations" parent="menu_commission_main" sequence="10"/>
 
     <!-- Commission Allocations Menu -->
-    <menuitem id="menu_commission_allocations"
-              name="Commission Allocations"
-              parent="menu_commission_operations"
-              action="action_commission_allocation"
-              sequence="10"/>
+    <menuitem id="menu_commission_allocations" name="Commission Allocations" parent="menu_commission_operations" action="action_commission_allocation" sequence="10"/>
 
     <!-- Commission Periods Menu -->
-    <menuitem id="menu_commission_periods"
-              name="Commission Periods"
-              parent="menu_commission_operations"
-              action="action_commission_period"
-              sequence="20"/>
+    <menuitem id="menu_commission_periods" name="Commission Periods" parent="menu_commission_operations" action="action_commission_period" sequence="20"/>
 
     <!-- Commission Partners Menu -->
-    <menuitem id="menu_commission_partners"
-              name="Commission Partners"
-              parent="menu_commission_operations"
-              action="action_commission_partners"
-              sequence="30"/>
+    <menuitem id="menu_commission_partners" name="Commission Partners" parent="menu_commission_operations" action="action_commission_partners" sequence="30"/>
 
     <!-- Commission Configuration Submenu -->
-    <menuitem id="menu_commission_configuration"
-              name="Configuration"
-              parent="menu_commission_main"
-              sequence="50"
-              groups="commission_app.group_commission_manager"/>
+    <menuitem id="menu_commission_configuration" name="Configuration" parent="menu_commission_main" sequence="50" groups="commission_app.group_commission_manager"/>
 
     <!-- Commission Rules Menu -->
-    <menuitem id="menu_commission_rules"
-              name="Commission Rules"
-              parent="menu_commission_configuration"
-              action="action_commission_rule"
-              sequence="10"/>
+    <menuitem id="menu_commission_rules" name="Commission Rules" parent="menu_commission_configuration" action="action_commission_rule" sequence="10"/>
 
     <!-- Commission Reports Submenu -->
-    <menuitem id="menu_commission_reports"
-              name="Reports"
-              parent="menu_commission_main"
-              sequence="40"/>
+    <menuitem id="menu_commission_reports" name="Reports" parent="menu_commission_main" sequence="40"/>
 
     <!-- Commission Dashboard Action -->
     <record id="action_commission_dashboard" model="ir.actions.client">
@@ -62,10 +32,6 @@
     </record>
 
     <!-- Commission Dashboard Menu -->
-    <menuitem id="menu_commission_dashboard"
-              name="Dashboard"
-              parent="menu_commission_main"
-              action="action_commission_dashboard"
-              sequence="5"/>
+    <menuitem id="menu_commission_dashboard" name="Dashboard" parent="menu_commission_main" action="action_commission_dashboard" sequence="5"/>
 
 </odoo>

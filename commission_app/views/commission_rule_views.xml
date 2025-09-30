@@ -6,9 +6,7 @@
         <field name="name">commission.rule.tree</field>
         <field name="model">commission.rule</field>
         <field name="arch" type="xml">
-            <tree string="Commission Rules"
-                  decoration-success="active == True"
-                  decoration-muted="active == False">
+            <tree string="Commission Rules" decoration-success="active == True" decoration-muted="active == False">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="commission_category"/>
@@ -29,16 +27,13 @@
             <form string="Commission Rule">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button class="oe_stat_button" type="object" 
-                                name="action_view_allocations" icon="fa-list">
-                            <field name="allocation_count" widget="statinfo" 
-                                   string="Allocations"/>
+                        <button class="oe_stat_button" type="object" name="action_view_allocations" icon="fa-list">
+                            <field name="allocation_count" widget="statinfo" string="Allocations"/>
                         </button>
                     </div>
-                    
-                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" 
-                            attrs="{'invisible': [('active', '=', True)]}"/>
-                    
+
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+
                     <div class="oe_title">
                         <label for="name"/>
                         <h1>
@@ -54,14 +49,11 @@
                             <field name="active"/>
                         </group>
                         <group name="calculation_details">
-                            <field name="commission_rate" 
-                                   attrs="{'invisible': [('calculation_type', '==', 'fixed')],
+                            <field name="commission_rate" attrs="{'invisible': [('calculation_type', '==', 'fixed')],
                                            'required': [('calculation_type', '!=', 'fixed')]}"/>
-                            <field name="fixed_amount" 
-                                   attrs="{'invisible': [('calculation_type', '!=', 'fixed')],
+                            <field name="fixed_amount" attrs="{'invisible': [('calculation_type', '!=', 'fixed')],
                                            'required': [('calculation_type', '==', 'fixed')]}"/>
-                            <field name="currency_id" 
-                                   attrs="{'invisible': [('calculation_type', '!=', 'fixed')]}"/>
+                            <field name="currency_id" attrs="{'invisible': [('calculation_type', '!=', 'fixed')]}"/>
                         </group>
                     </group>
 
@@ -69,19 +61,15 @@
                         <page string="Conditions" name="conditions">
                             <group>
                                 <group name="partner_conditions">
-                                    <field name="partner_ids" widget="many2many_tags" 
-                                           placeholder="Leave empty to apply to all partners"/>
-                                    <field name="category_ids" widget="many2many_tags" 
-                                           placeholder="Leave empty to apply to all categories"/>
+                                    <field name="partner_ids" widget="many2many_tags" placeholder="Leave empty to apply to all partners"/>
+                                    <field name="category_ids" widget="many2many_tags" placeholder="Leave empty to apply to all categories"/>
                                 </group>
                                 <group name="product_conditions">
-                                    <field name="product_ids" widget="many2many_tags" 
-                                           placeholder="Leave empty to apply to all products"/>
-                                    <field name="product_category_ids" widget="many2many_tags" 
-                                           placeholder="Leave empty to apply to all product categories"/>
+                                    <field name="product_ids" widget="many2many_tags" placeholder="Leave empty to apply to all products"/>
+                                    <field name="product_category_ids" widget="many2many_tags" placeholder="Leave empty to apply to all product categories"/>
                                 </group>
                             </group>
-                            
+
                             <group name="amount_conditions">
                                 <group>
                                     <field name="min_amount" placeholder="0.00"/>
@@ -93,9 +81,8 @@
                                 </group>
                             </group>
                         </page>
-                        
-                        <page string="Tiered Rules" name="tiered_rules" 
-                              attrs="{'invisible': [('calculation_type', '!=', 'tiered')]}">
+
+                        <page string="Tiered Rules" name="tiered_rules" attrs="{'invisible': [('calculation_type', '!=', 'tiered')]}">
                             <field name="tier_line_ids">
                                 <tree editable="bottom" string="Commission Tiers">
                                     <field name="sequence" widget="handle"/>
@@ -105,7 +92,7 @@
                                 </tree>
                             </field>
                         </page>
-                        
+
                         <page string="Description" name="description">
                             <field name="description" placeholder="Detailed description of this commission rule..."/>
                         </page>
@@ -134,21 +121,14 @@
                 <filter name="active" string="Active" domain="[('active', '=', True)]" default="1"/>
                 <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
                 <separator/>
-                <filter name="legacy" string="Legacy Commission" 
-                        domain="[('commission_category', '=', 'legacy')]"/>
-                <filter name="external" string="External Commission" 
-                        domain="[('commission_category', '=', 'external')]"/>
-                <filter name="internal" string="Internal Commission" 
-                        domain="[('commission_category', '=', 'internal')]"/>
-                <filter name="management" string="Management Commission" 
-                        domain="[('commission_category', '=', 'management')]"/>
+                <filter name="legacy" string="Legacy Commission" domain="[('commission_category', '=', 'legacy')]"/>
+                <filter name="external" string="External Commission" domain="[('commission_category', '=', 'external')]"/>
+                <filter name="internal" string="Internal Commission" domain="[('commission_category', '=', 'internal')]"/>
+                <filter name="management" string="Management Commission" domain="[('commission_category', '=', 'management')]"/>
                 <separator/>
-                <filter name="percentage" string="Percentage" 
-                        domain="[('calculation_type', '=', 'percentage')]"/>
-                <filter name="fixed" string="Fixed Amount" 
-                        domain="[('calculation_type', '=', 'fixed')]"/>
-                <filter name="tiered" string="Tiered" 
-                        domain="[('calculation_type', '=', 'tiered')]"/>
+                <filter name="percentage" string="Percentage" domain="[('calculation_type', '=', 'percentage')]"/>
+                <filter name="fixed" string="Fixed Amount" domain="[('calculation_type', '=', 'fixed')]"/>
+                <filter name="tiered" string="Tiered" domain="[('calculation_type', '=', 'tiered')]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter name="group_category" string="Category" context="{'group_by': 'commission_category'}"/>
@@ -178,9 +158,11 @@
                                     <field name="name"/>
                                 </div>
                                 <div class="o_kanban_record_body">
-                                    <div>Type: <field name="calculation_type"/></div>
+                                    <div>Type: <field name="calculation_type"/>
+                                    </div>
                                     <div t-if="record.calculation_type.raw_value == 'percentage'">
-                                        Rate: <field name="commission_rate"/>%
+                                        Rate: <field name="commission_rate"/>
+%
                                     </div>
                                     <div t-if="record.calculation_type.raw_value == 'fixed'">
                                         Amount: <field name="fixed_amount" widget="monetary"/>
