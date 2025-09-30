@@ -198,18 +198,89 @@ class CommissionPartnerStatementWizard(models.TransientModel):
         ]
 
     def action_generate_report(self):
-        """Generate the commission partner statement report"""
+        """Generate commission partner statement report using Python generator"""
         self.ensure_one()
         
-        if self.report_format == 'pdf':
-            return self._generate_pdf_report()
-        elif self.report_format == 'excel':
-            return self._generate_excel_report()
-        elif self.report_format == 'both':
-            # Generate Excel first, then PDF
-            self._generate_excel_report()  # Generate excel but don't capture return value
-            pdf_result = self._generate_pdf_report()
-            return pdf_result  # Return PDF for immediate view
+        try:
+            # Prepare wizard data for report generator
+            wizard_data = {
+                'date_from': self.date_from,
+                'date_to': self.date_to,
+                'partner_ids': self.partner_ids.ids if self.partner_ids else [],
+                'commission_state': self.commission_state,
+                'report_format': self.report_format,
+            }
+
+            # Get the Python report generator
+            report_generator = self.env['commission.report.generator']
+            
+            # Generate report based on format
+            if self.report_format == 'pdf':
+                report_data = report_generator.generate_partner_statement_report(wizard_data, 'pdf')
+                return self._download_report(report_data)
+            elif self.report_format == 'excel':
+                report_data = report_generator.generate_partner_statement_report(wizard_data, 'excel')
+                return self._download_report(report_data)
+            elif self.report_format == 'both':
+                # Generate both formats
+                pdf_data = report_generator.generate_partner_statement_report(wizard_data, 'pdf')
+                excel_data = report_generator.generate_partner_statement_report(wizard_data, 'excel')
+                return self._download_both_reports(pdf_data, excel_data)
+                
+        except Exception as e:
+            raise ValidationError(_("Error generating report: %s") % str(e))
+
+    def _download_report(self, report_data):
+        """Download a single report"""
+        attachment = self.env['ir.attachment'].create({
+            'name': report_data['filename'],
+            'type': 'binary',
+            'datas': report_data['content'],
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': report_data['mimetype']
+        })
+        
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{attachment.id}?download=true',
+            'target': 'self',
+        }
+
+    def _download_both_reports(self, pdf_data, excel_data):
+        """Download both PDF and Excel reports"""
+        # Create attachments for both reports
+        pdf_attachment = self.env['ir.attachment'].create({
+            'name': pdf_data['filename'],
+            'type': 'binary',
+            'datas': pdf_data['content'],
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': pdf_data['mimetype']
+        })
+        
+        excel_attachment = self.env['ir.attachment'].create({
+            'name': excel_data['filename'],
+            'type': 'binary',
+            'datas': excel_data['content'],
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': excel_data['mimetype']
+        })
+        
+        # Return action to show both downloads
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _("Reports Generated"),
+                'message': _("Both PDF and Excel reports have been generated. Download links: ") +
+                          f'<a href="/web/content/{pdf_attachment.id}?download=true">PDF</a> | ' +
+                          f'<a href="/web/content/{excel_attachment.id}?download=true">Excel</a>',
+                'type': 'success',
+                'sticky': True,
+            }
+        }
             
     def _generate_pdf_report(self):
         """Generate PDF report with proper data passing"""

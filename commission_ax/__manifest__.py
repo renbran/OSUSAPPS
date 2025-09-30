@@ -86,12 +86,11 @@ pip install xlsxwriter numpy pandas scikit-learn
         # Views that reference menu items
         'views/commission_type_views.xml',
 
-        # Reports (core)
-        'reports/commission_report.xml',
-        'reports/commission_report_template.xml',
-        'reports/commission_partner_statement_reports.xml',
-        'reports/commission_partner_statement_template.xml',
-        'reports/commission_profit_analysis_template.xml',
+        # Reports (Python-based generators - no QWeb templates needed)
+        'reports/commission_report.xml',  # Keep for backward compatibility
+
+        # Wizard views for Python report generators
+        'views/commission_profit_analysis_wizard_views.xml',
 
         # Advanced features (wizard views) - Load wizard views AFTER models are loaded
         'views/commission_payment_wizard_views.xml',

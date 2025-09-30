@@ -1,10 +1,10 @@
-# Temporarily disabled due to circular import issue
-# Commission Reports Module
+# Commission Reports Module - Python-based generators
 # Import order optimized to prevent circular dependencies
 
 try:
-    from . import commission_report
-    from . import commission_partner_statement_report
+    from . import commission_python_generator
+    from . import commission_report  # Keep legacy for backward compatibility
+    from . import commission_partner_statement_report  # Keep legacy AbstractModel
 except ImportError as e:
     import logging
     _logger = logging.getLogger(__name__)
