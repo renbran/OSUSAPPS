@@ -71,7 +71,7 @@
         </record>
 
         <record id="equipment_category_stabilizer" model="s2u.equipment.category">
-            <field name="name">Stabilizers & Gimbals</field>
+            <field name="name">Stabilizers &amp; Gimbals</field>
             <field name="sequence">50</field>
             <field name="icon">fa-balance-scale</field>
         </record>
