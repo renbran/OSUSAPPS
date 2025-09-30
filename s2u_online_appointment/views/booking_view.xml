@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Booking Registration Views -->
+        <record id="booking_view_search" model="ir.ui.view">
+            <field name="name">booking.registration.search</field>
+            <field name="model">s2u.appointment.registration</field>
+            <field name="arch" type="xml">
+                <search string="Bookings">
+                    <field name="name" string="Booking" filter_domain="['|', ('name', 'ilike', self), ('partner_id', 'ilike', self)]"/>
+                    <field name="partner_id"/>
+                    <field name="videographer_id"/>
+                    <field name="package_id"/>
+                    <separator/>
+                    <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Pending" name="pending" domain="[('state', '=', 'pending')]"/>
+                    <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                    <filter string="In Progress" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                    <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
+                    <filter string="Cancelled" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                    <separator/>
+                    <filter string="Unpaid" name="unpaid" domain="[('payment_status', '=', 'unpaid')]"/>
+                    <filter string="Deposit Paid" name="deposit_paid" domain="[('payment_status', '=', 'deposit_paid')]"/>
+                    <filter string="Fully Paid" name="fully_paid" domain="[('payment_status', '=', 'fully_paid')]"/>
+                    <separator/>
+                    <filter string="This Month" name="this_month"
+                        domain="[('appointment_begin', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('appointment_begin', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Next Month" name="next_month"
+                        domain="[('appointment_begin', '&gt;=', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d')),
+                                 ('appointment_begin', '&lt;', (context_today() + relativedelta(months=2, day=1)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Customer" name="group_customer" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Videographer" name="group_videographer" context="{'group_by': 'videographer_id'}"/>
+                        <filter string="Package" name="group_package" context="{'group_by': 'package_id'}"/>
+                        <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Payment Status" name="group_payment" context="{'group_by': 'payment_status'}"/>
+                        <filter string="Start Date" name="group_date" context="{'group_by': 'appointment_begin:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="booking_view_tree" model="ir.ui.view">
+            <field name="name">booking.registration.tree</field>
+            <field name="model">s2u.appointment.registration</field>
+            <field name="arch" type="xml">
+                <tree string="Bookings" decoration-info="state == 'confirmed'" decoration-success="state == 'completed'" decoration-muted="state == 'cancelled'">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="videographer_id"/>
+                    <field name="package_id" optional="show"/>
+                    <field name="appointment_begin"/>
+                    <field name="appointment_end" optional="hide"/>
+                    <field name="duration_hours" widget="float_time" optional="show"/>
+                    <field name="event_location" optional="hide"/>
+                    <field name="total_amount" widget="monetary"/>
+                    <field name="paid_amount" widget="monetary" optional="hide"/>
+                    <field name="balance_due" widget="monetary" optional="show"/>
+                    <field name="payment_status" widget="badge"
+                        decoration-danger="payment_status == 'unpaid'"
+                        decoration-warning="payment_status in ['deposit_paid', 'partially_paid']"
+                        decoration-success="payment_status == 'fully_paid'"/>
+                    <field name="state" widget="badge"
+                        decoration-info="state == 'confirmed'"
+                        decoration-warning="state in ['draft', 'pending']"
+                        decoration-success="state == 'completed'"
+                        decoration-muted="state == 'cancelled'"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="booking_view_form" model="ir.ui.view">
+            <field name="name">booking.registration.form</field>
+            <field name="model">s2u.appointment.registration</field>
+            <field name="arch" type="xml">
+                <form string="Booking">
+                    <header>
+                        <button name="action_confirm" type="object" string="Submit for Approval"
+                            invisible="state != 'draft'" class="oe_highlight"/>
+                        <button name="action_approve" type="object" string="Confirm Booking"
+                            invisible="state != 'pending'" class="oe_highlight"/>
+                        <button name="action_start" type="object" string="Start Event"
+                            invisible="state != 'confirmed'" class="oe_highlight"/>
+                        <button name="action_complete" type="object" string="Mark as Completed"
+                            invisible="state not in ['confirmed', 'in_progress']" class="oe_highlight"/>
+                        <button name="action_cancel" type="object" string="Cancel Booking"
+                            invisible="state in ['completed', 'cancelled']"
+                            confirm="Are you sure you want to cancel this booking?"/>
+                        <button name="action_view_calendar_event" type="object" string="View Calendar Event"
+                            invisible="not event_id" icon="fa-calendar"/>
+                        <button name="action_send_confirmation_email" type="object" string="Send Confirmation" icon="fa-envelope"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,pending,confirmed,in_progress,completed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_calendar_event" type="object"
+                                class="oe_stat_button" icon="fa-calendar" invisible="not event_id">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Calendar</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Booking Information">
+                                <field name="partner_id" required="1"/>
+                                <field name="videographer_id" required="1"/>
+                                <field name="appointee_id" invisible="1"/>
+                                <field name="package_id" options="{'no_create': True}"/>
+                                <field name="option_id" options="{'no_create': True}" invisible="package_id"/>
+                            </group>
+                            <group string="Date &amp; Time">
+                                <field name="appointment_begin" required="1"/>
+                                <field name="appointment_end" required="1"/>
+                                <field name="duration_hours" widget="float_time" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Event Details" name="details">
+                                <group>
+                                    <group string="Location">
+                                        <field name="event_location"/>
+                                        <field name="event_address" widget="text"/>
+                                        <field name="travel_distance"/>
+                                        <field name="travel_fee" widget="monetary"/>
+                                    </group>
+                                    <group string="Notes">
+                                        <field name="customer_notes" widget="text" placeholder="Special requests, preferences, etc."/>
+                                        <field name="special_requirements" widget="text"/>
+                                    </group>
+                                </group>
+                                <group string="Internal Notes">
+                                    <field name="internal_notes" nolabel="1" widget="text" placeholder="Internal notes for team..."/>
+                                </group>
+                            </page>
+
+                            <page string="Pricing &amp; Add-ons" name="pricing">
+                                <group>
+                                    <group string="Base Pricing">
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="base_price" widget="monetary"/>
+                                        <field name="discount_percentage"/>
+                                    </group>
+                                    <group string="Payment Terms">
+                                        <field name="deposit_percentage"/>
+                                        <field name="deposit_amount" widget="monetary" readonly="1"/>
+                                    </group>
+                                </group>
+
+                                <group string="Add-ons">
+                                    <field name="addon_ids" nolabel="1">
+                                        <tree editable="bottom">
+                                            <field name="addon_id" options="{'no_create': True}"/>
+                                            <field name="name"/>
+                                            <field name="quantity"/>
+                                            <field name="currency_id" column_invisible="1"/>
+                                            <field name="unit_price" widget="monetary"/>
+                                            <field name="subtotal" widget="monetary" readonly="1"/>
+                                        </tree>
+                                    </field>
+                                </group>
+
+                                <group class="oe_subtotal_footer oe_right">
+                                    <field name="subtotal" widget="monetary"/>
+                                    <field name="discount_amount" widget="monetary" invisible="discount_amount == 0"/>
+                                    <field name="addon_total" widget="monetary" invisible="addon_total == 0"/>
+                                    <div class="oe_subtotal_footer_separator oe_inline">
+                                        <label for="total_amount"/>
+                                    </div>
+                                    <field name="total_amount" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary"/>
+                                </group>
+                            </page>
+
+                            <page string="Payment" name="payment">
+                                <group>
+                                    <group string="Payment Status">
+                                        <field name="payment_status" readonly="1" widget="badge"/>
+                                        <field name="paid_amount" widget="monetary"/>
+                                        <field name="balance_due" widget="monetary" readonly="1"/>
+                                    </group>
+                                </group>
+                                <group string="Payment Information">
+                                    <p class="text-muted">
+                                        Payment tracking and transaction history will be displayed here.
+                                    </p>
+                                </group>
+                            </page>
+
+                            <page string="Review" name="review" invisible="state != 'completed'">
+                                <group>
+                                    <field name="reviewed" widget="boolean_toggle"/>
+                                    <field name="review_id" invisible="not reviewed"/>
+                                </group>
+                                <group invisible="reviewed">
+                                    <button name="action_request_review" type="object" string="Request Review from Customer" class="btn-primary"/>
+                                </group>
+                            </page>
+
+                            <page string="Other Info" name="other">
+                                <group>
+                                    <group>
+                                        <field name="event_id" readonly="1"/>
+                                        <field name="appointee_interaction" widget="boolean_toggle"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="booking_view_calendar" model="ir.ui.view">
+            <field name="name">booking.registration.calendar</field>
+            <field name="model">s2u.appointment.registration</field>
+            <field name="arch" type="xml">
+                <calendar string="Bookings Calendar"
+                    date_start="appointment_begin"
+                    date_stop="appointment_end"
+                    color="videographer_id"
+                    event_open_popup="true"
+                    quick_create="false"
+                    mode="month">
+                    <field name="partner_id"/>
+                    <field name="videographer_id" filters="1" color="videographer_id"/>
+                    <field name="state" filters="1" invisible="1"/>
+                    <field name="package_id"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record id="booking_view_kanban" model="ir.ui.view">
+            <field name="name">booking.registration.kanban</field>
+            <field name="model">s2u.appointment.registration</field>
+            <field name="arch" type="xml">
+                <kanban string="Bookings" class="o_kanban_mobile" default_group_by="state">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="videographer_id"/>
+                    <field name="appointment_begin"/>
+                    <field name="total_amount"/>
+                    <field name="payment_status"/>
+                    <field name="state"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_top">
+                                        <div class="o_kanban_record_headings">
+                                            <strong class="o_kanban_record_title">
+                                                <field name="name"/>
+                                            </strong>
+                                            <div class="o_kanban_record_subtitle">
+                                                <field name="partner_id"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_body">
+                                        <field name="videographer_id"/>
+                                        <div>
+                                            <i class="fa fa-calendar"/> <field name="appointment_begin"/>
+                                        </div>
+                                        <div>
+                                            <strong><field name="total_amount" widget="monetary"/></strong>
+                                        </div>
+                                    </div>
+                                    <div class="o_kanban_record_bottom">
+                                        <div class="oe_kanban_bottom_left">
+                                            <field name="payment_status" widget="label_selection"
+                                                options="{'classes': {'unpaid': 'danger', 'deposit_paid': 'warning', 'partially_paid': 'warning', 'fully_paid': 'success'}}"/>
+                                        </div>
+                                        <div class="oe_kanban_bottom_right">
+                                            <field name="state" widget="label_selection"
+                                                options="{'classes': {'draft': 'default', 'pending': 'warning', 'confirmed': 'info', 'completed': 'success', 'cancelled': 'danger'}}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="booking_view_pivot" model="ir.ui.view">
+            <field name="name">booking.registration.pivot</field>
+            <field name="model">s2u.appointment.registration</field>
+            <field name="arch" type="xml">
+                <pivot string="Bookings Analysis">
+                    <field name="videographer_id" type="row"/>
+                    <field name="appointment_begin" interval="month" type="col"/>
+                    <field name="total_amount" type="measure"/>
+                    <field name="paid_amount" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="booking_view_graph" model="ir.ui.view">
+            <field name="name">booking.registration.graph</field>
+            <field name="model">s2u.appointment.registration</field>
+            <field name="arch" type="xml">
+                <graph string="Bookings Analysis" type="bar">
+                    <field name="videographer_id"/>
+                    <field name="total_amount" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record id="booking_action" model="ir.actions.act_window">
+            <field name="name">Bookings</field>
+            <field name="res_model">s2u.appointment.registration</field>
+            <field name="view_mode">kanban,tree,form,calendar,pivot,graph</field>
+            <field name="context">{'search_default_confirmed': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first booking
+                </p>
+                <p>
+                    Manage videographer bookings with packages, pricing, and scheduling.
+                </p>
+            </field>
+        </record>
+
+        <record id="booking_action_all" model="ir.actions.act_window">
+            <field name="name">All Bookings</field>
+            <field name="res_model">s2u.appointment.registration</field>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph</field>
+        </record>
+
+    </data>
+</odoo>

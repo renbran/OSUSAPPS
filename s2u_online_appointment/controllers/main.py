@@ -41,35 +41,59 @@ class OnlineAppointment(http.Controller):
         else:
             return False
 
-    def select_appointees(self, criteria='default', appointment_option=False):
+    def select_appointees(self, criteria='default', appointment_option=False, package_id=False):
 
-        if not appointment_option:
-            return []
+        # Get videographers based on package or option
+        videographer_ids = []
 
-        if appointment_option.user_specific:
-            user_allowed_ids = appointment_option.users_allowed.ids
-            slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', 'in', user_allowed_ids)])
-            appointee_ids = [s.user_id.id for s in slots]
+        if package_id:
+            package = request.env['s2u.service.package'].sudo().browse(package_id)
+            if package and package.videographer_ids:
+                videographer_ids = package.videographer_ids.ids
+            else:
+                # All active videographers if package has no specific videographers
+                videographer_ids = request.env['s2u.videographer.profile'].sudo().search([('active', '=', True)]).ids
+        elif appointment_option:
+            if appointment_option.user_specific:
+                user_allowed_ids = appointment_option.users_allowed.ids
+                slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', 'in', user_allowed_ids)])
+                user_ids = list(set([s.user_id.id for s in slots]))
+                videographers = request.env['s2u.videographer.profile'].sudo().search([('user_id', 'in', user_ids), ('active', '=', True)])
+                videographer_ids = videographers.ids
+            else:
+                videographer_ids = request.env['s2u.videographer.profile'].sudo().search([('active', '=', True)]).ids
         else:
-            slots = request.env['s2u.appointment.slot'].sudo().search([])
-            appointee_ids = [s.user_id.id for s in slots]
-        appointee_ids = list(set(appointee_ids))
-        return appointee_ids
+            # Default: all active videographers with slots
+            slots = request.env['s2u.appointment.slot'].sudo().search([('active', '=', True)])
+            user_ids = list(set([s.user_id.id for s in slots]))
+            videographers = request.env['s2u.videographer.profile'].sudo().search([('user_id', 'in', user_ids), ('active', '=', True)])
+            videographer_ids = videographers.ids
+
+        return videographer_ids
 
     def select_options(self, criteria='default'):
 
         return request.env['s2u.appointment.option'].sudo().search([])
 
+    def select_packages(self, criteria='default'):
+        """Get available service packages"""
+        return request.env['s2u.service.package'].sudo().search([('active', '=', True), ('is_public', '=', True)])
+
     def prepare_values(self, form_data=False, default_appointee_id=False, criteria='default'):
 
         appointee_ids = self.select_appointees(criteria=criteria)
         options = self.select_options(criteria=criteria)
+        packages = self.select_packages(criteria=criteria)
 
         values = {
-            'appointees': request.env['res.users'].sudo().search([('id', 'in', appointee_ids)]),
+            'videographers': request.env['s2u.videographer.profile'].sudo().search([('id', 'in', appointee_ids)]),
+            'appointees': request.env['res.users'].sudo().search([('id', 'in', appointee_ids)]),  # Legacy support
             'appointment_options': options,
+            'service_packages': packages,
             'timeslots': [],
-            'appointee_id': 0,
+            'videographer_id': 0,
+            'appointee_id': 0,  # Legacy support
+            'package_id': 0,
             'appointment_option_id': 0,
             'appointment_date': '',
             'timeslot_id': 0,

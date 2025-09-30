@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Main Menu -->
+        <menuitem id="menu_videographer_booking"
+            name="Videographer Booking"
+            sequence="85"
+            web_icon="s2u_online_appointment,static/description/icon.png"/>
+
+        <!-- Bookings Menu -->
+        <menuitem id="menu_bookings"
+            name="Bookings"
+            parent="menu_videographer_booking"
+            sequence="10"/>
+
+        <menuitem id="menu_booking_all"
+            name="All Bookings"
+            parent="menu_bookings"
+            action="booking_action_all"
+            sequence="10"/>
+
+        <menuitem id="menu_booking_dashboard"
+            name="Booking Dashboard"
+            parent="menu_bookings"
+            action="booking_action"
+            sequence="5"/>
+
+        <!-- Videographers Menu -->
+        <menuitem id="menu_videographers"
+            name="Videographers"
+            parent="menu_videographer_booking"
+            sequence="20"/>
+
+        <menuitem id="menu_videographer_profiles"
+            name="Videographer Profiles"
+            parent="menu_videographers"
+            action="videographer_profile_action"
+            sequence="10"/>
+
+        <menuitem id="menu_videographer_availability"
+            name="Availability Slots"
+            parent="menu_videographers"
+            action="appointment_slot_action"
+            sequence="20"/>
+
+        <!-- Services Menu -->
+        <menuitem id="menu_services"
+            name="Services"
+            parent="menu_videographer_booking"
+            sequence="30"/>
+
+        <menuitem id="menu_service_packages"
+            name="Service Packages"
+            parent="menu_services"
+            action="service_package_action"
+            sequence="10"/>
+
+        <menuitem id="menu_appointment_options"
+            name="Service Options"
+            parent="menu_services"
+            action="appointment_option_action"
+            sequence="20"/>
+
+        <!-- Configuration Menu -->
+        <menuitem id="menu_configuration"
+            name="Configuration"
+            parent="menu_videographer_booking"
+            sequence="100"
+            groups="website.group_website_designer"/>
+
+        <menuitem id="menu_config_specializations"
+            name="Specializations"
+            parent="menu_configuration"
+            action="specialization_action"
+            sequence="10"/>
+
+        <menuitem id="menu_config_equipment"
+            name="Equipment"
+            parent="menu_configuration"
+            action="equipment_action"
+            sequence="20"/>
+
+        <menuitem id="menu_config_equipment_categories"
+            name="Equipment Categories"
+            parent="menu_configuration"
+            action="equipment_category_action"
+            sequence="25"/>
+
+        <menuitem id="menu_config_features"
+            name="Package Features"
+            parent="menu_configuration"
+            action="package_feature_action"
+            sequence="30"/>
+
+        <menuitem id="menu_config_addons"
+            name="Package Add-ons"
+            parent="menu_configuration"
+            action="package_addon_action"
+            sequence="40"/>
+
+    </data>
+</odoo>

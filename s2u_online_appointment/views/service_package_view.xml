@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Service Package Views -->
+        <record id="service_package_view_search" model="ir.ui.view">
+            <field name="name">service.package.search</field>
+            <field name="model">s2u.service.package</field>
+            <field name="arch" type="xml">
+                <search string="Service Packages">
+                    <field name="name"/>
+                    <field name="category"/>
+                    <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                    <filter string="Popular" name="popular" domain="[('popular', '=', True)]"/>
+                    <filter string="Show on Website" name="public" domain="[('is_public', '=', True)]"/>
+                    <separator/>
+                    <filter string="Wedding" name="wedding" domain="[('category', '=', 'wedding')]"/>
+                    <filter string="Corporate" name="corporate" domain="[('category', '=', 'corporate')]"/>
+                    <filter string="Event" name="event" domain="[('category', '=', 'event')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Category" name="group_category" context="{'group_by': 'category'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="service_package_view_tree" model="ir.ui.view">
+            <field name="name">service.package.tree</field>
+            <field name="model">s2u.service.package</field>
+            <field name="arch" type="xml">
+                <tree string="Service Packages">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="category"/>
+                    <field name="base_price" widget="monetary"/>
+                    <field name="duration_hours" widget="float_time"/>
+                    <field name="booking_count"/>
+                    <field name="is_public" string="Public" widget="boolean_toggle"/>
+                    <field name="popular" widget="boolean_toggle"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="service_package_view_form" model="ir.ui.view">
+            <field name="name">service.package.form</field>
+            <field name="model">s2u.service.package</field>
+            <field name="arch" type="xml">
+                <form string="Service Package">
+                    <header>
+                        <button name="action_view_bookings" type="object" string="View Bookings" class="oe_highlight" invisible="booking_count == 0"/>
+                    </header>
+                    <sheet>
+                        <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                        <field name="image_1920" widget="image" class="oe_avatar"/>
+                        <div class="oe_title">
+                            <label for="name" string="Package Name"/>
+                            <h1>
+                                <field name="name" placeholder="e.g., Premium Wedding Package"/>
+                            </h1>
+                            <field name="category" required="1"/>
+                        </div>
+                        <group>
+                            <group string="Basic Information">
+                                <field name="sequence"/>
+                                <field name="active" widget="boolean_toggle"/>
+                                <field name="is_public" widget="boolean_toggle"/>
+                                <field name="popular" widget="boolean_toggle"/>
+                            </group>
+                            <group string="Pricing">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="base_price" widget="monetary"/>
+                                <field name="deposit_percentage"/>
+                                <field name="deposit_amount" widget="monetary" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Description" name="description">
+                                <group>
+                                    <field name="short_description" placeholder="Brief description for listings..."/>
+                                    <field name="description" nolabel="1" placeholder="Detailed package description..."/>
+                                </group>
+                            </page>
+
+                            <page string="Duration &amp; Resources" name="resources">
+                                <group>
+                                    <group string="Duration">
+                                        <field name="duration_hours" widget="float_time"/>
+                                        <field name="editor_hours" widget="float_time"/>
+                                    </group>
+                                    <group string="Resources">
+                                        <field name="videographer_count"/>
+                                    </group>
+                                </group>
+                                <group string="Available Videographers">
+                                    <field name="videographer_ids" nolabel="1" widget="many2many_tags" placeholder="Leave empty for all videographers"/>
+                                </group>
+                            </page>
+
+                            <page string="Features" name="features">
+                                <field name="feature_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                        <field name="icon"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Deliverables" name="deliverables">
+                                <field name="deliverable_ids" nolabel="1">
+                                    <tree editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                        <field name="quantity"/>
+                                        <field name="delivery_days"/>
+                                        <field name="description"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Add-ons" name="addons">
+                                <field name="addon_ids" nolabel="1">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="addon_type"/>
+                                        <field name="price" widget="monetary"/>
+                                        <field name="duration_hours" widget="float_time" optional="hide"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Statistics" name="statistics">
+                                <group>
+                                    <group>
+                                        <field name="booking_count" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="service_package_view_kanban" model="ir.ui.view">
+            <field name="name">service.package.kanban</field>
+            <field name="model">s2u.service.package</field>
+            <field name="arch" type="xml">
+                <kanban string="Service Packages" class="o_kanban_mobile">
+                    <field name="name"/>
+                    <field name="category"/>
+                    <field name="base_price"/>
+                    <field name="duration_hours"/>
+                    <field name="popular"/>
+                    <field name="booking_count"/>
+                    <field name="image_128"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <div class="o_kanban_image">
+                                    <img t-att-src="kanban_image('s2u.service.package', 'image_128', record.id.raw_value)" alt="Package"/>
+                                </div>
+                                <div class="oe_kanban_details">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                    <div>
+                                        <field name="category"/>
+                                    </div>
+                                    <div t-if="record.popular.raw_value">
+                                        <span class="badge text-bg-success">Popular</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <strong class="text-primary"><field name="base_price" widget="monetary"/></strong>
+                                    </div>
+                                    <div>
+                                        <span class="fa fa-clock-o"/> <field name="duration_hours" widget="float_time"/>
+                                    </div>
+                                    <div>
+                                        <span class="fa fa-calendar"/> <field name="booking_count"/> bookings
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="service_package_action" model="ir.actions.act_window">
+            <field name="name">Service Packages</field>
+            <field name="res_model">s2u.service.package</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first service package
+                </p>
+                <p>
+                    Define packages with pricing, features, and deliverables for your videography services.
+                </p>
+            </field>
+        </record>
+
+        <!-- Package Features -->
+        <record id="package_feature_view_tree" model="ir.ui.view">
+            <field name="name">package.feature.tree</field>
+            <field name="model">s2u.package.feature</field>
+            <field name="arch" type="xml">
+                <tree string="Package Features" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="icon"/>
+                    <field name="description"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="package_feature_action" model="ir.actions.act_window">
+            <field name="name">Package Features</field>
+            <field name="res_model">s2u.package.feature</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Package Add-ons -->
+        <record id="package_addon_view_tree" model="ir.ui.view">
+            <field name="name">package.addon.tree</field>
+            <field name="model">s2u.package.addon</field>
+            <field name="arch" type="xml">
+                <tree string="Package Add-ons">
+                    <field name="name"/>
+                    <field name="addon_type"/>
+                    <field name="price" widget="monetary"/>
+                    <field name="duration_hours" widget="float_time" optional="hide"/>
+                    <field name="active" widget="boolean_toggle"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="package_addon_view_form" model="ir.ui.view">
+            <field name="name">package.addon.form</field>
+            <field name="model">s2u.package.addon</field>
+            <field name="arch" type="xml">
+                <form string="Package Add-on">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="addon_type"/>
+                                <field name="active" widget="boolean_toggle"/>
+                            </group>
+                            <group>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="price" widget="monetary"/>
+                                <field name="duration_hours" widget="float_time"/>
+                                <field name="icon"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="description" nolabel="1" placeholder="Add-on description..."/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="package_addon_action" model="ir.actions.act_window">
+            <field name="name">Package Add-ons</field>
+            <field name="res_model">s2u.package.addon</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>
