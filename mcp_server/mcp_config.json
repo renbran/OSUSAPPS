@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "odoo17-dev-server": {
+      "command": "python",
+      "args": ["odoo17_mcp_server.py"],
+      "cwd": "./mcp_server"
+    }
+  }
+}
