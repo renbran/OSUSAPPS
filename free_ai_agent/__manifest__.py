@@ -37,7 +37,9 @@
     # Data files
     'data': [
         'security/ir.model.access.csv',
+        'data/ai_provider_data.xml',
         'data/ai_agent_cron.xml',
+        'views/ai_provider_views.xml',
         'views/ai_agent_views.xml',
         'views/ai_response_history_views.xml',
         'views/ai_config_settings_views.xml',
