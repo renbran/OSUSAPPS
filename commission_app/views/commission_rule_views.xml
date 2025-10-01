@@ -106,9 +106,8 @@
             <search string="Commission Rules">
                 <field name="name"/>
                 <field name="commission_category"/>
-                <field name="allowed_customer_ids"/>
                 <separator/>
-                <filter name="active" string="Active" domain="[('active', '=', True)]" default="1"/>
+                <filter name="active" string="Active" domain="[('active', '=', True)]"/>
                 <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
                 <separator/>
                 <filter name="legacy" string="Legacy Commission" domain="[('commission_category', '=', 'legacy')]"/>
