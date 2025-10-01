@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Root Menu -->
+    <menuitem id="menu_new_app_root"
+              name="New App"
+              sequence="10"/>
+
+    <!-- Main Menu -->
+    <menuitem id="menu_new_app_main"
+              name="New App"
+              parent="menu_new_app_root"
+              action="action_new_app_model"
+              sequence="10"/>
+
+    <!-- Configuration Menu -->
+    <menuitem id="menu_new_app_config"
+              name="Configuration"
+              parent="menu_new_app_root"
+              sequence="100"/>
+
+    <!-- Settings Submenu -->
+    <menuitem id="menu_new_app_settings"
+              name="Settings"
+              parent="menu_new_app_config"
+              sequence="10"/>
+
+</odoo>

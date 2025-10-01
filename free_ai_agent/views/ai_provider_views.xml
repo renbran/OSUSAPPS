@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- AI Provider Form View -->
+    <record id="view_ai_provider_form" model="ir.ui.view">
+        <field name="name">ai.provider.form</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="test_connection" string="Test Connection" type="object" 
+                            class="btn-primary"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options="{'terminology': 'archive'}"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Provider Name"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="provider_type" required="1"/>
+                            <field name="model_name" required="1" 
+                                   placeholder="e.g., gpt-3.5-turbo, claude-3-sonnet"/>
+                            <field name="api_key" password="True" 
+                                   invisible="provider_type == 'ollama'"
+                                   placeholder="Your API key"/>
+                            <field name="api_base_url" 
+                                   placeholder="Custom base URL (optional)"/>
+                        </group>
+                        <group>
+                            <field name="max_tokens"/>
+                            <field name="temperature"/>
+                            <field name="sequence"/>
+                            <field name="requests_per_minute"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page name="usage_stats" string="Usage Statistics">
+                            <group>
+                                <group>
+                                    <field name="total_requests" readonly="1"/>
+                                    <field name="total_tokens_used" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="last_used" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page name="provider_info" string="Provider Information">
+                            <group>
+                                <group string="OpenAI" invisible="provider_type != 'openai'">
+                                    <p>
+                                        <strong>Setup Instructions:</strong><br/>
+                                        1. Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a><br/>
+                                        2. Popular models: gpt-3.5-turbo, gpt-4, gpt-4-turbo<br/>
+                                        3. Pricing: Pay-per-use based on tokens
+                                    </p>
+                                </group>
+
+                                <group string="Anthropic Claude" invisible="provider_type != 'anthropic'">
+                                    <p>
+                                        <strong>Setup Instructions:</strong><br/>
+                                        1. Get your API key from <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a><br/>
+                                        2. Popular models: claude-3-sonnet-20240229, claude-3-haiku-20240307<br/>
+                                        3. Pricing: Pay-per-use based on tokens
+                                    </p>
+                                </group>
+
+                                <group string="Google Gemini" invisible="provider_type != 'google'">
+                                    <p>
+                                        <strong>Setup Instructions:</strong><br/>
+                                        1. Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a><br/>
+                                        2. Popular models: gemini-pro, gemini-pro-vision<br/>
+                                        3. Free tier available with limitations
+                                    </p>
+                                </group>
+
+                                <group string="Ollama (Local)" invisible="provider_type != 'ollama'">
+                                    <p>
+                                        <strong>Setup Instructions:</strong><br/>
+                                        1. Install Ollama from <a href="https://ollama.ai/" target="_blank">ollama.ai</a><br/>
+                                        2. Run: <code>ollama pull llama2</code> (or your preferred model)<br/>
+                                        3. Default URL: http://localhost:11434<br/>
+                                        4. No API key required - completely free and local
+                                    </p>
+                                </group>
+
+                                <group string="OpenAI Compatible" invisible="provider_type != 'openai_compatible'">
+                                    <p>
+                                        <strong>Compatible Services:</strong><br/>
+                                        - LM Studio<br/>
+                                        - Oobabooga Text Generation WebUI<br/>
+                                        - vLLM<br/>
+                                        - LocalAI<br/>
+                                        - And many others that implement OpenAI API
+                                    </p>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- AI Provider Tree View -->
+    <record id="view_ai_provider_tree" model="ir.ui.view">
+        <field name="name">ai.provider.tree</field>
+        <field name="model">ai.provider</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="provider_type"/>
+                <field name="model_name"/>
+                <field name="total_requests"/>
+                <field name="last_used"/>
+                <field name="active" widget="boolean_toggle"/>
+                <button name="test_connection" string="Test" type="object" 
+                        icon="fa-plug" class="btn-sm btn-secondary"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- AI Provider Action -->
+    <record id="action_ai_provider" model="ir.actions.act_window">
+        <field name="name">AI Providers</field>
+        <field name="res_model">ai.provider</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure your first AI Provider!
+            </p>
+            <p>
+                AI Providers connect your Odoo system to AI services like OpenAI, Anthropic Claude, 
+                Google Gemini, or local AI models through Ollama.
+            </p>
+        </field>
+    </record>
+
+</odoo>

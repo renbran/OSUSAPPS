@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- AI Agent Form View -->
+    <record id="view_free_ai_agent_form" model="ir.ui.view">
+        <field name="name">free.ai.agent.form</field>
+        <field name="model">free.ai.agent</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="execute_agent" string="Run Agent" type="object" 
+                            class="btn-primary" 
+                            invisible="status in ['draft', 'running']"
+                            confirm="Are you sure you want to execute this agent?"/>
+                    <button name="test_ai_connection" string="Test AI Connection" type="object" 
+                            class="btn-secondary"/>
+                    <field name="status" widget="statusbar" 
+                           statusbar_visible="draft,active,running,error"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="show_response_history" type="object" class="oe_stat_button" icon="fa-history">
+                            <field name="total_executions" widget="statinfo" string="Executions"/>
+                        </button>
+                        <button name="show_last_response" type="object" class="oe_stat_button" icon="fa-eye"
+                                invisible="successful_executions == 0">
+                            <field name="successful_executions" widget="statinfo" string="Successful"/>
+                        </button>
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options="{'terminology': 'archive'}"/>
+                        </button>
+                    </div>
+
+                    <widget name="web_ribbon" title="Favorite" bg_color="bg-success" 
+                            invisible="not is_favorite"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Agent Name"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="agent_type"/>
+                            <field name="ai_provider_id" required="1"/>
+                            <field name="description" widget="text"/>
+                        </group>
+                        <group>
+                            <field name="execution_mode"/>
+                            <label for="execute_every" string="Execute Every" 
+                                   invisible="execution_mode != 'scheduled'"/>
+                            <div invisible="execution_mode != 'scheduled'">
+                                <field name="execute_every" class="oe_inline"/>
+                                <field name="execute_unit" class="oe_inline"/>
+                            </div>
+                            <field name="last_run" readonly="1"/>
+                            <field name="next_run" readonly="1" 
+                                   invisible="execution_mode != 'scheduled'"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page name="system_prompt" string="System Prompt">
+                            <field name="system_prompt" widget="ace" options="{'mode': 'text'}" 
+                                   placeholder="Define the agent's role, behavior, and instructions here..."/>
+                        </page>
+
+                        <page name="ai_settings" string="AI Settings">
+                            <group>
+                                <group>
+                                    <field name="max_tokens"/>
+                                    <field name="temperature"/>
+                                </group>
+                                <group>
+                                    <field name="sequence"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page name="data_access" string="Data Access">
+                            <group>
+                                <field name="model_ids" widget="many2many_tags" 
+                                       options="{'no_create': True}"/>
+                                <field name="context_data" widget="text" 
+                                       placeholder="Additional context or data for the agent..."/>
+                            </group>
+                        </page>
+
+                        <page name="sharing" string="Sharing">
+                            <group>
+                                <field name="user_ids" widget="many2many_tags"/>
+                                <field name="is_favorite"/>
+                            </group>
+                        </page>
+
+                        <page name="response_history" string="Response History">
+                            <field name="response_history_ids" readonly="1">
+                                <tree>
+                                    <field name="execution_type"/>
+                                    <field name="status"/>
+                                    <field name="started_at"/>
+                                    <field name="duration"/>
+                                    <field name="tokens_used"/>
+                                    <field name="ai_model"/>
+                                    <button name="view_response_details" string="View" type="object" 
+                                            icon="fa-eye" class="btn-sm btn-secondary"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page name="statistics" string="Statistics">
+                            <group>
+                                <group>
+                                    <field name="total_executions" readonly="1"/>
+                                    <field name="successful_executions" readonly="1"/>
+                                    <field name="failed_executions" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="total_tokens_used" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- AI Agent Tree View -->
+    <record id="view_free_ai_agent_tree" model="ir.ui.view">
+        <field name="name">free.ai.agent.tree</field>
+        <field name="model">free.ai.agent</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="agent_type"/>
+                <field name="ai_provider_id"/>
+                <field name="execution_mode"/>
+                <field name="status" widget="badge" 
+                       decoration-success="status == 'active'"
+                       decoration-warning="status == 'draft'"
+                       decoration-danger="status == 'error'"
+                       decoration-info="status == 'running'"/>
+                <field name="last_run"/>
+                <field name="next_run" invisible="execution_mode != 'scheduled'"/>
+                <field name="total_executions"/>
+                <field name="active" widget="boolean_toggle"/>
+                <button name="execute_agent" string="Run" type="object" 
+                        icon="fa-play" class="btn-sm btn-primary"
+                        invisible="status in ['draft', 'running']"/>
+                <button name="show_last_response" string="Last Response" type="object" 
+                        icon="fa-eye" class="btn-sm btn-secondary"
+                        invisible="successful_executions == 0"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- AI Agent Kanban View -->
+    <record id="view_free_ai_agent_kanban" model="ir.ui.view">
+        <field name="name">free.ai.agent.kanban</field>
+        <field name="model">free.ai.agent</field>
+        <field name="arch" type="xml">
+            <kanban default_order="sequence" class="o_kanban_dashboard">
+                <field name="name"/>
+                <field name="agent_type"/>
+                <field name="status"/>
+                <field name="description"/>
+                <field name="last_run"/>
+                <field name="total_executions"/>
+                <field name="successful_executions"/>
+                <field name="is_favorite"/>
+                <field name="ai_provider_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click" 
+                             t-att-class="record.is_favorite.raw_value ? 'oe_kanban_card_fancy' : ''">
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <field name="name"/>
+                                        <small t-if="record.is_favorite.raw_value" class="fa fa-star text-warning"/>
+                                    </div>
+                                    <div class="o_secondary">
+                                        <field name="agent_type"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_manage_button_section">
+                                    <a class="o_kanban_manage_toggle_button" href="#">
+                                        <i class="fa fa-ellipsis-v" role="img"/>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="o_kanban_card_content">
+                                <div class="o_kanban_primary_left">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <button name="execute_agent" type="object" 
+                                                    class="btn btn-primary btn-sm"
+                                                    t-if="record.status.raw_value not in ['draft', 'running']">
+                                                <i class="fa fa-play"/> Run
+                                            </button>
+                                            <span t-if="record.status.raw_value == 'running'" 
+                                                  class="badge badge-info">
+                                                <i class="fa fa-spinner fa-spin"/> Running
+                                            </span>
+                                        </div>
+                                        <div class="col-6 text-right">
+                                            <field name="status" widget="label_selection" 
+                                                   options="{'classes': {'active': 'success', 'draft': 'warning', 'error': 'danger', 'running': 'info'}}"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="o_kanban_primary_bottom">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <strong t-esc="record.total_executions.value"/>
+                                            <br/><small>Executions</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <strong t-esc="record.successful_executions.value"/>
+                                            <br/><small>Successful</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <small t-if="record.last_run.raw_value">
+                                                Last run:<br/>
+                                                <t t-esc="record.last_run.value"/>
+                                            </small>
+                                            <small t-else="">Never run</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="o_kanban_card_footer">
+                                    <div class="o_kanban_tags">
+                                        <span class="badge badge-pill badge-secondary">
+                                            <field name="ai_provider_id"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="o_kanban_manage_button_section">
+                                <a class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" href="#" role="button">
+                                    <span class="fa fa-ellipsis-v"/>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <a role="menuitem" type="edit" class="dropdown-item">Edit</a>
+                                    <a role="menuitem" name="show_response_history" type="object" class="dropdown-item">
+                                        Response History
+                                    </a>
+                                    <a role="menuitem" name="show_last_response" type="object" class="dropdown-item"
+                                       t-if="record.successful_executions.raw_value > 0">
+                                        Last Response
+                                    </a>
+                                    <div class="dropdown-divider"/>
+                                    <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- AI Agent Search View -->
+    <record id="view_free_ai_agent_search" model="ir.ui.view">
+        <field name="name">free.ai.agent.search</field>
+        <field name="model">free.ai.agent</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="agent_type"/>
+                <field name="ai_provider_id"/>
+                <field name="description"/>
+                
+                <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="inactive" string="Inactive" domain="[('active', '=', False)]"/>
+                
+                <separator/>
+                <filter name="favorites" string="Favorites" domain="[('is_favorite', '=', True)]"/>
+                <filter name="scheduled" string="Scheduled" domain="[('execution_mode', '=', 'scheduled')]"/>
+                <filter name="manual" string="Manual" domain="[('execution_mode', '=', 'manual')]"/>
+                
+                <separator/>
+                <filter name="status_active" string="Active Status" domain="[('status', '=', 'active')]"/>
+                <filter name="status_running" string="Running" domain="[('status', '=', 'running')]"/>
+                <filter name="status_error" string="Error" domain="[('status', '=', 'error')]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter name="group_agent_type" string="Agent Type" context="{'group_by': 'agent_type'}"/>
+                    <filter name="group_ai_provider" string="AI Provider" context="{'group_by': 'ai_provider_id'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_execution_mode" string="Execution Mode" context="{'group_by': 'execution_mode'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_free_ai_agent_tree" model="ir.actions.act_window">
+        <field name="name">AI Agents</field>
+        <field name="res_model">free.ai.agent</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_free_ai_agent_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first AI Agent!
+            </p>
+            <p>
+                AI Agents help automate tasks and provide intelligent insights within your Odoo system.
+                Configure an AI provider first, then create agents for different business functions.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_free_ai_agent_kanban" model="ir.actions.act_window">
+        <field name="name">AI Agents Dashboard</field>
+        <field name="res_model">free.ai.agent</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_free_ai_agent_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+    </record>
+
+    <record id="action_free_ai_agent_form_create" model="ir.actions.act_window">
+        <field name="name">Create AI Agent</field>
+        <field name="res_model">free.ai.agent</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+</odoo>

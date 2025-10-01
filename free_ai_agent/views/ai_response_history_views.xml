@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- AI Response History Form View -->
+    <record id="view_free_ai_response_history_form" model="ir.ui.view">
+        <field name="name">free.ai.response.history.form</field>
+        <field name="model">free.ai.response.history</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="retry_execution" string="Retry" type="object" 
+                            class="btn-secondary"
+                            invisible="status not in ['failed', 'completed']"/>
+                    <field name="status" widget="statusbar" 
+                           statusbar_visible="draft,running,completed,failed"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="display_name"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="agent_id"/>
+                            <field name="execution_type"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="started_at"/>
+                            <field name="completed_at"/>
+                            <field name="duration" widget="float_time"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group>
+                            <field name="ai_model"/>
+                            <field name="tokens_used"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page name="response" string="AI Response">
+                            <field name="response_content" widget="html" 
+                                   placeholder="AI response will appear here..."/>
+                        </page>
+
+                        <page name="error" string="Error Details" invisible="not error_message">
+                            <field name="error_message" widget="text"/>
+                        </page>
+
+                        <page name="raw_response" string="Raw Response" groups="base.group_no_one">
+                            <field name="raw_response" widget="ace" options="{'mode': 'json'}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- AI Response History Tree View -->
+    <record id="view_free_ai_response_history_tree" model="ir.ui.view">
+        <field name="name">free.ai.response.history.tree</field>
+        <field name="model">free.ai.response.history</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="agent_id"/>
+                <field name="execution_type"/>
+                <field name="status" widget="badge" 
+                       decoration-success="status == 'completed'"
+                       decoration-danger="status == 'failed'"
+                       decoration-info="status == 'running'"
+                       decoration-muted="status == 'draft'"/>
+                <field name="started_at"/>
+                <field name="duration" widget="float_time"/>
+                <field name="tokens_used"/>
+                <field name="ai_model"/>
+                <field name="user_id"/>
+                <button name="view_response_details" string="View" type="object" 
+                        icon="fa-eye" class="btn-sm btn-primary"/>
+                <button name="retry_execution" string="Retry" type="object" 
+                        icon="fa-refresh" class="btn-sm btn-secondary"
+                        invisible="status not in ['failed', 'completed']"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- AI Response History Search View -->
+    <record id="view_free_ai_response_history_search" model="ir.ui.view">
+        <field name="name">free.ai.response.history.search</field>
+        <field name="model">free.ai.response.history</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="agent_id"/>
+                <field name="execution_type"/>
+                <field name="user_id"/>
+                <field name="ai_model"/>
+
+                <filter name="completed" string="Completed" domain="[('status', '=', 'completed')]"/>
+                <filter name="failed" string="Failed" domain="[('status', '=', 'failed')]"/>
+                <filter name="running" string="Running" domain="[('status', '=', 'running')]"/>
+
+                <separator/>
+                <filter name="manual" string="Manual" domain="[('execution_type', '=', 'manual')]"/>
+                <filter name="scheduled" string="Scheduled" domain="[('execution_type', '=', 'scheduled')]"/>
+
+                <separator/>
+                <filter name="today" string="Today" 
+                        domain="[('started_at', '>=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"/>
+                <filter name="this_week" string="This Week" 
+                        domain="[('started_at', '>=', (context_today() - datetime.timedelta(days=7)))]"/>
+                <filter name="this_month" string="This Month" 
+                        domain="[('started_at', '>=', (context_today() - datetime.timedelta(days=30)))]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_agent" string="Agent" context="{'group_by': 'agent_id'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_execution_type" string="Execution Type" context="{'group_by': 'execution_type'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'started_at:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- AI Response History Action -->
+    <record id="action_free_ai_response_history" model="ir.actions.act_window">
+        <field name="name">Response History</field>
+        <field name="res_model">free.ai.response.history</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_free_ai_response_history_search"/>
+        <field name="context">{'search_default_today': 1}</field>
+    </record>
+
+</odoo>

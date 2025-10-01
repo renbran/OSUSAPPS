@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Deep Ocean Reports Menu -->
+    <menuitem id="menu_deep_ocean_reports_main"
+              name="Deep Ocean Reports"
+              parent="account.menu_finance"
+              sequence="50"/>
+
+    <!-- Deep Ocean Invoice Reports -->
+    <menuitem id="menu_deep_ocean_invoice_reports"
+              name="Invoice Reports"
+              parent="menu_deep_ocean_reports_main"
+              action="account.action_move_out_invoice_type"
+              sequence="10"/>
+
+    <!-- Deep Ocean Receipt Reports -->
+    <menuitem id="menu_deep_ocean_receipt_reports"
+              name="Receipt Reports"  
+              parent="menu_deep_ocean_reports_main"
+              action="account.action_move_out_invoice_type"
+              sequence="20"/>
+
+    <!-- Deep Ocean Theme Configuration -->
+    <record id="action_deep_ocean_configuration" model="ir.actions.act_window">
+        <field name="name">Deep Ocean Theme Configuration</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('deep_ocean_theme_enabled', '=', True)]</field>
+        <field name="context">{'default_deep_ocean_theme_enabled': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure your Deep Ocean themed documents!
+            </p>
+            <p>
+                Deep Ocean reports provide professional navy and azure themed invoices and receipts 
+                perfect for data analytics and enterprise consulting businesses.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_deep_ocean_configuration"
+              name="Theme Configuration"
+              parent="menu_deep_ocean_reports_main"
+              action="action_deep_ocean_configuration"
+              sequence="30"/>
+
+    <!-- Deep Ocean Analytics Dashboard -->
+    <record id="action_deep_ocean_analytics" model="ir.actions.act_window">
+        <field name="name">Deep Ocean Analytics</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="domain">[('deep_ocean_theme_enabled', '=', True), ('technical_expertise_level', '!=', False)]</field>
+        <field name="context">{'group_by': ['technical_expertise_level', 'partner_id']}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Analyze your Deep Ocean themed documents!
+            </p>
+            <p>
+                View analytics and insights for your professional consulting and data analytics business documents.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_deep_ocean_analytics"
+              name="Analytics Dashboard"
+              parent="menu_deep_ocean_reports_main"
+              action="action_deep_ocean_analytics"
+              sequence="40"/>
+
+</odoo>

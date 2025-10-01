@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Deep Ocean Receipt Report Template -->
+    <template id="deep_ocean_receipt_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="deep-ocean-report deep-ocean-fade-in">
+                    
+                    <!-- Header Section -->
+                    <div class="deep-ocean-header">
+                        <div class="company-info">
+                            <div class="company-details">
+                                <h1><span t-field="o.company_id.name"/></h1>
+                                <div class="tagline">
+                                    <span t-field="o.company_tagline"/>
+                                </div>
+                                <p><strong>Address:</strong> <span t-field="o.company_id.street"/>, <span t-field="o.company_id.city"/></p>
+                                <p><strong>Phone:</strong> <span t-field="o.company_id.phone"/></p>
+                                <p><strong>Email:</strong> <span t-field="o.company_id.email"/></p>
+                                <p><strong>TRN:</strong> <span t-field="o.company_id.vat"/></p>
+                            </div>
+                            <div class="company-logo">
+                                <img t-if="o.company_id.logo" 
+                                     t-att-src="image_data_uri(o.company_id.logo)" 
+                                     class="company-logo"
+                                     alt="Company Logo"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Title -->
+                    <div class="deep-ocean-title">
+                        <h1>Payment Receipt</h1>
+                        <div class="document-number">
+                            Receipt Number: <span t-field="o.name"/>
+                        </div>
+                        <div class="document-date">
+                            Date: <span t-field="o.invoice_date" t-options="{'widget': 'date', 'format': 'dd MMMM yyyy'}"/>
+                        </div>
+                        <t t-if="o.business_analytics_ref">
+                            <div class="deep-ocean-analytics-badge">
+                                Analytics Ref: <span t-field="o.business_analytics_ref"/>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Content Container -->
+                    <div class="deep-ocean-content">
+                        
+                        <!-- Receipt Details -->
+                        <div class="deep-ocean-details">
+                            <div class="deep-ocean-details-grid">
+                                <!-- Received From Section -->
+                                <div class="deep-ocean-detail-section">
+                                    <h3>Received From</h3>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Company:</span>
+                                        <span class="detail-value"><span t-field="o.partner_id.name"/></span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Address:</span>
+                                        <span class="detail-value">
+                                            <div t-field="o.partner_id" 
+                                                 t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                                        </span>
+                                    </div>
+                                    <t t-if="o.partner_id.vat">
+                                        <div class="detail-item">
+                                            <span class="detail-label">TRN:</span>
+                                            <span class="detail-value"><span t-field="o.partner_id.vat"/></span>
+                                        </div>
+                                    </t>
+                                </div>
+
+                                <!-- Payment Details Section -->
+                                <div class="deep-ocean-detail-section">
+                                    <h3>Payment Details</h3>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Receipt Date:</span>
+                                        <span class="detail-value">
+                                            <span t-field="o.invoice_date" t-options="{'widget': 'date', 'format': 'dd/mm/yyyy'}"/>
+                                        </span>
+                                    </div>
+                                    <t t-if="o.invoice_payment_ref">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Payment Method:</span>
+                                            <span class="detail-value"><span t-field="o.invoice_payment_ref"/></span>
+                                        </div>
+                                    </t>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Status:</span>
+                                        <span class="detail-value">
+                                            <span class="deep-ocean-analytics-badge">PAID</span>
+                                        </span>
+                                    </div>
+                                    <t t-if="o.technical_expertise_level">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Service Level:</span>
+                                            <span class="detail-value">
+                                                <span t-field="o.technical_expertise_level" class="deep-ocean-analytics-badge"/>
+                                            </span>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Enterprise Consultation Notes -->
+                            <t t-if="o.enterprise_consultation_notes">
+                                <div class="deep-ocean-consultation-note">
+                                    <strong>Service Notes:</strong><br/>
+                                    <span t-field="o.enterprise_consultation_notes"/>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Payment Summary Table -->
+                        <div class="table-responsive">
+                            <table class="deep-ocean-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Description</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-right">Unit Price</th>
+                                        <th class="text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.invoice_line_ids" t-as="line">
+                                        <tr>
+                                            <td>
+                                                <span t-field="line.name"/>
+                                                <t t-if="line.product_id.default_code">
+                                                    <br/><small>Code: <span t-field="line.product_id.default_code"/></small>
+                                                </t>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="line.quantity"/>
+                                                <span t-field="line.product_uom_id.name" groups="uom.group_uom"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.price_unit" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.price_subtotal" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Payment Totals Section -->
+                        <div class="deep-ocean-totals">
+                            <div class="deep-ocean-totals-grid">
+                                <!-- Amount in Words -->
+                                <div class="deep-ocean-amount-words">
+                                    <h4>Amount Received in Words</h4>
+                                    <p><span t-field="o.amount_total_words_deep_ocean"/></p>
+                                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.3);">
+                                        <strong>Payment Status: RECEIVED</strong><br/>
+                                        <small>This receipt serves as proof of payment for the above services.</small>
+                                    </div>
+                                </div>
+
+                                <!-- Payment Totals Table -->
+                                <table class="deep-ocean-totals-table">
+                                    <tr>
+                                        <td>Subtotal:</td>
+                                        <td><span t-field="o.amount_untaxed" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                                    </tr>
+                                    <t t-foreach="o.amount_by_group" t-as="amount_by_group">
+                                        <tr>
+                                            <td><span t-esc="amount_by_group[0]"/>:</td>
+                                            <td><span t-esc="amount_by_group[1]" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                                        </tr>
+                                    </t>
+                                    <tr>
+                                        <td><strong>Total Received:</strong></td>
+                                        <td><strong><span t-field="o.amount_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- QR Code Section -->
+                        <t t-if="o.deep_ocean_qr_image">
+                            <div class="deep-ocean-qr-section">
+                                <div class="flex-grow-1">
+                                    <p><strong>Scan QR Code for Payment Verification</strong></p>
+                                    <p>This receipt contains embedded verification data and payment confirmation details.</p>
+                                    <div class="deep-ocean-brand-mark">
+                                        Deep Ocean Professional Receipts
+                                    </div>
+                                </div>
+                                <div class="deep-ocean-qr-code">
+                                    <img t-att-src="image_data_uri(o.deep_ocean_qr_image)" 
+                                         alt="Receipt QR Code"/>
+                                    <p>Payment Verification</p>
+                                </div>
+                            </div>
+                        </t>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="deep-ocean-footer">
+                        <div class="footer-content">
+                            <div class="footer-text">
+                                Thank you for your payment. This receipt is your proof of transaction.
+                            </div>
+                            <div class="footer-branding">
+                                OSUS Deep Ocean Reports - Professional • Trustworthy • Reliable
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
