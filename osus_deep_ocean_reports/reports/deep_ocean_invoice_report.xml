@@ -29,25 +29,37 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <div class="deep-ocean-report deep-ocean-fade-in">
-                    
+
                     <!-- Header Section -->
                     <div class="deep-ocean-header">
                         <div class="company-info">
                             <div class="company-details">
-                                <h1><span t-field="o.company_id.name"/></h1>
+                                <h1>
+                                    <span t-field="o.company_id.name"/>
+                                </h1>
                                 <div class="tagline">
                                     <span t-field="o.company_tagline"/>
                                 </div>
-                                <p><strong>Address:</strong> <span t-field="o.company_id.street"/>, <span t-field="o.company_id.city"/></p>
-                                <p><strong>Phone:</strong> <span t-field="o.company_id.phone"/></p>
-                                <p><strong>Email:</strong> <span t-field="o.company_id.email"/></p>
-                                <p><strong>TRN:</strong> <span t-field="o.company_id.vat"/></p>
+                                <p>
+                                    <strong>Address:</strong>
+                                    <span t-field="o.company_id.street"/>
+,                                    <span t-field="o.company_id.city"/>
+                                </p>
+                                <p>
+                                    <strong>Phone:</strong>
+                                    <span t-field="o.company_id.phone"/>
+                                </p>
+                                <p>
+                                    <strong>Email:</strong>
+                                    <span t-field="o.company_id.email"/>
+                                </p>
+                                <p>
+                                    <strong>TRN:</strong>
+                                    <span t-field="o.company_id.vat"/>
+                                </p>
                             </div>
                             <div class="company-logo">
-                                <img t-if="o.company_id.logo" 
-                                     t-att-src="image_data_uri(o.company_id.logo)" 
-                                     class="company-logo"
-                                     alt="Company Logo"/>
+                                <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" class="company-logo" alt="Company Logo"/>
                             </div>
                         </div>
                     </div>
@@ -70,7 +82,7 @@
 
                     <!-- Content Container -->
                     <div class="deep-ocean-content">
-                        
+
                         <!-- Document Details -->
                         <div class="deep-ocean-details">
                             <div class="deep-ocean-details-grid">
@@ -79,19 +91,22 @@
                                     <h3>Bill To</h3>
                                     <div class="detail-item">
                                         <span class="detail-label">Company:</span>
-                                        <span class="detail-value"><span t-field="o.partner_id.name"/></span>
+                                        <span class="detail-value">
+                                            <span t-field="o.partner_id.name"/>
+                                        </span>
                                     </div>
                                     <div class="detail-item">
                                         <span class="detail-label">Address:</span>
                                         <span class="detail-value">
-                                            <div t-field="o.partner_id" 
-                                                 t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                                            <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
                                         </span>
                                     </div>
                                     <t t-if="o.partner_id.vat">
                                         <div class="detail-item">
                                             <span class="detail-label">TRN:</span>
-                                            <span class="detail-value"><span t-field="o.partner_id.vat"/></span>
+                                            <span class="detail-value">
+                                                <span t-field="o.partner_id.vat"/>
+                                            </span>
                                         </div>
                                     </t>
                                 </div>
@@ -114,7 +129,9 @@
                                     <t t-if="o.invoice_payment_ref">
                                         <div class="detail-item">
                                             <span class="detail-label">Payment Ref:</span>
-                                            <span class="detail-value"><span t-field="o.invoice_payment_ref"/></span>
+                                            <span class="detail-value">
+                                                <span t-field="o.invoice_payment_ref"/>
+                                            </span>
                                         </div>
                                     </t>
                                     <t t-if="o.technical_expertise_level">
@@ -131,7 +148,8 @@
                             <!-- Enterprise Consultation Notes -->
                             <t t-if="o.enterprise_consultation_notes">
                                 <div class="deep-ocean-consultation-note">
-                                    <strong>Enterprise Consultation Notes:</strong><br/>
+                                    <strong>Enterprise Consultation Notes:</strong>
+                                    <br/>
                                     <span t-field="o.enterprise_consultation_notes"/>
                                 </div>
                             </t>
@@ -155,7 +173,9 @@
                                             <td>
                                                 <span t-field="line.name"/>
                                                 <t t-if="line.product_id.default_code">
-                                                    <br/><small>Code: <span t-field="line.product_id.default_code"/></small>
+                                                    <br/>
+                                                    <small>Code: <span t-field="line.product_id.default_code"/>
+                                                    </small>
                                                 </t>
                                             </td>
                                             <td class="text-center">
@@ -183,24 +203,38 @@
                                 <!-- Amount in Words -->
                                 <div class="deep-ocean-amount-words">
                                     <h4>Amount in Words</h4>
-                                    <p><span t-field="o.amount_total_words_deep_ocean"/></p>
+                                    <p>
+                                        <span t-field="o.amount_total_words_deep_ocean"/>
+                                    </p>
                                 </div>
 
                                 <!-- Totals Table -->
                                 <table class="deep-ocean-totals-table">
                                     <tr>
                                         <td>Subtotal:</td>
-                                        <td><span t-field="o.amount_untaxed" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                                        <td>
+                                            <span t-field="o.amount_untaxed" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                        </td>
                                     </tr>
                                     <t t-foreach="o.amount_by_group" t-as="amount_by_group">
                                         <tr>
-                                            <td><span t-esc="amount_by_group[0]"/>:</td>
-                                            <td><span t-esc="amount_by_group[1]" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                                            <td>
+                                                <span t-esc="amount_by_group[0]"/>
+:</td>
+                                            <td>
+                                                <span t-esc="amount_by_group[1]" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </td>
                                         </tr>
                                     </t>
                                     <tr>
-                                        <td><strong>Total:</strong></td>
-                                        <td><strong><span t-field="o.amount_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></strong></td>
+                                        <td>
+                                            <strong>Total:</strong>
+                                        </td>
+                                        <td>
+                                            <strong>
+                                                <span t-field="o.amount_total" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
+                                            </strong>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
@@ -210,15 +244,16 @@
                         <t t-if="o.deep_ocean_qr_image">
                             <div class="deep-ocean-qr-section">
                                 <div class="flex-grow-1">
-                                    <p><strong>Scan QR Code for Digital Verification</strong></p>
+                                    <p>
+                                        <strong>Scan QR Code for Digital Verification</strong>
+                                    </p>
                                     <p>This invoice contains embedded verification data for enhanced security and analytics tracking.</p>
                                     <div class="deep-ocean-brand-mark">
                                         Deep Ocean Professional Reports
                                     </div>
                                 </div>
                                 <div class="deep-ocean-qr-code">
-                                    <img t-att-src="image_data_uri(o.deep_ocean_qr_image)" 
-                                         alt="Invoice QR Code"/>
+                                    <img t-att-src="image_data_uri(o.deep_ocean_qr_image)" alt="Invoice QR Code"/>
                                     <p>Document Verification</p>
                                 </div>
                             </div>
