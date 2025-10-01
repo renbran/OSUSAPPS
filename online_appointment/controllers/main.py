@@ -3,7 +3,7 @@
 import pytz
 import datetime
 
-from odoo.addons.s2u_online_appointment.helpers import functions
+from odoo.addons.online_appointment.helpers import functions
 
 from odoo import http, modules, tools
 from odoo import api, fields, models, _, SUPERUSER_ID
@@ -148,10 +148,10 @@ class OnlineAppointment(http.Controller):
         if request.env.user._is_public():
             param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
-                return request.render('s2u_online_appointment.only_registered_users')
+                return request.render('online_appointment.only_registered_users')
         values = self.prepare_values(default_appointee_id=kw.get('appointee', False))
 
-        return request.render('s2u_online_appointment.make_appointment', values)
+        return request.render('online_appointment.make_appointment', values)
 
     @http.route(['/online-appointment/appointment-confirm', '/online-appointment/appointment-confirm/<token>'], auth="public", type='http', website=True)
     def online_appointment_confirm(self, **post):
@@ -161,7 +161,7 @@ class OnlineAppointment(http.Controller):
         if request.env.user._is_public():
             param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
-                return request.render('s2u_online_appointment.only_registered_users')
+                return request.render('online_appointment.only_registered_users')
 
             if not post.get('name', False):
                 error['name'] = True
@@ -206,12 +206,12 @@ class OnlineAppointment(http.Controller):
         if error_message:
             values['error'] = error
             values['error_message'] = error_message
-            return request.render('s2u_online_appointment.make_appointment', values)
+            return request.render('online_appointment.make_appointment', values)
 
         if not self.check_slot_is_possible(option.id, post['appointment_date'], appointee_id, slot.id):
             values['error'] = {'timeslot_id': True}
             values['error_message'] = [_('Slot is already occupied, please choose another slot.')]
-            return request.render('s2u_online_appointment.make_appointment', values)
+            return request.render('online_appointment.make_appointment', values)
 
         if request.env.user._is_public():
             partner = request.env['res.partner'].sudo().search(['|', ('phone', 'ilike', values['phone']),
@@ -262,7 +262,7 @@ class OnlineAppointment(http.Controller):
         if request.env.user._is_public():
             param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
-                return request.render('s2u_online_appointment.only_registered_users')
+                return request.render('online_appointment.only_registered_users')
 
         appointment = request.env['calendar.event'].sudo().search([('id', '=', int(post.get('appointment', 0)))])
         if not appointment:
@@ -270,27 +270,27 @@ class OnlineAppointment(http.Controller):
                 'appointment': False,
                 'error_message': [_('Appointment not found.')]
             }
-            return request.render('s2u_online_appointment.thanks', values)
+            return request.render('online_appointment.thanks', values)
 
         if request.env.user._is_public():
             values = {
                 'appointment': False,
                 'error_message': []
             }
-            return request.render('s2u_online_appointment.thanks', values)
+            return request.render('online_appointment.thanks', values)
         else:
             if request.env.user.partner_id.id not in appointment.partner_ids.ids:
                 values = {
                     'appointment': False,
                     'error_message': [_('Appointment not found.')]
                 }
-                return request.render('s2u_online_appointment.thanks', values)
+                return request.render('online_appointment.thanks', values)
 
             values = {
                 'appointment': appointment,
                 'error_message': []
             }
-            return request.render('s2u_online_appointment.thanks', values)
+            return request.render('online_appointment.thanks', values)
 
     def check_slot_is_possible(self, option_id, appointment_date, appointee_id, slot_id):
 
@@ -595,7 +595,7 @@ class OnlineAppointment(http.Controller):
         if request.env.user._is_public():
             param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
-                return request.render('s2u_online_appointment.only_registered_users')
+                return request.render('online_appointment.only_registered_users')
 
         try:
             id = int(post.get('appointment_to_cancel', 0))
@@ -618,7 +618,7 @@ class OnlineAppointment(http.Controller):
         if request.env.user._is_public():
             param = request.env['ir.config_parameter'].sudo().search([('key', '=', 's2u_online_appointment')], limit=1)
             if not param or param.value.lower() != 'public':
-                return request.render('s2u_online_appointment.only_registered_users')
+                return request.render('online_appointment.only_registered_users')
 
         try:
             id = int(post.get('appointment_to_confirm', 0))

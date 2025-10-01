@@ -2,7 +2,7 @@
 <odoo>
     <data>
         
-       <template id="s2u_online_appointment.make_appointment" name="Online Appointment">
+       <template id="online_appointment.make_appointment" name="Online Appointment">
            <t t-call="website.layout">
                <div id="wrap" class="oe_structure oe_empty">
                    <div class="container mb64" id="s2u_online_appointment">
@@ -130,7 +130,7 @@
            </t>
        </template>
 
-        <template id="s2u_online_appointment.only_registered_users" name="Only registered users">
+        <template id="online_appointment.only_registered_users" name="Only registered users">
             <t t-call="website.layout">
                 <div id="wrap">
                     <div class="oe_structure">
@@ -156,7 +156,7 @@
             </t>
         </template>
     
-        <template id="s2u_online_appointment.thanks" name="Appointment Scheduled">
+        <template id="online_appointment.thanks" name="Appointment Scheduled">
             <t t-call="website.layout">
                 <div id="wrap">
                     <div class="oe_structure"/>
