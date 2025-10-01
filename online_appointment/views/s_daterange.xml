@@ -4,7 +4,7 @@
     <record id="snippet_daterange.s_daterange_000_xml" model="ir.asset">
         <field name="name">DateRange 000 XML</field>
         <field name="bundle">web.assets_frontend</field>
-        <field name="path">s2u_online_appointment/static/src/snippets/s_daterange/000.xml</field>
+        <field name="path">online_appointment/static/src/snippets/s_daterange/000.xml</field>
     </record>
 
 </odoo>
