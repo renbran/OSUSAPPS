@@ -46,7 +46,7 @@
     'maintainer': "Odoo AI Agents Community",
     'license': 'LGPL-3',
     'category': 'Tools',
-    'version': '18.0.1.0.0',
+    'version': '17.0.1.0.0',
     'sequence': 1,
     
     # Dependencies

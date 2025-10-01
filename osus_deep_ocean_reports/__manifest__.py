@@ -29,7 +29,6 @@
     'depends': [
         'account', 
         'base', 
-        'sale', 
         'portal'
     ],
     'external_dependencies': {
