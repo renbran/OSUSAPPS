@@ -10,6 +10,13 @@ class SaleOrder(models.Model):
         ('approved', 'Approved'),
         ('completed', 'Completed'),
     ], string='Status', default='draft', tracking=True)
+    
+    # Add locked field for compatibility with parent view modifiers
+    locked = fields.Boolean(
+        string='Locked',
+        default=False,
+        help='Whether this sale order is locked for editing'
+    )
 
     def action_set_documentation(self):
         self.write({'state': 'documentation'})

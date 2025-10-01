@@ -7,11 +7,13 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="replace">
                 <header>
+                    <!-- Add locked field to satisfy parent view modifiers -->
+                    <field name="locked" invisible="1"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,documentation,calculation,approved,completed"/>
-                    <button name="action_set_documentation" type="object" string="Set Documentation" attrs="{'invisible': [('state', '!=', 'draft')]}" class="btn-primary"/>
-                    <button name="action_set_calculation" type="object" string="Set Calculation" attrs="{'invisible': [('state', '!=', 'documentation')]}" class="btn-info"/>
-                    <button name="action_set_approved" type="object" string="Approve" attrs="{'invisible': [('state', '!=', 'calculation')]}" class="btn-success"/>
-                    <button name="action_set_completed" type="object" string="Complete" attrs="{'invisible': [('state', '!=', 'approved')]}" class="btn-secondary"/>
+                    <button name="action_set_documentation" type="object" string="Set Documentation" invisible="state != 'draft'" class="btn-primary"/>
+                    <button name="action_set_calculation" type="object" string="Set Calculation" invisible="state != 'documentation'" class="btn-info"/>
+                    <button name="action_set_approved" type="object" string="Approve" invisible="state != 'calculation'" class="btn-success"/>
+                    <button name="action_set_completed" type="object" string="Complete" invisible="state != 'approved'" class="btn-secondary"/>
                 </header>
             </xpath>
         </field>
