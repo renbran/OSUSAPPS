@@ -8,8 +8,8 @@
         <field name="arch" type="xml">
             <tree string="Commission Periods" decoration-info="state == 'draft'" decoration-warning="state == 'open'" decoration-success="state == 'closed'" decoration-muted="state == 'cancelled'">
                 <field name="name"/>
-                <field name="date_from"/>
-                <field name="date_to"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
                 <field name="total_amount"/>
                 <field name="allocation_count"/>
                 <field name="state" decoration-bf="1"/>
@@ -57,9 +57,9 @@
 
                     <group>
                         <group name="period_info">
-                            <field name="date_from"/>
-                            <field name="date_to"/>
-                            <field name="auto_close" help="Automatically close this period when date_to is reached"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="auto_close" help="Automatically close this period when date_end is reached"/>
                         </group>
                         <group name="summary_info">
                             <field name="total_amount"/>
@@ -125,21 +125,21 @@
         <field name="arch" type="xml">
             <search string="Commission Periods">
                 <field name="name"/>
-                <field name="date_from"/>
-                <field name="date_to"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
                 <separator/>
                 <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
                 <filter name="open" string="Open" domain="[('state', '=', 'open')]" default="1"/>
                 <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
                 <separator/>
-                <filter name="current_month" string="Current Month" domain="[('date_from', '&lt;=', context_today()),
-                                ('date_to', '&gt;=', context_today())]"/>
-                <filter name="this_quarter" string="This Quarter" domain="[('date_from', '&gt;=', (context_today() - relativedelta(months=2)).strftime('%Y-%m-01')),
-                                ('date_to', '&lt;=', (context_today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="current_month" string="Current Month" domain="[('date_start', '&lt;=', context_today()),
+                                ('date_end', '&gt;=', context_today())]"/>
+                <filter name="this_quarter" string="This Quarter" domain="[('date_start', '&gt;=', (context_today() - relativedelta(months=2)).strftime('%Y-%m-01')),
+                                ('date_end', '&lt;=', (context_today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d'))]"/>
                 <separator/>
                 <group expand="0" string="Group By">
                     <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
-                    <filter name="group_date" string="Period Start" context="{'group_by': 'date_from:month'}"/>
+                    <filter name="group_date" string="Period Start" context="{'group_by': 'date_start:month'}"/>
                 </group>
             </search>
         </field>
@@ -152,8 +152,8 @@
         <field name="arch" type="xml">
             <kanban default_group_by="state">
                 <field name="name"/>
-                <field name="date_from"/>
-                <field name="date_to"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
                 <field name="total_amount"/>
                 <field name="allocation_count"/>
                 <field name="state"/>
@@ -168,8 +168,8 @@
                                 <div class="o_kanban_record_body">
                                     <div>
                                         <strong>
-                                            <t t-esc="record.date_from.value"/>
- -                                            <t t-esc="record.date_to.value"/>
+                                            <t t-esc="record.date_start.value"/>
+ -                                            <t t-esc="record.date_end.value"/>
                                         </strong>
                                     </div>
                                     <div>
@@ -192,7 +192,7 @@
         <field name="name">commission.period.calendar</field>
         <field name="model">commission.period</field>
         <field name="arch" type="xml">
-            <calendar string="Commission Periods" date_start="date_from" date_stop="date_to" color="state">
+            <calendar string="Commission Periods" date_start="date_start" date_stop="date_end" color="state">
                 <field name="name"/>
                 <field name="total_amount"/>
                 <field name="allocation_count"/>
@@ -206,7 +206,7 @@
         <field name="model">commission.period</field>
         <field name="arch" type="xml">
             <pivot string="Commission Period Analysis">
-                <field name="date_from" type="row" interval="month"/>
+                <field name="date_start" type="row" interval="month"/>
                 <field name="state" type="col"/>
                 <field name="total_amount" type="measure"/>
                 <field name="allocation_count" type="measure"/>
@@ -220,7 +220,7 @@
         <field name="model">commission.period</field>
         <field name="arch" type="xml">
             <graph string="Commission Period Trends">
-                <field name="date_from" type="row" interval="month"/>
+                <field name="date_start" type="row" interval="month"/>
                 <field name="total_amount" type="measure"/>
             </graph>
         </field>
