@@ -49,5 +49,5 @@
     </record>
 
     <!-- Menu Item -->
-    <menuitem id="menu_commission_profit_analysis" name="Profit Analysis Report" parent="commission_menu_reports" action="action_commission_profit_analysis_wizard" sequence="20"/>
+    <menuitem id="menu_commission_profit_analysis" name="Profit Analysis Report" parent="menu_commission_reports" action="action_commission_profit_analysis_wizard" sequence="20"/>
 </odoo>
