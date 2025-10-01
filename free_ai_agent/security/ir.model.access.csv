@@ -5,3 +5,7 @@ access_free_ai_agent_user,free.ai.agent.user,model_free_ai_agent,base.group_user
 access_free_ai_agent_manager,free.ai.agent.manager,model_free_ai_agent,base.group_system,1,1,1,1
 access_free_ai_response_history_user,free.ai.response.history.user,model_free_ai_response_history,base.group_user,1,0,1,0
 access_free_ai_response_history_manager,free.ai.response.history.manager,model_free_ai_response_history,base.group_system,1,1,1,1
+access_openai_business_agent_user,openai.business.agent.user,model_openai_business_agent,base.group_user,1,1,1,0
+access_openai_business_agent_manager,openai.business.agent.manager,model_openai_business_agent,base.group_system,1,1,1,1
+access_openai_execution_history_user,openai.execution.history.user,model_openai_execution_history,base.group_user,1,0,1,0
+access_openai_execution_history_manager,openai.execution.history.manager,model_openai_execution_history,base.group_system,1,1,1,1

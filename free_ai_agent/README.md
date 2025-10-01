@@ -1,6 +1,8 @@
-# Free AI Agent for Odoo
+# 🤖 Open Source AI Agent for Odoo
 
-A free and open-source AI agent module for Odoo that provides intelligent assistance without requiring expensive subscriptions or external services.
+**The Complete Business Intelligence Platform - Powered by OpenAI**
+
+Transform your Odoo system into an intelligent business platform with AI-powered analysis, insights, and automation. No subscriptions, no vendor lock-in, complete control.
 
 ## Features
 

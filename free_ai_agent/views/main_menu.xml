@@ -3,17 +3,33 @@
     <!-- Main Menu -->
     <menuitem 
         id="menu_free_ai_agent_root"
-        name="Free AI Agents"
+        name="🤖 AI Intelligence"
         web_icon="free_ai_agent,static/description/icon.png"
-        sequence="100"/>
+        sequence="95"/>
 
     <!-- Dashboard Menu -->
     <menuitem 
+        id="menu_ai_business_intelligence_dashboard"
+        name="🎯 Intelligence Dashboard"
+        parent="menu_free_ai_agent_root"
+        action="action_openai_business_agent_dashboard"
+        sequence="1"/>
+
+    <!-- Business Intelligence Menu -->
+    <menuitem 
+        id="menu_business_intelligence"
+        name="🧠 Business Intelligence"
+        parent="menu_free_ai_agent_root"
+        action="action_openai_business_agent"
+        sequence="2"/>
+
+    <!-- Legacy Dashboard -->
+    <menuitem 
         id="menu_ai_agent_dashboard"
-        name="Dashboard"
+        name="Simple Agents"
         parent="menu_free_ai_agent_root"
         action="action_free_ai_agent_kanban"
-        sequence="1"/>
+        sequence="3"/>
 
     <!-- Agents Menu -->
     <menuitem 

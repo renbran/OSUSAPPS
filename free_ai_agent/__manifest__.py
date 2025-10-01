@@ -7,25 +7,43 @@
 ##############################################################################
 
 {
-    'name': "Free AI Agent",
-    'summary': """Free AI assistant for Odoo with customizable agents using open-source AI APIs""",
+    'name': "Open Source AI Agent for Odoo",
+    'summary': """Complete AI automation platform for Odoo using OpenAI API - No subscriptions, full control""",
     'description': """
-        Free AI Agent provides intelligent assistance within Odoo using:
-        - OpenAI API (pay-per-use, no subscription)
-        - Anthropic Claude API
-        - Local AI models (Ollama, OpenAI-compatible endpoints)
-        - Google Gemini API (free tier)
+        Open Source AI Agent for Odoo - The Complete Business Intelligence Solution
         
-        Features:
-        - Agent dashboard with customizable AI agents
-        - Response history and tracking
-        - Integration with all Odoo models
-        - Scheduled agent execution
-        - Multi-step AI workflows
-        - No external subscription fees
+        🤖 INTELLIGENT BUSINESS AUTOMATION:
+        - Sales Performance Analysis & Forecasting
+        - Inventory Optimization & Stock Alerts
+        - Customer Relationship Intelligence
+        - Financial Analysis & Anomaly Detection
+        - Project Management & Risk Assessment
+        - HR Analytics & Employee Insights
+        
+        💰 COST-EFFECTIVE:
+        - Uses OpenAI API directly (pay only for what you use)
+        - No monthly subscriptions or vendor lock-in
+        - Typically costs $5-20/month vs $100+/month for commercial solutions
+        
+        🔧 ENTERPRISE FEATURES:
+        - Multi-agent orchestration
+        - Scheduled automation workflows
+        - Advanced prompt engineering
+        - Complete audit trails
+        - Role-based access control
+        - Custom business logic integration
+        
+        🚀 OPEN SOURCE ADVANTAGE:
+        - Full source code access
+        - Unlimited customization
+        - Community-driven development
+        - No vendor dependencies
+        - Future-proof architecture
     """,
     'author': "Open Source Community",
-    'website': "https://github.com/your-repo/free-ai-agent",
+    'website': "https://github.com/odoo-ai-agents/open-source-ai-agent",
+    'support': "https://github.com/odoo-ai-agents/open-source-ai-agent/issues",
+    'maintainer': "Odoo AI Agents Community",
     'license': 'LGPL-3',
     'category': 'Tools',
     'version': '18.0.1.0.0',
@@ -42,6 +60,7 @@
         'views/ai_provider_views.xml',
         'views/ai_agent_views.xml',
         'views/ai_response_history_views.xml',
+        'views/openai_business_agent_views.xml',
         'views/ai_config_settings_views.xml',
         'views/main_menu.xml',
     ],
