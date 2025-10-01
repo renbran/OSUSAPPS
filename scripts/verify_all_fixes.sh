@@ -59,9 +59,19 @@ else
     echo "   ✅ PASSED - No deprecated attrs found"
 fi
 
-# 5. XML Syntax Validation
+# 5. Commission Period Field Name Fix
 echo ""
-echo "5️⃣  XML Syntax Validation"
+echo "5️⃣  Commission Period - Field Name Fix"
+echo "   Checking for incorrect date field names: "
+if grep -q "date_from\|date_to" commission_app/views/commission_period_views.xml; then
+    echo "   ❌ FAILED - Still contains date_from/date_to (should be date_start/date_end)"
+else
+    echo "   ✅ PASSED - Uses correct field names date_start/date_end"
+fi
+
+# 6. XML Syntax Validation
+echo ""
+echo "6️⃣  XML Syntax Validation"
 echo "   Validating all modified XML files: "
 xml_files=(
     "commission_app/views/commission_rule_views.xml"
@@ -87,6 +97,7 @@ echo "📋 Summary of Fixes Applied:"
 echo "   ✅ Removed chatter fields from models without mail.thread inheritance"
 echo "   ✅ Fixed commission rule search view compatibility issues"
 echo "   ✅ Added missing 'locked' field to sale_enhanced_status module"
+echo "   ✅ Corrected field name mismatches in commission_period views"
 echo "   ✅ Modernized deprecated attrs syntax for Odoo 17"
 echo "   ✅ Validated all XML syntax"
 
