@@ -10,7 +10,7 @@
                 <field name="name"/>
                 <field name="date_start"/>
                 <field name="date_end"/>
-                <field name="total_amount"/>
+                <field name="total_commission"/>
                 <field name="allocation_count"/>
                 <field name="state" decoration-bf="1"/>
                 <field name="currency_id" invisible="1"/>
@@ -41,9 +41,9 @@
                         <button class="oe_stat_button" type="object" name="action_view_summary" icon="fa-bar-chart">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">
-                                    <field name="total_amount" widget="monetary"/>
+                                    <field name="total_commission" widget="monetary"/>
                                 </span>
-                                <span class="o_stat_text">Total Amount</span>
+                                <span class="o_stat_text">Total Commission</span>
                             </div>
                         </button>
                     </div>
@@ -59,10 +59,10 @@
                         <group name="period_info">
                             <field name="date_start"/>
                             <field name="date_end"/>
-                            <field name="auto_close" help="Automatically close this period when date_end is reached"/>
+                            <field name="period_type"/>
                         </group>
                         <group name="summary_info">
-                            <field name="total_amount"/>
+                            <field name="total_commission"/>
                             <field name="allocation_count" string="Total Allocations"/>
                             <field name="currency_id"/>
                         </group>
@@ -87,26 +87,14 @@
 
                         <page string="Summary by Category" name="category_summary">
                             <group>
-                                <field name="legacy_amount" string="Legacy Commission"/>
-                                <field name="external_amount" string="External Commission"/>
-                                <field name="internal_amount" string="Internal Commission"/>
-                                <field name="management_amount" string="Management Commission"/>
-                                <field name="bonus_amount" string="Bonus Commission"/>
-                                <field name="referral_amount" string="Referral Commission"/>
-                                <field name="sales_amount" string="Sales Commission"/>
+                                <label string="Category summaries will be calculated from allocation rules." colspan="2"/>
                             </group>
                         </page>
 
                         <page string="Summary by Partner" name="partner_summary">
-                            <button name="action_refresh_summary" string="Refresh Summary" type="object" class="btn-secondary"/>
-                            <field name="partner_summary_ids" readonly="1">
-                                <tree string="Partner Commission Summary">
-                                    <field name="partner_id"/>
-                                    <field name="total_amount"/>
-                                    <field name="allocation_count"/>
-                                    <field name="currency_id" invisible="1"/>
-                                </tree>
-                            </field>
+                            <group>
+                                <label string="Partner summary will be calculated from allocations." colspan="2"/>
+                            </group>
                         </page>
 
                         <page string="Description" name="description">
@@ -154,7 +142,7 @@
                 <field name="name"/>
                 <field name="date_start"/>
                 <field name="date_end"/>
-                <field name="total_amount"/>
+                <field name="total_commission"/>
                 <field name="allocation_count"/>
                 <field name="state"/>
                 <field name="currency_id"/>
@@ -173,7 +161,7 @@
                                         </strong>
                                     </div>
                                     <div>
-                                        Total: <field name="total_amount" widget="monetary"/>
+                                        Total: <field name="total_commission" widget="monetary"/>
                                     </div>
                                     <div>
                                         Allocations: <field name="allocation_count"/>
@@ -194,7 +182,7 @@
         <field name="arch" type="xml">
             <calendar string="Commission Periods" date_start="date_start" date_stop="date_end" color="state">
                 <field name="name"/>
-                <field name="total_amount"/>
+                <field name="total_commission"/>
                 <field name="allocation_count"/>
             </calendar>
         </field>
@@ -208,7 +196,7 @@
             <pivot string="Commission Period Analysis">
                 <field name="date_start" type="row" interval="month"/>
                 <field name="state" type="col"/>
-                <field name="total_amount" type="measure"/>
+                <field name="total_commission" type="measure"/>
                 <field name="allocation_count" type="measure"/>
             </pivot>
         </field>
@@ -221,7 +209,7 @@
         <field name="arch" type="xml">
             <graph string="Commission Period Trends">
                 <field name="date_start" type="row" interval="month"/>
-                <field name="total_amount" type="measure"/>
+                <field name="total_commission" type="measure"/>
             </graph>
         </field>
     </record>
