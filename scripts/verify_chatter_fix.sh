@@ -3,16 +3,24 @@
 # Commission App Chatter Fix Verification Script
 # This script verifies that the chatter field fixes have been applied
 
-echo "🔍 Commission App Chatter Fix Verification"
-echo "=========================================="
+echo "🔍 Commission App View Fixes Verification"
+echo "========================================"
 
 # Check commission_rule_views.xml
-echo -n "Checking commission_rule_views.xml: "
+echo -n "Checking commission_rule_views.xml (chatter): "
 if grep -q "message_follower_ids\|activity_ids\|message_ids" commission_app/views/commission_rule_views.xml; then
     echo "❌ FAILED - Still contains chatter fields"
     grep -n "message_follower_ids\|activity_ids\|message_ids" commission_app/views/commission_rule_views.xml
 else
     echo "✅ PASSED - No chatter fields found"
+fi
+
+# Check for search view issues
+echo -n "Checking commission_rule_views.xml (search): "
+if grep -q 'default="1"' commission_app/views/commission_rule_views.xml; then
+    echo "❌ FAILED - Contains default=\"1\" attribute"
+else
+    echo "✅ PASSED - No problematic default attributes found"
 fi
 
 # Check commission_period_views.xml

@@ -17,6 +17,8 @@ The commission_app views included chatter sections (`message_follower_ids`, `act
 1. `commission_app/views/commission_rule_views.xml`
    - Removed `<div class="oe_chatter">` section
    - Removed `message_follower_ids`, `activity_ids`, `message_ids` fields
+   - Removed `default="1"` from search view filters (Odoo 17 compatibility)
+   - Removed `allowed_customer_ids` from search fields (Many2many compatibility)
 
 2. `commission_app/views/commission_period_views.xml` 
    - Removed `<div class="oe_chatter">` section
