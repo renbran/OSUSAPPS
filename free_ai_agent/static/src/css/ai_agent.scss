@@ -1,0 +1,105 @@
+/* Free AI Agent Styles */
+
+.o_kanban_dashboard .oe_kanban_card_fancy {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.o_kanban_dashboard .oe_kanban_card_fancy .o_primary {
+    color: white;
+}
+
+.o_kanban_dashboard .oe_kanban_card_fancy .o_secondary {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.ai_agent_status_active {
+    color: #28a745;
+}
+
+.ai_agent_status_running {
+    color: #007bff;
+}
+
+.ai_agent_status_error {
+    color: #dc3545;
+}
+
+.ai_agent_status_draft {
+    color: #6c757d;
+}
+
+.ai_response_content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.ai_provider_info {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.ai_stats_box {
+    text-align: center;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+.ai_stats_box .stat_number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.ai_stats_box .stat_label {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+}
+
+/* Kanban card animations */
+.o_kanban_dashboard .oe_kanban_card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.o_kanban_dashboard .oe_kanban_card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* AI provider status indicators */
+.ai_provider_status_online {
+    color: #28a745;
+}
+
+.ai_provider_status_offline {
+    color: #dc3545;
+}
+
+.ai_provider_status_testing {
+    color: #ffc107;
+}
+
+/* Response history status badges */
+.badge-completed {
+    background-color: #28a745;
+}
+
+.badge-failed {
+    background-color: #dc3545;
+}
+
+.badge-running {
+    background-color: #007bff;
+}
+
+.badge-draft {
+    background-color: #6c757d;
+}

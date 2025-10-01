@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Main Menu -->
+    <menuitem 
+        id="menu_free_ai_agent_root"
+        name="🤖 AI Intelligence"
+        web_icon="free_ai_agent,static/description/icon.png"
+        sequence="95"/>
+
+    <!-- Dashboard Menu -->
+    <menuitem 
+        id="menu_ai_business_intelligence_dashboard"
+        name="🎯 Intelligence Dashboard"
+        parent="menu_free_ai_agent_root"
+        action="action_openai_business_agent_dashboard"
+        sequence="1"/>
+
+    <!-- Business Intelligence Menu -->
+    <menuitem 
+        id="menu_business_intelligence"
+        name="🧠 Business Intelligence"
+        parent="menu_free_ai_agent_root"
+        action="action_openai_business_agent"
+        sequence="2"/>
+
+    <!-- Legacy Dashboard -->
+    <menuitem 
+        id="menu_ai_agent_dashboard"
+        name="Simple Agents"
+        parent="menu_free_ai_agent_root"
+        action="action_free_ai_agent_kanban"
+        sequence="3"/>
+
+    <!-- Agents Menu -->
+    <menuitem 
+        id="menu_ai_agents"
+        name="AI Agents"
+        parent="menu_free_ai_agent_root"
+        sequence="2">
+
+        <menuitem 
+            id="menu_ai_agents_list"
+            name="All Agents"
+            parent="menu_ai_agents"
+            action="action_free_ai_agent_tree"
+            sequence="1"/>
+
+        <menuitem 
+            id="menu_ai_agents_create"
+            name="Create Agent"
+            parent="menu_ai_agents"
+            action="action_free_ai_agent_form_create"
+            sequence="2"/>
+
+    </menuitem>
+
+    <!-- History Menu -->
+    <menuitem 
+        id="menu_ai_response_history"
+        name="Response History"
+        parent="menu_free_ai_agent_root"
+        action="action_free_ai_response_history"
+        sequence="3"/>
+
+    <!-- Configuration Menu -->
+    <menuitem 
+        id="menu_ai_configuration"
+        name="Configuration"
+        parent="menu_free_ai_agent_root"
+        sequence="4">
+
+        <menuitem 
+            id="menu_ai_providers"
+            name="AI Providers"
+            parent="menu_ai_configuration"
+            action="action_ai_provider"
+            sequence="1"/>
+
+        <menuitem 
+            id="menu_ai_settings"
+            name="Settings"
+            parent="menu_ai_configuration"
+            action="action_free_ai_agent_config_settings"
+            sequence="2"
+            groups="base.group_system"/>
+
+    </menuitem>
+
+</odoo>

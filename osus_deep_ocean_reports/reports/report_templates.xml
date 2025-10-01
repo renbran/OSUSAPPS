@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main Report Templates Container -->
+    <template id="report_templates">
+        <!-- This template serves as a container for all Deep Ocean report templates -->
+        <t t-name="DeepOceanReportTemplates">
+            <!-- Include invoice and receipt templates -->
+            <t t-call="osus_deep_ocean_reports.deep_ocean_invoice_document"/>
+            <t t-call="osus_deep_ocean_reports.deep_ocean_receipt_document"/>
+        </t>
+    </template>
+
+    <!-- External layout override for Deep Ocean theme -->
+    <template id="external_layout_deep_ocean" inherit_id="web.external_layout_standard">
+        <xpath expr="//div[hasclass('header')]" position="replace">
+            <!-- Custom header for Deep Ocean reports -->
+            <div class="header deep-ocean-header-minimal">
+                <div class="row">
+                    <div class="col-6">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px; filter: brightness(0) invert(1);" alt=""/>
+                    </div>
+                    <div class="col-6 text-right">
+                        <div class="deep-ocean-brand-mark" style="display: inline-block;">
+                            Deep Ocean Reports
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[hasclass('footer')]" position="replace">
+            <!-- Custom footer for Deep Ocean reports -->
+            <div class="footer deep-ocean-footer-minimal">
+                <div class="text-center" style="border-top: 2px solid #1e3a8a; padding-top: 10px;">
+                    <div class="row">
+                        <div class="col-6 text-left">
+                            <span class="company_address" t-field="company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                        </div>
+                        <div class="col-6 text-right">
+                            <span>Professional • Trustworthy • Technical Excellence</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Deep Ocean minimal header styles -->
+    <template id="deep_ocean_minimal_styles">
+        <style>
+            .deep-ocean-header-minimal {
+                background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+                padding: 15px 20px;
+                color: white;
+                border-radius: 0 0 10px 10px;
+            }
+            
+            .deep-ocean-footer-minimal {
+                background: #1e3a8a;
+                color: white;
+                padding: 15px 20px;
+                font-size: 0.9rem;
+                border-radius: 10px 10px 0 0;
+            }
+            
+            .deep-ocean-brand-mark {
+                background: linear-gradient(45deg, #0ea5e9, #06b6d4);
+                color: white;
+                padding: 5px 12px;
+                border-radius: 15px;
+                font-weight: 600;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+        </style>
+    </template>
+
+</odoo>

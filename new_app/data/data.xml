@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Sample Data (Optional) -->
+        <!-- <record id="new_app_record_1" model="new.app.model">
+            <field name="name">Sample Record 1</field>
+            <field name="description">This is a sample record</field>
+            <field name="state">draft</field>
+        </record> -->
+
+    </data>
+</odoo>

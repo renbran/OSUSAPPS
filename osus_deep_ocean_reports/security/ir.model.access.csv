@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deep_ocean_reports_user,deep_ocean_reports_user,model_account_move,base.group_user,1,1,0,0
+access_deep_ocean_reports_manager,deep_ocean_reports_manager,model_account_move,account.group_account_manager,1,1,1,1

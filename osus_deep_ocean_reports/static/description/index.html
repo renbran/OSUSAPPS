@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSUS Deep Ocean Reports - Professional Invoice & Receipt Templates</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #0f172a;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(30, 58, 138, 0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.1; }
+            50% { transform: scale(1.1) rotate(180deg); opacity: 0.2; }
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0 0 15px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -1px;
+        }
+        
+        .header .tagline {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .version-badge {
+            background: #0ea5e9;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .feature-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border-left: 5px solid #1e3a8a;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(30, 58, 138, 0.15);
+            border-color: #3b82f6;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .feature-card h3 {
+            color: #1e3a8a;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0 0 15px 0;
+        }
+        
+        .feature-card p {
+            color: #475569;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .color-palette {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6, #0ea5e9, #f8fafc);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            text-align: center;
+            color: white;
+        }
+        
+        .color-palette h2 {
+            margin: 0 0 20px 0;
+            font-size: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .color-swatches {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .color-swatch {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 120px;
+        }
+        
+        .color-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .footer {
+            background: #1e3a8a;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .footer h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+        }
+        
+        .footer p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .installation-steps {
+            background: #e2e8f0;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+        
+        .installation-steps h2 {
+            color: #1e3a8a;
+            margin: 0 0 20px 0;
+            font-size: 1.8rem;
+        }
+        
+        .installation-steps ol {
+            color: #475569;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .installation-steps li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>OSUS Deep Ocean Reports</h1>
+                <div class="tagline">Professional depths with azure highlights - perfect for data analytics and enterprise consulting</div>
+                <div class="version-badge">Version 17.0.1.0.0</div>
+            </div>
+        </div>
+        
+        <div class="content">
+            <h2 style="text-align: center; color: #1e3a8a; font-size: 2.2rem; margin-bottom: 20px;">
+                Professional Invoice & Receipt Templates
+            </h2>
+            
+            <p style="text-align: center; font-size: 1.2rem; color: #475569; margin-bottom: 40px;">
+                Transform your business documents with the Deep Ocean theme - conveying trust, stability, and technical expertise 
+                through professional navy depths and azure highlights.
+            </p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Professional Color Scheme</h3>
+                    <p>Deep Navy, Ocean Blue, Sky Blue, and Ice White colors carefully selected for professional business communications and data analytics presentations.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Analytics & Consulting Ready</h3>
+                    <p>Perfect for data analytics companies and enterprise consulting businesses with specialized fields and professional layouts.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Responsive Design</h3>
+                    <p>Mobile-friendly layouts that look great on all devices with print-optimized CSS for perfect PDF generation.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Enhanced Security</h3>
+                    <p>Built-in QR code generation with Deep Ocean styling for document verification and enhanced security features.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3>UAE VAT Compliant</h3>
+                    <p>Fully compliant with UAE tax requirements including TRN fields and proper tax calculations with professional formatting.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Easy Integration</h3>
+                    <p>Seamlessly integrates with existing Odoo 17 installations and works alongside other report modules.</p>
+                </div>
+            </div>
+            
+            <div class="color-palette">
+                <h2>Deep Ocean Color Palette</h2>
+                <p>Professional colors that convey trust, stability, and technical expertise</p>
+                <div class="color-swatches">
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #1e3a8a;"></div>
+                        <strong>Deep Navy</strong><br>
+                        #1e3a8a
+                    </div>
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #3b82f6;"></div>
+                        <strong>Ocean Blue</strong><br>
+                        #3b82f6
+                    </div>
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #0ea5e9;"></div>
+                        <strong>Sky Blue</strong><br>
+                        #0ea5e9
+                    </div>
+                    <div class="color-swatch">
+                        <div class="color-circle" style="background: #f8fafc;"></div>
+                        <strong>Ice White</strong><br>
+                        #f8fafc
+                    </div>
+                </div>
+            </div>
+            
+            <div class="installation-steps">
+                <h2>Installation Steps</h2>
+                <ol>
+                    <li>Copy the <strong>osus_deep_ocean_reports</strong> module to your Odoo addons directory</li>
+                    <li>Update the apps list in Odoo (Settings → Apps → Update Apps List)</li>
+                    <li>Search for "Deep Ocean Reports" in the Apps menu</li>
+                    <li>Click Install to activate the module</li>
+                    <li>Go to Accounting → Deep Ocean Reports to configure your templates</li>
+                    <li>Enable "Use Deep Ocean Theme" on your invoices to start using the new templates</li>
+                </ol>
+            </div>
+            
+            <div style="background: #e2e8f0; border-radius: 15px; padding: 30px; margin: 40px 0; text-align: center;">
+                <h2 style="color: #1e3a8a; margin: 0 0 15px 0;">Key Features</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div>✅ Professional Deep Ocean theme</div>
+                    <div>✅ Custom QR code generation</div>
+                    <div>✅ UAE VAT compliance</div>
+                    <div>✅ Analytics dashboard integration</div>
+                    <div>✅ Mobile responsive design</div>
+                    <div>✅ Print optimized layouts</div>
+                    <div>✅ Enterprise consultation fields</div>
+                    <div>✅ Technical expertise tracking</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <h3>OSUS Deep Ocean Reports</h3>
+            <p>Conveys Trust, Stability &amp; Technical Expertise • Perfect for Data Analytics &amp; Enterprise Consulting</p>
+        </div>
+    </div>
+</body>
+</html>

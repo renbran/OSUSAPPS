@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Default Specializations -->
+        <record id="specialization_wedding" model="s2u.videographer.specialization">
+            <field name="name">Wedding Videography</field>
+            <field name="description">Capturing the most special moments of wedding ceremonies and receptions</field>
+            <field name="icon">fa-heart</field>
+            <field name="color">5</field>
+        </record>
+
+        <record id="specialization_corporate" model="s2u.videographer.specialization">
+            <field name="name">Corporate Videos</field>
+            <field name="description">Professional corporate event coverage and promotional videos</field>
+            <field name="icon">fa-briefcase</field>
+            <field name="color">1</field>
+        </record>
+
+        <record id="specialization_event" model="s2u.videographer.specialization">
+            <field name="name">Event Coverage</field>
+            <field name="description">Comprehensive event videography for concerts, festivals, and gatherings</field>
+            <field name="icon">fa-calendar</field>
+            <field name="color">3</field>
+        </record>
+
+        <record id="specialization_commercial" model="s2u.videographer.specialization">
+            <field name="name">Commercial Production</field>
+            <field name="description">High-quality commercial and advertisement production</field>
+            <field name="icon">fa-video</field>
+            <field name="color">7</field>
+        </record>
+
+        <record id="specialization_music_video" model="s2u.videographer.specialization">
+            <field name="name">Music Videos</field>
+            <field name="description">Creative music video production for artists and bands</field>
+            <field name="icon">fa-music</field>
+            <field name="color">4</field>
+        </record>
+
+        <record id="specialization_documentary" model="s2u.videographer.specialization">
+            <field name="name">Documentary</field>
+            <field name="description">Documentary-style storytelling and long-form content</field>
+            <field name="icon">fa-film</field>
+            <field name="color">2</field>
+        </record>
+
+        <!-- Equipment Categories -->
+        <record id="equipment_category_camera" model="s2u.equipment.category">
+            <field name="name">Cameras</field>
+            <field name="sequence">10</field>
+            <field name="icon">fa-camera</field>
+        </record>
+
+        <record id="equipment_category_drone" model="s2u.equipment.category">
+            <field name="name">Drones</field>
+            <field name="sequence">20</field>
+            <field name="icon">fa-plane</field>
+        </record>
+
+        <record id="equipment_category_lighting" model="s2u.equipment.category">
+            <field name="name">Lighting</field>
+            <field name="sequence">30</field>
+            <field name="icon">fa-lightbulb</field>
+        </record>
+
+        <record id="equipment_category_audio" model="s2u.equipment.category">
+            <field name="name">Audio Equipment</field>
+            <field name="sequence">40</field>
+            <field name="icon">fa-microphone</field>
+        </record>
+
+        <record id="equipment_category_stabilizer" model="s2u.equipment.category">
+            <field name="name">Stabilizers & Gimbals</field>
+            <field name="sequence">50</field>
+            <field name="icon">fa-balance-scale</field>
+        </record>
+
+        <!-- Package Features -->
+        <record id="feature_4k_recording" model="s2u.package.feature">
+            <field name="name">4K Ultra HD Recording</field>
+            <field name="description">Professional 4K quality video recording</field>
+            <field name="icon">fa-hd-video</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="feature_multiple_cameras" model="s2u.package.feature">
+            <field name="name">Multiple Camera Angles</field>
+            <field name="description">Capture events from different perspectives</field>
+            <field name="icon">fa-video</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="feature_professional_editing" model="s2u.package.feature">
+            <field name="name">Professional Editing</field>
+            <field name="description">Color grading, transitions, and effects</field>
+            <field name="icon">fa-cut</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <record id="feature_music_selection" model="s2u.package.feature">
+            <field name="name">Licensed Music</field>
+            <field name="description">Royalty-free background music</field>
+            <field name="icon">fa-music</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <record id="feature_online_delivery" model="s2u.package.feature">
+            <field name="name">Online Delivery</field>
+            <field name="description">Secure online file sharing and delivery</field>
+            <field name="icon">fa-cloud-upload</field>
+            <field name="sequence">50</field>
+        </record>
+
+        <record id="feature_highlight_reel" model="s2u.package.feature">
+            <field name="name">Highlight Reel</field>
+            <field name="description">Short highlight video (2-5 minutes)</field>
+            <field name="icon">fa-star</field>
+            <field name="sequence">60</field>
+        </record>
+
+        <record id="feature_full_ceremony" model="s2u.package.feature">
+            <field name="name">Full Event Coverage</field>
+            <field name="description">Complete unedited footage of the entire event</field>
+            <field name="icon">fa-clock</field>
+            <field name="sequence">70</field>
+        </record>
+
+        <!-- Package Add-ons -->
+        <record id="addon_extra_hour" model="s2u.package.addon">
+            <field name="name">Additional Hour of Coverage</field>
+            <field name="description">Extend your videography coverage by one hour</field>
+            <field name="addon_type">extra_hour</field>
+            <field name="duration_hours">1.0</field>
+            <field name="price">100.00</field>
+            <field name="icon">fa-clock</field>
+        </record>
+
+        <record id="addon_extra_videographer" model="s2u.package.addon">
+            <field name="name">Additional Videographer</field>
+            <field name="description">Add a second videographer for more coverage</field>
+            <field name="addon_type">extra_videographer</field>
+            <field name="price">500.00</field>
+            <field name="icon">fa-user-plus</field>
+        </record>
+
+        <record id="addon_drone_footage" model="s2u.package.addon">
+            <field name="name">Aerial Drone Footage</field>
+            <field name="description">Professional drone cinematography</field>
+            <field name="addon_type">drone</field>
+            <field name="price">300.00</field>
+            <field name="icon">fa-plane</field>
+        </record>
+
+        <record id="addon_raw_footage" model="s2u.package.addon">
+            <field name="name">All Raw Footage</field>
+            <field name="description">Receive all unedited footage from the shoot</field>
+            <field name="addon_type">raw_footage</field>
+            <field name="price">200.00</field>
+            <field name="icon">fa-database</field>
+        </record>
+
+        <record id="addon_rush_delivery" model="s2u.package.addon">
+            <field name="name">Rush Delivery (7 Days)</field>
+            <field name="description">Expedited editing and delivery within 7 days</field>
+            <field name="addon_type">rush_delivery</field>
+            <field name="price">400.00</field>
+            <field name="icon">fa-bolt</field>
+        </record>
+
+        <record id="addon_social_media" model="s2u.package.addon">
+            <field name="name">Social Media Edits</field>
+            <field name="description">Optimized clips for Instagram, TikTok, and Facebook</field>
+            <field name="addon_type">social_media</field>
+            <field name="price">150.00</field>
+            <field name="icon">fa-share-alt</field>
+        </record>
+
+    </data>
+</odoo>

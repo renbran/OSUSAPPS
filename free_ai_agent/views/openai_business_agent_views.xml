@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- OpenAI Business Agent Form View -->
+    <record id="view_openai_business_agent_form" model="ir.ui.view">
+        <field name="name">openai.business.agent.form</field>
+        <field name="model">openai.business.agent</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="execute_intelligence_analysis" string="🚀 Run Analysis" type="object" 
+                            class="btn-primary" 
+                            invisible="status in ['draft', 'running']"
+                            confirm="Execute AI intelligence analysis for this agent?"/>
+                    <button name="%(action_openai_agent_wizard)d" string="🧙‍♂️ Quick Setup" type="action" 
+                            class="btn-secondary" invisible="status != 'draft'"/>
+                    <field name="status" widget="statusbar" 
+                           statusbar_visible="draft,active,running,completed,error"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_execution_history" type="object" class="oe_stat_button" icon="fa-history">
+                            <field name="total_executions" widget="statinfo" string="Executions"/>
+                        </button>
+                        <button name="action_view_latest_analysis" type="object" class="oe_stat_button" icon="fa-brain"
+                                invisible="successful_executions == 0">
+                            <field name="successful_executions" widget="statinfo" string="Successful"/>
+                        </button>
+                        <button name="action_view_cost_analysis" type="object" class="oe_stat_button" icon="fa-dollar">
+                            <field name="estimated_cost" widget="monetary" string="Est. Cost"/>
+                        </button>
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options="{'terminology': 'archive'}"/>
+                        </button>
+                    </div>
+
+                    <widget name="web_ribbon" title="High Priority" bg_color="bg-danger" 
+                            invisible="priority != '3'"/>
+                    <widget name="web_ribbon" title="Critical" bg_color="bg-warning" 
+                            invisible="urgency_level != 'critical'"/>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="priority" widget="priority" class="mr8"/>
+                            <field name="name" placeholder="AI Agent Name"/>
+                        </h1>
+                        <div class="o_row">
+                            <field name="agent_category" widget="badge" 
+                                   decoration-info="agent_category in ['sales_intelligence', 'customer_insights']"
+                                   decoration-success="agent_category in ['inventory_optimization', 'financial_analysis']"
+                                   decoration-warning="agent_category in ['risk_assessment', 'performance_monitoring']"/>
+                            <field name="urgency_level" widget="badge"
+                                   decoration-muted="urgency_level == 'routine'"
+                                   decoration-warning="urgency_level == 'important'"
+                                   decoration-danger="urgency_level in ['urgent', 'critical']"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="🤖 AI Configuration">
+                            <field name="openai_model" widget="selection"/>
+                            <field name="max_tokens"/>
+                            <field name="temperature" widget="float" digits="[4,2]"/>
+                            <field name="output_format"/>
+                        </group>
+                        <group string="⏰ Execution Settings">
+                            <field name="execution_mode"/>
+                            <field name="schedule_frequency" invisible="execution_mode != 'scheduled'"/>
+                            <field name="schedule_time" widget="float_time" 
+                                   invisible="execution_mode != 'scheduled'"/>
+                            <field name="last_run" readonly="1"/>
+                            <field name="next_run" readonly="1" 
+                                   invisible="execution_mode != 'scheduled'"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page name="intelligence_config" string="🧠 Intelligence Configuration">
+                            <group>
+                                <group string="Analysis Capabilities">
+                                    <field name="enable_trend_analysis"/>
+                                    <field name="enable_anomaly_detection"/>
+                                    <field name="enable_predictive_analysis"/>
+                                    <field name="enable_comparative_analysis"/>
+                                </group>
+                                <group string="Data Access">
+                                    <field name="analysis_period"/>
+                                    <field name="monitored_models" widget="many2many_tags" 
+                                           options="{'no_create': True}"/>
+                                </group>
+                            </group>
+                            
+                            <separator string="Data Filters (JSON)"/>
+                            <field name="data_filters" widget="ace" options="{'mode': 'json'}" 
+                                   placeholder='[["field_name", "operator", "value"]]'/>
+                        </page>
+
+                        <page name="prompts" string="🎯 Prompt Engineering">
+                            <separator string="System Prompt (AI Role & Instructions)"/>
+                            <field name="system_prompt" widget="ace" options="{'mode': 'text'}" 
+                                   placeholder="Define the AI agent's role, expertise, and analysis approach..."/>
+                            
+                            <separator string="Business Context"/>
+                            <field name="business_context" widget="text" 
+                                   placeholder="Specific context about your business, industry, or focus areas..."/>
+                            
+                            <separator string="Analysis Focus"/>
+                            <field name="analysis_focus" widget="text" 
+                                   placeholder="What specific insights or areas should the AI focus on..."/>
+                        </page>
+
+                        <page name="notifications" string="🔔 Notifications &amp; Alerts">
+                            <group>
+                                <group>
+                                    <field name="notification_enabled"/>
+                                    <field name="notification_threshold" 
+                                           invisible="not notification_enabled"/>
+                                    <field name="notification_channels" 
+                                           invisible="not notification_enabled"/>
+                                </group>
+                                <group>
+                                    <field name="notification_users" widget="many2many_tags"
+                                           invisible="not notification_enabled"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page name="execution_history" string="📊 Execution History">
+                            <field name="execution_history_ids" readonly="1">
+                                <tree decoration-success="status == 'completed'"
+                                      decoration-danger="status == 'failed'"
+                                      decoration-info="status == 'running'">
+                                    <field name="execution_type"/>
+                                    <field name="status" widget="badge"/>
+                                    <field name="started_at"/>
+                                    <field name="duration" widget="float_time"/>
+                                    <field name="tokens_used"/>
+                                    <field name="estimated_cost" widget="monetary"/>
+                                    <field name="ai_model"/>
+                                    <button name="action_view_full_analysis" string="📋 View" type="object" 
+                                            icon="fa-eye" class="btn-sm btn-primary"/>
+                                    <button name="action_retry_analysis" string="🔄 Retry" type="object" 
+                                            icon="fa-refresh" class="btn-sm btn-secondary"
+                                            invisible="status not in ['failed']"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page name="performance" string="📈 Performance Analytics">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="o_stat_box">
+                                        <div class="o_stat_value">
+                                            <field name="total_executions" readonly="1"/>
+                                        </div>
+                                        <div class="o_stat_text">Total Analyses</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="o_stat_box">
+                                        <div class="o_stat_value text-success">
+                                            <field name="successful_executions" readonly="1"/>
+                                        </div>
+                                        <div class="o_stat_text">Successful</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="o_stat_box">
+                                        <div class="o_stat_value">
+                                            <field name="total_tokens_used" readonly="1"/>
+                                        </div>
+                                        <div class="o_stat_text">Tokens Used</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="o_stat_box">
+                                        <div class="o_stat_value">
+                                            $<field name="estimated_cost" readonly="1"/>
+                                        </div>
+                                        <div class="o_stat_text">Estimated Cost</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <separator string="Success Rate"/>
+                            <div class="row mt16">
+                                <div class="col-md-6">
+                                    <field name="failed_executions" readonly="1" string="Failed Executions"/>
+                                </div>
+                            </div>
+                        </page>
+
+                        <page name="advanced" string="⚙️ Advanced Settings">
+                            <group>
+                                <group>
+                                    <field name="sequence"/>
+                                    <field name="user_id"/>
+                                    <field name="company_id" groups="base.group_multi_company"/>
+                                </group>
+                                <group>
+                                    <field name="custom_cron" invisible="schedule_frequency != 'custom'"/>
+                                </group>
+                            </group>
+                            
+                            <separator string="Description"/>
+                            <field name="description" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- OpenAI Business Agent Kanban View -->
+    <record id="view_openai_business_agent_kanban" model="ir.ui.view">
+        <field name="name">openai.business.agent.kanban</field>
+        <field name="model">openai.business.agent</field>
+        <field name="arch" type="xml">
+            <kanban default_order="priority desc, sequence" class="o_kanban_dashboard o_project_kanban">
+                <field name="name"/>
+                <field name="agent_category"/>
+                <field name="status"/>
+                <field name="priority"/>
+                <field name="urgency_level"/>
+                <field name="last_run"/>
+                <field name="total_executions"/>
+                <field name="successful_executions"/>
+                <field name="estimated_cost"/>
+                <field name="openai_model"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click"
+                             t-att-class="'o_kanban_card_' + record.priority.raw_value">
+                            
+                            <!-- Priority Indicator -->
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary">
+                                        <span t-if="record.priority.raw_value == '3'" class="fa fa-exclamation-triangle text-danger"/>
+                                        <span t-if="record.priority.raw_value == '2'" class="fa fa-exclamation text-warning"/>
+                                        <field name="name"/>
+                                    </div>
+                                    <div class="o_secondary">
+                                        <field name="agent_category" widget="badge"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_manage_button_section">
+                                    <a class="o_kanban_manage_toggle_button" href="#">
+                                        <i class="fa fa-ellipsis-v"/>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Status and Actions -->
+                            <div class="o_kanban_card_content">
+                                <div class="o_kanban_primary_left">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <button name="execute_intelligence_analysis" type="object" 
+                                                    class="btn btn-primary btn-sm"
+                                                    t-if="record.status.raw_value not in ['draft', 'running']">
+                                                <i class="fa fa-brain"/> Analyze
+                                            </button>
+                                            <span t-if="record.status.raw_value == 'running'" 
+                                                  class="badge badge-info">
+                                                <i class="fa fa-spinner fa-spin"/> Running
+                                            </span>
+                                            <span t-if="record.status.raw_value == 'draft'" 
+                                                  class="badge badge-secondary">
+                                                <i class="fa fa-cog"/> Draft
+                                            </span>
+                                        </div>
+                                        <div class="col-4 text-right">
+                                            <field name="urgency_level" widget="label_selection" 
+                                                   options="{'classes': {'routine': 'secondary', 'important': 'info', 'urgent': 'warning', 'critical': 'danger'}}"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Metrics -->
+                                <div class="o_kanban_primary_bottom mt8">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <strong t-esc="record.total_executions.value"/>
+                                            <br/><small>Analyses</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <strong>$<t t-esc="record.estimated_cost.value"/></strong>
+                                            <br/><small>Est. Cost</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <small t-if="record.last_run.raw_value">
+                                                Last run:<br/>
+                                                <t t-esc="record.last_run.value"/>
+                                            </small>
+                                            <small t-else="">Never run</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="o_kanban_card_footer mt8">
+                                    <div class="o_kanban_tags">
+                                        <span class="badge badge-pill" 
+                                              t-att-class="record.openai_model.raw_value.includes('gpt-4') ? 'badge-success' : 'badge-info'">
+                                            <field name="openai_model"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dropdown Menu -->
+                            <div class="o_kanban_manage_button_section">
+                                <a class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" href="#" role="button">
+                                    <span class="fa fa-ellipsis-v"/>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <a role="menuitem" type="edit" class="dropdown-item">✏️ Edit Agent</a>
+                                    <a role="menuitem" name="action_view_execution_history" type="object" class="dropdown-item">
+                                        📊 View History
+                                    </a>
+                                    <a role="menuitem" name="action_view_latest_analysis" type="object" class="dropdown-item"
+                                       t-if="record.successful_executions.raw_value > 0">
+                                        🧠 Latest Analysis
+                                    </a>
+                                    <div class="dropdown-divider"/>
+                                    <a role="menuitem" name="toggle_active" type="object" class="dropdown-item">
+                                        🗄️ Archive
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- OpenAI Business Agent Tree View -->
+    <record id="view_openai_business_agent_tree" model="ir.ui.view">
+        <field name="name">openai.business.agent.tree</field>
+        <field name="model">openai.business.agent</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="priority == '3'" 
+                  decoration-warning="priority == '2'"
+                  decoration-success="status == 'completed'"
+                  decoration-info="status == 'running'"
+                  decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="priority" widget="priority"/>
+                <field name="name"/>
+                <field name="agent_category" widget="badge"/>
+                <field name="openai_model"/>
+                <field name="status" widget="badge"/>
+                <field name="execution_mode"/>
+                <field name="last_run"/>
+                <field name="next_run" optional="hide"/>
+                <field name="total_executions"/>
+                <field name="successful_executions"/>
+                <field name="estimated_cost" widget="monetary" sum="Total Cost"/>
+                <field name="active" widget="boolean_toggle"/>
+                <button name="execute_intelligence_analysis" string="🚀 Analyze" type="object" 
+                        icon="fa-brain" class="btn-sm btn-primary"
+                        invisible="status in ['draft', 'running']"/>
+                <button name="action_view_latest_analysis" string="📋 Results" type="object" 
+                        icon="fa-eye" class="btn-sm btn-secondary"
+                        invisible="successful_executions == 0"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_openai_business_agent_search" model="ir.ui.view">
+        <field name="name">openai.business.agent.search</field>
+        <field name="model">openai.business.agent</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="agent_category"/>
+                <field name="openai_model"/>
+                <field name="user_id"/>
+                
+                <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="inactive" string="Inactive" domain="[('active', '=', False)]"/>
+                
+                <separator/>
+                <filter name="high_priority" string="High Priority" domain="[('priority', 'in', ['2', '3'])]"/>
+                <filter name="critical_urgent" string="Critical/Urgent" 
+                        domain="[('urgency_level', 'in', ['urgent', 'critical'])]"/>
+                
+                <separator/>
+                <filter name="scheduled" string="Scheduled" domain="[('execution_mode', '=', 'scheduled')]"/>
+                <filter name="manual" string="Manual" domain="[('execution_mode', '=', 'manual')]"/>
+                
+                <separator/>
+                <filter name="running" string="Currently Running" domain="[('status', '=', 'running')]"/>
+                <filter name="completed" string="Completed" domain="[('status', '=', 'completed')]"/>
+                <filter name="error" string="With Errors" domain="[('status', '=', 'error')]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter name="group_category" string="Category" context="{'group_by': 'agent_category'}"/>
+                    <filter name="group_priority" string="Priority" context="{'group_by': 'priority'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_model" string="AI Model" context="{'group_by': 'openai_model'}"/>
+                    <filter name="group_user" string="Responsible User" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_openai_business_agent" model="ir.actions.act_window">
+        <field name="name">🤖 AI Business Intelligence</field>
+        <field name="res_model">openai.business.agent</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_openai_business_agent_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first AI Business Intelligence Agent!
+            </p>
+            <p>
+                AI Business Intelligence Agents provide automated analysis and insights for your business operations.
+                They use OpenAI's advanced models to analyze your data and provide actionable recommendations.
+            </p>
+            <p>
+                <strong>Get Started:</strong>
+                <br/>• Configure your OpenAI API key in settings
+                <br/>• Create agents for different business areas (Sales, Inventory, Finance, etc.)
+                <br/>• Schedule regular analysis or run on-demand
+                <br/>• Receive intelligent insights and recommendations
+            </p>
+        </field>
+    </record>
+
+    <record id="action_openai_business_agent_dashboard" model="ir.actions.act_window">
+        <field name="name">🎯 Intelligence Dashboard</field>
+        <field name="res_model">openai.business.agent</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_openai_business_agent_search"/>
+        <field name="context">{'search_default_active': 1, 'search_default_high_priority': 1}</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,11 @@
+/* Custom CSS for New App Module */
+
+.o_new_app_custom {
+    /* Add your custom styles here */
+}
+
+.o_new_app_highlight {
+    background-color: #f0f8ff;
+    padding: 10px;
+    border-radius: 4px;
+}
