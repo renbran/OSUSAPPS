@@ -150,7 +150,8 @@
                                     <div>Type: <field name="calculation_type"/>
                                     </div>
                                     <div t-if="record.calculation_type.raw_value == 'percentage'">
-                                        Rate: <field name="default_rate"/>%
+                                        Rate: <field name="default_rate"/>
+%
                                     </div>
                                     <div t-if="record.calculation_type.raw_value == 'fixed'">
                                         Amount: <field name="fixed_amount" widget="monetary"/>
