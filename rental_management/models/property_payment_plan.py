@@ -97,56 +97,9 @@ class PropertyPaymentPlanLine(models.Model):
 class PropertyDetails(models.Model):
     _inherit = 'property.details'
 
-    # Payment Plan Fields
-    is_payment_plan = fields.Boolean(string='Has Payment Plan')
-    payment_plan_id = fields.Many2one(
-        'property.payment.plan',
-        string='Payment Plan Template'
-    )
-    custom_payment_plan_line_ids = fields.One2many(
-        'property.custom.payment.plan.line',
-        'property_id',
-        string='Custom Payment Plan'
-    )
-    payment_plan_total = fields.Float(
-        string='Total Percentage',
-        compute='_compute_payment_plan_total',
-        store=True
-    )
-
-    # Additional Fees
-    dld_fee_percentage = fields.Float(
-        string='DLD Fee (%)',
-        default=4.0,
-        help='Dubai Land Department Fee percentage'
-    )
-    dld_fee_amount = fields.Monetary(
-        string='DLD Fee Amount',
-        compute='_compute_additional_fees',
-        store=True
-    )
-    admin_fee = fields.Monetary(
-        string='Admin Fee',
-        default=2100.0,
-        help='Administrative Fee'
-    )
-    total_with_fees = fields.Monetary(
-        string='Total Amount (incl. Fees)',
-        compute='_compute_additional_fees',
-        store=True
-    )
-
-    @api.depends('custom_payment_plan_line_ids.percentage')
-    def _compute_payment_plan_total(self):
-        for rec in self:
-            total = sum(rec.custom_payment_plan_line_ids.mapped('percentage'))
-            rec.payment_plan_total = total
-
-    @api.depends('price', 'dld_fee_percentage', 'admin_fee')
-    def _compute_additional_fees(self):
-        for rec in self:
-            rec.dld_fee_amount = (rec.price * rec.dld_fee_percentage) / 100.0
-            rec.total_with_fees = rec.price + rec.dld_fee_amount + rec.admin_fee
+    # Note: Payment plan fields are now defined in property_details.py
+    # to avoid loading order issues during module upgrade.
+    # This class only contains the onchange method for payment plan template loading.
 
     @api.onchange('payment_plan_id')
     def _onchange_payment_plan_id(self):
