@@ -100,6 +100,7 @@
         "report/property_payment_plan_report.xml",
         "report/property_brochure_enhanced_report.xml",
         "report/property_sales_offer_report.xml",
+        "report/property_sales_offer_report_smart.xml",
         # Mail Template
         "data/active_contract_mail_template.xml",
         "data/tenancy_reminder_mail_template.xml",
