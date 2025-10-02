@@ -10,6 +10,7 @@ class PropertyPaymentPlan(models.Model):
     _description = 'Property Payment Plan'
     _order = 'sequence, id'
 
+    sequence = fields.Integer(string='Sequence', default=10, help='Used to order payment plans')
     name = fields.Char(string='Plan Name', required=True, translate=True)
     active = fields.Boolean(string='Active', default=True)
     description = fields.Text(string='Description', translate=True)

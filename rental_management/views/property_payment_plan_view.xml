@@ -16,6 +16,7 @@
                         <group>
                             <group>
                                 <field name="name" placeholder="e.g., 60% Post Handover - 4 Years"/>
+                                <field name="sequence" groups="base.group_no_one"/>
                                 <field name="company_id" groups="base.group_multi_company"/>
                             </group>
                             <group>
@@ -53,6 +54,7 @@
             <field name="model">property.payment.plan</field>
             <field name="arch" type="xml">
                 <tree string="Payment Plan Templates">
+                    <field name="sequence" widget="handle"/>
                     <field name="name"/>
                     <field name="total_percentage" widget="percentage"/>
                     <field name="company_id" groups="base.group_multi_company"/>
