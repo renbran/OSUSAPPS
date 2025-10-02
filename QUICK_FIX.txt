@@ -1,0 +1,43 @@
+╔══════════════════════════════════════════════════════════════════╗
+║          QUICK FIX - rental_management External ID Error         ║
+╚══════════════════════════════════════════════════════════════════╝
+
+PROBLEM: External ID not found: rental_management.property_payment_plan_action
+STATUS:  ✅ Code is correct - Database issue only
+
+┌──────────────────────────────────────────────────────────────────┐
+│ FASTEST FIX - From Odoo UI (2 minutes)                           │
+└──────────────────────────────────────────────────────────────────┘
+1. Login to Odoo
+2. Go to Apps menu
+3. Remove "Apps" filter
+4. Find "rental_management"
+5. Click ⋮ menu → Upgrade
+6. Done!
+
+┌──────────────────────────────────────────────────────────────────┐
+│ SERVER COMMAND (30 seconds)                                      │
+└──────────────────────────────────────────────────────────────────┘
+ssh scholarixv17
+cd /var/odoo/scholarixv17
+sudo -u odoo venv/bin/python3 src/odoo-bin -c odoo.conf \
+  --no-http --stop-after-init -d scholarixv17 \
+  --update=rental_management
+
+┌──────────────────────────────────────────────────────────────────┐
+│ FILES AVAILABLE                                                  │
+└──────────────────────────────────────────────────────────────────┘
+• FIX_INSTRUCTIONS.md  - Detailed guide
+• fix_rental_management.sh - Shell script
+• FIX_NOW.bat - Windows batch file
+• validate_code.py - Verify code is correct
+
+┌──────────────────────────────────────────────────────────────────┐
+│ WHAT THIS DOES                                                   │
+└──────────────────────────────────────────────────────────────────┘
+Reloads XML files → Recreates missing external ID in database
+No code changes needed - your code is already correct!
+
+╔══════════════════════════════════════════════════════════════════╗
+║  After fix: Rental Management → Configurations → Payment Plans  ║
+╚══════════════════════════════════════════════════════════════════╝
