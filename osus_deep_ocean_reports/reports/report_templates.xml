@@ -26,11 +26,11 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="article">
                 <t t-out="0"/>
             </div>
-            
+
             <div class="footer deep-ocean-footer-minimal">
                 <div class="text-center" style="border-top: 2px solid #1e3a8a; padding-top: 10px;">
                     <div class="row">

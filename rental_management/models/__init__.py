@@ -2,6 +2,7 @@
 # Copyright 2020-Today TechKhedut.
 # Part of TechKhedut. See LICENSE file for full copyright and licensing details.
 from . import property_details
+from . import property_payment_plan
 from . import res_partner
 from . import rent_contract
 from . import rent_invoice

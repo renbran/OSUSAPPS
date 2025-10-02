@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sample Payment Plan Template: 60% Post Handover - 4 Years -->
+        <record id="payment_plan_template_60_post_handover" model="property.payment.plan">
+            <field name="name">60% Post Handover - 4 Years (Standard)</field>
+            <field name="active">True</field>
+            <field name="description">Standard payment plan with 60% post-handover payment spread over 4 years with 6-month installments</field>
+        </record>
+
+        <!-- Payment Plan Lines -->
+        <record id="payment_plan_line_booking_10" model="property.payment.plan.line">
+            <field name="sequence">10</field>
+            <field name="payment_plan_id" ref="payment_plan_template_60_post_handover"/>
+            <field name="name">Booking Payment</field>
+            <field name="percentage">10.0</field>
+            <field name="payment_type">booking</field>
+            <field name="installments">1</field>
+            <field name="note">Initial booking payment to reserve the property</field>
+        </record>
+
+        <record id="payment_plan_line_30days_10" model="property.payment.plan.line">
+            <field name="sequence">20</field>
+            <field name="payment_plan_id" ref="payment_plan_template_60_post_handover"/>
+            <field name="name">Payment after 30 Days</field>
+            <field name="percentage">10.0</field>
+            <field name="payment_type">days_after_booking</field>
+            <field name="days_after">30</field>
+            <field name="installments">1</field>
+            <field name="note">Second payment due 30 days after booking</field>
+        </record>
+
+        <record id="payment_plan_line_construction_15" model="property.payment.plan.line">
+            <field name="sequence">30</field>
+            <field name="payment_plan_id" ref="payment_plan_template_60_post_handover"/>
+            <field name="name">On Construction Milestone</field>
+            <field name="percentage">15.0</field>
+            <field name="payment_type">construction</field>
+            <field name="installments">1</field>
+            <field name="note">Payment upon reaching construction milestone</field>
+        </record>
+
+        <record id="payment_plan_line_handover_5" model="property.payment.plan.line">
+            <field name="sequence">40</field>
+            <field name="payment_plan_id" ref="payment_plan_template_60_post_handover"/>
+            <field name="name">On Handover</field>
+            <field name="percentage">5.0</field>
+            <field name="payment_type">handover</field>
+            <field name="installments">1</field>
+            <field name="note">Payment upon property handover</field>
+        </record>
+
+        <record id="payment_plan_line_post_handover_60" model="property.payment.plan.line">
+            <field name="sequence">50</field>
+            <field name="payment_plan_id" ref="payment_plan_template_60_post_handover"/>
+            <field name="name">Post Handover Installments</field>
+            <field name="percentage">60.0</field>
+            <field name="payment_type">post_handover</field>
+            <field name="installments">8</field>
+            <field name="installment_frequency">months_6</field>
+            <field name="note">60% of the property price paid over 4 years in 8 half-yearly installments</field>
+        </record>
+
+        <!-- Alternative Payment Plan: Quick Payment - 20% Down -->
+        <record id="payment_plan_template_quick_20" model="property.payment.plan">
+            <field name="name">Quick Payment - 20% Down</field>
+            <field name="active">True</field>
+            <field name="description">Fast-track payment plan with 20% down payment and 80% on handover</field>
+        </record>
+
+        <record id="payment_plan_line_quick_booking_20" model="property.payment.plan.line">
+            <field name="sequence">10</field>
+            <field name="payment_plan_id" ref="payment_plan_template_quick_20"/>
+            <field name="name">Down Payment</field>
+            <field name="percentage">20.0</field>
+            <field name="payment_type">booking</field>
+            <field name="installments">1</field>
+            <field name="note">20% down payment at booking</field>
+        </record>
+
+        <record id="payment_plan_line_quick_handover_80" model="property.payment.plan.line">
+            <field name="sequence">20</field>
+            <field name="payment_plan_id" ref="payment_plan_template_quick_20"/>
+            <field name="name">Balance Payment on Handover</field>
+            <field name="percentage">80.0</field>
+            <field name="payment_type">handover</field>
+            <field name="installments">1</field>
+            <field name="note">Remaining 80% paid at handover</field>
+        </record>
+
+        <!-- Flexible Payment Plan: 30-70 Split -->
+        <record id="payment_plan_template_30_70" model="property.payment.plan">
+            <field name="name">Flexible 30-70 Split</field>
+            <field name="active">True</field>
+            <field name="description">30% during construction, 70% post-handover over 2 years</field>
+        </record>
+
+        <record id="payment_plan_line_flex_booking_10" model="property.payment.plan.line">
+            <field name="sequence">10</field>
+            <field name="payment_plan_id" ref="payment_plan_template_30_70"/>
+            <field name="name">Booking</field>
+            <field name="percentage">10.0</field>
+            <field name="payment_type">booking</field>
+            <field name="installments">1</field>
+        </record>
+
+        <record id="payment_plan_line_flex_construction_20" model="property.payment.plan.line">
+            <field name="sequence">20</field>
+            <field name="payment_plan_id" ref="payment_plan_template_30_70"/>
+            <field name="name">Construction Phase</field>
+            <field name="percentage">20.0</field>
+            <field name="payment_type">construction</field>
+            <field name="installments">1</field>
+        </record>
+
+        <record id="payment_plan_line_flex_post_70" model="property.payment.plan.line">
+            <field name="sequence">30</field>
+            <field name="payment_plan_id" ref="payment_plan_template_30_70"/>
+            <field name="name">Post Handover - 2 Years</field>
+            <field name="percentage">70.0</field>
+            <field name="payment_type">post_handover</field>
+            <field name="installments">4</field>
+            <field name="installment_frequency">months_6</field>
+            <field name="note">70% paid over 2 years in 4 half-yearly installments</field>
+        </record>
+    </data>
+</odoo>

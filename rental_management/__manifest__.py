@@ -42,6 +42,7 @@
         "data/ir_cron.xml",
         "data/sequence.xml",
         "data/property_product_data.xml",
+        "data/payment_plan_template_data.xml",
         "data/update_ir_cron.xml",
         # wizard views
         "wizard/contract_wizard_view.xml",
@@ -87,11 +88,16 @@
         "views/maintenance_product_inherit.xml",
         "views/property_maintenance_view.xml",
         "views/property_crm_lead_inherit_view.xml",
+        # Payment Plan Views
+        "views/property_payment_plan_view.xml",
+        "views/property_payment_plan_inherit_view.xml",
         # Report views
         "report/tenancy_details_report_template.xml",
         "report/property_details_report_v2.xml",
         "report/property_sold_report.xml",
         "report/invoice_report_inherit.xml",
+        "report/property_payment_plan_report.xml",
+        "report/property_brochure_enhanced_report.xml",
         # Mail Template
         "data/active_contract_mail_template.xml",
         "data/tenancy_reminder_mail_template.xml",

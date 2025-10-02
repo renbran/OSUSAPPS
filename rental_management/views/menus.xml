@@ -255,6 +255,11 @@
                 action="property_furnishing_action"
                 groups="rental_management.property_rental_manager,rental_management.property_rental_officer" />
         </menuitem>
+        <menuitem name="Payment Plans"
+            id="menu_property_payment_plan"
+            action="property_payment_plan_action"
+            sequence="5"
+            groups="rental_management.property_rental_manager,rental_management.property_rental_officer" />
     </menuitem>
 
 
