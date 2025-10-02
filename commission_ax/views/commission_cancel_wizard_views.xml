@@ -11,12 +11,12 @@
                     <h4>Commission Cancellation Impact</h4>
                     <field name="message" readonly="1"/>
                 </div>
-                
+
                 <group>
                     <field name="sale_order_ids" invisible="1"/>
                     <field name="force_cancel"/>
                 </group>
-                
+
                 <footer>
                     <button string="Confirm Cancellation" name="action_confirm_cancel" type="object" class="btn-primary"/>
                     <button string="Cancel" name="action_cancel_wizard" type="object" class="btn-secondary"/>

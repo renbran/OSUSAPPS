@@ -61,6 +61,6 @@
     </record>
 
     <!-- Add to Commission Menu -->
-    <menuitem id="menu_commission_partner_statement_wizard" name="Partner Statement Report" parent="commission_ax.menu_commission_reports" action="action_commission_partner_statement_wizard" sequence="20"/>
+    <menuitem id="menu_commission_partner_statement_wizard" name="Partner Statement Report" parent="commission_ax.menu_commission_reports" action="commission_ax.action_commission_partner_statement_wizard" sequence="20"/>
 
 </odoo>
