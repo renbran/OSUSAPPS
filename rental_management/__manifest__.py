@@ -91,6 +91,7 @@
         # Payment Plan Views
         "views/property_payment_plan_view.xml",
         "views/property_payment_plan_inherit_view.xml",
+        "views/property_payment_plan_actions.xml",
         # Report views
         "report/tenancy_details_report_template.xml",
         "report/property_details_report_v2.xml",
