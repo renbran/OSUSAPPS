@@ -16,7 +16,7 @@
     "summary": """
         Property Sale & Rental Management
     """,
-    "version": "3.2.7",
+    "version": "3.2.8",
     "author": "TechKhedut Inc.",
     "company": "TechKhedut Inc.",
     "maintainer": "TechKhedut Inc.",
