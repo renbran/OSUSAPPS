@@ -10,20 +10,20 @@
 
             <!-- Add Deep Ocean Theme fields to invoice form -->
             <xpath expr="//notebook" position="inside">
-                <page string="Deep Ocean Theme" name="deep_ocean_page" attrs="{'invisible': [('move_type', 'not in', ['out_invoice', 'out_refund'])]}">
+                <page string="Deep Ocean Theme" name="deep_ocean_page" invisible="move_type not in ['out_invoice', 'out_refund']">
                     <group>
                         <group string="Theme Configuration">
                             <field name="deep_ocean_theme_enabled"/>
-                            <field name="company_tagline" attrs="{'invisible': [('deep_ocean_theme_enabled', '=', False)]}"/>
-                            <field name="business_analytics_ref" attrs="{'invisible': [('deep_ocean_theme_enabled', '=', False)]}"/>
-                            <field name="technical_expertise_level" attrs="{'invisible': [('deep_ocean_theme_enabled', '=', False)]}"/>
+                            <field name="company_tagline" invisible="not deep_ocean_theme_enabled"/>
+                            <field name="business_analytics_ref" invisible="not deep_ocean_theme_enabled"/>
+                            <field name="technical_expertise_level" invisible="not deep_ocean_theme_enabled"/>
                         </group>
-                        <group string="QR Code &amp; Analytics" attrs="{'invisible': [('deep_ocean_theme_enabled', '=', False)]}">
-                            <field name="deep_ocean_qr_image" widget="image" attrs="{'invisible': [('deep_ocean_qr_image', '=', False)]}"/>
+                        <group string="QR Code &amp; Analytics" invisible="not deep_ocean_theme_enabled">
+                            <field name="deep_ocean_qr_image" widget="image" invisible="not deep_ocean_qr_image"/>
                             <field name="amount_total_words_deep_ocean" readonly="1"/>
                         </group>
                     </group>
-                    <group string="Enterprise Consultation" attrs="{'invisible': [('deep_ocean_theme_enabled', '=', False)]}">
+                    <group string="Enterprise Consultation" invisible="not deep_ocean_theme_enabled">
                         <field name="enterprise_consultation_notes" placeholder="Enter detailed consultation notes, analytics requirements, technical specifications, or project scope..."/>
                     </group>
                 </page>
@@ -31,8 +31,8 @@
 
             <!-- Add Deep Ocean Print Actions -->
             <xpath expr="//header" position="inside">
-                <button name="action_print_deep_ocean_invoice" string="Print Deep Ocean Invoice" type="object" class="btn-primary" attrs="{'invisible': ['|', ('move_type', '!=', 'out_invoice'), ('deep_ocean_theme_enabled', '=', False)]}"/>
-                <button name="action_print_deep_ocean_receipt" string="Print Deep Ocean Receipt" type="object" class="btn-secondary" attrs="{'invisible': ['|', ('move_type', '!=', 'out_invoice'), ('deep_ocean_theme_enabled', '=', False)]}"/>
+                <button name="action_print_deep_ocean_invoice" string="Print Deep Ocean Invoice" type="object" class="btn-primary" invisible="move_type != 'out_invoice' or not deep_ocean_theme_enabled"/>
+                <button name="action_print_deep_ocean_receipt" string="Print Deep Ocean Receipt" type="object" class="btn-secondary" invisible="move_type != 'out_invoice' or not deep_ocean_theme_enabled"/>
             </xpath>
 
         </field>
@@ -50,7 +50,7 @@
             <!-- Add Deep Ocean theme indicator -->
             <xpath expr="//field[@name='name']" position="after">
                 <field name="deep_ocean_theme_enabled" invisible="1"/>
-                <field name="technical_expertise_level" attrs="{'invisible': [('deep_ocean_theme_enabled', '=', False)]}" decoration-info="technical_expertise_level == 'basic'" decoration-warning="technical_expertise_level == 'intermediate'" decoration-success="technical_expertise_level == 'advanced'" decoration-danger="technical_expertise_level == 'expert'"/>
+                <field name="technical_expertise_level" invisible="not deep_ocean_theme_enabled" decoration-info="technical_expertise_level == 'basic'" decoration-warning="technical_expertise_level == 'intermediate'" decoration-success="technical_expertise_level == 'advanced'" decoration-danger="technical_expertise_level == 'expert'"/>
             </xpath>
 
         </field>
