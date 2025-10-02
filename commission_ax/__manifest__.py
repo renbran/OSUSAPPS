@@ -95,6 +95,7 @@ pip install xlsxwriter numpy pandas scikit-learn
         # Advanced features (wizard views) - Load wizard views AFTER models are loaded
         'views/commission_payment_wizard_views.xml',
         'views/commission_partner_statement_wizard_views.xml',
+        'views/commission_cancel_wizard_views.xml',
         'data/cron_data.xml',
     ],
     'demo': [],
