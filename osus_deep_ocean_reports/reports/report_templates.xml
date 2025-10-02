@@ -10,14 +10,14 @@
         </t>
     </template>
 
-    <!-- External layout override for Deep Ocean theme -->
-    <template id="external_layout_deep_ocean" inherit_id="web.external_layout_standard">
-        <xpath expr="//div[hasclass('header')]" position="replace">
-            <!-- Custom header for Deep Ocean reports -->
+    <!-- External layout for Deep Ocean theme -->
+    <template id="external_layout_deep_ocean">
+        <t t-call="web.basic_layout">
+            <t t-call="osus_deep_ocean_reports.deep_ocean_minimal_styles"/>
             <div class="header deep-ocean-header-minimal">
                 <div class="row">
                     <div class="col-6">
-                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px; filter: brightness(0) invert(1);" alt=""/>
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px; filter: brightness(0) invert(1);" alt="Company Logo"/>
                     </div>
                     <div class="col-6 text-right">
                         <div class="deep-ocean-brand-mark" style="display: inline-block;">
@@ -26,10 +26,11 @@
                     </div>
                 </div>
             </div>
-        </xpath>
-
-        <xpath expr="//div[hasclass('footer')]" position="replace">
-            <!-- Custom footer for Deep Ocean reports -->
+            
+            <div class="article">
+                <t t-out="0"/>
+            </div>
+            
             <div class="footer deep-ocean-footer-minimal">
                 <div class="text-center" style="border-top: 2px solid #1e3a8a; padding-top: 10px;">
                     <div class="row">
@@ -42,7 +43,7 @@
                     </div>
                 </div>
             </div>
-        </xpath>
+        </t>
     </template>
 
     <!-- Deep Ocean minimal header styles -->
