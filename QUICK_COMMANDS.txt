@@ -45,3 +45,80 @@ Rental Management → Configurations → Payment Plans
 Time: 30 seconds to 2 minutes
 Downtime: None (can update while system is running)
 ═══════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════
+  FIX - Missing Product Record Error
+═══════════════════════════════════════════════════════════════
+
+Error: Record does not exist or has been deleted.
+       (Record: product.product(11,), User: 288)
+
+Problem: Product record deleted but still referenced elsewhere
+Status: ⚠️ Requires immediate fix to restore functionality
+
+───────────────────────────────────────────────────────────────
+METHOD 1: Windows Quick Fix (Easiest)
+───────────────────────────────────────────────────────────────
+Double-click: FIX_MISSING_PRODUCT.bat
+Choose option based on what you want:
+  1 = Report only (safe)
+  2 = SQL shell
+  3 = Auto fix
+  4 = GUI cleanup
+  5 = Quick inspection
+
+───────────────────────────────────────────────────────────────
+METHOD 2: Linux/Mac Quick Fix
+───────────────────────────────────────────────────────────────
+./fix_missing_product.sh
+Choose option 1 for report, then follow recommendations
+
+───────────────────────────────────────────────────────────────
+METHOD 3: Quick SQL Check
+───────────────────────────────────────────────────────────────
+docker-compose exec db psql -U odoo -d odoo
+
+Then run:
+SELECT * FROM product_product WHERE id = 11;
+SELECT COUNT(*) FROM sale_order_line WHERE product_id = 11;
+SELECT COUNT(*) FROM purchase_order_line WHERE product_id = 11;
+
+───────────────────────────────────────────────────────────────
+METHOD 4: Python Direct
+───────────────────────────────────────────────────────────────
+# Generate report
+python fix_missing_product_record.py --fix-mode report
+
+# Replace with product ID 1
+python fix_missing_product_record.py --fix-mode replace --replacement-id 1
+
+# Remove references (destructive!)
+python fix_missing_product_record.py --fix-mode remove
+
+───────────────────────────────────────────────────────────────
+METHOD 5: Odoo Database Cleanup Module
+───────────────────────────────────────────────────────────────
+1. Open Odoo: http://localhost:8069
+2. Enable Developer Mode (Profile → Developer Mode)
+3. Settings → Technical → Database Structure → Database Cleanup
+4. "Purge Data" → "Analyze" → "Purge All"
+
+───────────────────────────────────────────────────────────────
+After Fix - Verify
+───────────────────────────────────────────────────────────────
+docker-compose restart odoo
+docker-compose logs -f odoo | grep -i "product.*11"
+(No errors = Fixed!)
+
+───────────────────────────────────────────────────────────────
+Full Documentation
+───────────────────────────────────────────────────────────────
+See: MISSING_PRODUCT_FIX_GUIDE.md (comprehensive)
+See: QUICK_FIX_MISSING_PRODUCT.md (quick reference)
+
+═══════════════════════════════════════════════════════════════
+Time: 1-5 minutes depending on method
+Risk: Medium (can delete data with wrong option)
+Recommended: Start with Method 1, option 1 (report)
+═══════════════════════════════════════════════════════════════
