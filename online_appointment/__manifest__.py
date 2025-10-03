@@ -47,9 +47,9 @@
     ],
     'assets': {
         'web.assets_frontend': [
-            '/s2u_online_appointment/static/src/scss/daterange.scss',
-            '/s2u_online_appointment/static/src/js/daterange.js',
-            '/s2u_online_appointment/static/src/js/main.js',
+            '/online_appointment/static/src/scss/daterange.scss',
+            '/online_appointment/static/src/js/daterange.js',
+            '/online_appointment/static/src/js/main.js',
         ]
     },
     'installable': True,

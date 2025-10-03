@@ -94,7 +94,7 @@ class CustomerPortal(portal.CustomerPortal):
             'searchbar_filters': OrderedDict(sorted(searchbar_filters.items())),
             'filterby': filterby,
         })
-        return request.render("s2u_online_appointment.portal_my_appointments", values)
+        return request.render("online_appointment.portal_my_appointments", values)
 
     @http.route(['/my/online-appointment/<int:appointment_id>'], type='http', auth="public", website=True)
     def portal_my_appointment(self, appointment_id=None, access_token=None, **kw):
@@ -104,4 +104,4 @@ class CustomerPortal(portal.CustomerPortal):
             return request.redirect('/my')
 
         values = self._appointment_get_page_view_values(appointment_sudo, access_token, **kw)
-        return request.render("s2u_online_appointment.portal_my_appointment", values)
+        return request.render("online_appointment.portal_my_appointment", values)

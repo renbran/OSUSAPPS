@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo.addons.s2u_online_appointment.helpers import functions
+from odoo.addons.online_appointment.helpers import functions
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
