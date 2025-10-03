@@ -26,11 +26,11 @@
 
                         <!-- Gallery Row - 4 Images -->
                         <t t-if="doc.is_images and doc.property_images_ids">
-                            <div style="display: table; width: 100%; margin-bottom: 15px;">
+                            <div style="display: table; width: 100%; margin-bottom: 10px;">
                                 <t t-foreach="doc.property_images_ids[:4]" t-as="img">
-                                    <div style="display: table-cell; width: 25%; padding: 0 3px;" t-if="img.image">
-                                        <img t-att-src="image_data_uri(img.image)" style="width: 100%; height: 140px; object-fit: cover; border-radius: 5px; border: 2px solid #C5A572;"/>
-                                        <p style="margin: 3px 0 0 0; font-size: 7pt; color: #666; text-align: center;" t-if="img.title">
+                                    <div style="display: table-cell; width: 25%; padding: 0 2px;" t-if="img.image">
+                                        <img t-att-src="image_data_uri(img.image)" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; border: 2px solid #C5A572;"/>
+                                        <p style="margin: 2px 0 0 0; font-size: 6.5pt; color: #666; text-align: center;" t-if="img.title">
                                             <span t-field="img.title"/>
                                         </p>
                                     </div>
@@ -45,10 +45,10 @@
                             <div style="display: table-cell; width: 48%; vertical-align: top; padding-right: 2%;">
 
                                 <!-- Property Details -->
-                                <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 8px 15px; border-radius: 5px; margin-bottom: 12px;">
-                                    <h2 style="margin: 0; font-size: 13pt; font-weight: bold;">Property Details</h2>
+                                <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 6px 12px; border-radius: 4px; margin-bottom: 8px;">
+                                    <h2 style="margin: 0; font-size: 12pt; font-weight: bold;">Property Details</h2>
                                 </div>
-                                <div style="background: #f9f9f9; padding: 12px 15px; border-radius: 5px; border-left: 4px solid #C5A572; margin-bottom: 15px; font-size: 10pt; line-height: 1.8;">
+                                <div style="background: #f9f9f9; padding: 8px 12px; border-radius: 4px; border-left: 3px solid #C5A572; margin-bottom: 10px; font-size: 9.5pt; line-height: 1.6;">
                                     <p style="margin: 0 0 6px 0;" t-if="doc.sale_lease">
                                         <strong style="color: #8B7355;">Type:</strong>
                                         <span t-field="doc.sale_lease" style="font-size: 11pt;"/>
@@ -99,10 +99,10 @@
                                 </div>
 
                                 <!-- Location & Contact Combined -->
-                                <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 8px 15px; border-radius: 5px; margin-bottom: 12px;">
-                                    <h3 style="margin: 0; font-size: 13pt; font-weight: bold;">Location &amp; Contact</h3>
+                                <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 6px 12px; border-radius: 4px; margin-bottom: 8px;">
+                                    <h3 style="margin: 0; font-size: 12pt; font-weight: bold;">Location &amp; Contact</h3>
                                 </div>
-                                <div style="background: #f9f9f9; padding: 12px 15px; border-radius: 5px; margin-bottom: 15px; font-size: 10pt; line-height: 1.8;">
+                                <div style="background: #f9f9f9; padding: 8px 12px; border-radius: 4px; margin-bottom: 10px; font-size: 9.5pt; line-height: 1.6;">
                                     <t t-if="doc.street or doc.city_id">
                                         <p style="margin: 0 0 10px 0; padding-bottom: 10px; border-bottom: 1px dashed #ddd;">
                                             <strong style="color: #8B7355; font-size: 11pt;">Address:</strong>
@@ -141,10 +141,10 @@
                                 </div>
 
                                 <!-- Bank Details -->
-                                <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 8px 15px; border-radius: 5px; margin-bottom: 12px;">
-                                    <h3 style="margin: 0; font-size: 13pt; font-weight: bold;">Bank Details</h3>
+                                <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 6px 12px; border-radius: 4px; margin-bottom: 8px;">
+                                    <h3 style="margin: 0; font-size: 12pt; font-weight: bold;">Bank Details</h3>
                                 </div>
-                                <div style="background: #f9f9f9; padding: 12px 15px; border-radius: 5px; font-size: 9pt; line-height: 1.8;">
+                                <div style="background: #f9f9f9; padding: 8px 12px; border-radius: 4px; font-size: 8.5pt; line-height: 1.6;">
                                     <p style="margin: 0 0 6px 0;">
                                         <strong style="color: #8B7355;">Beneficiary:</strong> G J R E Real Estate LLC</p>
                                     <p style="margin: 0 0 6px 0;">
@@ -165,16 +165,16 @@
 
                                 <!-- Amenities & Specifications Combined -->
                                 <t t-if="doc.amenities and doc.amenities_ids">
-                                    <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 8px 15px; border-radius: 5px; margin-bottom: 12px;">
-                                        <h3 style="margin: 0; font-size: 13pt; font-weight: bold;">Amenities</h3>
+                                    <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 6px 12px; border-radius: 4px; margin-bottom: 8px;">
+                                        <h3 style="margin: 0; font-size: 12pt; font-weight: bold;">Amenities</h3>
                                     </div>
-                                    <div style="display: table; width: 100%; margin-bottom: 15px;">
+                                    <div style="display: table; width: 100%; margin-bottom: 10px;">
                                         <t t-foreach="doc.amenities_ids[:8]" t-as="amenity">
-                                            <div style="display: table-cell; width: 25%; text-align: center; padding: 8px;">
+                                            <div style="display: table-cell; width: 25%; text-align: center; padding: 5px;">
                                                 <t t-if="amenity.image">
-                                                    <img t-att-src="image_data_uri(amenity.image)" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid #C5A572; margin-bottom: 5px;"/>
+                                                    <img t-att-src="image_data_uri(amenity.image)" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #C5A572; margin-bottom: 3px;"/>
                                                 </t>
-                                                <p style="margin: 0; font-size: 8.5pt; color: #333; font-weight: 500;">
+                                                <p style="margin: 0; font-size: 7.5pt; color: #333; font-weight: 500;">
                                                     <span t-field="amenity.title"/>
                                                 </p>
                                             </div>
@@ -184,17 +184,16 @@
 
                                 <!-- Specifications -->
                                 <t t-if="doc.is_facilities and doc.property_specification_ids">
-                                    <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 8px 15px; border-radius: 5px; margin-bottom: 12px;">
-                                        <h3 style="margin: 0; font-size: 13pt; font-weight: bold;">Specifications</h3>
+                                    <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 6px 12px; border-radius: 4px; margin-bottom: 8px;">
+                                        <h3 style="margin: 0; font-size: 12pt; font-weight: bold;">Specifications</h3>
                                     </div>
-                                    <div style="background: #f9f9f9; padding: 12px 15px; border-radius: 5px; margin-bottom: 15px; font-size: 10pt;">
-                                        <t t-foreach="doc.property_specification_ids[:6]" t-as="spec">
-                                            <p style="margin: 0 0 8px 0; padding-bottom: 8px; border-bottom: 1px dashed #ddd; line-height: 1.6;">
-                                                <strong style="color: #8B7355; font-size: 10.5pt;">
-                                                    <span t-field="spec.title"/>
-:</strong>
+                                    <div style="background: #f9f9f9; padding: 8px 12px; border-radius: 4px; margin-bottom: 10px; font-size: 9pt;">
+                                        <t t-foreach="doc.property_specification_ids[:5]" t-as="spec">
+                                            <p style="margin: 0 0 6px 0; padding-bottom: 6px; border-bottom: 1px dashed #ddd; line-height: 1.5;">
+                                                <strong style="color: #8B7355; font-size: 9.5pt;">
+                                                    <span t-field="spec.title"/>:</strong>
                                                 <br/>
-                                                <span t-field="spec.description" style="color: #555; font-size: 10pt;" t-if="spec.description"/>
+                                                <span t-field="spec.description" style="color: #555; font-size: 8.5pt;" t-if="spec.description"/>
                                             </p>
                                         </t>
                                     </div>
@@ -223,14 +222,14 @@
 
                         <!-- Payment Plan Section (Bottom of Page 1) -->
                         <t t-if="doc.sale_lease == 'for_sale' and doc.is_payment_plan and doc.custom_payment_plan_line_ids">
-                            <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #C5A572;">
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid #C5A572;">
                                 <!-- Payment Plan Header -->
-                                <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px;">
-                                    <h2 style="margin: 0; font-size: 12pt; font-weight: bold;">Payment Plan</h2>
+                                <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 5px 10px; border-radius: 3px; margin-bottom: 6px;">
+                                    <h2 style="margin: 0; font-size: 11pt; font-weight: bold;">Payment Plan</h2>
                                 </div>
 
                                 <!-- Compact Payment Table -->
-                                <table style="width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 8px;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 7pt; margin-bottom: 6px;">
                                     <thead>
                                         <tr style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white;">
                                             <th style="padding: 4px 6px; text-align: left; border: 1px solid white; font-size: 7.5pt; width: 5%;">#</th>
@@ -366,12 +365,11 @@
                                 </t>
                                 <div style="background: #fff8f0; border: 1px solid #C5A572; padding: 6px; border-radius: 4px; font-size: 6.5pt; color: #666; text-align: center; font-style: italic;">
                                     This Sales Offer Is System Generated by G J Properties on <span t-esc="datetime.datetime.now().strftime('%A, %d. %B %Y')"/>
-                                <br/>
-©                                <span t-esc="datetime.datetime.now().year"/>
- - All Rights Reserved
+                                    <br/>© <span t-esc="datetime.datetime.now().year"/> - All Rights Reserved
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </t>
                 </t>
             </t>
         </t>
