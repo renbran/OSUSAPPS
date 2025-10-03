@@ -14,8 +14,10 @@
                                 <span t-field="doc.name"/>
                             </h1>
                             <p style="margin: 0 0 8px 0; font-size: 11pt; opacity: 0.95;">
-                                <span t-field="doc.property_seq"/> | <span t-field="doc.type"/>
-                                <t t-if="doc.property_subtype_id"> - <span t-field="doc.property_subtype_id"/></t>
+                                <span t-field="doc.property_seq"/>
+ |                                <span t-field="doc.type"/>
+                                <t t-if="doc.property_subtype_id"> -                                    <span t-field="doc.property_subtype_id"/>
+                                </t>
                             </p>
                             <div style="background: rgba(255,255,255,0.2); padding: 6px 15px; border-radius: 4px; font-size: 9pt; font-weight: bold; display: inline-block;">
                                 ⏰ This offer is valid for 1 day, subject to availability
@@ -38,26 +40,62 @@
 
                         <!-- Two Column Information Layout -->
                         <div style="display: table; width: 100%;">
-                            
+
                             <!-- LEFT COLUMN - 48% -->
                             <div style="display: table-cell; width: 48%; vertical-align: top; padding-right: 2%;">
-                                
+
                                 <!-- Property Details -->
                                 <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 8px 15px; border-radius: 5px; margin-bottom: 12px;">
                                     <h2 style="margin: 0; font-size: 13pt; font-weight: bold;">Property Details</h2>
                                 </div>
                                 <div style="background: #f9f9f9; padding: 12px 15px; border-radius: 5px; border-left: 4px solid #C5A572; margin-bottom: 15px; font-size: 10pt; line-height: 1.8;">
-                                    <p style="margin: 0 0 6px 0;" t-if="doc.sale_lease"><strong style="color: #8B7355;">Type:</strong> <span t-field="doc.sale_lease" style="font-size: 11pt;"/></p>
-                                    <p style="margin: 0 0 6px 0;" t-if="doc.price"><strong style="color: #8B7355;">Price:</strong> <span style="font-size: 12pt; font-weight: bold; color: #C5A572;"><t t-esc="'{:,.2f}'.format(doc.price)"/> AED</span></p>
+                                    <p style="margin: 0 0 6px 0;" t-if="doc.sale_lease">
+                                        <strong style="color: #8B7355;">Type:</strong>
+                                        <span t-field="doc.sale_lease" style="font-size: 11pt;"/>
+                                    </p>
+                                    <p style="margin: 0 0 6px 0;" t-if="doc.price">
+                                        <strong style="color: #8B7355;">Price:</strong>
+                                        <span style="font-size: 12pt; font-weight: bold; color: #C5A572;">
+                                            <t t-esc="'{:,.2f}'.format(doc.price)"/>
+ AED</span>
+                                    </p>
                                     <t t-if="doc.type == 'residential'">
-                                        <p style="margin: 0 0 6px 0;" t-if="doc.bed"><strong style="color: #8B7355;">Bedrooms:</strong> <span t-field="doc.bed" style="font-size: 11pt;"/></p>
-                                        <p style="margin: 0 0 6px 0;" t-if="doc.bathroom"><strong style="color: #8B7355;">Bathrooms:</strong> <span t-field="doc.bathroom" style="font-size: 11pt;"/></p>
-                                        <p style="margin: 0 0 6px 0;" t-if="doc.unit_type"><strong style="color: #8B7355;">Unit Type:</strong> <span t-field="doc.unit_type" style="font-size: 11pt;"/></p>
+                                        <p style="margin: 0 0 6px 0;" t-if="doc.bed">
+                                            <strong style="color: #8B7355;">Bedrooms:</strong>
+                                            <span t-field="doc.bed" style="font-size: 11pt;"/>
+                                        </p>
+                                        <p style="margin: 0 0 6px 0;" t-if="doc.bathroom">
+                                            <strong style="color: #8B7355;">Bathrooms:</strong>
+                                            <span t-field="doc.bathroom" style="font-size: 11pt;"/>
+                                        </p>
+                                        <p style="margin: 0 0 6px 0;" t-if="doc.unit_type">
+                                            <strong style="color: #8B7355;">Unit Type:</strong>
+                                            <span t-field="doc.unit_type" style="font-size: 11pt;"/>
+                                        </p>
                                     </t>
-                                    <p style="margin: 0 0 6px 0;" t-if="doc.total_floor"><strong style="color: #8B7355;">Floor:</strong> <span t-field="doc.total_floor" style="font-size: 11pt;"/></p>
-                                    <p style="margin: 0 0 6px 0;" t-if="doc.total_area"><strong style="color: #8B7355;">Size:</strong> <span style="font-size: 11pt;"><t t-esc="'{:,.2f}'.format(doc.total_area)"/> <t t-if="doc.measure_unit"><span t-field="doc.measure_unit"/></t></span></p>
-                                    <p style="margin: 0 0 6px 0;" t-if="doc.facing"><strong style="color: #8B7355;">View:</strong> <span t-field="doc.facing" style="font-size: 11pt;"/></p>
-                                    <p style="margin: 0;" t-if="doc.dld_fee_amount"><strong style="color: #8B7355;">Reg. Fees:</strong> <span style="font-size: 11pt;"><t t-esc="'{:,.2f}'.format(doc.dld_fee_amount)"/> AED</span></p>
+                                    <p style="margin: 0 0 6px 0;" t-if="doc.total_floor">
+                                        <strong style="color: #8B7355;">Floor:</strong>
+                                        <span t-field="doc.total_floor" style="font-size: 11pt;"/>
+                                    </p>
+                                    <p style="margin: 0 0 6px 0;" t-if="doc.total_area">
+                                        <strong style="color: #8B7355;">Size:</strong>
+                                        <span style="font-size: 11pt;">
+                                            <t t-esc="'{:,.2f}'.format(doc.total_area)"/>
+                                            <t t-if="doc.measure_unit">
+                                                <span t-field="doc.measure_unit"/>
+                                            </t>
+                                        </span>
+                                    </p>
+                                    <p style="margin: 0 0 6px 0;" t-if="doc.facing">
+                                        <strong style="color: #8B7355;">View:</strong>
+                                        <span t-field="doc.facing" style="font-size: 11pt;"/>
+                                    </p>
+                                    <p style="margin: 0;" t-if="doc.dld_fee_amount">
+                                        <strong style="color: #8B7355;">Reg. Fees:</strong>
+                                        <span style="font-size: 11pt;">
+                                            <t t-esc="'{:,.2f}'.format(doc.dld_fee_amount)"/>
+ AED</span>
+                                    </p>
                                 </div>
 
                                 <!-- Location & Contact Combined -->
@@ -67,19 +105,38 @@
                                 <div style="background: #f9f9f9; padding: 12px 15px; border-radius: 5px; margin-bottom: 15px; font-size: 10pt; line-height: 1.8;">
                                     <t t-if="doc.street or doc.city_id">
                                         <p style="margin: 0 0 10px 0; padding-bottom: 10px; border-bottom: 1px dashed #ddd;">
-                                            <strong style="color: #8B7355; font-size: 11pt;">Address:</strong><br/>
+                                            <strong style="color: #8B7355; font-size: 11pt;">Address:</strong>
+                                            <br/>
                                             <span style="font-size: 10pt;">
-                                                <t t-if="doc.street"><span t-field="doc.street"/><br/></t>
-                                                <t t-if="doc.city_id"><span t-field="doc.city_id"/></t>
-                                                <t t-if="doc.state_id">, <span t-field="doc.state_id"/></t>
-                                                <t t-if="doc.region_id"><br/><span t-field="doc.region_id"/></t>
+                                                <t t-if="doc.street">
+                                                    <span t-field="doc.street"/>
+                                                    <br/>
+                                                </t>
+                                                <t t-if="doc.city_id">
+                                                    <span t-field="doc.city_id"/>
+                                                </t>
+                                                <t t-if="doc.state_id">,                                                    <span t-field="doc.state_id"/>
+                                                </t>
+                                                <t t-if="doc.region_id">
+                                                    <br/>
+                                                    <span t-field="doc.region_id"/>
+                                                </t>
                                             </span>
                                         </p>
                                     </t>
                                     <t t-if="doc.landlord_id or doc.landlord_phone">
-                                        <p style="margin: 0 0 6px 0;" t-if="doc.landlord_id"><strong style="color: #8B7355;">Developer:</strong> <span t-field="doc.landlord_id" style="font-size: 11pt;"/></p>
-                                        <p style="margin: 0 0 6px 0;" t-if="doc.landlord_phone"><strong style="color: #8B7355;">Phone:</strong> <span t-field="doc.landlord_phone" style="font-size: 11pt;"/></p>
-                                        <p style="margin: 0;" t-if="doc.landlord_email"><strong style="color: #8B7355;">Email:</strong> <span t-field="doc.landlord_email" style="font-size: 10pt;"/></p>
+                                        <p style="margin: 0 0 6px 0;" t-if="doc.landlord_id">
+                                            <strong style="color: #8B7355;">Developer:</strong>
+                                            <span t-field="doc.landlord_id" style="font-size: 11pt;"/>
+                                        </p>
+                                        <p style="margin: 0 0 6px 0;" t-if="doc.landlord_phone">
+                                            <strong style="color: #8B7355;">Phone:</strong>
+                                            <span t-field="doc.landlord_phone" style="font-size: 11pt;"/>
+                                        </p>
+                                        <p style="margin: 0;" t-if="doc.landlord_email">
+                                            <strong style="color: #8B7355;">Email:</strong>
+                                            <span t-field="doc.landlord_email" style="font-size: 10pt;"/>
+                                        </p>
                                     </t>
                                 </div>
 
@@ -88,18 +145,24 @@
                                     <h3 style="margin: 0; font-size: 13pt; font-weight: bold;">Bank Details</h3>
                                 </div>
                                 <div style="background: #f9f9f9; padding: 12px 15px; border-radius: 5px; font-size: 9pt; line-height: 1.8;">
-                                    <p style="margin: 0 0 6px 0;"><strong style="color: #8B7355;">Beneficiary:</strong> G J R E Real Estate LLC</p>
-                                    <p style="margin: 0 0 6px 0;"><strong style="color: #8B7355;">Bank:</strong> ABU DHABI COMMERCIAL BANK</p>
-                                    <p style="margin: 0 0 6px 0;"><strong style="color: #8B7355;">Account:</strong> 12830238920001</p>
-                                    <p style="margin: 0 0 6px 0;"><strong style="color: #8B7355;">IBAN:</strong> AE370030012830238920001</p>
-                                    <p style="margin: 0 0 6px 0;"><strong style="color: #8B7355;">Swift:</strong> ADCBAEAA</p>
-                                    <p style="margin: 0;"><strong style="color: #8B7355;">Currency:</strong> AED</p>
+                                    <p style="margin: 0 0 6px 0;">
+                                        <strong style="color: #8B7355;">Beneficiary:</strong> G J R E Real Estate LLC</p>
+                                    <p style="margin: 0 0 6px 0;">
+                                        <strong style="color: #8B7355;">Bank:</strong> ABU DHABI COMMERCIAL BANK</p>
+                                    <p style="margin: 0 0 6px 0;">
+                                        <strong style="color: #8B7355;">Account:</strong> 12830238920001</p>
+                                    <p style="margin: 0 0 6px 0;">
+                                        <strong style="color: #8B7355;">IBAN:</strong> AE370030012830238920001</p>
+                                    <p style="margin: 0 0 6px 0;">
+                                        <strong style="color: #8B7355;">Swift:</strong> ADCBAEAA</p>
+                                    <p style="margin: 0;">
+                                        <strong style="color: #8B7355;">Currency:</strong> AED</p>
                                 </div>
                             </div>
 
                             <!-- RIGHT COLUMN - 48% -->
                             <div style="display: table-cell; width: 48%; vertical-align: top; padding-left: 2%;">
-                                
+
                                 <!-- Amenities & Specifications Combined -->
                                 <t t-if="doc.amenities and doc.amenities_ids">
                                     <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 8px 15px; border-radius: 5px; margin-bottom: 12px;">
@@ -127,7 +190,10 @@
                                     <div style="background: #f9f9f9; padding: 12px 15px; border-radius: 5px; margin-bottom: 15px; font-size: 10pt;">
                                         <t t-foreach="doc.property_specification_ids[:6]" t-as="spec">
                                             <p style="margin: 0 0 8px 0; padding-bottom: 8px; border-bottom: 1px dashed #ddd; line-height: 1.6;">
-                                                <strong style="color: #8B7355; font-size: 10.5pt;"><span t-field="spec.title"/>:</strong><br/>
+                                                <strong style="color: #8B7355; font-size: 10.5pt;">
+                                                    <span t-field="spec.title"/>
+:</strong>
+                                                <br/>
                                                 <span t-field="spec.description" style="color: #555; font-size: 10pt;" t-if="spec.description"/>
                                             </p>
                                         </t>
@@ -142,9 +208,12 @@
                                     <div style="background: #f9f9f9; padding: 8px 12px; border-radius: 4px; font-size: 8.5pt; line-height: 1.6;">
                                         <t t-foreach="doc.connectivity_ids[:6]" t-as="conn">
                                             <p style="margin: 0 0 4px 0;">
-                                                <strong style="color: #8B7355;"><span t-field="conn.connectivity_id"/>:</strong>
+                                                <strong style="color: #8B7355;">
+                                                    <span t-field="conn.connectivity_id"/>
+:</strong>
                                                 <span t-field="conn.name"/>
-                                                <t t-if="conn.distance"> (<span t-field="conn.distance" style="color: #C5A572; font-weight: bold;"/>)</t>
+                                                <t t-if="conn.distance"> (                                                    <span t-field="conn.distance" style="color: #C5A572; font-weight: bold;"/>
+)</t>
                                             </p>
                                         </t>
                                     </div>
@@ -159,7 +228,7 @@
                                 <div style="background: linear-gradient(135deg, #8B7355 0%, #C5A572 100%); color: white; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px;">
                                     <h2 style="margin: 0; font-size: 12pt; font-weight: bold;">Payment Plan</h2>
                                 </div>
-                                
+
                                 <!-- Compact Payment Table -->
                                 <table style="width: 100%; border-collapse: collapse; font-size: 7.5pt; margin-bottom: 8px;">
                                     <thead>
@@ -180,10 +249,14 @@
                                                     <span t-field="line.name"/>
                                                 </td>
                                                 <td style="padding: 3px 6px; text-align: center; border: 1px solid #ddd; font-size: 7.5pt;">
-                                                    <strong style="color: #C5A572;"><t t-esc="'{:.1f}'.format(line.percentage)"/>%</strong>
+                                                    <strong style="color: #C5A572;">
+                                                        <t t-esc="'{:.1f}'.format(line.percentage)"/>
+%</strong>
                                                 </td>
                                                 <td style="padding: 3px 6px; text-align: right; border: 1px solid #ddd; font-size: 7.5pt;">
-                                                    <strong style="color: #8B7355;"><t t-esc="'{:,.2f}'.format(line.amount)"/></strong>
+                                                    <strong style="color: #8B7355;">
+                                                        <t t-esc="'{:,.2f}'.format(line.amount)"/>
+                                                    </strong>
                                                 </td>
                                             </tr>
                                         </t>
@@ -206,22 +279,33 @@
                                 <div style="display: table; width: 100%;">
                                     <div style="display: table-cell; width: 33%; padding-right: 1%; vertical-align: top;">
                                         <div style="background: #f9f9f9; border: 1px solid #C5A572; padding: 6px 8px; border-radius: 4px; font-size: 7.5pt;">
-                                            <p style="margin: 0 0 3px 0;"><strong style="color: #8B7355;">Reg. Fees:</strong></p>
-                                            <p style="margin: 0; font-size: 8pt; font-weight: bold;" t-if="doc.dld_fee_amount"><t t-esc="'{:,.2f}'.format(doc.dld_fee_amount)"/> AED</p>
+                                            <p style="margin: 0 0 3px 0;">
+                                                <strong style="color: #8B7355;">Reg. Fees:</strong>
+                                            </p>
+                                            <p style="margin: 0; font-size: 8pt; font-weight: bold;" t-if="doc.dld_fee_amount">
+                                                <t t-esc="'{:,.2f}'.format(doc.dld_fee_amount)"/>
+ AED</p>
                                         </div>
                                     </div>
                                     <div style="display: table-cell; width: 33%; padding: 0 0.5%; vertical-align: top;">
                                         <div style="background: #f9f9f9; border: 1px solid #C5A572; padding: 6px 8px; border-radius: 4px; font-size: 7.5pt;">
-                                            <p style="margin: 0 0 3px 0;"><strong style="color: #8B7355;">To Book:</strong></p>
+                                            <p style="margin: 0 0 3px 0;">
+                                                <strong style="color: #8B7355;">To Book:</strong>
+                                            </p>
                                             <p style="margin: 0; font-size: 8pt; font-weight: bold; color: #C5A572;" t-if="doc.custom_payment_plan_line_ids and doc.custom_payment_plan_line_ids[0]">
-                                                <t t-esc="'{:,.2f}'.format(doc.custom_payment_plan_line_ids[0].amount)"/> AED
+                                                <t t-esc="'{:,.2f}'.format(doc.custom_payment_plan_line_ids[0].amount)"/>
+ AED
                                             </p>
                                         </div>
                                     </div>
                                     <div style="display: table-cell; width: 33%; padding-left: 1%; vertical-align: top;">
                                         <div style="background: #fff8f0; border: 1px solid #C5A572; padding: 6px 8px; border-radius: 4px; font-size: 7.5pt;">
-                                            <p style="margin: 0 0 3px 0;"><strong style="color: #8B7355;">Installments:</strong></p>
-                                            <p style="margin: 0; font-size: 8pt; font-weight: bold;"><t t-esc="len(doc.custom_payment_plan_line_ids)"/> Payments</p>
+                                            <p style="margin: 0 0 3px 0;">
+                                                <strong style="color: #8B7355;">Installments:</strong>
+                                            </p>
+                                            <p style="margin: 0; font-size: 8pt; font-weight: bold;">
+                                                <t t-esc="len(doc.custom_payment_plan_line_ids)"/>
+ Payments</p>
                                         </div>
                                     </div>
                                 </div>
@@ -270,34 +354,40 @@
                                     <div style="text-align: center; font-size: 8pt; margin-bottom: 8px;">
                                         <p style="margin: 0 0 3px 0; color: #8B7355; font-weight: bold;">
                                             For inquiries, please contact:
-                                            <t t-if="doc.landlord_phone"><span t-field="doc.landlord_phone"/></t>
+                                            <t t-if="doc.landlord_phone">
+                                                <span t-field="doc.landlord_phone"/>
+                                            </t>
                                             <t t-if="doc.landlord_email and doc.landlord_phone"> | </t>
-                                            <t t-if="doc.landlord_email"><span t-field="doc.landlord_email"/></t>
+                                            <t t-if="doc.landlord_email">
+                                                <span t-field="doc.landlord_email"/>
+                                            </t>
                                         </p>
                                     </div>
                                 </t>
                                 <div style="background: #fff8f0; border: 1px solid #C5A572; padding: 6px; border-radius: 4px; font-size: 6.5pt; color: #666; text-align: center; font-style: italic;">
                                     This Sales Offer Is System Generated by G J Properties on <span t-esc="datetime.datetime.now().strftime('%A, %d. %B %Y')"/>
-                                    <br/>© <span t-esc="datetime.datetime.now().year"/> - All Rights Reserved
-                                </div>
+                                <br/>
+©                                <span t-esc="datetime.datetime.now().year"/>
+ - All Rights Reserved
                             </div>
                         </div>
-                    </t>
+                    </div>
                 </t>
             </t>
         </t>
-    </template>
+    </t>
+</template>
 
-    <!-- Report Action -->
-    <record id="property_brochure_enhanced_report_action" model="ir.actions.report">
-        <field name="name">Sales Offer</field>
-        <field name="model">property.details</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">rental_management.property_brochure_enhanced_template</field>
-        <field name="report_file">rental_management.property_brochure_enhanced_template</field>
-        <field name="binding_model_id" ref="model_property_details"/>
-        <field name="binding_type">report</field>
-        <field name="print_report_name">'Sales Offer - %s' % (object.name)</field>
-        <field name="paperformat_id" ref="base.paperformat_us"/>
-    </record>
+<!-- Report Action -->
+<record id="property_brochure_enhanced_report_action" model="ir.actions.report">
+    <field name="name">Sales Offer</field>
+    <field name="model">property.details</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">rental_management.property_brochure_enhanced_template</field>
+    <field name="report_file">rental_management.property_brochure_enhanced_template</field>
+    <field name="binding_model_id" ref="model_property_details"/>
+    <field name="binding_type">report</field>
+    <field name="print_report_name">'Sales Offer - %s' % (object.name)</field>
+    <field name="paperformat_id" ref="base.paperformat_us"/>
+</record>
 </odoo>
