@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Override External Layout - This template is used by ALL Odoo reports -->
+    <template id="external_layout" inherit_id="web.external_layout" priority="99">
+        <!-- Replace the entire layout -->
+        <xpath expr="." position="replace">
+            <div t-attf-class="header osus-global-header o_company_#{company.id}_layout">
+                <!-- Company Header -->
+                <div class="osus-header-container">
+                    <div class="row">
+                        <!-- Company Logo -->
+                        <div class="col-4 osus-logo-section">
+                            <img t-if="company.logo" 
+                                 t-att-src="image_data_uri(company.logo)" 
+                                 class="osus-company-logo"
+                                 alt="Company Logo"/>
+                            <div t-else="" class="osus-company-name-large">
+                                <span t-field="company.name"/>
+                            </div>
+                        </div>
+                        
+                        <!-- Company Information -->
+                        <div class="col-8 text-end osus-company-info">
+                            <div class="osus-company-name" t-if="company.logo">
+                                <strong t-field="company.name"/>
+                            </div>
+                            <div class="osus-company-details">
+                                <div t-if="company.street">
+                                    <i class="fa fa-map-marker"/> <span t-field="company.street"/>
+                                    <span t-if="company.street2">, <t t-esc="company.street2"/></span>
+                                </div>
+                                <div t-if="company.city">
+                                    <span t-field="company.city"/><span t-if="company.state_id">, <t t-esc="company.state_id.name"/></span>
+                                    <span t-if="company.zip"> - <t t-esc="company.zip"/></span>
+                                    <span t-if="company.country_id"> - <t t-esc="company.country_id.name"/></span>
+                                </div>
+                                <div class="mt-1">
+                                    <span t-if="company.phone">
+                                        <i class="fa fa-phone"/> <span t-field="company.phone"/>
+                                    </span>
+                                    <span t-if="company.email" class="ms-3">
+                                        <i class="fa fa-envelope"/> <span t-field="company.email"/>
+                                    </span>
+                                </div>
+                                <div t-if="company.website">
+                                    <i class="fa fa-globe"/> <span t-field="company.website"/>
+                                </div>
+                                <div t-if="company.vat" class="mt-1">
+                                    <strong>Tax ID:</strong> <span t-field="company.vat"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Decorative Line -->
+                    <div class="osus-header-divider"/>
+                </div>
+            </div>
+
+            <!-- Document Body -->
+            <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+                <div class="osus-document-body">
+                    <t t-out="0"/>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div t-attf-class="footer osus-global-footer o_company_#{company.id}_layout">
+                <div class="osus-footer-container">
+                    <!-- Decorative Line -->
+                    <div class="osus-footer-divider"/>
+                    
+                    <div class="row osus-footer-content">
+                        <!-- Left: Company Info -->
+                        <div class="col-6 text-start">
+                            <div class="osus-footer-company">
+                                <strong t-field="company.name"/>
+                            </div>
+                            <div class="osus-footer-contact">
+                                <span t-if="company.phone">
+                                    <i class="fa fa-phone"/> <span t-field="company.phone"/>
+                                </span>
+                                <span t-if="company.email" class="ms-2">
+                                    <i class="fa fa-envelope"/> <span t-field="company.email"/>
+                                </span>
+                            </div>
+                            <div t-if="company.website" class="osus-footer-website">
+                                <i class="fa fa-globe"/> <span t-field="company.website"/>
+                            </div>
+                        </div>
+                        
+                        <!-- Right: Page Numbers -->
+                        <div class="col-6 text-end">
+                            <div class="osus-page-number">
+                                Page <span class="page"/> of <span class="topage"/>
+                            </div>
+                            <div class="osus-footer-note">
+                                This document is computer-generated and valid without signature.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Override Standard External Layout (alternative layout option) -->
+    <template id="external_layout_standard" inherit_id="web.external_layout_standard" priority="99">
+        <xpath expr="." position="replace">
+            <t t-call="osus_global_report_template.external_layout"/>
+        </xpath>
+    </template>
+
+    <!-- Override Clean External Layout (alternative layout option) -->
+    <template id="external_layout_clean" inherit_id="web.external_layout_clean" priority="99">
+        <xpath expr="." position="replace">
+            <t t-call="osus_global_report_template.external_layout"/>
+        </xpath>
+    </template>
+
+    <!-- Override Boxed External Layout (alternative layout option) -->
+    <template id="external_layout_boxed" inherit_id="web.external_layout_boxed" priority="99">
+        <xpath expr="." position="replace">
+            <t t-call="osus_global_report_template.external_layout"/>
+        </xpath>
+    </template>
+
+    <!-- Override Bold External Layout (alternative layout option) -->
+    <template id="external_layout_bold" inherit_id="web.external_layout_bold" priority="99">
+        <xpath expr="." position="replace">
+            <t t-call="osus_global_report_template.external_layout"/>
+        </xpath>
+    </template>
+
+    <!-- Override Striped External Layout (alternative layout option) -->
+    <template id="external_layout_striped" inherit_id="web.external_layout_striped" priority="99">
+        <xpath expr="." position="replace">
+            <t t-call="osus_global_report_template.external_layout"/>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,604 @@
+/* ============================================================================
+   OSUS GLOBAL REPORT TEMPLATE - Master Stylesheet for ALL Odoo Reports
+   ============================================================================
+   This stylesheet applies to ALL reports in Odoo including:
+   - Invoices & Bills
+   - Sales Orders & Quotations  
+   - Purchase Orders
+   - Delivery Orders & Receipts
+   - Manufacturing Orders
+   - Payment Receipts
+   - And all other reports
+   ============================================================================ */
+
+/* ============================================================================
+   1. VARIABLES & BRAND COLORS
+   ============================================================================ */
+$primary-color: #1a5490;        /* Deep Ocean Blue */
+$secondary-color: #3498db;      /* Light Blue */
+$accent-color: #2874a6;         /* Medium Blue */
+$text-primary: #2c3e50;         /* Dark Gray */
+$text-secondary: #7f8c8d;       /* Medium Gray */
+$text-muted: #95a5a6;           /* Light Gray */
+$background-light: #f8f9fa;     /* Very Light Gray */
+$border-color: #e1e8ed;         /* Border Gray */
+$success-color: #27ae60;        /* Green */
+$warning-color: #f39c12;        /* Orange */
+$danger-color: #e74c3c;         /* Red */
+$info-color: #3498db;           /* Blue */
+
+/* ============================================================================
+   2. GLOBAL HEADER STYLES
+   ============================================================================ */
+.osus-global-header {
+    padding: 30px 20px 20px 20px;
+    margin-bottom: 0;
+    background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
+    color: white;
+    border-bottom: 4px solid $secondary-color;
+}
+
+.osus-header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Company Logo */
+.osus-logo-section {
+    display: flex;
+    align-items: center;
+}
+
+.osus-company-logo {
+    max-height: 80px;
+    max-width: 100%;
+    height: auto;
+    filter: brightness(0) invert(1); /* Make logo white */
+}
+
+.osus-company-name-large {
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+}
+
+/* Company Information */
+.osus-company-info {
+    color: white;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.osus-company-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+}
+
+.osus-company-details {
+    font-size: 12px;
+    line-height: 1.7;
+    opacity: 0.95;
+}
+
+.osus-company-details i {
+    opacity: 0.8;
+    margin-right: 3px;
+}
+
+/* Header Divider */
+.osus-header-divider {
+    height: 3px;
+    background: linear-gradient(to right, white, rgba(255, 255, 255, 0.3), white);
+    margin-top: 20px;
+    border-radius: 2px;
+}
+
+/* ============================================================================
+   3. GLOBAL FOOTER STYLES
+   ============================================================================ */
+.osus-global-footer {
+    padding: 15px 20px;
+    margin-top: 30px;
+    font-size: 11px;
+    color: $text-secondary;
+    background-color: $background-light;
+    border-top: 3px solid $primary-color;
+}
+
+.osus-footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.osus-footer-divider {
+    height: 2px;
+    background: linear-gradient(to right, $primary-color, $secondary-color, $primary-color);
+    margin-bottom: 15px;
+    border-radius: 2px;
+}
+
+.osus-footer-content {
+    line-height: 1.8;
+}
+
+.osus-footer-company {
+    font-size: 13px;
+    font-weight: 700;
+    color: $primary-color;
+    margin-bottom: 5px;
+}
+
+.osus-footer-contact,
+.osus-footer-website {
+    font-size: 11px;
+    color: $text-secondary;
+}
+
+.osus-footer-contact i,
+.osus-footer-website i {
+    color: $primary-color;
+    margin-right: 3px;
+}
+
+.osus-page-number {
+    font-size: 12px;
+    font-weight: 700;
+    color: $primary-color;
+    margin-bottom: 5px;
+}
+
+.osus-footer-note {
+    font-size: 10px;
+    color: $text-muted;
+    font-style: italic;
+}
+
+/* ============================================================================
+   4. DOCUMENT BODY STYLES
+   ============================================================================ */
+.osus-document-body {
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: $text-primary;
+    line-height: 1.6;
+}
+
+/* ============================================================================
+   5. GLOBAL TABLE STYLES (Apply to ALL report tables)
+   ============================================================================ */
+.article table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.article table thead {
+    background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
+    color: white;
+}
+
+.article table thead th {
+    padding: 12px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    text-align: left;
+}
+
+.article table thead th.text-right,
+.article table thead th.text-end {
+    text-align: right;
+}
+
+.article table tbody tr {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.article table tbody tr:nth-child(even) {
+    background-color: $background-light;
+}
+
+.article table tbody tr:hover {
+    background-color: #e8f4fd;
+}
+
+.article table tbody td {
+    padding: 10px;
+    font-size: 13px;
+    vertical-align: top;
+}
+
+.article table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Total rows styling */
+.article table tfoot td,
+.article table tbody tr.border-black td {
+    font-weight: 700;
+    color: $primary-color;
+    font-size: 14px;
+    border-top: 2px solid $primary-color;
+    padding-top: 12px;
+}
+
+/* ============================================================================
+   6. DOCUMENT TITLES & HEADINGS
+   ============================================================================ */
+.article h1,
+.article h2 {
+    color: $primary-color;
+    font-weight: 700;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid $secondary-color;
+    letter-spacing: -0.5px;
+}
+
+.article h1 {
+    font-size: 32px;
+}
+
+.article h2 {
+    font-size: 24px;
+}
+
+.article h3 {
+    color: $primary-color;
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.article h4 {
+    color: $accent-color;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+/* ============================================================================
+   7. INFORMATION BOXES (Customer, Delivery Address, etc.)
+   ============================================================================ */
+.article .address,
+.article .info-box,
+.article div[name="invoice_address"],
+.article div[name="delivery_address"] {
+    background: $background-light;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.article .address strong:first-child,
+.article .info-box strong:first-child {
+    display: block;
+    font-size: 16px;
+    color: $primary-color;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid $secondary-color;
+}
+
+/* ============================================================================
+   8. BADGES & STATUS INDICATORS
+   ============================================================================ */
+.badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge.bg-info,
+.badge.badge-info {
+    background-color: $info-color !important;
+    color: white;
+}
+
+.badge.bg-success,
+.badge.badge-success {
+    background-color: $success-color !important;
+    color: white;
+}
+
+.badge.bg-warning,
+.badge.badge-warning {
+    background-color: $warning-color !important;
+    color: white;
+}
+
+.badge.bg-danger,
+.badge.badge-danger {
+    background-color: $danger-color !important;
+    color: white;
+}
+
+.badge.bg-secondary,
+.badge.badge-secondary {
+    background-color: $text-secondary !important;
+    color: white;
+}
+
+.badge.bg-primary,
+.badge.badge-primary {
+    background-color: $primary-color !important;
+    color: white;
+}
+
+/* ============================================================================
+   9. DIVIDERS & SEPARATORS
+   ============================================================================ */
+.article hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(to right, $primary-color, $secondary-color, $primary-color);
+    margin: 25px 0;
+    border-radius: 2px;
+}
+
+/* ============================================================================
+   10. TOTALS & FINANCIAL SUMMARY
+   ============================================================================ */
+.article .oe_subtotal_footer,
+.article .total-section {
+    background: $background-light;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.article .oe_subtotal_footer table {
+    margin-bottom: 0;
+    border: none;
+}
+
+.article .oe_subtotal_footer td {
+    padding: 8px 10px;
+    font-size: 14px;
+}
+
+.article .oe_subtotal_footer tr:last-child td {
+    font-size: 18px;
+    font-weight: 700;
+    color: $primary-color;
+    border-top: 2px solid $primary-color;
+    padding-top: 12px;
+}
+
+/* ============================================================================
+   11. NOTES & TERMS SECTIONS
+   ============================================================================ */
+.article .note,
+.article .terms,
+.article div[name="note"],
+.article div[name="comment"] {
+    background: #fff9e6;
+    border-left: 4px solid $warning-color;
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.article .note strong:first-child,
+.article .terms strong:first-child {
+    color: #e67e22;
+    font-size: 15px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* ============================================================================
+   12. PAYMENT TERMS & DUE DATES
+   ============================================================================ */
+.article .payment-terms,
+.article .due-date {
+    background: #e8f6f3;
+    border-left: 4px solid $success-color;
+    padding: 12px 18px;
+    margin: 15px 0;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* ============================================================================
+   13. QR CODES & BARCODES
+   ============================================================================ */
+.article .qr-code,
+.article .barcode {
+    text-align: center;
+    padding: 20px;
+    background: white;
+    border: 2px dashed $border-color;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+/* ============================================================================
+   14. SIGNATURE SECTIONS
+   ============================================================================ */
+.article .signature-section {
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 2px solid $border-color;
+}
+
+.article .signature-box {
+    text-align: center;
+    padding: 20px;
+}
+
+.article .signature-line {
+    height: 60px;
+    border-bottom: 2px solid $text-primary;
+    margin-bottom: 10px;
+}
+
+/* ============================================================================
+   15. PRINT OPTIMIZATION
+   ============================================================================ */
+@media print {
+    .osus-global-header {
+        background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+
+    .osus-global-footer {
+        background-color: $background-light;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+
+    .article table thead {
+        background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+
+    .article table tbody tr:hover {
+        background-color: transparent;
+    }
+
+    .article table tbody tr:nth-child(even) {
+        background-color: $background-light;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+
+    /* Prevent page breaks inside important elements */
+    .osus-header-container,
+    .signature-section,
+    .oe_subtotal_footer {
+        page-break-inside: avoid;
+    }
+
+    /* Force color printing for badges */
+    .badge {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+    }
+}
+
+/* ============================================================================
+   16. RESPONSIVE DESIGN (for screen preview)
+   ============================================================================ */
+@media (max-width: 768px) {
+    .osus-global-header {
+        padding: 20px 15px 15px 15px;
+    }
+
+    .osus-company-name {
+        font-size: 18px;
+    }
+
+    .osus-company-name-large {
+        font-size: 20px;
+    }
+
+    .osus-company-logo {
+        max-height: 60px;
+    }
+
+    .article h1 {
+        font-size: 24px;
+    }
+
+    .article h2 {
+        font-size: 20px;
+    }
+
+    .article table thead th,
+    .article table tbody td {
+        padding: 8px 5px;
+        font-size: 11px;
+    }
+
+    .osus-document-body {
+        padding: 15px;
+    }
+}
+
+/* ============================================================================
+   17. ADDITIONAL UTILITY CLASSES
+   ============================================================================ */
+.article .text-primary {
+    color: $primary-color !important;
+}
+
+.article .text-muted {
+    color: $text-muted !important;
+}
+
+.article .bg-light {
+    background-color: $background-light !important;
+}
+
+.article .border-primary {
+    border-color: $primary-color !important;
+}
+
+/* Strong emphasis */
+.article strong,
+.article .font-weight-bold {
+    font-weight: 700;
+    color: $text-primary;
+}
+
+/* Small text */
+.article small,
+.article .small {
+    font-size: 85%;
+    color: $text-secondary;
+}
+
+/* ============================================================================
+   18. INVOICE-SPECIFIC STYLES
+   ============================================================================ */
+.article .invoice-header {
+    background: linear-gradient(135deg, rgba(26, 84, 144, 0.1), rgba(52, 152, 219, 0.1));
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-left: 4px solid $primary-color;
+}
+
+/* ============================================================================
+   19. OVERDUE NOTICES
+   ============================================================================ */
+.article .overdue-notice {
+    background: #ffebee;
+    border: 2px solid $danger-color;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 20px 0;
+    font-weight: 700;
+    color: $danger-color;
+    text-align: center;
+}
+
+/* ============================================================================
+   END OF GLOBAL REPORT STYLES
+   ============================================================================ */

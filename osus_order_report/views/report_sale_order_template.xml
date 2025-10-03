@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_sale_order_professional">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page osus-order-report">
+                        <!-- Header Section -->
+                        <div class="osus-header">
+                            <div class="row">
+                                <div class="col-7">
+                                    <h2 class="osus-doc-title">
+                                        <span t-if="doc.state in ['draft', 'sent']">Quotation</span>
+                                        <span t-else="">Sales Order</span>
+                                    </h2>
+                                    <div class="osus-doc-number">
+                                        <strong t-field="doc.name"/>
+                                    </div>
+                                </div>
+                                <div class="col-5 text-end">
+                                    <div class="osus-doc-badge">
+                                        <span t-if="doc.state == 'draft'" class="badge bg-secondary">Draft</span>
+                                        <span t-elif="doc.state == 'sent'" class="badge bg-info">Quotation Sent</span>
+                                        <span t-elif="doc.state == 'sale'" class="badge bg-success">Sales Order</span>
+                                        <span t-elif="doc.state == 'done'" class="badge bg-primary">Done</span>
+                                        <span t-elif="doc.state == 'cancel'" class="badge bg-danger">Cancelled</span>
+                                    </div>
+                                    <div class="osus-date-info mt-2">
+                                        <div><strong>Date:</strong> <span t-field="doc.date_order" t-options='{"widget": "date"}'/></div>
+                                        <div t-if="doc.validity_date and doc.state in ['draft', 'sent']">
+                                            <strong>Valid Until:</strong> <span t-field="doc.validity_date" t-options='{"widget": "date"}'/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="osus-divider"/>
+
+                        <!-- Customer & Company Info -->
+                        <div class="row mt-4 mb-4">
+                            <div class="col-6">
+                                <div class="osus-info-box">
+                                    <h4 class="osus-box-title">Customer</h4>
+                                    <div class="osus-address">
+                                        <strong t-field="doc.partner_id.name"/>
+                                        <div t-if="doc.partner_id.street">
+                                            <t t-esc="doc.partner_id.street"/>
+                                        </div>
+                                        <div t-if="doc.partner_id.street2">
+                                            <t t-esc="doc.partner_id.street2"/>
+                                        </div>
+                                        <div>
+                                            <span t-if="doc.partner_id.city" t-esc="doc.partner_id.city"/><span t-if="doc.partner_id.state_id">, <t t-esc="doc.partner_id.state_id.name"/></span>
+                                            <span t-if="doc.partner_id.zip" t-esc="doc.partner_id.zip"/>
+                                        </div>
+                                        <div t-if="doc.partner_id.country_id">
+                                            <t t-esc="doc.partner_id.country_id.name"/>
+                                        </div>
+                                        <div t-if="doc.partner_id.phone" class="mt-2">
+                                            <i class="fa fa-phone"/> <t t-esc="doc.partner_id.phone"/>
+                                        </div>
+                                        <div t-if="doc.partner_id.email">
+                                            <i class="fa fa-envelope"/> <t t-esc="doc.partner_id.email"/>
+                                        </div>
+                                        <div t-if="doc.partner_id.vat" class="mt-2">
+                                            <strong>Tax ID:</strong> <t t-esc="doc.partner_id.vat"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="osus-info-box">
+                                    <h4 class="osus-box-title">Delivery Address</h4>
+                                    <div class="osus-address" t-if="doc.partner_shipping_id != doc.partner_id">
+                                        <strong t-field="doc.partner_shipping_id.name"/>
+                                        <div t-if="doc.partner_shipping_id.street">
+                                            <t t-esc="doc.partner_shipping_id.street"/>
+                                        </div>
+                                        <div t-if="doc.partner_shipping_id.street2">
+                                            <t t-esc="doc.partner_shipping_id.street2"/>
+                                        </div>
+                                        <div>
+                                            <span t-if="doc.partner_shipping_id.city" t-esc="doc.partner_shipping_id.city"/><span t-if="doc.partner_shipping_id.state_id">, <t t-esc="doc.partner_shipping_id.state_id.name"/></span>
+                                            <span t-if="doc.partner_shipping_id.zip" t-esc="doc.partner_shipping_id.zip"/>
+                                        </div>
+                                        <div t-if="doc.partner_shipping_id.country_id">
+                                            <t t-esc="doc.partner_shipping_id.country_id.name"/>
+                                        </div>
+                                        <div t-if="doc.partner_shipping_id.phone" class="mt-2">
+                                            <i class="fa fa-phone"/> <t t-esc="doc.partner_shipping_id.phone"/>
+                                        </div>
+                                    </div>
+                                    <div class="osus-address" t-else="">
+                                        <em>Same as customer address</em>
+                                    </div>
+                                </div>
+                                
+                                <!-- Additional Info -->
+                                <div class="osus-info-box mt-3">
+                                    <div class="row">
+                                        <div class="col-6" t-if="doc.user_id">
+                                            <strong>Salesperson:</strong><br/>
+                                            <t t-esc="doc.user_id.name"/>
+                                        </div>
+                                        <div class="col-6" t-if="doc.client_order_ref">
+                                            <strong>Customer Ref:</strong><br/>
+                                            <t t-esc="doc.client_order_ref"/>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2" t-if="doc.payment_term_id">
+                                        <div class="col-12">
+                                            <strong>Payment Terms:</strong><br/>
+                                            <t t-esc="doc.payment_term_id.name"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="osus-divider"/>
+
+                        <!-- Order Lines -->
+                        <div class="osus-order-lines mt-4">
+                            <h4 class="osus-section-title">Order Details</h4>
+                            <table class="table table-sm osus-table">
+                                <thead class="osus-table-header">
+                                    <tr>
+                                        <th class="text-start" style="width: 5%;">#</th>
+                                        <th class="text-start" style="width: 35%;">Description</th>
+                                        <th class="text-end" style="width: 10%;">Qty</th>
+                                        <th class="text-center" style="width: 10%;">Unit</th>
+                                        <th class="text-end" style="width: 15%;">Unit Price</th>
+                                        <th class="text-center" style="width: 10%;">Tax</th>
+                                        <th class="text-end" style="width: 15%;">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-set="line_num" t-value="0"/>
+                                    <t t-foreach="doc.order_line" t-as="line">
+                                        <t t-set="line_num" t-value="line_num + 1"/>
+                                        <tr class="osus-table-row">
+                                            <td class="text-start">
+                                                <span t-esc="line_num"/>
+                                            </td>
+                                            <td class="text-start">
+                                                <strong t-field="line.product_id.name"/>
+                                                <div t-if="line.name != line.product_id.name" class="text-muted small">
+                                                    <t t-esc="line.name"/>
+                                                </div>
+                                                <div t-if="line.product_id.default_code" class="text-muted small">
+                                                    [<t t-esc="line.product_id.default_code"/>]
+                                                </div>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-field="line.product_uom_qty"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-field="line.product_uom.name"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-field="line.price_unit" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span t-if="line.tax_id">
+                                                    <t t-foreach="line.tax_id" t-as="tax">
+                                                        <t t-esc="tax.name"/><t t-if="not tax_last">, </t>
+                                                    </t>
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong>
+                                                    <span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Totals Section -->
+                        <div class="row mt-4">
+                            <div class="col-7">
+                                <!-- Notes Section -->
+                                <div class="osus-notes" t-if="doc.note">
+                                    <h5 class="osus-notes-title">Notes:</h5>
+                                    <p t-field="doc.note" class="text-muted"/>
+                                </div>
+                            </div>
+                            <div class="col-5">
+                                <div class="osus-totals">
+                                    <table class="table table-sm">
+                                        <tr class="osus-subtotal-row">
+                                            <td class="text-end"><strong>Subtotal:</strong></td>
+                                            <td class="text-end">
+                                                <span t-field="doc.amount_untaxed" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                            </td>
+                                        </tr>
+                                        <t t-foreach="doc.amount_by_group" t-as="amount_by_group">
+                                            <tr class="osus-tax-row">
+                                                <td class="text-end">
+                                                    <span t-esc="amount_by_group[0]"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <span t-esc="amount_by_group[1]" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <tr class="osus-total-row">
+                                            <td class="text-end"><strong>TOTAL:</strong></td>
+                                            <td class="text-end">
+                                                <strong>
+                                                    <span t-field="doc.amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="osus-terms mt-4" t-if="doc.company_id.terms_type == 'html' and doc.company_id.invoice_terms_html">
+                            <h5 class="osus-terms-title">Terms &amp; Conditions</h5>
+                            <div t-field="doc.company_id.invoice_terms_html" class="text-muted small"/>
+                        </div>
+                        <div class="osus-terms mt-4" t-elif="doc.company_id.terms_type == 'plain' and doc.company_id.invoice_terms">
+                            <h5 class="osus-terms-title">Terms &amp; Conditions</h5>
+                            <p t-field="doc.company_id.invoice_terms" class="text-muted small"/>
+                        </div>
+
+                        <!-- Signature Section -->
+                        <div class="row mt-5 osus-signature-section">
+                            <div class="col-6">
+                                <div class="osus-signature-box">
+                                    <div class="osus-signature-line"></div>
+                                    <div class="text-center mt-2">
+                                        <strong>Customer Signature</strong>
+                                        <div class="text-muted small">Date: _____________</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="osus-signature-box">
+                                    <div class="osus-signature-line"></div>
+                                    <div class="text-center mt-2">
+                                        <strong>Authorized Signature</strong>
+                                        <div class="text-muted small">Date: _____________</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Note -->
+                        <div class="text-center mt-4 osus-footer-note">
+                            <p class="text-muted small">
+                                This document is computer-generated and is valid without signature.
+                            </p>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

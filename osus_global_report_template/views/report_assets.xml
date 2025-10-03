@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Additional Report Assets -->
+    <template id="report_assets_common_inherit" inherit_id="web.report_assets_common">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/scss" href="/osus_global_report_template/static/src/scss/global_report_style.scss"/>
+        </xpath>
+    </template>
+</odoo>
