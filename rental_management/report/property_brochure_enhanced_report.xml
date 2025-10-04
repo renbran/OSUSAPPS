@@ -213,7 +213,7 @@
 :</strong>
                                                 <span t-field="conn.name"/>
                                                 <t t-if="conn.distance"> (                                                    <span t-field="conn.distance" style="color: #C5A572; font-weight: bold;"/>
-)</t>
+)                                                </t>
                                             </p>
                                         </t>
                                     </div>
@@ -369,8 +369,9 @@
                                     <br/>
                                     © <span t-esc="datetime.datetime.now().year"/> - All Rights Reserved
                                 </div>
+                            </div>
                         </div>
-                    </div>
+                    </t>
                 </t>
             </t>
         </t>
