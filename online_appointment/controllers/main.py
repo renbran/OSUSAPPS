@@ -14,56 +14,78 @@ _logger = logging.getLogger(__name__)
 
 
 class OnlineAppointment(http.Controller):
+    """Online Appointment Controller - OSUSAPPS Enhanced"""
 
     def ld_to_utc(self, ld, appointee_id, duration=False):
+        """Convert local datetime to UTC with timezone handling"""
+        try:
+            date_parsed = datetime.datetime.strptime(ld, "%Y-%m-%d  %H:%M")
+            if duration:
+                date_parsed += datetime.timedelta(hours=duration)
 
-        date_parsed = datetime.datetime.strptime(ld, "%Y-%m-%d  %H:%M")
-        if duration:
-            date_parsed += datetime.timedelta(hours=duration)
-
-        user = request.env['res.users'].sudo().search([('id', '=', appointee_id)])
-        if user:
-            if user.tz:
-                tz = user.tz
+            # Use browse instead of search for better performance
+            user = request.env['res.users'].sudo().browse(appointee_id)
+            if user.exists():
+                tz = user.tz or 'Europe/Amsterdam'  # Fallback timezone
+                local = pytz.timezone(tz)
+                local_dt = local.localize(date_parsed, is_dst=None)
+                return local_dt.astimezone(pytz.utc)
             else:
-                tz = 'Europe/Amsterdam'
-            local = pytz.timezone(tz)
-            local_dt = local.localize(date_parsed, is_dst=None)
-            return local_dt.astimezone(pytz.utc)
-        else:
-            return ld
+                _logger.warning("User %s not found, returning original datetime", appointee_id)
+                return date_parsed
+        except (ValueError, pytz.exceptions.UnknownTimeZoneError) as e:
+            _logger.error("Error converting datetime: %s", e)
+            return datetime.datetime.now()
 
     def appointee_id_to_partner_id(self, appointee_id):
-
-        appointee = request.env['res.users'].sudo().search([('id', '=', appointee_id)])
-        if appointee:
-            return appointee.partner_id.id
-        else:
+        """Get partner ID from user ID with validation"""
+        try:
+            # Use browse instead of search for better performance
+            appointee = request.env['res.users'].sudo().browse(appointee_id)
+            if appointee.exists():
+                return appointee.partner_id.id
+            return False
+        except (ValueError, AttributeError) as e:
+            _logger.error("Error getting partner ID for user %s: %s", appointee_id, e)
             return False
 
-    def select_appointees(self, criteria='default', appointment_option=False):
+    def select_appointees(self, appointment_option=False):
+        """Select available appointees with optimized queries"""
+        try:
+            if not appointment_option:
+                return []
 
-        if not appointment_option:
+            # Use more efficient query with domain filters
+            if appointment_option.user_specific:
+                user_allowed_ids = appointment_option.users_allowed.ids
+                if not user_allowed_ids:
+                    return []
+                domain = [('user_id', 'in', user_allowed_ids)]
+            else:
+                domain = []
+
+            # Get unique user IDs from slots in single query
+            slots = request.env['online_appointment.slot'].sudo().search(domain)
+            appointee_ids = list(set(slots.mapped('user_id.id')))
+            return appointee_ids
+        except (AttributeError, ValueError) as e:
+            _logger.error("Error selecting appointees: %s", e)
             return []
 
-        if appointment_option.user_specific:
-            user_allowed_ids = appointment_option.users_allowed.ids
-            slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', 'in', user_allowed_ids)])
-            appointee_ids = [s.user_id.id for s in slots]
-        else:
-            slots = request.env['s2u.appointment.slot'].sudo().search([])
-            appointee_ids = [s.user_id.id for s in slots]
-        appointee_ids = list(set(appointee_ids))
-        return appointee_ids
-
-    def select_options(self, criteria='default'):
-
-        return request.env['s2u.appointment.option'].sudo().search([])
+    def select_options(self):
+        """Select appointment options with domain filtering"""
+        try:
+            # Add domain filter for active options
+            domain = [('active', '=', True)]
+            return request.env['online_appointment.option'].sudo().search(domain)
+        except AttributeError as e:
+            _logger.error("Error selecting options: %s", e)
+            return request.env['online_appointment.option'].sudo()
 
     def prepare_values(self, form_data=False, default_appointee_id=False, criteria='default'):
 
-        appointee_ids = self.select_appointees(criteria=criteria)
-        options = self.select_options(criteria=criteria)
+        appointee_ids = self.select_appointees()
+        options = self.select_options()
 
         values = {
             'appointees': request.env['res.users'].sudo().search([('id', 'in', appointee_ids)]),
@@ -87,22 +109,22 @@ class OnlineAppointment(http.Controller):
         if form_data:
             try:
                 appointee_id = int(form_data.get('appointee_id', 0))
-            except:
+            except (ValueError, TypeError):
                 appointee_id = 0
 
             try:
                 appointment_option_id = int(form_data.get('appointment_option_id', 0))
-            except:
+            except (ValueError, TypeError):
                 appointment_option_id = 0
 
             try:
                 timeslot_id = int(form_data.get('timeslot_id', 0))
-            except:
+            except (ValueError, TypeError):
                 timeslot_id = 0
 
             try:
                 appointment_date = datetime.datetime.strptime(form_data['appointment_date'], '%d/%m/%Y').strftime('%d/%m/%Y')
-            except:
+            except (ValueError, KeyError, TypeError):
                 appointment_date = ''
 
             values.update({
@@ -133,7 +155,7 @@ class OnlineAppointment(http.Controller):
             if values['appointees']:
                 try:
                     default_appointee_id = int(default_appointee_id)
-                except:
+                except (ValueError, TypeError):
                     default_appointee_id = False
                 if default_appointee_id and default_appointee_id in values['appointees'].ids:
                     values['appointee_id'] = default_appointee_id
@@ -184,12 +206,12 @@ class OnlineAppointment(http.Controller):
             error['appointee_id'] = True
             error_message.append(_('Please select a valid appointee.'))
 
-        option = request.env['s2u.appointment.option'].sudo().search([('id', '=', int(post.get('appointment_option_id', 0)))])
+        option = request.env['online_appointment.option'].sudo().search([('id', '=', int(post.get('appointment_option_id', 0)))])
         if not option:
             error['appointment_option_id'] = True
             error_message.append(_('Please select a valid subject.'))
 
-        slot = request.env['s2u.appointment.slot'].sudo().search([('id', '=', int(post.get('timeslot_id', 0)))])
+        slot = request.env['online_appointment.slot'].sudo().search([('id', '=', int(post.get('timeslot_id', 0)))])
         if not slot:
             error['timeslot_id'] = True
             error_message.append(_('Please select a valid timeslot.'))
@@ -252,7 +274,7 @@ class OnlineAppointment(http.Controller):
                 'appointee_id': self.appointee_id_to_partner_id(appointee_id),
                 'event_id': appointment.id
             }
-            registration = request.env['s2u.appointment.registration'].create(vals)
+            registration = request.env['online_appointment.registration'].create(vals)
 
         return request.redirect('/online-appointment/appointment-scheduled?appointment=%d' % appointment.id)
 
@@ -306,10 +328,10 @@ class OnlineAppointment(http.Controller):
         if not slot_id:
             return False
 
-        option = request.env['s2u.appointment.option'].sudo().search([('id', '=', option_id)])
+        option = request.env['online_appointment.option'].sudo().search([('id', '=', option_id)])
         if not option:
             return False
-        slot = request.env['s2u.appointment.slot'].sudo().search([('id', '=', slot_id)])
+        slot = request.env['online_appointment.slot'].sudo().search([('id', '=', slot_id)])
         if not slot:
             return False
 
@@ -361,12 +383,12 @@ class OnlineAppointment(http.Controller):
         if not appointee_id:
             return []
 
-        option = request.env['s2u.appointment.option'].sudo().search([('id', '=', option_id)])
+        option = request.env['online_appointment.option'].sudo().search([('id', '=', option_id)])
         if not option:
             return []
 
         week_day = datetime.datetime.strptime(appointment_date, '%d/%m/%Y').weekday()
-        slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', '=', appointee_id),
+        slots = request.env['online_appointment.slot'].sudo().search([('user_id', '=', appointee_id),
                                                                    ('day', '=', str(week_day))])
         slots = self.filter_slots(slots, criteria)
 
@@ -431,12 +453,12 @@ class OnlineAppointment(http.Controller):
 
         day_slots = []
 
-        option = request.env['s2u.appointment.option'].sudo().search([('id', '=', option_id)])
+        option = request.env['online_appointment.option'].sudo().search([('id', '=', option_id)])
         if not option:
             return {}
 
         for weekday, dates in start_datetimes.items():
-            slots = request.env['s2u.appointment.slot'].sudo().search([('user_id', '=', appointee_id),
+            slots = request.env['online_appointment.slot'].sudo().search([('user_id', '=', appointee_id),
                                                                        ('day', '=', str(weekday))])
             slots = self.filter_slots(slots, criteria)
 
@@ -514,8 +536,8 @@ class OnlineAppointment(http.Controller):
             date_parsed = False
 
         if option_id:
-            option = request.env['s2u.appointment.option'].sudo().browse(option_id)
-            appointee_ids = self.select_appointees(criteria=form_criteria, appointment_option=option)
+            option = request.env['online_appointment.option'].sudo().browse(option_id)
+            appointee_ids = self.select_appointees(appointment_option=option)
             appointees = []
             for a in request.env['res.users'].sudo().search([('id', 'in', appointee_ids)]):
                 appointees.append({
@@ -603,11 +625,11 @@ class OnlineAppointment(http.Controller):
             id = 0
 
         if id:
-            appointment = request.env['s2u.appointment.registration'].search([('id', '=', id)])
+            appointment = request.env['online_appointment.registration'].search([('id', '=', id)])
             if appointment and (
                     appointment.partner_id == request.env.user.partner_id or appointment.appointee_id == request.env.user.partner_id):
                 previous_state = appointment.state
-                appointment.cancel_appointment()
+                appointment.action_cancel_appointment()
                 self.online_appointment_state_change(appointment, previous_state)
 
         return request.redirect('/my/online-appointments')
@@ -622,15 +644,15 @@ class OnlineAppointment(http.Controller):
 
         try:
             id = int(post.get('appointment_to_confirm', 0))
-        except:
+        except (ValueError, TypeError):
             id = 0
 
         if id:
-            appointment = request.env['s2u.appointment.registration'].search([('id', '=', id)])
+            appointment = request.env['online_appointment.registration'].search([('id', '=', id)])
             if appointment and (
                     appointment.partner_id == request.env.user.partner_id or appointment.appointee_id == request.env.user.partner_id):
                 previous_state = appointment.state
-                appointment.confirm_appointment()
+                appointment.action_confirm_appointment()
                 self.online_appointment_state_change(appointment, previous_state)
 
         return request.redirect('/my/online-appointments')

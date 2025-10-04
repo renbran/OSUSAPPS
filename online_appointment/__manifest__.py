@@ -1,58 +1,87 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'Online appointment',
-    'version': '17.0.1.3',
-    'author': 'Ubbels.com',
-    'price': 0.0,
-    'currency': 'EUR',
-    'maintainer': 'Ubbels.com',
-    'support': 'info@ubbels.com',
+    'name': 'Online Appointment Booking System',
+    'version': '17.0.1.0.0',
+    'author': 'OSUSAPPS',
+    'maintainer': 'OSUSAPPS Development Team',
+    'support': 'support@osusapps.com',
     'images': ['static/description/app_logo.jpg'],
-    'license': 'OPL-1',
-    'website': 'https://www.ubbels.com',
-    'category':  'Website',
-    'summary': 'Let visitors book an appointment over the website',
-    'description':
-        """Visitors can book appointments over the website. A calendar pops up, the days marked green are available for selection.
-        After selecting a date the visitor needs to choose a timeslot and a appointment option. In the backend you define per
-        user his available timeslots. Only timeslots are selectable by the visitor when no other "calendar.event" is present for that period of time.
-        Appointment options you define globally in the backend and have a duration. This way a "calendar.event" is created with the correct start and stop.
-        
-        website appointment
-        online appointment
-        portal appointment
-        appointment
-        website meeting
-        online meeting
-        portal meeting
-        meeting
-         
-        """,
+    'license': 'LGPL-3',
+    'website': 'https://www.osusapps.com',
+    'category': 'Website/eCommerce',
+    'summary': 'Professional online appointment booking system for website visitors',
+    'description': """
+    Professional Online Appointment Booking System
+    =============================================
+    
+    Allow website visitors to book appointments seamlessly through your website with this comprehensive booking system.
+    
+    Key Features:
+    * Interactive calendar with availability display
+    * Flexible time slot management per user
+    * Customizable appointment options with duration
+    * Integration with Odoo Calendar
+    * Portal access for appointment management
+    * Email notifications and confirmations
+    * Mobile-responsive design
+    * Multi-user support with individual schedules
+    
+    Perfect for:
+    * Healthcare providers
+    * Professional services
+    * Consultancy businesses
+    * Service-based companies
+    * Any business requiring appointment scheduling
+    
+    Technical Features:
+    * Timezone-aware scheduling
+    * Conflict detection and prevention
+    * Comprehensive security controls
+    * Performance optimized
+    * Fully integrated with Odoo ecosystem
+    """,
     'depends': [
+        'base',
         'calendar',
         'website',
-        'portal'
+        'portal',
+        'mail',
+        'contacts'
     ],
+    'external_dependencies': {
+        'python': ['pytz']
+    },
     'data': [
         'security/ir.model.access.csv',
+        'security/security.xml',
+        'data/appointment_data.xml',
         'views/appointment_template.xml',
         'views/appointment_portal_template.xml',
         'views/menus.xml',
         'views/appointment_slot_view.xml',
         'views/appointment_option_view.xml',
+        'views/appointment_registration_view.xml',
         'views/s_daterange.xml',
     ],
-    'qweb': [
+    'demo': [
+        'demo/appointment_demo.xml',
     ],
     'assets': {
         'web.assets_frontend': [
-            '/online_appointment/static/src/scss/daterange.scss',
-            '/online_appointment/static/src/js/daterange.js',
-            '/online_appointment/static/src/js/main.js',
-        ]
+            'online_appointment/static/src/scss/daterange.scss',
+            'online_appointment/static/src/js/daterange.js',
+            'online_appointment/static/src/js/main.js',
+        ],
+        'web.assets_backend': [
+            'online_appointment/static/src/css/appointment_backend.css',
+        ],
     },
     'installable': True,
     'auto_install': False,
+    'application': True,
+    'sequence': 10,
+    'price': 0.0,
+    'currency': 'USD',
 }
 

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Portal users can only see their own registrations -->
+        <record id="appointment_registration_portal_rule" model="ir.rule">
+            <field name="name">Portal User: Own Appointment Registrations</field>
+            <field name="model_id" ref="model_online_appointment_registration"/>
+            <field name="domain_force">[('partner_id', '=', user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Internal users can see all registrations -->
+        <record id="appointment_registration_user_rule" model="ir.rule">
+            <field name="name">Internal User: All Appointment Registrations</field>
+            <field name="model_id" ref="model_online_appointment_registration"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <!-- Service providers can see their own appointment slots -->
+        <record id="appointment_slot_user_rule" model="ir.rule">
+            <field name="name">Service Provider: Own Appointment Slots</field>
+            <field name="model_id" ref="model_online_appointment_slot"/>
+            <field name="domain_force">[('user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <!-- Portal users can read all slots for booking -->
+        <record id="appointment_slot_portal_rule" model="ir.rule">
+            <field name="name">Portal User: Read All Active Appointment Slots</field>
+            <field name="model_id" ref="model_online_appointment_slot"/>
+            <field name="domain_force">[('active', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Public users can read active appointment options -->
+        <record id="appointment_option_public_rule" model="ir.rule">
+            <field name="name">Public User: Read Active Appointment Options</field>
+            <field name="model_id" ref="model_online_appointment_option"/>
+            <field name="domain_force">[('active', '=', True), ('website_published', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('base.group_public'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Public users can read active appointment slots -->
+        <record id="appointment_slot_public_rule" model="ir.rule">
+            <field name="name">Public User: Read Active Appointment Slots</field>
+            <field name="model_id" ref="model_online_appointment_slot"/>
+            <field name="domain_force">[('active', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('base.group_public'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+    </data>
+</odoo>

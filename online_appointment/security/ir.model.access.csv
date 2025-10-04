@@ -1,8 +1,17 @@
-"id","group_id:id","name","model_id","perm_create","perm_unlink","perm_write","perm_read"
-"r20200215001","website.group_website_designer","Default","s2u.appointment.slot",1,1,1,1
-"r20200215002","website.group_website_designer","Default","s2u.appointment.option",1,1,1,1
-"r20200215003","base.group_portal","Default","s2u.appointment.slot",0,0,0,1
-"r20200215004","base.group_portal","Default","s2u.appointment.option",0,0,0,1
-"r20200217001","base.group_portal","Default","s2u.appointment.registration",1,1,1,1
-"r20200217002","base.group_user","Default","s2u.appointment.registration",1,1,1,1
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+# Appointment Options
+access_appointment_option_admin,online_appointment.option admin,model_online_appointment_option,base.group_system,1,1,1,1
+access_appointment_option_user,online_appointment.option user,model_online_appointment_option,base.group_user,1,1,1,0
+access_appointment_option_website,online_appointment.option website,model_online_appointment_option,website.group_website_designer,1,1,1,1
+access_appointment_option_portal,online_appointment.option portal,model_online_appointment_option,base.group_portal,1,0,0,0
+access_appointment_option_public,online_appointment.option public,model_online_appointment_option,base.group_public,1,0,0,0
+# Appointment Slots
+access_appointment_slot_admin,online_appointment.slot admin,model_online_appointment_slot,base.group_system,1,1,1,1
+access_appointment_slot_user,online_appointment.slot user,model_online_appointment_slot,base.group_user,1,1,1,1
+access_appointment_slot_website,online_appointment.slot website,model_online_appointment_slot,website.group_website_designer,1,1,1,1
+access_appointment_slot_portal,online_appointment.slot portal,model_online_appointment_slot,base.group_portal,1,0,0,0
+# Appointment Registrations
+access_appointment_registration_admin,online_appointment.registration admin,model_online_appointment_registration,base.group_system,1,1,1,1
+access_appointment_registration_user,online_appointment.registration user,model_online_appointment_registration,base.group_user,1,1,1,1
+access_appointment_registration_portal,online_appointment.registration portal,model_online_appointment_registration,base.group_portal,1,1,1,0
 

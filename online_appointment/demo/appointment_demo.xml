@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Demo Service Providers -->
+        <record id="demo_service_provider_1" model="res.users">
+            <field name="name">Dr. Sarah Johnson</field>
+            <field name="login">dr.sarah.johnson</field>
+            <field name="email">sarah.johnson@osusapps.com</field>
+            <field name="tz">America/New_York</field>
+            <field name="groups_id" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+        
+        <record id="demo_service_provider_2" model="res.users">
+            <field name="name">John Smith - Consultant</field>
+            <field name="login">john.smith.consultant</field>
+            <field name="email">john.smith@osusapps.com</field>
+            <field name="tz">America/Los_Angeles</field>
+            <field name="groups_id" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+        
+        <!-- Demo Appointment Options -->
+        <record id="demo_option_consultation" model="online_appointment.option">
+            <field name="name">General Consultation</field>
+            <field name="description">General consultation session for business needs assessment</field>
+            <field name="duration">1.0</field>
+            <field name="active" eval="True"/>
+            <field name="website_published" eval="True"/>
+            <field name="user_specific" eval="False"/>
+        </record>
+        
+        <record id="demo_option_technical" model="online_appointment.option">
+            <field name="name">Technical Review</field>
+            <field name="description">Technical consultation and code review session</field>
+            <field name="duration">2.0</field>
+            <field name="active" eval="True"/>
+            <field name="website_published" eval="True"/>
+            <field name="user_specific" eval="True"/>
+            <field name="users_allowed" eval="[(4, ref('demo_service_provider_2'))]"/>
+        </record>
+        
+        <record id="demo_option_planning" model="online_appointment.option">
+            <field name="name">Project Planning</field>
+            <field name="description">Project planning and strategy session</field>
+            <field name="duration">1.5</field>
+            <field name="active" eval="True"/>
+            <field name="website_published" eval="True"/>
+            <field name="user_specific" eval="False"/>
+        </record>
+        
+        <!-- Demo Time Slots for Dr. Sarah Johnson -->
+        <record id="demo_slot_sarah_monday_9" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_1"/>
+            <field name="day">0</field>
+            <field name="slot">9.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_sarah_monday_10" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_1"/>
+            <field name="day">0</field>
+            <field name="slot">10.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_sarah_monday_11" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_1"/>
+            <field name="day">0</field>
+            <field name="slot">11.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_sarah_tuesday_9" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_1"/>
+            <field name="day">1</field>
+            <field name="slot">9.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_sarah_tuesday_10" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_1"/>
+            <field name="day">1</field>
+            <field name="slot">10.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_sarah_wednesday_14" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_1"/>
+            <field name="day">2</field>
+            <field name="slot">14.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_sarah_wednesday_15" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_1"/>
+            <field name="day">2</field>
+            <field name="slot">15.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <!-- Demo Time Slots for John Smith -->
+        <record id="demo_slot_john_monday_10" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_2"/>
+            <field name="day">0</field>
+            <field name="slot">10.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_john_monday_11" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_2"/>
+            <field name="day">0</field>
+            <field name="slot">11.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_john_tuesday_14" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_2"/>
+            <field name="day">1</field>
+            <field name="slot">14.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_john_wednesday_9" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_2"/>
+            <field name="day">2</field>
+            <field name="slot">9.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_john_friday_13" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_2"/>
+            <field name="day">4</field>
+            <field name="slot">13.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <record id="demo_slot_john_friday_14" model="online_appointment.slot">
+            <field name="user_id" ref="demo_service_provider_2"/>
+            <field name="day">4</field>
+            <field name="slot">14.0</field>
+            <field name="active" eval="True"/>
+        </record>
+        
+        <!-- Demo Customer -->
+        <record id="demo_customer" model="res.partner">
+            <field name="name">Demo Customer</field>
+            <field name="email">demo.customer@example.com</field>
+            <field name="phone">+1-555-123-4567</field>
+            <field name="is_company" eval="False"/>
+        </record>
+        
+    </data>
+</odoo>
