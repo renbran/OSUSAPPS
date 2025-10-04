@@ -1,9 +1,17 @@
-# 🧠 Copilot Instructions for OSUSAPPS (Odoo 17)
 
-## Architecture & Major Components
-- **Odoo 17, Dockerized**: All dev, test, and deployment via Docker Compose. Custom modules are mounted at `/mnt/extra-addons`.
-- **Modules**: Each top-level folder (e.g. `account_payment_final/`, `custom_sales/`, `account_statement/`) is a standard Odoo module with its own models, views, security, and tests. See each module's `README.md` for business context and features.
-- **Database**: Managed by a Postgres container. Use `docker-compose exec db ...` for DB operations.
+# 🧠 Copilot Instructions for odoo17_final
+
+## Project Architecture & Big Picture
++ **Odoo 17, Dockerized**: All development, testing, and deployment is via Docker Compose. Odoo runs in a container, with custom modules mounted at `/mnt/extra-addons`.
++ **Custom modules**: Each top-level folder (e.g. `account_payment_final/`, `payment_account_enhanced/`, `custom_sales/`, `account_statement/`) is a standard Odoo module with its own models, views, security, and tests. See module-level `README.md` for business context and features.
++ **Database**: Managed by a Postgres container. Use `docker-compose exec db ...` for DB operations.
++ **Setup scripts**: Use `setup.bat` (Windows) or `setup.sh` (Linux/Mac) for common tasks (start, stop, logs, backup).
++ **Access**: Odoo UI at http://localhost:8069 (default admin: `admin`/`admin`).
++ **Major modules**:
++   - `account_payment_final/`: Enterprise-grade payment workflow, QR verification, multi-stage approval, OSUS branding.
++   - `payment_account_enhanced/`: Professional voucher templates, robust approval history, QR code security, advanced CSS theming.
++   - `custom_sales/`: Advanced sales dashboard, KPI widgets, Chart.js analytics, mobile/responsive design.
++   - `account_statement/`: Multi-app integration, PDF/Excel export, dual menu access, multi-level permissions.
 
 ## Developer Workflows
 - **Start/Stop**: Use `setup.bat` (Windows) or `setup.sh` (Linux/Mac), or `docker-compose up -d` / `docker-compose down`.
