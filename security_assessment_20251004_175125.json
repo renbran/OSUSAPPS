@@ -1,0 +1,70 @@
+{
+  "scan_date": "2025-10-04T17:51:25.653893",
+  "workspace_path": ".",
+  "summary": {
+    "total_vulnerabilities": 4,
+    "risk_score": 16,
+    "severity_breakdown": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 4,
+      "LOW": 0
+    },
+    "vulnerability_types": {
+      "OVERPERMISSIVE_ACCESS": 4
+    }
+  },
+  "vulnerabilities": [
+    {
+      "severity": "MEDIUM",
+      "vulnerability_type": "OVERPERMISSIVE_ACCESS",
+      "file_path": "online_appointment\\security\\ir.model.access.csv",
+      "line_number": 5,
+      "code_snippet": "Group: online_appointment.option website",
+      "description": "Potentially overpermissive access rights",
+      "cwe_id": "CWE-732",
+      "remediation": "Review and restrict permissions as needed",
+      "osusapps_reference": "Follow principle of least privilege"
+    },
+    {
+      "severity": "MEDIUM",
+      "vulnerability_type": "OVERPERMISSIVE_ACCESS",
+      "file_path": "online_appointment\\security\\ir.model.access.csv",
+      "line_number": 10,
+      "code_snippet": "Group: online_appointment.slot user",
+      "description": "Potentially overpermissive access rights",
+      "cwe_id": "CWE-732",
+      "remediation": "Review and restrict permissions as needed",
+      "osusapps_reference": "Follow principle of least privilege"
+    },
+    {
+      "severity": "MEDIUM",
+      "vulnerability_type": "OVERPERMISSIVE_ACCESS",
+      "file_path": "online_appointment\\security\\ir.model.access.csv",
+      "line_number": 11,
+      "code_snippet": "Group: online_appointment.slot website",
+      "description": "Potentially overpermissive access rights",
+      "cwe_id": "CWE-732",
+      "remediation": "Review and restrict permissions as needed",
+      "osusapps_reference": "Follow principle of least privilege"
+    },
+    {
+      "severity": "MEDIUM",
+      "vulnerability_type": "OVERPERMISSIVE_ACCESS",
+      "file_path": "online_appointment\\security\\ir.model.access.csv",
+      "line_number": 15,
+      "code_snippet": "Group: online_appointment.registration user",
+      "description": "Potentially overpermissive access rights",
+      "cwe_id": "CWE-732",
+      "remediation": "Review and restrict permissions as needed",
+      "osusapps_reference": "Follow principle of least privilege"
+    }
+  ],
+  "recommendations": [],
+  "compliance_status": {
+    "OWASP_A03_Injection": "PASS",
+    "OWASP_A07_XSS": "PASS",
+    "OWASP_A01_Access_Control": "PASS",
+    "Overall_Security_Posture": "GOOD"
+  }
+}

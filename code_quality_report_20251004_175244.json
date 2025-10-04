@@ -1,0 +1,363 @@
+{
+  "analysis_date": "2025-10-04T17:52:44.252767",
+  "workspace_path": ".",
+  "summary": {
+    "total_modules": 1,
+    "total_issues": 31,
+    "average_score": 91.88,
+    "severity_breakdown": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 10,
+      "LOW": 21
+    },
+    "category_breakdown": {
+      "PERFORMANCE": 4,
+      "COMPLEXITY": 5,
+      "DOCUMENTATION": 21,
+      "STRUCTURE": 1
+    }
+  },
+  "modules": [
+    {
+      "module_name": "online_appointment",
+      "module_path": "online_appointment",
+      "structure_score": 90.0,
+      "security_score": 100.0,
+      "performance_score": 80.0,
+      "style_score": 97.5,
+      "overall_score": 91.875,
+      "issues": [
+        {
+          "severity": "MEDIUM",
+          "category": "PERFORMANCE",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 542,
+          "issue_type": "PERFORMANCE_ISSUE",
+          "description": "Performance anti-pattern: for a in request.env['res.users'].sudo().search(",
+          "recommendation": "Optimize query or use proper search domains",
+          "osusapps_pattern": "Use efficient ORM patterns as in custom_sales module"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "COMPLEXITY",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 85,
+          "issue_type": "HIGH_COMPLEXITY",
+          "description": "Function 'prepare_values' has high complexity (13)",
+          "recommendation": "Break down into smaller functions",
+          "osusapps_pattern": "Keep functions simple as in commission_ax module"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 85,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'prepare_values' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 169,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'online_appointment' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "COMPLEXITY",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 179,
+          "issue_type": "HIGH_COMPLEXITY",
+          "description": "Function 'online_appointment_confirm' has high complexity (18)",
+          "recommendation": "Break down into smaller functions",
+          "osusapps_pattern": "Keep functions simple as in commission_ax module"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 179,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'online_appointment_confirm' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 282,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'confirmed' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 317,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'check_slot_is_possible' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 367,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'filter_slots' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "COMPLEXITY",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 371,
+          "issue_type": "HIGH_COMPLEXITY",
+          "description": "Function 'get_free_appointment_slots_for_day' has high complexity (11)",
+          "recommendation": "Break down into smaller functions",
+          "osusapps_pattern": "Keep functions simple as in commission_ax module"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 371,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'get_free_appointment_slots_for_day' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 373,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'slot_present' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "COMPLEXITY",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 433,
+          "issue_type": "HIGH_COMPLEXITY",
+          "description": "Function 'get_days_with_free_slots' has high complexity (18)",
+          "recommendation": "Break down into smaller functions",
+          "osusapps_pattern": "Keep functions simple as in commission_ax module"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 433,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'get_days_with_free_slots' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "COMPLEXITY",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 504,
+          "issue_type": "HIGH_COMPLEXITY",
+          "description": "Function 'free_timeslots' has high complexity (12)",
+          "recommendation": "Break down into smaller functions",
+          "osusapps_pattern": "Keep functions simple as in commission_ax module"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 504,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'free_timeslots' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 568,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'month_bookable' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 610,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'online_appointment_state_change' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 615,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'online_appointment_portal_cancel' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\main.py",
+          "line_number": 638,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'online_appointment_portal_confirm' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\portal.py",
+          "line_number": 42,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'portal_my_appointments' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\controllers\\portal.py",
+          "line_number": 100,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'portal_my_appointment' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\helpers\\functions.py",
+          "line_number": 5,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'float_to_time' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\helpers\\functions.py",
+          "line_number": 15,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'valid_email' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\tests\\test_appointment_controllers.py",
+          "line_number": 11,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'setUp' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\tests\\test_appointment_models.py",
+          "line_number": 11,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'setUp' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "PERFORMANCE",
+          "file_path": "online_appointment\\tests\\test_appointment_security.py",
+          "line_number": 101,
+          "issue_type": "PERFORMANCE_ISSUE",
+          "description": "Performance anti-pattern: .search([])",
+          "recommendation": "Optimize query or use proper search domains",
+          "osusapps_pattern": "Use efficient ORM patterns as in custom_sales module"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "PERFORMANCE",
+          "file_path": "online_appointment\\tests\\test_appointment_security.py",
+          "line_number": 106,
+          "issue_type": "PERFORMANCE_ISSUE",
+          "description": "Performance anti-pattern: .search([])",
+          "recommendation": "Optimize query or use proper search domains",
+          "osusapps_pattern": "Use efficient ORM patterns as in custom_sales module"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "PERFORMANCE",
+          "file_path": "online_appointment\\tests\\test_appointment_security.py",
+          "line_number": 175,
+          "issue_type": "PERFORMANCE_ISSUE",
+          "description": "Performance anti-pattern: .search([])",
+          "recommendation": "Optimize query or use proper search domains",
+          "osusapps_pattern": "Use efficient ORM patterns as in custom_sales module"
+        },
+        {
+          "severity": "LOW",
+          "category": "DOCUMENTATION",
+          "file_path": "online_appointment\\tests\\test_appointment_security.py",
+          "line_number": 10,
+          "issue_type": "MISSING_DOCSTRING",
+          "description": "Public method 'setUp' missing docstring",
+          "recommendation": "Add comprehensive docstring",
+          "osusapps_pattern": "Follow docstring patterns from existing modules"
+        },
+        {
+          "severity": "MEDIUM",
+          "category": "STRUCTURE",
+          "file_path": "online_appointment\\static\\src\\snippets\\s_daterange\\000.xml",
+          "line_number": 1,
+          "issue_type": "INVALID_XML_ROOT",
+          "description": "XML file should have <odoo> as root element",
+          "recommendation": "Wrap content in <odoo> tags",
+          "osusapps_pattern": "Follow XML structure from existing views"
+        }
+      ],
+      "dependencies": [
+        "base",
+        "calendar",
+        "website",
+        "portal",
+        "mail",
+        "contacts"
+      ],
+      "missing_files": [
+        "reports/",
+        "wizards/"
+      ]
+    }
+  ],
+  "recommendations": [
+    "📝 21 functions missing documentation - Add comprehensive docstrings",
+    "🔧 5 overly complex functions - Refactor for better maintainability",
+    "⚡ 4 performance issues found - Optimize ORM queries and database operations",
+    "⚠️  1 instances of invalid xml root",
+    "✅ Excellent code quality - Maintain current standards"
+  ]
+}
